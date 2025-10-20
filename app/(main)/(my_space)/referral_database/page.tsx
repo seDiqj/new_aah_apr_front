@@ -1,0 +1,68 @@
+"use client";
+
+import BreadcrumbWithCustomSeparator from "@/components/global/BreadCrumb";
+import DataTableDemo from "@/components/global/MulitSelectTable";
+import SubHeader from "@/components/global/SubHeader";
+import MainDatabaseBeneficiaryForm from "@/components/global/MainDatabaseBeneficiaryCreationForm";
+import { Button } from "@/components/ui/button";
+import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
+import { useParentContext } from "@/contexts/ParentContext";
+import { mainDatabaseAndKitDatabaseBeneficiaryColumns } from "@/definitions/DataTableColumnsDefinitions";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Share2 } from "lucide-react";
+
+const MainDatabasePage = () => {
+  const { reqForToastAndSetMessage } = useParentContext();
+  const router = useRouter();
+
+  let [idFeildForEditStateSetter, setIdFeildForEditStateSetter] = useState<
+    number | null
+  >(null);
+
+  let [idFeildForShowStateSetter, setIdFeildForShowStateSetter] = useState<
+    number | null
+  >(null);
+
+  const [reqForBeneficiaryCreationForm, setReqForBeneficiaryCreationForm] =
+    useState<boolean>(false);
+
+  const [reqForBeneficiaryEditionForm, setReqForBeneficiaryEditionForm] =
+    useState<boolean>(false);
+
+  const [selectedRowsIds, setSelectedRows] = useState<{}>({});
+
+  const openBeneficiaryProfile = (value: boolean, id: number) => {
+    router.push(`referral_database/beneficiary_profile/${id}`);
+  };
+
+  useEffect(() => {
+    if (idFeildForShowStateSetter)
+      openBeneficiaryProfile(true, idFeildForShowStateSetter);
+  }, [idFeildForShowStateSetter]);
+
+  return (
+    <>
+      <div className="w-full h-full p-2">
+        <Navbar14 />
+        <div className="flex flex-row items-center justify-start my-2">
+          <BreadcrumbWithCustomSeparator></BreadcrumbWithCustomSeparator>
+        </div>
+        <SubHeader pageTitle={"Benficiaries"}></SubHeader>
+        <DataTableDemo
+          columns={mainDatabaseAndKitDatabaseBeneficiaryColumns}
+          indexUrl="/referral_db/beneficiaries"
+          deleteUrl="referral/delete_beneficiaries"
+          searchableColumn="name"
+          idFeildForEditStateSetter={setIdFeildForEditStateSetter}
+          editModelOpenerStateSetter={setReqForBeneficiaryEditionForm}
+          idFeildForShowStateSetter={setIdFeildForShowStateSetter}
+          selectedRowsIdsStateSetter={setSelectedRows}
+          showModelOpenerStateSetter={() => {}}
+        ></DataTableDemo>
+      </div>
+    </>
+  );
+};
+
+export default MainDatabasePage;

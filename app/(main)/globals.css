@@ -1,0 +1,207 @@
+/* globals.css (ready-to-use) */
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ==========================
+   Palette-based variables
+   (Light mode defaults)
+   ========================== */
+:root {
+  /* layout / base */
+  --radius: 0.625rem;
+
+  /* core backgrounds / text */
+  --background: #FFFFFF;         /* page background (light) */
+  --foreground: #1E1E1E;         /* main text color (dark on light bg) */
+
+  /* sidebar */
+  --sidebar-bg: #005FB6;
+  /* --sidebar-option-bg: #A36568; */
+  --sidebar-option-bg: #A36568;
+  --sidebar-option-fg: #FFFFFF;
+
+  /* surfaces */
+  --card: #FFFFFF;
+  --card-foreground: var(--foreground);
+  --popover: #FFFFFF;
+  --popover-foreground: var(--foreground);
+
+  /* brand colours (from your palette image) */
+  --primary: #52AE32;            /* primary (green) */
+  --primary-alt: #005FB6;        /* alternative primary (blue) */
+  --primary-foreground: #FFFFFF;
+
+  --secondary: #005FB6;          /* blue column (can be used equally with primary) */
+  --secondary-foreground: #FFFFFF;
+
+  --accent: #EE7203;             /* accent (orange) */
+  --accent-foreground: #FFFFFF;
+
+  /* muted / grey (used for subtle UI elements) */
+  --muted: #F3F4F6;              /* light muted background */
+  --muted-foreground: #707070;   /* grey text on muted backgrounds */
+
+  /* destructive (errors / dangerous actions) */
+  --destructive: #E53935;
+  --border: #E6E6E6;
+  --input: #F7F7F8;
+  --ring: #CBD5E1;
+
+  /* charts - map some chart colors */
+  --chart-1: #52AE32;
+  --chart-2: #005FB6;
+  --chart-3: #707070;
+  --chart-4: #EE7203;
+  --chart-5: #1E1E1E;
+
+  /* sidebar specifics (mirror above where needed) */
+  --sidebar: var(--sidebar-bg);
+  --sidebar-foreground: var(--sidebar-option-fg);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--accent-foreground);
+
+  /* small helpers */
+  --font-geist-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  --font-geist-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Helvetica Neue", monospace;
+}
+
+/* map to @theme properties used by some components */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+/* ==========================
+   Dark mode overrides
+   ========================== */
+   .dark {
+    /* page */
+    --background: #1A1F2B;      /* dark page background */
+    --foreground: #FFFFFF;      /* light text */
+  
+    /* sidebar */
+    --sidebar-bg: #2117dc;       /* match page background */
+    --sidebar-option-bg: #2A2F3C; /* slightly lighter for options */
+    --sidebar-option-fg: white;
+  
+    /* surfaces */
+    --card: #242934;              /* dark card background */
+    --card-foreground: var(--foreground);
+    --popover: #242934;
+    --popover-foreground: var(--foreground);
+  
+    /* brand (primary / secondary / accent) */
+    --primary: #2117dc;
+    --primary-alt: #5A54E0;      /* slightly darker variant */
+    --primary-foreground: #FFFFFF;
+  
+    --secondary: #1A1F2B;
+    --secondary-foreground: #FFFFFF;
+  
+    --accent: black;
+    --accent-foreground: #FFFFFF;
+  
+    /* muted / greys */
+    --muted: #2E3342;             /* for subtle UI elements */
+    --muted-foreground: #8C8C8C;
+  
+    /* destructive */
+    --destructive: #FF6B6B;
+  
+    /* borders, inputs, ring (lightened for dark bg) */
+    --border: rgba(255,255,255,0.1);
+    --input: rgba(255,255,255,0.05);
+    --ring: rgba(108, 99, 255, 0.25);
+  
+    /* charts (tuned for dark) */
+    --chart-1: #2117dc;
+    --chart-2: #5A54E0;
+    --chart-3: #8C8C8C;
+    --chart-4: #00C853;
+    --chart-5: #FFFFFF;
+  
+    /* sidebar specifics */
+    --sidebar: var(--sidebar-bg);
+    --sidebar-foreground: var(--sidebar-option-fg);
+    --sidebar-primary: var(--primary);
+    --sidebar-primary-foreground: var(--primary-foreground);
+    --sidebar-accent: var(--accent);
+    --sidebar-accent-foreground: var(--accent-foreground);
+    --sidebar-border: rgba(255,255,255,0.06);
+    --sidebar-ring: rgba(108, 99, 255, 0.16);
+  }
+  
+
+/* ==========================
+   Base layer (tailwind + basic rules)
+   ========================== */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+  }
+}
+
+/* hide scrollbars in divs */
+div {
+  scrollbar-width: none; /* Firefox */
+}
+div::-webkit-scrollbar {
+  display: none; /* Chrome / Safari */
+}
+
+/* small utilities - optional helpers */
+.btn-primary {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+.btn-secondary {
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
+}
+.badge-accent {
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+}
