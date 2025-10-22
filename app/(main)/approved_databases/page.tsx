@@ -18,6 +18,7 @@ const SubmittedDatabasesPage = () => {
     reqForToastAndSetMessage,
     reqForConfirmationDialogue,
     axiosInstance,
+    aprStats
   } = useParentContext();
 
   const router = useRouter();
@@ -57,7 +58,7 @@ const SubmittedDatabasesPage = () => {
     <>
       <Navbar14 />
       <SubHeader pageTitle={"Approved Databases"}></SubHeader>
-      <Cards />
+      <Cards mockStats={aprStats} />
 
       <DataTableDemo
         columns={submittedAndFirstApprovedDatabasesTableColumn}

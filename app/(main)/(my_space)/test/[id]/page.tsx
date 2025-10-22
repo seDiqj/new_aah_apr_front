@@ -101,7 +101,6 @@ export default function MonitoringTablePage() {
 
     XLSX.utils.book_append_sheet(wb, ws, "Monitoring");
 
-    // دانلود فایل
     XLSX.writeFile(wb, "Monitoring.xlsx");
   };
 

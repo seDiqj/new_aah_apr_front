@@ -12,7 +12,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const PsychoeducationDatabasePage = () => {
-  const { reqForToastAndSetMessage } = useParentContext();
   const router = useRouter();
 
   let [idFeildForEditStateSetter, setIdFeildForEditStateSetter] = useState<
@@ -64,12 +63,13 @@ const PsychoeducationDatabasePage = () => {
           columns={psychoeducationTableListColumn}
           indexUrl="/psychoeducation_db/psychoeducations"
           deleteUrl="/psychoeducation_db/delete_psychoeducations"
-          searchableColumn="name"
-          
+          searchableColumn="awarenessTopic"
           idFeildForEditStateSetter={setIdFeildForEditStateSetter}
           editModelOpenerStateSetter={setReqForBeneficiaryEditionForm}
           idFeildForShowStateSetter={setIdFeildForShowStateSetter}
           showModelOpenerStateSetter={() => {}}
+          filterUrl="/filter/psychoeducation_db/psychoeducations"
+          filtersList={["projectCode", "focalPoint", "indicator", "province", "awarenessDate", "siteCode", "healthFacilityName", "interventionModality"]}
         ></DataTableDemo>
 
         {reqForPsychoeducationCreationForm && (

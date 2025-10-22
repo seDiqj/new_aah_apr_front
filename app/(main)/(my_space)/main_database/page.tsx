@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import { Share2 } from "lucide-react";
 import { Can } from "@/components/Can";
 import KitDatabaseBeneficiaryUpdateForm from "@/components/global/KitDatabaseBeneficiaryUpdateForm";
+import Preloader from "@/components/global/Preloader";
 
 const MainDatabasePage = () => {
   const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
@@ -54,6 +55,8 @@ const MainDatabasePage = () => {
     if (idFeildForShowStateSetter)
       openBeneficiaryProfile(true, idFeildForShowStateSetter);
   }, [idFeildForShowStateSetter]);
+
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   return (
     <>
@@ -104,6 +107,11 @@ const MainDatabasePage = () => {
               </Button>
             </div>
           }
+          filterUrl="/filter/main_database/beneficiaries"
+          filtersList={["projectCode", "indicator", "focalPoint", "province", "siteCode", "healthFacilitator", "dateOfRegistration",
+            "age", "maritalStatus", "householdStatus", "baselineDate", "endlineDate"
+          ]}
+          loadingStateSetter={setIsLoading}
         ></DataTableDemo>
         {/* Beneficiary creation form */}
         {reqForBeneficiaryCreationForm && (
@@ -121,6 +129,8 @@ const MainDatabasePage = () => {
             beneficiaryId={idFeildForEditStateSetter as unknown as string}
           ></KitDatabaseBeneficiaryUpdateForm>
         )}
+
+        {isLoading && <Preloader reqForLoading={isLoading} />}
       </div>
     </>
   );

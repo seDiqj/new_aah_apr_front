@@ -9,11 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { useParentContext } from "@/contexts/ParentContext";
 import { mainDatabaseAndKitDatabaseProgramColumns } from "@/definitions/DataTableColumnsDefinitions";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const MainDatabaseProgramsPage = () => {
-  const { reqForToastAndSetMessage } = useParentContext();
-
   // State for opening and closing the program create form model.
   const [open, setOpen] = useState<boolean>(false);
 
@@ -59,6 +57,8 @@ const MainDatabaseProgramsPage = () => {
           editModelOpenerStateSetter={setOpenEditMode}
           idFeildForShowStateSetter={setIdFeildForShowStateSetter}
           showModelOpenerStateSetter={setOpenShowMode}
+          filterUrl="/filter/kit_database/program"
+          filtersList={["projectCode", "focalPoint", "province", "district", "village", "siteCode", "healthFacilityName", "interventionModality"]}
         ></DataTableDemo>
 
         {/* Program create form */}

@@ -79,6 +79,8 @@ interface ComponentProps {
   editBtnPermission?: string;
 
   viewPermission?: string;
+
+  loadingStateSetter?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const DataTableDemo: React.FC<ComponentProps> = ({
@@ -97,11 +99,10 @@ const DataTableDemo: React.FC<ComponentProps> = ({
   deleteBtnPermission,
   editBtnPermission,
   viewPermission,
+  loadingStateSetter,
 
 }) => {
   const { reqForToastAndSetMessage, axiosInstance, reloadFlag } = useParentContext();
-
-  const { mutate } = useSWR("user_mng/users");
 
   const [loading, setLoading] = React.useState(true);
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -123,13 +124,14 @@ const DataTableDemo: React.FC<ComponentProps> = ({
   const applyFilters = () => {
     setLoading(true);
     axiosInstance
-      .post("/filter/projects", filters)
+      .post(filterUrl, filters)
       .then((response: any) => {
         setData(response.data.data);
         setLoading(false);
       })
       .catch((error: any) => {
         reqForToastAndSetMessage(error.response.data.message);
+        setData([]);
         setLoading(false);
       });
   };
@@ -137,6 +139,7 @@ const DataTableDemo: React.FC<ComponentProps> = ({
   // Fetch table data
   const fetchTableData = () => {
     setLoading(true);
+    loadingStateSetter?.(true);
     axiosInstance
       .get(indexUrl)
       .then((res: any) => {
@@ -149,7 +152,7 @@ const DataTableDemo: React.FC<ComponentProps> = ({
           err.response?.data?.message || "Failed to fetch data"
         );
       })
-      .finally(() => setLoading(false));
+      .finally(() => {setLoading(false); loadingStateSetter?.(false);});
   };
 
   // Delete selected rows
@@ -251,7 +254,7 @@ const DataTableDemo: React.FC<ComponentProps> = ({
                 <Filter />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-80">
+            <PopoverContent className="w-80 max-h-[350px] overflow-auto">
               <div className="grid gap-4">
                 <div className="space-y-2">
                   <h4 className="leading-none font-medium">Dimensions</h4>

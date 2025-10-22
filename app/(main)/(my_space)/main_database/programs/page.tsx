@@ -41,6 +41,8 @@ const MainDatabaseProgramsPage = () => {
           searchableColumn="focalPoint"
           idFeildForEditStateSetter={setIdFeildForEditStateSetter}
           editModelOpenerStateSetter={setOpenEditForm}
+          filterUrl="/filter/main_database/program"
+          filtersList={["projectCode", "focalPoint", "province", "district", "village", "siteCode", "healthFacilityName", "interventionModality"]}
         ></DataTableDemo>
 
         {/* Program create form */}

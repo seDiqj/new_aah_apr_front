@@ -16,7 +16,6 @@ import CommunityDialogueSelector from "@/components/global/CommunityDialogSelect
 import BeneficiaryUpdateCD from "@/components/global/BeneficiaryUpdateFormCd";
 
 const CommunityDialogDatabasePage = () => {
-  const { reqForToastAndSetMessage } = useParentContext();
   const router = useRouter();
 
   let [idFeildForEditStateSetter, setIdFeildForEditStateSetter] = useState<
@@ -47,7 +46,6 @@ const CommunityDialogDatabasePage = () => {
       openBeneficiaryProfile(true, idFeildForShowStateSetter);
   }, [idFeildForShowStateSetter]);
 
-  useEffect(() => console.log(selectedRowsIds), [selectedRowsIds]);
 
   return (
     <>
@@ -99,6 +97,10 @@ const CommunityDialogDatabasePage = () => {
               </Button>
             </div>
           }
+          filterUrl="/filter/cd_database/beneficiaries"
+          filtersList={["dateOfRegistration",
+            "age", "maritalStatus"
+          ]}
         ></DataTableDemo>
 
         {reqForBeneficiaryCreationForm && (

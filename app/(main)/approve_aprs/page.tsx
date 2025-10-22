@@ -4,30 +4,25 @@ import DataTableDemo from "@/components/global/MulitSelectTable";
 import SubHeader from "@/components/global/SubHeader";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import Cards from "@/components/ui/shadcn-io/Cards";
-import SubmitNewDB from "@/components/ui/shadcn-io/SubmitNewDB";
 import SubmitSummary from "@/components/ui/shadcn-io/submitSummary";
 import { useState } from "react";
 import {
-  permissionColumns,
   submittedAndFirstApprovedDatabasesTableColumn,
 } from "@/definitions/DataTableColumnsDefinitions";
 import { Button } from "@/components/ui/button";
 import { useParentContext } from "@/contexts/ParentContext";
 import {
-  Check,
   Eye,
-  FileChartColumn,
   ShieldCheck,
-  XCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 
 const SubmittedDatabasesPage = () => {
   const {
     reqForToastAndSetMessage,
     reqForConfirmationDialogue,
     axiosInstance,
+    aprStats
   } = useParentContext();
 
   const router = useRouter();
@@ -66,7 +61,7 @@ const SubmittedDatabasesPage = () => {
     <>
       <Navbar14 />
       <SubHeader pageTitle={"Approve Apr's"}></SubHeader>
-      <Cards />
+      <Cards/>
 
       <DataTableDemo
         columns={submittedAndFirstApprovedDatabasesTableColumn}

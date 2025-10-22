@@ -6,7 +6,7 @@ import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import Cards from "@/components/ui/shadcn-io/Cards";
 import SubmitNewDB from "@/components/ui/shadcn-io/SubmitNewDB";
 import SubmitSummary from "@/components/ui/shadcn-io/submitSummary";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { submittedAndFirstApprovedDatabasesTableColumn } from "@/definitions/DataTableColumnsDefinitions";
 import { Button } from "@/components/ui/button";
 import { useParentContext } from "@/contexts/ParentContext";
@@ -17,6 +17,7 @@ const SubmittedDatabasesPage = () => {
     reqForToastAndSetMessage,
     reqForConfirmationDialogue,
     axiosInstance,
+    aprStates
   } = useParentContext();
 
   let [reqForPermissionUpdateForm, setReqForPermissionUpdateForm] =
@@ -59,6 +60,7 @@ const SubmittedDatabasesPage = () => {
       );
   };
 
+
   return (
     <>
       <Navbar14 />
@@ -72,28 +74,10 @@ const SubmittedDatabasesPage = () => {
             >
               Submitt New
             </Button>
-            {/* <Button
-              variant={"outline"}
-              onClick={() =>
-                axiosInstance
-                  .get("/test/16/3/1/2025-10-01/2025-11-01")
-                  .then((response: any) => console.log(response))
-                  .catch((error: any) => {
-                    console.log(error.response);
-                    reqForToastAndSetMessage(error.response);
-                  })
-              }
-            >
-              Generate
-            </Button> */}
-            {/* <Button onClick={() => setOpenSubmittedDatabaseSummaryModel(true)}>
-              open sum
-            </Button> */}
           </div>
         }
       ></SubHeader>
-      <Cards />
-
+      <Cards mockStats={aprStates}/>
       <DataTableDemo
         columns={submittedAndFirstApprovedDatabasesTableColumn}
         indexUrl="/db_management/submitted_databases"

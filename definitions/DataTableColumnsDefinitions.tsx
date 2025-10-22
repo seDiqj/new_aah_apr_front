@@ -218,16 +218,6 @@ export const permissionColumns: ColumnDef<Permission>[] = [
       <div className="capitalize">{row.getValue("group_name")}</div>
     ),
   },
-  {
-    accessorKey: "created_date",
-    header: () => <div className="text-left">Created at</div>,
-    cell: ({ row }) => row.getValue("updated_date"),
-  },
-  {
-    accessorKey: "updated_date",
-    header: () => <div className="text-left">Updated at</div>,
-    cell: ({ row }) => row.getValue("updated_date"),
-  },
 ];
 
 export const projectColumns: ColumnDef<Project>[] = [

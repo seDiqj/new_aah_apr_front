@@ -18,24 +18,14 @@ type ImagePos = {
   scale: number;
 };
 
-interface Page403Props {
-  showAnimation?: boolean;
-}
-
-const Page403: React.FC<Page403Props> = ({ showAnimation = true }) => {
+const Preloader: React.FC<{ duration?: number }> = ({ duration = 4000 }) => {
   const [show, setShow] = useState(true);
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = useState(true);
   const [imagePositions, setImagePositions] = useState<ImagePos[]>([]);
-  const duration = 3000;
 
   useEffect(() => {
-    if (!showAnimation) {
-      setShow(false);
-      return;
-    }
-
-    const count = 80;
-    const size = 100;
+    const count = 100;
+    const size = 120;
     const positions: ImagePos[] = Array(count)
       .fill(0)
       .map((_, i) => {
@@ -49,19 +39,30 @@ const Page403: React.FC<Page403Props> = ({ showAnimation = true }) => {
           scale,
         };
       });
-
     setImagePositions(positions);
 
     const fadeIn = setTimeout(() => setVisible(true), 50);
 
-  }, [showAnimation]);
+    // const fadeOut = setTimeout(() => setVisible(false), duration - 400);
+
+    // const hide = setTimeout(() => setShow(false), duration);
+
+    return () => {
+    //   clearTimeout(fadeIn);
+    //   clearTimeout(fadeOut);
+    //   clearTimeout(hide);
+    };
+  }, []);
+
+  if (!show) return null;
 
   return (
     <div
-      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black overflow-hidden transition-all duration-500 ${
+      className={`fixed inset-0 z-[9999] flex items-center justify-center bg-black overflow-hidden transition-all duration-400 ${
         visible ? "opacity-100 scale-100" : "opacity-0 scale-95"
       }`}
     >
+      {/* Background scattered images */}
       {imagePositions.map((img, i) => (
         <img
           key={i}
@@ -69,8 +70,8 @@ const Page403: React.FC<Page403Props> = ({ showAnimation = true }) => {
           alt={`bg-${i}`}
           className="absolute rounded-lg shadow-lg object-cover transition-all duration-500"
           style={{
-            width: 100,
-            height: 100,
+            width: 120,
+            height: 120,
             left: img.left,
             top: img.top,
             transform: `rotate(${img.rotate}deg) scale(${img.scale})`,
@@ -78,19 +79,19 @@ const Page403: React.FC<Page403Props> = ({ showAnimation = true }) => {
         />
       ))}
 
-      <div className="absolute inset-0 bg-green-400 dark:bg-[#00bfff] opacity-80 mix-blend-screen transition-opacity duration-500"></div>
-      
-      <div className="relative z-10 text-center text-white flex flex-col items-center">
+      {/* Bright green (blue in dark mode) overlay */}
+      <div className="absolute inset-0 bg-green-400 dark:bg-blue-500 opacity-80 mix-blend-screen transition-opacity duration-400"></div>
+
+      {/* Center logo */}
+      <div className="relative z-10 transition-all duration-400">
         <img
           src="/logo.jpg"
           alt="logo"
-          className="w-36 h-36 brightness-125 rounded-full shadow-xl mb-4"
+          className="w-36 h-36 brightness-125 rounded-full shadow-xl"
         />
-        <h1 className="text-4xl font-bold mb-2">403 - Access Denied</h1>
-        <p className="text-lg">You do not have permission to view this page.</p>
       </div>
     </div>
   );
 };
 
-export default Page403;
+export default Preloader;

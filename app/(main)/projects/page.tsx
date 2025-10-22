@@ -62,7 +62,7 @@ const ProjectsPage = () => {
           idFeildForEditStateSetter={setIdFeildForEditStateSetter}
           editModelOpenerStateSetter={() => router.push(`/projects/edit_project/${idFeildForEditStateSetter}`)}
           idFeildForShowStateSetter={setIdFeildForShowStateSetter}
-          filtersList={["projectCode", "projectManager"]}
+          filtersList={["projectCode", "projectManager", "provinces", "thematicSector", "startDate", "endDate", "status"]}
         ></DataTableDemo>
       </div>
     </>

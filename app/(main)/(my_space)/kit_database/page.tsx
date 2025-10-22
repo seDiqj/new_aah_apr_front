@@ -82,6 +82,10 @@ const MainDatabasePage = () => {
           editModelOpenerStateSetter={setReqForBeneficiaryUpdateForm}
           idFeildForShowStateSetter={setIdFeildForShowStateSetter}
           showModelOpenerStateSetter={() => {}}
+          filterUrl="/filter/kit_database/beneficiaries"
+          filtersList={["projectCode", "indicator", "focalPoint", "province", "siteCode", "healthFacilitator", "dateOfRegistration",
+            "age", "maritalStatus", "householdStatus", "baselineDate", "endlineDate"
+          ]}
         ></DataTableDemo>
 
         {/* Create new beneficiary form */}

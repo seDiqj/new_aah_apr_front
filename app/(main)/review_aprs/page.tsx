@@ -48,7 +48,7 @@ const SubmittedDatabasesPage = () => {
     <>
       <Navbar14 />
       <SubHeader pageTitle={"Review Apr's"}></SubHeader>
-      <Cards />
+      <Cards/>
 
       <DataTableDemo
         columns={submittedAndFirstApprovedDatabasesTableColumn}
