@@ -60,7 +60,7 @@ const ProjectsPage = () => {
           deleteBtnPermission="Project.delete"
           editBtnPermission="Project.edit"
           idFeildForEditStateSetter={setIdFeildForEditStateSetter}
-          editModelOpenerStateSetter={() => router.push("/projects/new")}
+          editModelOpenerStateSetter={() => router.push(`/projects/edit_project/${idFeildForEditStateSetter}`)}
           idFeildForShowStateSetter={setIdFeildForShowStateSetter}
           filtersList={["projectCode", "projectManager"]}
         ></DataTableDemo>

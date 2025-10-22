@@ -10,8 +10,13 @@ import { useState } from "react";
 import { userColumns } from "@/definitions/DataTableColumnsDefinitions";
 import { Can } from "@/components/Can";
 import { withPermission } from "@/lib/withPermission";
+import ProfileModal from "@/components/global/UserFormTest";
+import { useParentContext } from "@/contexts/ParentContext";
 
 const UsersPage = () => {
+
+  const {handleReload} = useParentContext();
+
   let [reqForUserCreationForm, setReqForUserCreationForm] =
     useState<boolean>(false);
 
@@ -27,6 +32,7 @@ const UsersPage = () => {
   let [idFeildForShowStateSetter, setIdFeildForShowStateSetter] = useState<
     number | null
   >(null);
+
 
   return (
     <>
@@ -58,26 +64,29 @@ const UsersPage = () => {
       </div>
 
       {reqForUserCreationForm && (
-        <UserFormDialog
+        <ProfileModal
           open={reqForUserCreationForm}
           onOpenChange={setReqForUserCreationForm}
           mode="create"
-        />
+          reloader={handleReload}
+          />
+          
       )}
       {reqForUserUpdateForm && (
-        <UserFormDialog
+        <ProfileModal
           open={reqForUserUpdateForm}
           onOpenChange={setReqForUserUpdateForm}
           mode="edit"
-          userId={idFeildForEditStateSetter as unknown as string}
+          userId={idFeildForEditStateSetter as unknown as number}
+          reloader={handleReload}
         />
       )}
       {reqForUserShowForm && (
-        <UserFormDialog
+        <ProfileModal
           open={reqForUserShowForm}
           onOpenChange={setReqForUserShowForm}
           mode="show"
-          userId={idFeildForShowStateSetter as unknown as string}
+          userId={idFeildForShowStateSetter as unknown as number}
         />
       )}
     </>

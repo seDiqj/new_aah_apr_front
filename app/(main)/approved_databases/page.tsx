@@ -10,7 +10,7 @@ import { useState } from "react";
 import { submittedAndFirstApprovedDatabasesTableColumn } from "@/definitions/DataTableColumnsDefinitions";
 import { Button } from "@/components/ui/button";
 import { useParentContext } from "@/contexts/ParentContext";
-import { Check, Eye, FileChartColumn, XCircle } from "lucide-react";
+import { FileChartColumn } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const SubmittedDatabasesPage = () => {
@@ -45,14 +45,14 @@ const SubmittedDatabasesPage = () => {
       .post(`/apr_management/generate_apr/${idFeildForEditStateSetter}`)
       .then((response: any) => {
         reqForToastAndSetMessage(response.data.message);
-        console.log(response.data);
+        console.log(response.data.data);
       })
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
       );
   };
 
-  
+
   return (
     <>
       <Navbar14 />

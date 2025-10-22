@@ -236,6 +236,10 @@ export const EditIndicatorModal: React.FC<EditIndicatorModalProps> = ({
                     value: "referral_database",
                     label: "Referral Database",
                     },
+                    {
+                    value: "enact_database",
+                    label: "Enact Database",
+                    },
                 ].filter((opt) => {
                     if (opt.value == "main_database") {
                     if (indicators.find((indicator) => indicator.database == "main_database" && indicator.type == "adult_psychosocial_support") 

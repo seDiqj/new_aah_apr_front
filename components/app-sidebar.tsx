@@ -55,8 +55,13 @@ import {
   CollapsibleTrigger,
 } from "./ui/collapsible";
 import { useEffect, useState } from "react";
+import { useParentContext } from "@/contexts/ParentContext";
+import { set } from "date-fns";
 
 const AppSidebar = () => {
+
+  const { myProfileDetails, setReqForProfile } = useParentContext();
+
   const items = [
     {
       title: "Dashboard",
@@ -233,15 +238,12 @@ const AppSidebar = () => {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <SidebarMenuButton>
-                    <User2 /> Mosa Baregzay <ChevronUp className="ml-auto" />
+                    <User2 /> {myProfileDetails?.name} <ChevronUp className="ml-auto" />
                   </SidebarMenuButton>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem>
-                    <User></User> Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Settings /> Sittings
+                  <DropdownMenuItem onClick={() => {setReqForProfile(true); console.log(324)}}>
+                    <User ></User> Profile
                   </DropdownMenuItem>
                   <DropdownMenuItem variant="destructive">
                     <LogOut></LogOut> Sign Out

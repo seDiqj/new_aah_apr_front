@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { useEffect, useState } from "react";
-import { AssessmentForm } from "@/types/Types";
+import { AssessmentFormType } from "@/types/Types";
 import { createAxiosInstance } from "@/lib/axios";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 
@@ -27,7 +27,7 @@ const AssessmentForm: React.FC<ComponentProps> = ({
   const { reqForToastAndSetMessage } = useParentContext();
   const axiosInstance = createAxiosInstance();
 
-  const [formData, setFormData] = useState<AssessmentForm>({
+  const [formData, setFormData] = useState<AssessmentFormType>({
     project_id: "",
     indicator_id: "",
     province_id: "",
@@ -108,7 +108,7 @@ const AssessmentForm: React.FC<ComponentProps> = ({
   useEffect(() => {
     if (!formData.project_id) return;
     axiosInstance
-      .get(`projects/indicators/all/${formData.project_id}`)
+      .get(`projects/indicators/enact_database/${formData.project_id}`)
       .then((response: any) => setIndicators(response.data.data))
       .catch((error: any) => {
         console.log(error.response.data);

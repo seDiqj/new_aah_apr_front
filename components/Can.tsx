@@ -7,7 +7,7 @@ interface CanProps {
 }
 
 export const Can = ({ permission, children }: CanProps) => {
-  const permissions = usePermissions();
+  const {permissions} = usePermissions();
   if (!permissions.includes(permission)) return null;
   return <>{children}</>;
 };

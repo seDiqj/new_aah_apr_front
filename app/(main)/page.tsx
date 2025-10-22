@@ -1,67 +1,134 @@
 "use client";
 
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Chart } from "react-chartjs-2";
+import React from "react";
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
   Tooltip,
-  Legend,
-} from "chart.js";
+  ResponsiveContainer,
+} from "recharts";
+import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
+import BreadcrumbWithCustomSeparator from "@/components/global/BreadCrumb";
+import SubHeader from "@/components/global/SubHeader";
+import { Button } from "@/components/ui/button";
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+const pieData = [
+  { name: "Category A", value: 400 },
+  { name: "Category B", value: 300 },
+  { name: "Category C", value: 300 },
+];
 
-const data = {
-  labels: ["Jan", "Feb", "Mar", "Apr", "May"],
-  datasets: [
-    {
-      label: "Sales",
-      data: [12, 19, 3, 5, 2],
-      backgroundColor: "rgba(59, 130, 246, 0.7)", // Tailwind blue-500
-    },
-  ],
-};
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28"];
 
-export default function Dashboard() {
+const barData = [
+  { name: "Jan", uv: 4000 },
+  { name: "Feb", uv: 3000 },
+  { name: "Mar", uv: 5000 },
+  { name: "Apr", uv: 4000 },
+  { name: "May", uv: 6000 },
+];
+
+export default function DashboardPage() {
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
+    <div className="p-6 space-y-6">
+      <Navbar14 />
+              <div className="flex flex-row items-center justify-start my-2">
+                <BreadcrumbWithCustomSeparator></BreadcrumbWithCustomSeparator>
+              </div>
+              <SubHeader pageTitle={"Dashboard"}>
+              </SubHeader>
+        {/* جدول */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Users Table</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Role</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow>
+                  <TableCell>John Doe</TableCell>
+                  <TableCell>john@example.com</TableCell>
+                  <TableCell>Admin</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>Jane Smith</TableCell>
+                  <TableCell>jane@example.com</TableCell>
+                  <TableCell>User</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>Mike Johnson</TableCell>
+                  <TableCell>mike@example.com</TableCell>
+                  <TableCell>Editor</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
 
+      {/* گراف‌ها */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Pie Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Pie Chart</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={250}>
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  fill="#8884d8"
+                  label
+                >
+                  {pieData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
 
-      {/* Main content */}
-      <div className="flex-1 flex flex-col">
-        <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Total Users</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">1,245</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Revenue</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">$12,345</p>
-            </CardContent>
-          </Card>
-
-          <Card className="col-span-1 md:col-span-2 lg:col-span-3">
-            <CardHeader>
-              <CardTitle>Sales Overview</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Chart type="bar" data={data} />
-            </CardContent>
-          </Card>
-        </div>
+        {/* Bar Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Bar Chart</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={barData}>
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="uv" fill="#82ca9d" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

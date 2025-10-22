@@ -48,6 +48,8 @@ const AssessmentForm: React.FC<ComponentProps> = ({
     15: 0,
   });
 
+  const [assessmentDate, setAssessmentData] = useState<string>("");
+
   const [assessmentsList, setAssessmentsList] = useState<
     Record<string, { id: string; group: string; description: string }[]>
   >({});
@@ -79,6 +81,7 @@ const AssessmentForm: React.FC<ComponentProps> = ({
         ? axiosInstance.post("/enact_database/assess_assessment", {
             enactId: id,
             scores: formData,
+            date: assessmentDate
           })
         : axiosInstance.put(`/enact_database/${projectId}`, formData);
 
@@ -107,6 +110,14 @@ const AssessmentForm: React.FC<ComponentProps> = ({
         </DialogTitle>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+          <div>
+            <Label>Assessment Date</Label>
+            <Input
+            type="date"
+            value={assessmentDate}
+            onChange={(e) => setAssessmentData(e.target.value)}
+             />
+          </div>
           {Object.entries(assessmentsList).map(
             ([groupName, assessments], i) => (
               <div key={groupName} className="flex flex-col gap-3">

@@ -41,6 +41,7 @@ import { createAxiosInstance } from "@/lib/axios";
 import { useParentContext } from "@/contexts/ParentContext";
 import { ChevronDown, Edit, Filter, Trash } from "lucide-react";
 import { Can } from "../Can";
+import useSWR from "swr";
 
 interface ComponentProps {
   columns: ColumnDef<any>[];
@@ -96,9 +97,11 @@ const DataTableDemo: React.FC<ComponentProps> = ({
   deleteBtnPermission,
   editBtnPermission,
   viewPermission,
+
 }) => {
-  const { reqForToastAndSetMessage } = useParentContext();
-  const axiosInstance = createAxiosInstance();
+  const { reqForToastAndSetMessage, axiosInstance, reloadFlag } = useParentContext();
+
+  const { mutate } = useSWR("user_mng/users");
 
   const [loading, setLoading] = React.useState(true);
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -164,8 +167,9 @@ const DataTableDemo: React.FC<ComponentProps> = ({
   };
 
   React.useEffect(() => {
-    fetchTableData();
-  }, []);
+      fetchTableData();
+      console.log("Table data reloaded");
+  }, [reloadFlag]);
 
   // Sync selected row id for edit
   React.useEffect(() => {

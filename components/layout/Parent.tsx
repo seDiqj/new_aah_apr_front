@@ -9,6 +9,7 @@ import { AxiosInstance } from "axios";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import ConfirmationAlertDialogue from "../global/ConfirmationDialog";
+import ProfileModal from "../global/UserFormTest";
 
 interface ComponentProps {
   children: React.ReactNode;
@@ -16,12 +17,6 @@ interface ComponentProps {
 
 const Parent: React.FC<ComponentProps> = ({ children }) => {
   const axiosInstance: AxiosInstance = createAxiosInstance();
-
-  const [userData, setUserData] = useState<User>();
-
-  const [userRoles, setUserRoles] = useState<Role[]>();
-
-  const [userPermissions, setUserPermissions] = useState<Permission[]>();
 
   const [reqForConfirmationModel, setReqForConfirmationModel] =
     useState<boolean>(false);
@@ -53,30 +48,22 @@ const Parent: React.FC<ComponentProps> = ({ children }) => {
     setOnContinueOnModel(onContinue);
   };
 
-  const can = (permission: string) => {
-    userPermissions?.find(
-      (userPermission) => userPermission.label == permission
-    )
-      ? true
-      : false;
-  };
+  const [reqForProfile, setReqForProfile] = useState<boolean>(false);
 
-  const hasRole = (role: string) =>
-    userRoles?.find((userRole) => userRole.name == role) ? true : false;
+  const [reloadFlag, setReloadFlag] = useState<number>(0);
+
+  const handleReload = () => {
+    setReloadFlag((prev) => prev + 1);
+  }
+
+  const [myProfileDetails, setMyProfileDetails] = useState<User | null>(null);
 
   useEffect(() => {
-    axiosInstance
-      .get(`/user_mng/user/me`)
-      .then((response: any) => {
-        let { roles, ...userWithoutRoles } = response.data.data;
-        const { permissions, ...userWithoutPermissoins } = userWithoutRoles;
-        setUserData(userWithoutPermissoins);
-        setUserRoles(roles);
-        setUserPermissions(permissions);
-      })
-      .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.messaeg)
-      );
+    axiosInstance.get("/user_mng/user/me").then((response) => {
+      setMyProfileDetails(response.data.data);
+    }).catch((error) => {
+      reqForToastAndSetMessage(error.response?.data?.message || "Error fetching profile details");
+    });
   }, []);
 
   return (
@@ -85,11 +72,10 @@ const Parent: React.FC<ComponentProps> = ({ children }) => {
         reqForToastAndSetMessage,
         reqForConfirmationDialogue,
         axiosInstance,
-        userData,
-        userRoles,
-        userPermissions,
-        can,
-        hasRole,
+        reloadFlag,
+        handleReload,
+        myProfileDetails,
+        setReqForProfile,
       }}
     >
       <div className="w-full h-full">{children}</div>
@@ -103,6 +89,11 @@ const Parent: React.FC<ComponentProps> = ({ children }) => {
           onContinue={() => {}}
         ></ConfirmationAlertDialogue>
       )}
+
+      {reqForProfile && (
+        <ProfileModal open={reqForProfile} onOpenChange={setReqForProfile} userId={myProfileDetails?.id as unknown as number} mode="show"></ProfileModal>
+      )}
+      
     </ParentContext.Provider>
   );
 };

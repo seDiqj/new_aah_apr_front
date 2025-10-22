@@ -9,9 +9,7 @@ import {
 } from "react";
 import { useParentContext } from "./ParentContext";
 
-type PermissionContextType = string[];
-
-const PermissionContext = createContext<PermissionContextType>([]);
+const PermissionContext = createContext<any>([]);
 
 interface PermissionProviderProps {
   children: ReactNode;
@@ -19,7 +17,7 @@ interface PermissionProviderProps {
 
 export const PermissionProvider = ({ children }: PermissionProviderProps) => {
   const { axiosInstance, reqForToastAndSetMessage } = useParentContext();
-  const [permissions, setPermissions] = useState<PermissionContextType>([]);
+  const [permissions, setPermissions] = useState<any[]>([]);
 
   useEffect(() => {
     axiosInstance
@@ -33,7 +31,7 @@ export const PermissionProvider = ({ children }: PermissionProviderProps) => {
   }, []);
 
   return (
-    <PermissionContext.Provider value={permissions}>
+    <PermissionContext.Provider value={{permissions}}>
       {children}
     </PermissionContext.Provider>
   );

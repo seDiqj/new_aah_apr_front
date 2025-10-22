@@ -1,319 +1,334 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { CheckCircle, User, Shield, Check } from "lucide-react";
-import { useParentContext } from "@/contexts/ParentContext";
-import { Checkbox } from "../ui/checkbox";
-import { Label } from "../ui/label";
-import { withPermission } from "@/lib/withPermission";
+  DialogDescription,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent } from "@/components/ui/card"
+import { CheckCircle, User, Shield, Check } from "lucide-react"
+import Image from "next/image"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Skeleton } from "@/components/ui/skeleton"
+import { useParentContext } from "@/contexts/ParentContext"
+import { SingleSelect } from "../single-select"
+import { useRouter } from "next/navigation"
+import useSWR from "swr";
 
-type PermissionsGrouped = {
-  [group: string]: Permission[];
-};
-
-interface Permission {
-  id: string | number;
-  name: string;
-  label: string;
-  group_name?: string;
+interface ProfileModalProps {
+  open: boolean
+  onOpenChange: (value: boolean) => void
+  mode?: "create" | "edit" | "show"
+  userId?: number
+  reloader?: () => void
 }
 
-interface ComponentProps {
-  open: boolean;
-  onOpenChange: (value: boolean) => void;
-  mode?: "create" | "edit" | "show";
-  userId?: string | null;
-}
-
-let mode: string = "";
-
-const UserForm: React.FC<ComponentProps> = ({
+export default function ProfileModal({
   open,
   onOpenChange,
+  mode = "create",
   userId,
-  mode,
-}) => {
-  mode = mode;
-  const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
-  const [step, setStep] = useState(1);
-  const [loading, setLoading] = useState(false);
+  reloader
+}: ProfileModalProps) {
+  const { axiosInstance, reqForToastAndSetMessage } = useParentContext()
+  const [step, setStep] = useState(1)
+  const [loading, setLoading] = useState(true)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const router = useRouter();
+  const { mutate } = useSWR("user_mng/users");
 
   const steps = [
-    { id: 1, label: "User Info", icon: <User className="w-5 h-5" /> },
-    {
-      id: 2,
-      label: "Roles & Permissions",
-      icon: <Shield className="w-5 h-5" />,
-    },
-    { id: 3, label: "Done", icon: <Check className="w-5 h-5" /> },
-  ];
+    { id: 1, label: "Personal Info", icon: <User size={18} /> },
+    { id: 2, label: "Permissions", icon: <Shield size={18} /> },
+    { id: 3, label: "Summary", icon: <Check size={18} /> },
+  ]
 
-  const [formData, setFormData] = useState({
+  const [form, setForm] = useState({
     name: "",
     title: "",
     email: "",
+    password: "",
+    email_verified_at: "",
     photo_path: "",
     department: "",
     status: "active",
-  });
+  })
 
-  useEffect(() => console.log(formData), [formData]);
+  const [allPermissions, setAllPermissions] = useState<{ [key: string]: Record<string, string>[] }>({})
+  const [userPermissions, setUserPermissions] = useState<string[]>([])
 
-  const [permissions, setPermissions] = useState<PermissionsGrouped | null>(
-    null
-  );
-  const [userPermissions, setUserPermissions] = useState<(string | number)[]>(
-    []
-  );
+  const isReadOnly = mode === "show"
+
+  const handlePermissionToggle = (permissionId: string) => {
+    if (isReadOnly) return
+    setUserPermissions((prev) =>
+      prev.includes(permissionId)
+        ? prev.filter((p) => p !== permissionId)
+        : [...prev, permissionId]
+    )
+  }
+
+  const handleSelectRole = (role: any) => {
+    if (isReadOnly) return
+    setUserPermissions(role.permissions.map((p: any) => p.id))
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value })
+  }
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  useEffect(() => {
-    setLoading(true);
-    axiosInstance
-      .get("/user_mng/permissions")
-      .then((res: any) => {
-        console.log(res.data.data);
-        setPermissions(res.data.data);
-      })
-      .catch(() => reqForToastAndSetMessage("Failed to load permissions"))
-      .finally(() => setLoading(false));
-  }, []);
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return
+    const file = e.target.files[0]
+    setSelectedFile(file);
+    const url = URL.createObjectURL(file)
+    setForm((prev) => ({ ...prev, photo_path: url }))
+  }
 
-  useEffect(() => {
-    if (userId && (mode === "edit" || mode === "show")) {
-      setLoading(true);
-      axiosInstance
-        .get(`/user_mng/user/${userId}`)
-        .then((res: any) => {
-          console.log(res.data.data);
-          const data = res.data.data;
-          setFormData({
-            name: data.name || "",
-            title: data.title || "",
-            email: data.email || "",
-            photo_path: data.photo_path || "",
-            department: data.department || "",
-            status: data.status || "active",
-          });
-          setUserPermissions(data.permissions?.map((p: any) => p.id) || []);
-        })
-        .catch(() => reqForToastAndSetMessage("Failed to load user"))
-        .finally(() => setLoading(false));
-    }
-  }, [userId, mode]);
+  const [allRoles, setAllRoles] = useState<{id: string, name: string}[]>([])
+  const [userRole, setUserRole] = useState<string>("")
+
 
   const handleSubmit = () => {
-    setLoading(true);
-
-    const formPayload = new FormData();
-    formPayload.append("name", formData.name);
-    formPayload.append("title", formData.title);
-    formPayload.append("email", formData.email);
-    formPayload.append("status", formData.status || "active");
-    formPayload.append("department", formData.department || "");
-
+    const formData = new FormData()
+    formData.append("name", form.name)
+    formData.append("title", form.title)
+    formData.append("email", form.email)
+    formData.append("password", form.password)
+    formData.append("department", form.department)
+    formData.append("status", form.status)
     if (selectedFile) {
-      formPayload.append("photo_path", selectedFile);
+      formData.append("photo_path", selectedFile)
     }
 
-    // permissions اگر داری
-    userPermissions.forEach((perm) =>
-      formPayload.append("permissions[]", perm.toString())
-    );
 
-    // نکته مهم: هرگز Content-Type را دستی تنظیم نکن.
-    // مرورگر خودش header مناسب multipart/form-data; boundary=... را می‌گذارد.
+    formData.append("permissions", JSON.stringify(userPermissions))
+    formData.append("role", userRole);
 
-    const request = userId
-      ? axiosInstance.post(`/user_mng/user/${userId}`, formPayload)
-      : axiosInstance.post("/user_mng/user", formPayload);
+    const request =
+      mode === "create"
+        ? axiosInstance.post("/user_mng/user", formData)
+        : axiosInstance.post(`/user_mng/edit_user/${userId}`, formData)
 
     request
       .then((response: any) => {
-        console.log(response.data.data);
-        reqForToastAndSetMessage("User saved successfully ✅");
+        reqForToastAndSetMessage(response.data.message);
         onOpenChange(false);
+        if (reloader) reloader();
       })
-      .catch((error: any) => {
-        console.log(error.response?.data.message);
-        reqForToastAndSetMessage("Failed to save user ❌");
-      })
-      .finally(() => setLoading(false));
-  };
+      .catch((error: any) =>
+        reqForToastAndSetMessage(error.response?.data?.message || "Error")
+      )
+}
+
 
   useEffect(() => {
-    console.log("Permissions loaded:", permissions);
-  }, [permissions]);
+    if (mode === "edit" || mode === "show") {
+      Promise.all([
+        axiosInstance.get(`/user_mng/user/${userId}`),
+        axiosInstance.get(`/user_mng/permissions_&_roles`),
+      ])
+        .then(([userRes, rolePermRes]: any) => {
+          const { permissions, role, ...rest } = userRes.data.data;
+          setForm(prev => ({ ...prev, ...rest }));
+          setAllPermissions(rolePermRes.data.data.permissions);
+          setAllRoles(rolePermRes.data.data.roles);
+          setUserRole(userRes.data.data.roles.length > 0 ? userRes.data.data.roles[0] : "");
+          setUserPermissions(userRes.data.data.permissions.map((p: any) => p.id))
+          setLoading(false)
+        })
+        .catch(() => setLoading(false))
+    } else {
+      axiosInstance
+        .get("/user_mng/permissions_&_roles")
+        .then((response: any) => {
+          setAllPermissions(response.data.data.permissions);
+          setAllRoles(response.data.data.roles);
+          setLoading(false)
+        })
+        .catch(() => setLoading(false))
+    }
+  }, [mode, axiosInstance, userId])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex flex-row sm:max-w-4xl h-[90vh] border border-gray-300 dark:border-gray-600 rounded-lg ml-16 overflow-y-auto">
-        {/* Sidebar Steps */}
-        <div className="w-60 p-6 flex flex-col justify-around gap-6 h-[100%]">
-          {steps.map((s) => (
-            <Button
-              key={s.id}
-              onClick={() => setStep(s.id)}
-              className={`flex items-center gap-3 p-2 rounded-full transition ${
-                step === s.id
-                  ? "bg-primary text-white"
-                  : "bg-gray-200 text-gray-700"
-              }`}
-            >
-              <div className="w-8 h-8 flex items-center justify-center rounded-full">
-                {s.icon}
+      <DialogTrigger asChild>
+        <Button variant={mode === "show" ? "outline" : "default"}>
+          {mode === "show" ? "View Profile" : "Open Profile Modal"}
+        </Button>
+      </DialogTrigger>
+
+      <DialogContent
+        className="
+          min-w-[1000px]
+          max-h-[90vh]
+          bg-[#1e1e1e]
+          text-white
+          border border-gray-700
+          rounded-2xl
+          overflow-hidden
+          p-0
+          flex
+        "
+      >
+        {/* Sidebar */}
+        <div className="w-[22%] bg-[#151515] p-8 border-r border-gray-800">
+          <h2 className="text-xl font-semibold mb-10">
+            {mode === "show" ? "View User" : mode === "edit" ? "Edit User" : "Create User"}
+          </h2>
+          <div className="space-y-8 sticky top-0">
+            {steps.map((s) => (
+              <div
+                key={s.id}
+                onClick={() => setStep(s.id)}
+                className={`flex items-center gap-4 cursor-pointer ${
+                  step === s.id ? "text-white" : "opacity-60 hover:opacity-100 transition"
+                }`}
+              >
+                <div
+                  className={`w-10 h-10 flex items-center justify-center rounded-full ${
+                    step === s.id ? "bg-blue-600" : "border border-gray-600 bg-transparent"
+                  }`}
+                >
+                  {s.icon}
+                </div>
+                <span>{s.label}</span>
               </div>
-              <span>{s.label}</span>
-            </Button>
-          ))}
+            ))}
+          </div>
         </div>
 
-        {/* Step Content */}
-        <div className="flex-1 bg-background p-8 overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-semibold mb-4">
-              {steps.find((s) => s.id === step)?.label}
-            </DialogTitle>
-          </DialogHeader>
-
-          {step === 1 && (
-            <div className="grid grid-cols-2 gap-4 h-full">
-              {/* Profile Photo */}
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="photo">Profile Photo</Label>
-                <Input
-                  id="photo"
-                  name="photo_path"
-                  type="file"
-                  onChange={(e) => {
-                    if (e.target.files && e.target.files[0]) {
-                      const file = e.target.files[0];
-                      setSelectedFile(file);
-                      setFormData((prev) => ({
-                        ...prev,
-                        photo_path: URL.createObjectURL(file),
-                      }));
-                    }
-                  }}
-                />
-
-                {formData.photo_path && (
-                  <img
-                    src={formData.photo_path}
-                    alt="Profile"
-                    className="w-24 h-24 rounded-full object-cover mt-2"
-                  />
-                )}
+        {/* Main Content */}
+        <div className="flex-1 p-10 overflow-y-auto">
+          {loading && mode !== "create" ? (
+            <>
+              <DialogHeader>
+                <Skeleton className="h-6 w-1/3 mb-4" />
+                <Skeleton className="h-4 w-1/2 mb-8" />
+              </DialogHeader>
+              <div className="space-y-6">
+                <div className="flex items-center gap-6">
+                  <Skeleton className="h-20 w-20 rounded-full" />
+                  <div className="space-y-3">
+                    <Skeleton className="h-4 w-40" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                </div>
               </div>
+            </>
+          ) : (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-semibold mb-4">
+                  {steps.find((s) => s.id === step)?.label}
+                </DialogTitle>
+                <DialogDescription className="text-gray-400 mb-6">
+                  {step === 1
+                    ? "View personal details below."
+                    : step === 2
+                    ? "Assigned permissions for this user."
+                    : "Summary of user information."}
+                </DialogDescription>
+              </DialogHeader>
 
-              <Input
-                placeholder="Full Name"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, name: e.target.value }))
-                }
-              />
-              <Input
-                placeholder="Username"
-                value={formData.title}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, title: e.target.value }))
-                }
-              />
-              <Input
-                placeholder="Email"
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, email: e.target.value }))
-                }
-              />
-              <Select
-                value={formData.department}
-                onValueChange={(val) =>
-                  setFormData((prev) => ({ ...prev, department: val }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Department" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="crm">CRM</SelectItem>
-                  <SelectItem value="finance">Finance</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select
-                value={formData.status}
-                onValueChange={(val) =>
-                  setFormData((prev) => ({ ...prev, status: val }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          {step === 2 && (
-            <div className="space-y-4">
-              <span className="font-semibold text-lg mb-2">Permissions</span>
-
-              {loading && (
-                <div className="space-y-2">
-                  {[...Array(3)].map((_, i) => (
+              {/* STEP 1 */}
+              {step === 1 && (
+                <div className="space-y-6">
+                  <div className="flex items-center gap-6">
                     <div
-                      key={i}
-                      className="h-6 w-full bg-gray-200 rounded animate-pulse"
+                      className="relative w-20 h-20 rounded-full border border-gray-600 overflow-hidden cursor-pointer"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      {form.photo_path ? (
+                        <Image
+                          src={form.photo_path}
+                          alt="avatar"
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="bg-gray-700 w-full h-full flex items-center justify-center text-gray-300">
+                          <User size={40} />
+                        </div>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      ref={fileInputRef}
+                      onChange={handlePhotoChange}
                     />
-                  ))}
+                    <div>
+                      <p className="text-lg font-medium">{form.name}</p>
+                      <p className="text-gray-400">{form.title}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    {["name", "title", "email","password", "department", "status"].map((field) => 
+                      {
+
+                        if (field === "password" && mode !== "create") {
+                          return null; // Skip rendering password field in edit/show mode
+                        }
+                      
+                      return <div key={field}>
+                        <Label>
+                          {field.replaceAll("_", " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                        </Label>
+                        <Input
+                          name={field}
+                          type={field == "password" ? "password" : "text"}
+                          value={(form as any)[field] || ""}
+                          onChange={handleChange}
+                          disabled={isReadOnly}
+                          className="bg-[#2a2a2a] border-gray-700 text-white disabled:opacity-70"
+                        />
+                      </div>}
+                    )}
+                    <div>
+                      <Label>Role</Label>
+                      <SingleSelect options={allRoles.map((role) => ({
+                        value: role.name,
+                        label: role.name
+                      }))} value={
+                        userRole
+                      } onValueChange={(value: string) => {setUserRole(value); handleSelectRole(allRoles.find(role => role.name === value))}} disabled={isReadOnly}>
+                      </SingleSelect>
+                    </div>
+                  </div>
                 </div>
               )}
 
-              {!loading && permissions && (
-                <div className="w-full max-h-[200px] overflow-y-auto border rounded p-4 space-y-4">
-                  {Object.entries(permissions).map(([group, perms]) => (
+              {/* STEP 2 */}
+              {step === 2 && (
+                <div className="space-y-8">
+                  {Object.entries(allPermissions).map(([group, perms]) => (
                     <div key={group}>
-                      <h3 className="font-semibold mb-2">{group}</h3>
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                        {perms.map((p: Permission) => (
+                      <h3 className="text-lg font-semibold mb-3">{group}</h3>
+                      <div className="grid grid-cols-2 gap-3">
+                        {perms.map((perm) => (
                           <div
-                            key={p.id}
-                            className="flex items-center gap-2 min-w-[120px]"
+                            key={perm.id}
+                            className="flex items-center gap-3 bg-[#252525] border border-gray-700 rounded-lg px-4 py-3"
                           >
                             <Checkbox
-                              checked={userPermissions.includes(p.id)}
-                              id={`perm-${p.id}`}
-                              onCheckedChange={(checked) => {
-                                if (checked) {
-                                  setUserPermissions((prev) => [...prev, p.id]);
-                                } else {
-                                  setUserPermissions((prev) =>
-                                    prev.filter((permId) => permId !== p.id)
-                                  );
-                                }
-                              }}
+                              checked={userPermissions.includes(perm.id)}
+                              onCheckedChange={() => handlePermissionToggle(perm.id)}
+                              disabled={isReadOnly}
+                              className="border-gray-500 data-[state=checked]:bg-blue-600"
                             />
-                            <Label htmlFor={`perm-${p.id}`}>{p.label}</Label>
+                            <span className="select-none">{perm.name}</span>
                           </div>
                         ))}
                       </div>
@@ -321,40 +336,63 @@ const UserForm: React.FC<ComponentProps> = ({
                   ))}
                 </div>
               )}
-            </div>
-          )}
 
-          {step === 3 && (
-            <div className="flex flex-col items-center justify-center h-full">
-              <CheckCircle className="w-20 h-20 text-green-500 mb-4" />
-              <h2 className="text-2xl font-semibold">
-                User Updated Successfully!
-              </h2>
-            </div>
-          )}
+              {/* STEP 3 */}
+              {(step === 3 && mode != "show") && (
+                <div className="space-y-4">
+                  <Card className="bg-[#252525] border-gray-700">
+                    <CardContent className="p-6 space-y-2">
+                      {Object.entries(form).map(([key, value]) => (
+                        <p key={key}>
+                          <strong>
+                            {key.replaceAll("_", " ").replace(/\b\w/g, (l) => l.toUpperCase())}:
+                          </strong>{" "}
+                          {value}
+                        </p>
+                      ))}
+                      <p className="pt-3">
+                        <strong>Permissions:</strong>
+                      </p>
+                      <ul className="list-disc list-inside text-gray-300">
+                        {Object.values(allPermissions).map((groupPerms: any) =>
+                          groupPerms.map(
+                            (perm: any) =>
+                              userPermissions.includes(perm.id) && (
+                                <li key={perm.id}>{perm.name}</li>
+                              )
+                          )
+                        )}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
 
-          {/* Navigation Buttons */}
-          <div className="flex justify-between mt-8">
-            {step > 1 ? (
-              <Button variant="outline" onClick={() => setStep(step - 1)}>
-                Back
-              </Button>
-            ) : (
-              <span />
-            )}
-            {step < steps.length ? (
-              <Button onClick={() => setStep(step + 1)}>Next</Button>
-            ) : (
-              <Button onClick={handleSubmit} disabled={loading}>
-                {loading ? "Saving..." : "Done"}
-              </Button>
-            )}
-          </div>
+              {/* Footer Navigation */}
+              {mode !== "show" && (
+                <div className="flex justify-between mt-10">
+                  {step > 1 ? (
+                    <Button
+                      variant="outline"
+                      onClick={() => setStep(step - 1)}
+                      className="border-gray-600"
+                    >
+                      Back
+                    </Button>
+                  ) : (
+                    <div />
+                  )}
+                  {step < 3 ? (
+                    <Button onClick={() => setStep(step + 1)}>Next</Button>
+                  ) : (
+                    <Button onClick={handleSubmit}>Save</Button>
+                  )}
+                </div>
+              )}
+            </>
+          )}
         </div>
       </DialogContent>
     </Dialog>
-  );
-};
-
-export default   UserForm;
-;
+  )
+}

@@ -63,6 +63,7 @@ import calculateEachIndicatorProvinceTargetAccordingTONumberOFCouncilorCount fro
 import React, { useRef } from "react";
 import { useEffect, useState } from "react";
 import EditIndicatorModal from "@/components/global/IndicatorEditModel";
+import { useParams } from "next/navigation";
 
 
 const NewProjectPage = () => {
@@ -528,7 +529,7 @@ const NewProjectPage = () => {
               }),
             },
           ]
-        : [
+        : parts == "dessaggration" ? [
             "/projects/disaggregation",
             {
               dessaggregations: desaggregations.map((dessaggregation) => {
@@ -560,12 +561,11 @@ const NewProjectPage = () => {
                 return dessaggregation;
               }),
             },
-          ];
+          ] : parts == "isp3" ? ["/projects/isp3", ""] : ["", ""];
 
     axiosInstance
       .post(url, form)
       .then((response: any) => {
-        console.log(response.data.data)
         if (url == "/projects") setProjectId(response.data.data.id);
         if (url == "/projects/outcome")
           setOutcomes(
@@ -1455,6 +1455,10 @@ const NewProjectPage = () => {
                                   {
                                     value: "referral_database",
                                     label: "Referral Database",
+                                  },
+                                  {
+                                    value: "enact_database",
+                                    label: "Enact Database",
                                   },
                                 ].filter((opt) => {
                                   if (opt.value == "main_database") {
@@ -2491,10 +2495,12 @@ const NewProjectPage = () => {
             {/* ISP3 */}
             <TabsContent value="isp3" className="h-full">
               <Card className="h-full">
+
                 <CardHeader>
                   <CardTitle>ISP3</CardTitle>
                   <CardDescription>Link indicators to isp3.</CardDescription>
                 </CardHeader>
+
                 <CardContent className="flex flex-col gap-6">
                   {isp3s.map((name, index) => (
                     <div
@@ -2549,6 +2555,10 @@ const NewProjectPage = () => {
                     </div>
                   ))}
                 </CardContent>
+
+                <CardFooter>
+                  {cardsBottomButtons(setCurrentTab, "aprPreview", hundleSubmit, "isp3", setCurrentTab, "finalization")}
+                </CardFooter>
               </Card>
             </TabsContent>
 

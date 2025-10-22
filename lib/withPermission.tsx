@@ -8,7 +8,7 @@ export function withPermission<P extends object>(
   requiredPermission: string
 ) {
   const ComponentWithPermission = (props: P) => {
-    const permissions = usePermissions();
+    const {permissions} = usePermissions();
     const router = useRouter();
 
     useEffect(() => {

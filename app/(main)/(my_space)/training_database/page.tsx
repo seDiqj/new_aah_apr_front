@@ -8,6 +8,7 @@ import TrainingSelectorDialog from "@/components/global/TrainingSelectorDialog";
 import { Button } from "@/components/ui/button";
 
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
+import { useParentContext } from "@/contexts/ParentContext";
 import { trainingDatabaseBeneificiaryListColumn } from "@/definitions/DataTableColumnsDefinitions";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -15,6 +16,8 @@ import { useEffect, useState } from "react";
 
 const TrainingDatabasePage = () => {
   const router = useRouter();
+
+  const {setReqForReloadData} = useParentContext();
 
   const [open, setOpen] = useState<boolean>(false);
 
@@ -57,6 +60,7 @@ const TrainingDatabasePage = () => {
             Trainings
           </Button>
           <Button onClick={() => setOpen(!open)}>Create New Beneficiary</Button>
+          <Button onClick={() => setReqForReloadData("shoib")}>Reload</Button>
         </div>
       </SubHeader>
       <DataTableDemo
@@ -82,6 +86,7 @@ const TrainingDatabasePage = () => {
             </Button>
           </div>
         }
+        reloadDataCondationName="mosa"
       ></DataTableDemo>
 
       {open && (
