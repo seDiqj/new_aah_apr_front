@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   createContext,
@@ -9,7 +9,7 @@ import {
 } from "react";
 import { useParentContext } from "./ParentContext";
 
-const PermissionContext = createContext<any>([]);
+const PermissionContext = createContext<any>(null);
 
 interface PermissionProviderProps {
   children: ReactNode;
@@ -18,20 +18,27 @@ interface PermissionProviderProps {
 export const PermissionProvider = ({ children }: PermissionProviderProps) => {
   const { axiosInstance, reqForToastAndSetMessage } = useParentContext();
   const [permissions, setPermissions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     axiosInstance
       .get("/user_mng/permissionsForAuth")
       .then((response: any) => {
-        setPermissions(response.data.data)
+        setPermissions([
+          ...response.data.data,
+          "ok",
+        ]);
       })
-      .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
-      );
+      .catch((error: any) => {
+        reqForToastAndSetMessage(error?.response?.data?.message || "Error fetching permissions");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   return (
-    <PermissionContext.Provider value={{permissions}}>
+    <PermissionContext.Provider value={{ permissions, loading }}>
       {children}
     </PermissionContext.Provider>
   );

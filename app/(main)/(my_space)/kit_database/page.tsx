@@ -13,13 +13,12 @@ import { useEffect, useState } from "react";
 import KitDatabaseBeneficiaryForm from "@/components/global/KitDatabaseBeneficiaryForm";
 import KitDatabaseBeneficiaryUpdateForm from "@/components/global/KitDatabaseBeneficiaryUpdateForm";
 import { Can } from "@/components/Can";
+import Preloader from "@/components/global/Preloader";
+import MainDatabaseBeneficiaryUpdateForm from "@/components/global/MainDatabaseBeneficiaryUpdateForm";
+import { withPermission } from "@/lib/withPermission";
 
 const MainDatabasePage = () => {
-  const { reqForToastAndSetMessage } = useParentContext();
   const router = useRouter();
-
-  let [reqForPermissionUpdateForm, setReqForPermissionUpdateForm] =
-    useState<boolean>(false);
 
   let [idFeildForEditStateSetter, setIdFeildForEditStateSetter] = useState<
     number | null
@@ -43,6 +42,8 @@ const MainDatabasePage = () => {
     if (idFeildForShowStateSetter)
       openBeneficiaryProfile(true, idFeildForShowStateSetter);
   }, [idFeildForShowStateSetter]);
+
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   return (
     <>
@@ -86,6 +87,7 @@ const MainDatabasePage = () => {
           filtersList={["projectCode", "indicator", "focalPoint", "province", "siteCode", "healthFacilitator", "dateOfRegistration",
             "age", "maritalStatus", "householdStatus", "baselineDate", "endlineDate"
           ]}
+          loadingStateSetter={setIsLoading}
         ></DataTableDemo>
 
         {/* Create new beneficiary form */}
@@ -98,16 +100,17 @@ const MainDatabasePage = () => {
         )}
 
         {reqForBeneficiaryUpdateForm && idFeildForEditStateSetter != null && (
-          <KitDatabaseBeneficiaryUpdateForm
+          <MainDatabaseBeneficiaryUpdateForm
             open={reqForBeneficiaryUpdateForm}
             onOpenChange={setReqForBeneficiaryUpdateForm}
-            title={"Update Beneficiary Information"}
             beneficiaryId={idFeildForEditStateSetter as unknown as string}
-          ></KitDatabaseBeneficiaryUpdateForm>
+          ></MainDatabaseBeneficiaryUpdateForm>
         )}
+
+        {isLoading && <Preloader reqForLoading={isLoading} />}
       </div>
     </>
   );
 };
 
-export default MainDatabasePage;
+export default withPermission(MainDatabasePage, "Kit.view");

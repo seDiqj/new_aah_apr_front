@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useState, useEffect } from "react";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,6 @@ import {
 } from "@/components/ui/dialog";
 import { SingleSelect } from "@/components/single-select";
 import { useParentContext } from "@/contexts/ParentContext";
-import { useEffect, useRef, useState } from "react";
 
 type CommunityDialogueForm = {
   project_id: string;
@@ -27,22 +27,20 @@ type CommunityDialogueForm = {
 interface ComponentProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  mode: "create" | "update" | "show";
+  dialogueId?: number;
 }
 
 const inputClass = "border h-8 w-full text-base px-2 rounded-md";
 const labelClass = "block text-sm font-medium mb-1";
 
-const CreateCD: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
+const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
+  open,
+  onOpenChange,
+  mode,
+  dialogueId,
+}) => {
   const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
-
-  const [groups, setGroups] = React.useState<string[]>([]);
-  const addGroup = () => setGroups([...groups, ""]);
-
-  const [sessions, setSessions] = React.useState<
-    { type: "initial" | "followUp"; topic: string; date: string }[]
-  >([{ type: "initial", topic: "", date: "" }]);
-  const addSession = () =>
-    setSessions([...sessions, { type: "followUp", topic: "", date: "" }]);
 
   const [formData, setFormData] = useState<CommunityDialogueForm>({
     project_id: "",
@@ -53,145 +51,168 @@ const CreateCD: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
     indicator_id: "",
   });
 
-  useEffect(() => console.log(formData), [formData])
-
-  let [remark, setRemark] = useState<string>("");
-
-  const handleFormChange = (e: any) => {
-    const { name, value } = e.target;
-
-    setFormData((prev) => ({
-      ...prev,
-
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = () => {
-    axiosInstance
-      .post("/community_dialogue_db/community_dialogue", {
-        programInformation: formData,
-        sessions: sessions,
-        groups: groups,
-        remark: remark,
-      })
-      .then((response: any) => reqForToastAndSetMessage(response.data.message))
-      .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
-      );
-  };
-
-  const [indicators, setIndicators] = useState<
-    {
-      id: string;
-      indicatorRef: string;
-    }[]
-  >([]);
-
-  const [districts, setDistricts] = useState<{ id: string; name: string }[]>(
-    []
-  );
-
-  const [provinces, setProvinces] = useState<{ id: string; name: string }[]>(
-    []
-  );
+  const [groups, setGroups] = useState<{ id?: number; name: string }[]>([]);
+  const [sessions, setSessions] = useState<
+    { type: "initial" | "followUp"; topic: string; date: string }[]
+  >([{ type: "initial", topic: "", date: "" }]);
+  const [remark, setRemark] = useState<string>("");
 
   const [projects, setProjects] = useState<
     { id: string; projectCode: string }[]
   >([]);
+  const [provinces, setProvinces] = useState<{ id: string; name: string }[]>(
+    []
+  );
+  const [districts, setDistricts] = useState<{ id: string; name: string }[]>(
+    []
+  );
+  const [indicators, setIndicators] = useState<
+    { id: string; indicatorRef: string }[]
+  >([]);
 
+  const isReadOnly = mode === "show";
+
+  // --- Load projects initially ---
   useEffect(() => {
     axiosInstance
       .get("/projects/p/cd_database")
-      .then((res: any) => {
-        setProjects(Object.values(res.data.data));
-      })
-      .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+      .then((res: any) => setProjects(Object.values(res.data.data)))
+      .catch((err: any) =>
+        reqForToastAndSetMessage(err.response?.data?.message)
       );
   }, []);
 
+  // --- Load dialogue data if update/show ---
+  useEffect(() => {
+    if ((mode === "update" || mode === "show") && dialogueId) {
+      axiosInstance
+        .get(`/community_dialogue_db/community_dialogue_for_edit/${dialogueId}`)
+        .then((res: any) => {
+          const data = res.data.data;
+          setFormData(data.programInformation);
+          setGroups(data.groups?.map((g: any) => ({ ...g })) ?? []);
+          setSessions(
+            data.sessions ?? [{ type: "initial", topic: "", date: "" }]
+          );
+          setRemark(data.remark ?? "");
+        })
+        .catch((err: any) =>
+          reqForToastAndSetMessage(
+            err.response?.data?.message || "Failed to load data"
+          )
+        );
+    }
+  }, [mode, dialogueId]);
+
+  // --- Load indicators/provinces/districts when project changes ---
   useEffect(() => {
     if (!formData.project_id) return;
-
     const projectId = formData.project_id;
 
     axiosInstance
       .get(`projects/indicators/cd_database/${projectId}`)
-      .then((response: any) => setIndicators(response.data.data))
-      .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
-      );
-
-    axiosInstance
-      .get("/global/districts")
-      .then((res: any) => setDistricts(Object.values(res.data.data)))
-      .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+      .then((res: any) => setIndicators(res.data.data))
+      .catch((err: any) =>
+        reqForToastAndSetMessage(err.response?.data?.message)
       );
 
     axiosInstance
       .get(`projects/provinces/${projectId}`)
       .then((res: any) => setProvinces(Object.values(res.data.data)))
-      .catch((error: any) => {
-        reqForToastAndSetMessage(error.response.data.message);
-        console.log(error.response.data.message);
-      });
+      .catch((err: any) =>
+        reqForToastAndSetMessage(err.response?.data?.message)
+      );
+
+    axiosInstance
+      .get("/global/districts")
+      .then((res: any) => setDistricts(Object.values(res.data.data)))
+      .catch((err: any) =>
+        reqForToastAndSetMessage(err.response?.data?.message)
+      );
   }, [formData.project_id]);
 
-  useEffect(() => console.log(indicators), [indicators]);
+  const handleFormChange = (e: any) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = () => {
+    if (mode === "create") {
+      axiosInstance
+        .post("/community_dialogue_db/community_dialogue", {
+          programInformation: formData,
+          sessions,
+          groups,
+          remark,
+        })
+        .then((res: any) => reqForToastAndSetMessage(res.data.message))
+        .catch((err: any) =>
+          reqForToastAndSetMessage(err.response?.data?.message)
+        );
+    } else if (mode === "update" && dialogueId) {
+      axiosInstance
+        .put(`/community_dialogue_db/community_dialogue/${dialogueId}`, {
+          programInformation: formData,
+          sessions,
+          groups,
+          remark,
+        })
+        .then((res: any) => reqForToastAndSetMessage(res.data.message))
+        .catch((err: any) =>
+          reqForToastAndSetMessage(err.response?.data?.message)
+        );
+    }
+  };
+
+  // --- Add group/session functions ---
+  const addGroup = () => setGroups([...groups, { name: "" }]);
+  const addSession = () =>
+    setSessions([...sessions, { type: "followUp", topic: "", date: "" }]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className="sm:max-w-4xl border border-gray-300 dark:border-gray-600 rounded-lg ml-16 overflow-y-auto"
-        style={{
-          maxHeight: "85vh",
-          paddingTop: "10px",
-          paddingBottom: "10px",
-          paddingLeft: "16px",
-          paddingRight: "16px",
-        }}
+        style={{ maxHeight: "85vh", padding: 16 }}
       >
         <DialogHeader>
           <DialogTitle className="text-lg">
-            Create Community Dialogue
+            {mode === "create"
+              ? "Create Community Dialogue"
+              : mode === "update"
+              ? "Update Community Dialogue"
+              : "View Community Dialogue"}
           </DialogTitle>
         </DialogHeader>
 
-        {/* Program Info Section */}
+        {/* Program Information Section */}
         <div className="font-bold text-base text-center px-6 py-2 rounded-xl mb-4 shadow-sm max-w-fit mx-auto">
           Program Information
         </div>
 
-        {/* Form Fields + Add Group in same grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Project Code */}
+          {/* Project */}
           <div>
             <Label className={labelClass}>Project Code</Label>
             <SingleSelect
-              options={projects.map((project, i) => ({
-                value: project.projectCode,
-                label: project.projectCode.toUpperCase(),
+              options={projects.map((p) => ({
+                value: p.projectCode,
+                label: p.projectCode.toUpperCase(),
               }))}
               value={
-                projects.find(
-                  (project: { id: string; projectCode: string }) =>
-                    project.id == formData.project_id
-                )?.projectCode ?? ""
+                projects.find((p) => p.id == formData.project_id)
+                  ?.projectCode ?? ""
               }
-              onValueChange={(value: string) =>
+              onValueChange={(value) =>
                 handleFormChange({
                   target: {
                     name: "project_id",
-                    value: projects.find(
-                      (project: { id: string; projectCode: string }) =>
-                        project.projectCode == value
-                    )?.id,
+                    value: projects.find((p) => p.projectCode == value)?.id,
                   },
                 })
               }
-            ></SingleSelect>
+              disabled={isReadOnly}
+            />
           </div>
 
           {/* Focal Point */}
@@ -203,6 +224,7 @@ const CreateCD: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
               onChange={handleFormChange}
               placeholder="Focal Point"
               className={inputClass}
+              disabled={isReadOnly}
             />
           </div>
 
@@ -210,56 +232,46 @@ const CreateCD: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
           <div>
             <Label className={labelClass}>Province</Label>
             <SingleSelect
-              options={provinces.map((province, i) => ({
-                value: province.name,
-                label: province.name.toUpperCase(),
+              options={provinces.map((p) => ({
+                value: p.name,
+                label: p.name.toUpperCase(),
               }))}
               value={
-                provinces.find(
-                  (province: { id: string; name: string }) =>
-                    province.id == formData.province_id
-                )?.name ?? ""
+                provinces.find((p) => p.id == formData.province_id)?.name ?? ""
               }
-              onValueChange={(value: string) =>
+              onValueChange={(value) =>
                 handleFormChange({
                   target: {
                     name: "province_id",
-                    value: provinces.find(
-                      (province: { id: string; name: string }) =>
-                        province.name == value
-                    )?.id,
+                    value: provinces.find((p) => p.name == value)?.id,
                   },
                 })
               }
-            ></SingleSelect>
+              disabled={isReadOnly}
+            />
           </div>
 
           {/* District */}
           <div>
             <Label className={labelClass}>District</Label>
             <SingleSelect
-              options={districts.map((district, i) => ({
-                value: district.name,
-                label: district.name.toUpperCase(),
+              options={districts.map((d) => ({
+                value: d.name,
+                label: d.name.toUpperCase(),
               }))}
               value={
-                districts.find(
-                  (district: { id: string; name: string }) =>
-                    district.id == formData.district_id
-                )?.name ?? ""
+                districts.find((d) => d.id == formData.district_id)?.name ?? ""
               }
-              onValueChange={(value: string) =>
+              onValueChange={(value) =>
                 handleFormChange({
                   target: {
                     name: "district_id",
-                    value: districts.find(
-                      (district: { id: string; name: string }) =>
-                        district.name == value
-                    )?.id,
+                    value: districts.find((d) => d.name == value)?.id,
                   },
                 })
               }
-            ></SingleSelect>
+              disabled={isReadOnly}
+            />
           </div>
 
           {/* Village */}
@@ -271,154 +283,125 @@ const CreateCD: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
               onChange={handleFormChange}
               placeholder="Village"
               className={inputClass}
+              disabled={isReadOnly}
             />
           </div>
 
-          {/* Select Indicator */}
+          {/* Indicator */}
           <div>
             <Label className={labelClass}>Select Indicator</Label>
             <SingleSelect
-              options={indicators.map((indicator, i) => ({
-                value: indicator.indicatorRef,
-                label: indicator.indicatorRef.toUpperCase(),
+              options={indicators.map((i) => ({
+                value: i.indicatorRef,
+                label: i.indicatorRef.toUpperCase(),
               }))}
               value={
-                indicators.find(
-                  (indicator: { id: string; indicatorRef: string }) =>
-                    indicator.id == formData.indicator_id
-                )?.indicatorRef ?? ""
+                indicators.find((i) => i.id == formData.indicator_id)
+                  ?.indicatorRef ?? ""
               }
-              onValueChange={(value: string) =>
+              onValueChange={(value) =>
                 handleFormChange({
                   target: {
                     name: "indicator_id",
-                    value: indicators.find(
-                      (indicator: { id: string; indicatorRef: string }) =>
-                        indicator.indicatorRef == value
-                    )?.id,
+                    value: indicators.find((i) => i.indicatorRef == value)?.id,
                   },
                 })
               }
-            ></SingleSelect>
+              disabled={isReadOnly}
+            />
           </div>
 
-          {/* Add Group Button (now same size as inputs) */}
-          <div className="flex items-end">
-            <Button
-              variant="secondary"
-              onClick={addGroup}
-              className="h-8 w-full"
-            >
-              Add Group
-            </Button>
-          </div>
+          {/* Add Group Button */}
+          {mode !== "show" && (
+            <div className="flex items-end">
+              <Button
+                variant="secondary"
+                onClick={addGroup}
+                className="h-8 w-full"
+              >
+                Add Group
+              </Button>
+            </div>
+          )}
         </div>
 
-        {/* Render Added Groups */}
+        {/* Groups */}
         {groups.map((group, index) => (
           <div key={index} className="mt-3">
             <Label className={labelClass}>Group Name {index + 1}</Label>
             <Input
               placeholder={`Group Name ${index + 1}`}
               className={inputClass}
-              value={group}
+              value={group.name}
               onChange={(e) => {
                 const newGroups = [...groups];
-                newGroups[index] = e.target.value;
+                newGroups[index] = {
+                  ...newGroups[index],
+                  name: e.target.value,
+                };
                 setGroups(newGroups);
               }}
+              disabled={isReadOnly}
             />
           </div>
         ))}
 
-        {/* Community Dialogues Section */}
+        {/* Community Dialogues */}
         <div className="font-bold text-base text-center px-6 py-2 rounded-xl mt-4 mb-4 shadow-sm max-w-fit mx-auto">
           Community Dialogues Information
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-          <div>
-            <Label className={labelClass}>CD Topic</Label>
-            <Input
-              value={sessions[0].topic}
-              onChange={(e) =>
-                setSessions((prev) =>
-                  prev.map((s) =>
-                    prev.indexOf(s) == 0 ? { ...s, topic: e.target.value } : s
-                  )
-                )
-              }
-            />
-          </div>
-
-          <div>
-            <Label className={labelClass}>CD Date</Label>
-            <Input
-              value={sessions[0].date}
-              onChange={(e) =>
-                setSessions((prev) =>
-                  prev.map((s) =>
-                    prev.indexOf(s) == 0 ? { ...s, date: e.target.value } : s
-                  )
-                )
-              }
-              type="date"
-              className={inputClass}
-            />
-          </div>
-        </div>
-
-        {/* Render Sessions */}
-        {sessions.map((_session, index) => {
-          if (index == 0) return;
-          return (
-            <div
-              key={index}
-              className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3"
-            >
-              <div>
-                <Label className={labelClass}>CD Topic</Label>
-                <Input
-                  value={sessions[index].topic}
-                  onChange={(e) =>
-                    setSessions((prev) =>
-                      prev.map((s) =>
-                        prev.indexOf(s) == index
-                          ? { ...s, topic: e.target.value }
-                          : s
-                      )
+        {sessions.map((session, index) => (
+          <div
+            key={index}
+            className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3"
+          >
+            <div>
+              <Label className={labelClass}>CD Topic</Label>
+              <Input
+                value={session.topic}
+                onChange={(e) =>
+                  setSessions((prev) =>
+                    prev.map((s, i) =>
+                      i === index ? { ...s, topic: e.target.value } : s
                     )
-                  }
-                />
-              </div>
-
-              <div>
-                <Label className={labelClass}>CD Date</Label>
-                <Input
-                  value={sessions[index].date}
-                  onChange={(e) =>
-                    setSessions((prev) =>
-                      prev.map((s) =>
-                        prev.indexOf(s) == index
-                          ? { ...s, date: e.target.value }
-                          : s
-                      )
-                    )
-                  }
-                  type="date"
-                  className={inputClass}
-                />
-              </div>
+                  )
+                }
+                disabled={isReadOnly}
+              />
             </div>
-          );
-        })}
 
-        {/* Add Session Button - moved under inputs and smaller */}
-        <div className="flex justify-start">
-          <Button variant="secondary" onClick={addSession} className="h-8 px-4">
-            Add Session
-          </Button>
-        </div>
+            <div>
+              <Label className={labelClass}>CD Date</Label>
+              <Input
+                type="date"
+                value={session.date}
+                onChange={(e) =>
+                  setSessions((prev) =>
+                    prev.map((s, i) =>
+                      i === index ? { ...s, date: e.target.value } : s
+                    )
+                  )
+                }
+                className={inputClass}
+                disabled={isReadOnly}
+              />
+            </div>
+          </div>
+        ))}
+
+        {/* Add Session Button */}
+        {mode !== "show" && (
+          <div className="flex justify-start">
+            <Button
+              variant="secondary"
+              onClick={addSession}
+              className="h-8 px-4"
+            >
+              Add Session
+            </Button>
+          </div>
+        )}
 
         {/* Remark */}
         <div className="mt-4">
@@ -428,16 +411,31 @@ const CreateCD: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
             onChange={(e) => setRemark(e.target.value)}
             placeholder="Enter Remark"
             className={inputClass}
+            disabled={isReadOnly}
           />
         </div>
 
-        {/* Submit Button */}
-        <Button className="w-full mt-6" onClick={handleSubmit}>
-          Submit
-        </Button>
+        {/* Submit / Update / Close Button */}
+        <div className="mt-6">
+          {mode === "create" && (
+            <Button className="w-full" onClick={handleSubmit}>
+              Submit
+            </Button>
+          )}
+          {mode === "update" && (
+            <Button className="w-full" onClick={handleSubmit}>
+              Update
+            </Button>
+          )}
+          {mode === "show" && (
+            <Button className="w-full" onClick={() => onOpenChange(false)}>
+              Close
+            </Button>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
 };
 
-export default CreateCD;
+export default CommunityDialogueFormComponent;

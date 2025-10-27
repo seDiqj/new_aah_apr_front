@@ -3,6 +3,7 @@
 import BreadcrumbWithCustomSeparator from "@/components/global/BreadCrumb";
 import PreAndPostTestForm from "@/components/global/PreAndPostTestForm";
 import SubHeader from "@/components/global/SubHeader";
+import TrainingSelectorDialog from "@/components/global/TrainingSelectorDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -19,6 +20,7 @@ import {
 import { Plus } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { InfoItem } from "../../../referral_database/beneficiary_profile/[id]/page";
 
 const TrainingBeneficiaryProfile = () => {
   const { id } = useParams<{
@@ -26,6 +28,8 @@ const TrainingBeneficiaryProfile = () => {
   }>();
 
   const { reqForToastAndSetMessage } = useParentContext();
+
+  const [reqForTrainingSelector, setReqForTrainingSelector] = useState<boolean>(false);
 
   const axiosInstance = createAxiosInstance();
 
@@ -39,6 +43,7 @@ const TrainingBeneficiaryProfile = () => {
       email: "",
       participantOrganization: "",
       jobTitle: "",
+      dateOfRegistration: ""
     });
 
   const [trainingsData, setTrainingsData] = useState<TrainingForm[]>([]);
@@ -130,7 +135,7 @@ const TrainingBeneficiaryProfile = () => {
 
         {/* Main Content */}
         {/* Main Content */}
-        <Tabs defaultValue="trainingInfo">
+        <Tabs defaultValue="beneficiaryInfo">
           <TabsList className="flex flex-row items-center justify-between w-full">
             {/* Triggers list */}
             <div className="overflow-auto">
@@ -144,7 +149,7 @@ const TrainingBeneficiaryProfile = () => {
               ))}
             </div>
             <div>
-              <Button className="rounded-2xl">
+              <Button className="rounded-2xl" onClick={() => setReqForTrainingSelector(!reqForTrainingSelector)}>
                 <Plus></Plus>
               </Button>
             </div>
@@ -152,13 +157,18 @@ const TrainingBeneficiaryProfile = () => {
           <TabsContent value="beneficiaryInfo">
             <Card className="max-h-[400px]">
               <CardContent className="h-full grid gap-4 max-h-[400px] overflow-auto">
-                <div className="grid grid-cols-2 gap-4">
-                  {Object.entries(beneficiaryInfo).map((info, index) => (
-                    <div key={index} className="flex gap-7 p-2 rounded">
-                      <span>{info[0]} : </span>
-                      <span>{info[1]}</span>
-                    </div>
-                  ))}
+                <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                  {beneficiaryInfo &&
+                    Object.entries(beneficiaryInfo).map((entry, i) => {
+                      if (entry[0] == "id") return;
+                      return (
+                        <InfoItem
+                          key={i}
+                          label={entry[0].toUpperCase()}
+                          value={entry[1].toString()}
+                        />
+                      );
+                    })}
                 </div>
               </CardContent>
             </Card>
@@ -259,6 +269,15 @@ const TrainingBeneficiaryProfile = () => {
               chapterId={chapterIdForSettingThePreAndPostTestScores}
             ></PreAndPostTestForm>
           )}
+
+          {reqForTrainingSelector && (
+            <TrainingSelectorDialog
+              open={reqForTrainingSelector}
+              onOpenChange={setReqForTrainingSelector}
+              ids={[id]}
+            ></TrainingSelectorDialog>
+          )}
+          
       </div>
     </>
   );

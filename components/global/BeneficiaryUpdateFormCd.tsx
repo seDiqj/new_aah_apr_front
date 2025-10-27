@@ -15,6 +15,7 @@ import {
 import { SingleSelect } from "@/components/single-select";
 import { useParentContext } from "@/contexts/ParentContext";
 import { CommunityDialogBeneficiaryForm } from "@/types/Types";
+import { withPermission } from "@/lib/withPermission";
 
 interface ComponentProps {
   open: boolean;
@@ -40,6 +41,7 @@ const BeneficiaryUpdateCD: React.FC<ComponentProps> = ({
     jobTitle: "",
     incentiveReceived: false,
     incentiveAmount: "",
+    dateOfRegistration: ""
   });
 
   useEffect(() => {
@@ -258,4 +260,4 @@ const BeneficiaryUpdateCD: React.FC<ComponentProps> = ({
   );
 };
 
-export default BeneficiaryUpdateCD;
+export default withPermission(BeneficiaryUpdateCD, "Dialogue.edit");

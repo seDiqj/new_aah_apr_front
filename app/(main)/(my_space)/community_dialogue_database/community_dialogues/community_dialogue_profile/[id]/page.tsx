@@ -5,15 +5,19 @@ import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect, useRef, RefObject } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import AddBeneInCDProfile from "@/components/ui/shadcn-io/AddBeneInCDProfile";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { InfoItem } from "../../../../referral_database/beneficiary_profile/[id]/page";
 import { useParentContext } from "@/contexts/ParentContext";
 import DataTableDemo from "@/components/global/MulitSelectTable";
-import { mainDatabaseAndKitDatabaseBeneficiaryColumns } from "@/definitions/DataTableColumnsDefinitions";
+import {
+  communityDialoguesSessionTableColumns,
+  mainDatabaseAndKitDatabaseBeneficiaryColumns,
+} from "@/definitions/DataTableColumnsDefinitions";
 import BreadcrumbWithCustomSeparator from "@/components/global/BreadCrumb";
+import SessionForm from "@/components/global/CommunityDialogueSessionForm";
+import { Button } from "@/components/ui/button";
+import { InfoItem } from "@/app/(main)/(my_space)/referral_database/beneficiary_profile/[id]/page";
+import { Can } from "@/components/Can";
+import { withPermission } from "@/lib/withPermission";
 
 const CommunityDialogueProfilePage = () => {
   const { id } = useParams<{
@@ -35,14 +39,12 @@ const CommunityDialogueProfilePage = () => {
   const [reqForBeneficiaryCreationForm, setReqForBeneficiaryCreationForm] =
     useState<boolean>(false);
 
-    const openBeneficiaryProfile = (value: boolean, id: number) => {
-      router.push(`/community_dialogue_database/beneficiary_profile/${id}`);
-    };
-  
-    useEffect(() => {
-      if (idFeildForShowStateSetter)
-        openBeneficiaryProfile(true, idFeildForShowStateSetter);
-    }, [idFeildForShowStateSetter]);
+  const [reqForSessionCreationForm, setReqForSessionCreationForm] =
+    useState<boolean>(false);
+  const [reqForSessionEditionForm, setReqForSessionEditionForm] =
+    useState<boolean>(false);
+  const [reqForSessionShowForm, setReqForSessionShowForm] =
+    useState<boolean>(false);
 
   const [communityDialogue, setCommunityDialogue] = useState<{
     id: string;
@@ -57,6 +59,7 @@ const CommunityDialogueProfilePage = () => {
   let [groupId, setGroupId] = useState<string | null>(null);
 
   const handleTabChange = (value: string) => {
+    setSelectedTab(value);
     if (value == "programInfo" || value == "cdSessions") return;
 
     const currnetGroup = communityDialogue?.groups.find(
@@ -78,6 +81,8 @@ const CommunityDialogueProfilePage = () => {
       );
   }, []);
 
+  const [selectedTab, setSelectedTab] = useState<string>("programInfo");
+
   return (
     <>
       <Navbar14 />
@@ -85,7 +90,21 @@ const CommunityDialogueProfilePage = () => {
         <BreadcrumbWithCustomSeparator></BreadcrumbWithCustomSeparator>
       </div>
       <div className="mt-4 ml-6">
-        <SubHeader pageTitle={"Community Dialogue(Name)Profile"}></SubHeader>
+        <SubHeader pageTitle={"Community Dialogue Profile"}>
+          {selectedTab == "cdSessions" && (
+            <Can permission="Dialogue.create">
+              <div>
+              <Button
+                onClick={() =>
+                  setReqForSessionCreationForm(!reqForSessionCreationForm)
+                }
+              >
+                Add New Session
+              </Button>
+            </div>
+            </Can>
+          )}
+        </SubHeader>
       </div>
 
       <div className="w-full h-full">
@@ -146,13 +165,14 @@ const CommunityDialogueProfilePage = () => {
                 </CardHeader>
                 <CardContent>
                   <DataTableDemo
-                    columns={mainDatabaseAndKitDatabaseBeneficiaryColumns}
+                    columns={communityDialoguesSessionTableColumns}
                     indexUrl={`/community_dialogue_db/community_dialogue/sessions/${id}`}
                     deleteUrl="/community_dialogue_db/community_dialogue/sessions/delete_sessions"
-                    searchableColumn="name"
+                    searchableColumn="type"
                     idFeildForEditStateSetter={setIdFeildForEditStateSetter}
+                    editModelOpenerStateSetter={setReqForSessionEditionForm}
                     idFeildForShowStateSetter={setIdFeildForShowStateSetter}
-                    showModelOpenerStateSetter={() => {}}
+                    showModelOpenerStateSetter={setReqForSessionShowForm}
                   ></DataTableDemo>
                 </CardContent>
               </Card>
@@ -188,8 +208,32 @@ const CommunityDialogueProfilePage = () => {
             </TabsContent>
           </Tabs>
         </div>
+
+        {reqForSessionCreationForm && (
+          <SessionForm
+            open={reqForSessionCreationForm}
+            onOpenChange={setReqForSessionCreationForm}
+            mode={"create"}
+          ></SessionForm>
+        )}
+        {reqForSessionEditionForm && (
+          <SessionForm
+            open={reqForSessionEditionForm}
+            onOpenChange={setReqForSessionEditionForm}
+            mode={"edit"}
+            sessionId={idFeildForEditStateSetter as unknown as string}
+          ></SessionForm>
+        )}
+        {reqForSessionShowForm && (
+          <SessionForm
+            open={reqForSessionShowForm}
+            onOpenChange={setReqForSessionShowForm}
+            mode={"show"}
+            sessionId={idFeildForShowStateSetter as unknown as string}
+          ></SessionForm>
+        )}
       </div>
     </>
   );
 };
-export default CommunityDialogueProfilePage;
+export default withPermission(CommunityDialogueProfilePage, "Dialogue.view");

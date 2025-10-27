@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
+import React, { useEffect, useState, useRef } from "react"
 import {
   Dialog,
   DialogContent,
@@ -13,36 +13,35 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
-import { CheckCircle, User, Shield, Check } from "lucide-react"
+import {  User, Shield, Check } from "lucide-react"
 import Image from "next/image"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useParentContext } from "@/contexts/ParentContext"
 import { SingleSelect } from "../single-select"
-import { useRouter } from "next/navigation"
-import useSWR from "swr";
+import { withPermission } from "@/lib/withPermission"
 
-interface ProfileModalProps {
+interface ComponentProps {
   open: boolean
   onOpenChange: (value: boolean) => void
   mode?: "create" | "edit" | "show"
+  permission?: "";
   userId?: number
   reloader?: () => void
 }
 
-export default function ProfileModal({
+const ProfileModal: React.FC<ComponentProps> = ({
   open,
   onOpenChange,
   mode = "create",
   userId,
-  reloader
-}: ProfileModalProps) {
+  reloader,
+  permission
+}) => {
   const { axiosInstance, reqForToastAndSetMessage } = useParentContext()
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(true)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const router = useRouter();
-  const { mutate } = useSWR("user_mng/users");
 
   const steps = [
     { id: 1, label: "Personal Info", icon: <User size={18} /> },
@@ -396,3 +395,8 @@ export default function ProfileModal({
     </Dialog>
   )
 }
+
+
+// export default withPermission(ProfileModal, permission);
+
+export default ProfileModal;

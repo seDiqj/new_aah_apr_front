@@ -4,7 +4,7 @@
 
 import { ParentContext } from "@/contexts/ParentContext";
 import { createAxiosInstance } from "@/lib/axios";
-import { Permission, Role, User } from "@/types/Types";
+import { User } from "@/types/Types";
 import { AxiosInstance } from "axios";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -142,6 +142,12 @@ const Parent: React.FC<ComponentProps> = ({ children }) => {
 
   }, []);
 
+  const changeBeneficairyAprIncludedStatus = (id: string) => {
+    axiosInstance.post(`/global/beneficiary/change_apr_included/${id}`)
+    .then((response: any) => reqForToastAndSetMessage(response.data.message))
+    .catch((error: any) => reqForToastAndSetMessage(error.response.data.message))
+  }
+
   return (
     <ParentContext.Provider
       value={{
@@ -152,7 +158,8 @@ const Parent: React.FC<ComponentProps> = ({ children }) => {
         handleReload,
         myProfileDetails,
         setReqForProfile,
-        aprStats
+        aprStats,
+        changeBeneficairyAprIncludedStatus
       }}
     >
       <div className="w-full h-full">{children}</div>

@@ -9,6 +9,7 @@ import { Label } from "../ui/label";
 import { useEffect, useState } from "react";
 import { MainDatabaseProgram } from "@/types/Types";
 import { createAxiosInstance } from "@/lib/axios";
+import { withPermission } from "@/lib/withPermission";
 
 interface ComponentProps {
   open: boolean;
@@ -228,4 +229,4 @@ const ProgramMainForm: React.FC<ComponentProps> = ({
   );
 };
 
-export default ProgramMainForm;
+export default withPermission(ProgramMainForm, "Maindatabase.create");

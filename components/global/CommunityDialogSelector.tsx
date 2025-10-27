@@ -27,6 +27,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Checkbox } from "../ui/checkbox";
+import { withPermission } from "@/lib/withPermission";
 
 interface ComponentProps {
   open: boolean;
@@ -170,26 +171,36 @@ const CommunityDialogueSelector: React.FC<ComponentProps> = ({
                       const containerRect =
                         dialogContentRef.current!.getBoundingClientRect();
 
-                      setHoveredRowTopRectPosision(rect.top - containerRect.top - 90);
+                      setHoveredRowTopRectPosision(
+                        rect.top - containerRect.top - 90
+                      );
                       setHoveredCd(communityDialogue);
                       setHoveredId(communityDialogue.id);
                     }}
                     onMouseLeave={() => {
-                      if (!areWeInSubDropDown) setHoveredId(null);
+                      setTimeout(() => {
+                        if (!areWeInSubDropDown) setHoveredId(null);
+                      }, 2000);
                     }}
                   >
-                    {Object.entries(communityDialogue.program).map((item, i) => {
-                      if (item[0] == "id") return null;
-                      return (
-                        <TableCell key={i}>{item[1].toString().toUpperCase()}</TableCell>
-                      );
-                    })}
+                    {Object.entries(communityDialogue.program).map(
+                      (item, i) => {
+                        if (item[0] == "id") return null;
+                        return (
+                          <TableCell key={i}>
+                            {item[1].toString().toUpperCase()}
+                          </TableCell>
+                        );
+                      }
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
 
-            {hoveredCd && hoveredId && subDropDownGenerator(hoveredCd, hoveredRowTopRectPosision)}
+            {hoveredCd &&
+              hoveredId &&
+              subDropDownGenerator(hoveredCd, hoveredRowTopRectPosision)}
           </DropdownMenuContent>
         </DropdownMenu>
 
@@ -230,7 +241,10 @@ const CommunityDialogueSelector: React.FC<ComponentProps> = ({
         }}
       >
         {communityDialogue.groups.map((group) => (
-          <div key={group.id} className="block w-full px-3 py-2 hover:bg-accent">
+          <div
+            key={group.id}
+            className="block w-full px-3 py-2 hover:bg-accent"
+          >
             <label className="flex items-center gap-2 cursor-pointer">
               <Checkbox
                 checked={selectedCommunityDialoguesGroup.some(
@@ -278,4 +292,4 @@ const CommunityDialogueSelector: React.FC<ComponentProps> = ({
   }
 };
 
-export default CommunityDialogueSelector;
+export default withPermission(CommunityDialogueSelector, "Dialogue.assign");

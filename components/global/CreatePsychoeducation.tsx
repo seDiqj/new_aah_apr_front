@@ -13,15 +13,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { SingleSelect } from "../single-select";
 import { useEffect, useState } from "react";
 import { useParentContext } from "@/contexts/ParentContext";
+import { withPermission } from "@/lib/withPermission";
 
 type PsychoeducationForm = {
   programInformation: {
@@ -69,11 +64,15 @@ type PsychoeducationForm = {
 interface DatabaseSummaryProps {
   open: boolean;
   onOpenChange: (value: boolean) => void;
+  mode: "create" | "edit" | "show";
+  psychoeducationId?: string;
 }
 
 const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
   open,
   onOpenChange,
+  mode,
+  psychoeducationId,
 }) => {
   const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
 
@@ -143,12 +142,27 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
   };
 
   const handleSubmit = () => {
-    axiosInstance
-      .post("/psychoeducation_db/psychoeducation", formData)
-      .then((response: any) => reqForToastAndSetMessage(response.data.message))
-      .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
-      );
+    if (mode == "create") {
+      axiosInstance
+        .post("/psychoeducation_db/psychoeducation", formData)
+        .then((response: any) =>
+          reqForToastAndSetMessage(response.data.message)
+        )
+        .catch((error: any) =>
+          reqForToastAndSetMessage(error.response.data.message)
+        );
+    } else if (mode == "edit") {
+      axiosInstance.put(
+        `/psychoeducation_db/psychoeducation/${psychoeducationId}`,
+        formData
+      )
+        .then((response: any) =>
+          reqForToastAndSetMessage(response.data.message)
+        )
+        .catch((error: any) =>
+          {reqForToastAndSetMessage(error.response.data.message);console.log(error.response.data)}
+        );
+    }
   };
 
   const [indicators, setIndicators] = useState<
@@ -209,7 +223,25 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
       });
   }, [formData.programInformation.project_id]);
 
-  useEffect(() => console.log(formData), [formData]);
+  useEffect(() => {
+    if ((mode == "edit" || mode == "show") && psychoeducationId && open) {
+      axiosInstance
+        .get(`/psychoeducation_db/psychoeducation/${psychoeducationId}`)
+        .then((response: any) => {
+          console.log(response.data.data);
+          const { programData, ...psychoeducationData } = response.data.data;
+
+          setFormData((prev) => ({
+            programInformation: programData,
+            psychoeducationInformation: {
+              ...response.data.data.psychoeducationData,
+            },
+          }));
+        });
+    }
+  }, [mode, psychoeducationId]);
+
+  const readOnly: boolean = mode == "show";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -270,6 +302,7 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
                   "program"
                 )
               }
+              disabled={readOnly}
             ></SingleSelect>
           </div>
 
@@ -300,6 +333,7 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
                   "program"
                 )
               }
+              disabled={readOnly}
             ></SingleSelect>
           </div>
 
@@ -311,6 +345,7 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
               onChange={(e) => handleFormChange(e, "program")}
               placeholder="Focal Point"
               className="border w-full mt-2"
+              disabled={readOnly}
             />
           </div>
 
@@ -341,6 +376,7 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
                   "program"
                 )
               }
+              disabled={readOnly}
             ></SingleSelect>
           </div>
 
@@ -371,6 +407,7 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
                   "program"
                 )
               }
+              disabled={readOnly}
             ></SingleSelect>
           </div>
 
@@ -382,6 +419,7 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
               onChange={(e) => handleFormChange(e, "program")}
               placeholder="Village"
               className="border w-full mt-2"
+              disabled={readOnly}
             />
           </div>
 
@@ -393,6 +431,7 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
               onChange={(e) => handleFormChange(e, "program")}
               placeholder="Sit Code"
               className="border w-full mt-2"
+              disabled={readOnly}
             />
           </div>
 
@@ -404,6 +443,7 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
               onChange={(e) => handleFormChange(e, "program")}
               placeholder="Health Facility Name"
               className="border w-full mt-2"
+              disabled={readOnly}
             />
           </div>
 
@@ -415,6 +455,7 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
               onChange={(e) => handleFormChange(e, "program")}
               placeholder="Intervention Modality"
               className="border w-full mt-2"
+              disabled={readOnly}
             />
           </div>
         </div>
@@ -427,12 +468,19 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
               name="awarenessTopic"
               value={formData.psychoeducationInformation.awarenessTopic}
               onChange={(e) => handleFormChange(e, "psychoeducation")}
+              disabled={readOnly}
             />
           </div>
 
           <div>
             <Label>Date of Awareness</Label>
-            <Input type="date" name="awarenessDate" onChange={(e) => handleFormChange(e, "psychoeducation")}></Input>
+            <Input
+              type="date"
+              name="awarenessDate"
+              value={formData.psychoeducationInformation.awarenessDate}
+              onChange={(e) => handleFormChange(e, "psychoeducation")}
+              disabled={readOnly}
+            ></Input>
           </div>
         </div>
 
@@ -442,24 +490,28 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
           prefix="ofMen"
           formData={formData}
           formChangeHandler={handleFormChange}
+          readonly={readOnly}
         />
         <DemographicLine
           title="Of Women"
           prefix="ofWomen"
           formData={formData}
           formChangeHandler={handleFormChange}
+          readonly={readOnly}
         />
         <DemographicLine
           title="Of Boys"
           prefix="ofBoy"
           formData={formData}
           formChangeHandler={handleFormChange}
+          readonly={readOnly}
         />
         <DemographicLine
           title="Of Girls"
           prefix="ofGirl"
           formData={formData}
           formChangeHandler={handleFormChange}
+          readonly={readOnly}
         />
 
         {/* Remark */}
@@ -471,6 +523,7 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
             onChange={(e) => handleFormChange(e, "psychoeducation")}
             placeholder="Write remark here..."
             className="mt-2"
+            disabled={readOnly}
           />
         </div>
 
@@ -488,11 +541,13 @@ function DemographicLine({
   prefix,
   formData,
   formChangeHandler,
+  readonly,
 }: {
   title: string;
   prefix: "ofMen" | "ofWomen" | "ofBoy" | "ofGirl";
   formData: PsychoeducationForm;
   formChangeHandler: (e: any, part: "program" | "psychoeducation") => void;
+  readonly: boolean;
 }) {
   const fields: {
     label: string;
@@ -600,6 +655,7 @@ function DemographicLine({
               onChange={(e) => formChangeHandler(e, "psychoeducation")}
               placeholder={field.placeholder}
               className="border w-full mt-1"
+              disabled={readonly}
             />
           </div>
         ))}
@@ -608,4 +664,4 @@ function DemographicLine({
   );
 }
 
-export default CreatePsychoeducation;
+export default withPermission(CreatePsychoeducation, "Psychoeducation.create");

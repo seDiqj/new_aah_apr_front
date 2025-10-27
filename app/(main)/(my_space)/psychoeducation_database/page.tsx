@@ -7,11 +7,15 @@ import SubHeader from "@/components/global/SubHeader";
 import { Button } from "@/components/ui/button";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { useParentContext } from "@/contexts/ParentContext";
-import { mainDatabaseAndKitDatabaseBeneficiaryColumns, psychoeducationTableListColumn } from "@/definitions/DataTableColumnsDefinitions";
+import {
+  mainDatabaseAndKitDatabaseBeneficiaryColumns,
+  psychoeducationTableListColumn,
+} from "@/definitions/DataTableColumnsDefinitions";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const PsychoeducationDatabasePage = () => {
+  const { reqForToastAndSetMessage } = useParentContext();
   const router = useRouter();
 
   let [idFeildForEditStateSetter, setIdFeildForEditStateSetter] = useState<
@@ -27,17 +31,13 @@ const PsychoeducationDatabasePage = () => {
     setReqForPsychoeducationCreationForm,
   ] = useState<boolean>(false);
 
-  const [reqForBeneficiaryEditionForm, setReqForBeneficiaryEditionForm] =
+  const [
+    reqForPsychoeducationEditionForm,
+    setReqForPsychoeducationEditionForm,
+  ] = useState<boolean>(false);
+
+  const [reqForPsychoeducationShowForm, setReqForPsychoeducationShowForm] =
     useState<boolean>(false);
-
-  const openPsychoeducatoinProfile = (value: boolean, id: number) => {
-    router.push(`main_database/beneficiary_profile/${id}`);
-  };
-
-  useEffect(() => {
-    if (idFeildForShowStateSetter)
-      openPsychoeducatoinProfile(true, idFeildForShowStateSetter);
-  }, [idFeildForShowStateSetter]);
 
   return (
     <>
@@ -63,19 +63,36 @@ const PsychoeducationDatabasePage = () => {
           columns={psychoeducationTableListColumn}
           indexUrl="/psychoeducation_db/psychoeducations"
           deleteUrl="/psychoeducation_db/delete_psychoeducations"
-          searchableColumn="awarenessTopic"
+          searchableColumn="name"
           idFeildForEditStateSetter={setIdFeildForEditStateSetter}
-          editModelOpenerStateSetter={setReqForBeneficiaryEditionForm}
+          editModelOpenerStateSetter={setReqForPsychoeducationEditionForm}
           idFeildForShowStateSetter={setIdFeildForShowStateSetter}
-          showModelOpenerStateSetter={() => {}}
-          filterUrl="/filter/psychoeducation_db/psychoeducations"
-          filtersList={["projectCode", "focalPoint", "indicator", "province", "awarenessDate", "siteCode", "healthFacilityName", "interventionModality"]}
+          showModelOpenerStateSetter={setReqForPsychoeducationShowForm}
+          editBtnPermission="Psychoeducation.edit"
+          deleteBtnPermission="Psychoeducation.delete"
         ></DataTableDemo>
 
         {reqForPsychoeducationCreationForm && (
           <CreatePsychoeducation
             open={reqForPsychoeducationCreationForm}
             onOpenChange={setReqForPsychoeducationCreationForm}
+            mode="create"
+          ></CreatePsychoeducation>
+        )}
+        {reqForPsychoeducationEditionForm && idFeildForEditStateSetter && (
+          <CreatePsychoeducation
+            open={reqForPsychoeducationEditionForm}
+            onOpenChange={setReqForPsychoeducationEditionForm}
+            mode="edit"
+            psychoeducationId={idFeildForEditStateSetter as unknown as string}
+          ></CreatePsychoeducation>
+        )}
+        {reqForPsychoeducationShowForm && idFeildForShowStateSetter && (
+          <CreatePsychoeducation
+            open={reqForPsychoeducationShowForm}
+            onOpenChange={setReqForPsychoeducationShowForm}
+            mode="show"
+            psychoeducationId={idFeildForShowStateSetter as unknown as string}
           ></CreatePsychoeducation>
         )}
       </div>

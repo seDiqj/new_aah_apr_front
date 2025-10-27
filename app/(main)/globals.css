@@ -13,12 +13,11 @@
   --radius: 0.625rem;
 
   /* core backgrounds / text */
-  --background: #FFFFFF;         /* page background (light) */
-  --foreground: #1E1E1E;         /* main text color (dark on light bg) */
+  --background: #FFFFFF;
+  --foreground: #1E1E1E;
 
   /* sidebar */
   --sidebar-bg: #005FB6;
-  /* --sidebar-option-bg: #A36568; */
   --sidebar-option-bg: #A36568;
   --sidebar-option-fg: #FFFFFF;
 
@@ -28,35 +27,37 @@
   --popover: #FFFFFF;
   --popover-foreground: var(--foreground);
 
-  /* brand colours (from your palette image) */
-  --primary: #52AE32;            /* primary (green) */
-  --primary-alt: #005FB6;        /* alternative primary (blue) */
+  /* brand colours */
+  --primary: #52AE32;
+  --primary-alt: #005FB6;
   --primary-foreground: #FFFFFF;
 
-  --secondary: #005FB6;          /* blue column (can be used equally with primary) */
+  --secondary: #005FB6;
   --secondary-foreground: #FFFFFF;
 
-  --accent: #EE7203;             /* accent (orange) */
+  --accent: #EE7203;
   --accent-foreground: #FFFFFF;
 
-  /* muted / grey (used for subtle UI elements) */
-  --muted: #F3F4F6;              /* light muted background */
-  --muted-foreground: #707070;   /* grey text on muted backgrounds */
+  /* muted / grey */
+  --muted: #F3F4F6;
+  --muted-foreground: #707070;
 
-  /* destructive (errors / dangerous actions) */
+  /* destructive */
   --destructive: #E53935;
-  --border: #E6E6E6;
-  --input: #F7F7F8;
-  --ring: #CBD5E1;
 
-  /* charts - map some chart colors */
+  /* 👇 اصلاح مهم‌ها برای دید بهتر در حالت Light */
+  --border: #D0D7DE;          /* مرز مشخص‌تر و خاکستری مایل به آبی (مثل GitHub) */
+  --input: #F9FAFB;           /* کمی تیره‌تر از سفید برای جدا شدن از پس‌زمینه */
+  --ring: rgba(0, 95, 182, 0.25); /* حلقه فوکوس با ته‌مایه آبی */
+
+  /* charts */
   --chart-1: #52AE32;
   --chart-2: #005FB6;
   --chart-3: #707070;
   --chart-4: #EE7203;
   --chart-5: #1E1E1E;
 
-  /* sidebar specifics (mirror above where needed) */
+  /* sidebar specifics */
   --sidebar: var(--sidebar-bg);
   --sidebar-foreground: var(--sidebar-option-fg);
   --sidebar-primary: var(--primary);
@@ -64,7 +65,7 @@
   --sidebar-accent: var(--accent);
   --sidebar-accent-foreground: var(--accent-foreground);
 
-  /* small helpers */
+  /* fonts */
   --font-geist-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
   --font-geist-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Helvetica Neue", monospace;
 }
@@ -113,63 +114,62 @@
 /* ==========================
    Dark mode overrides
    ========================== */
-   .dark {
-    /* page */
-    --background: #1A1F2B;      /* dark page background */
-    --foreground: #FFFFFF;      /* light text */
-  
-    /* sidebar */
-    --sidebar-bg: #2117dc;       /* match page background */
-    --sidebar-option-bg: #2A2F3C; /* slightly lighter for options */
-    --sidebar-option-fg: white;
-  
-    /* surfaces */
-    --card: #242934;              /* dark card background */
-    --card-foreground: var(--foreground);
-    --popover: #242934;
-    --popover-foreground: var(--foreground);
-  
-    /* brand (primary / secondary / accent) */
-    --primary: #2117dc;
-    --primary-alt: #5A54E0;      /* slightly darker variant */
-    --primary-foreground: #FFFFFF;
-  
-    --secondary: #1A1F2B;
-    --secondary-foreground: #FFFFFF;
-  
-    --accent: black;
-    --accent-foreground: #FFFFFF;
-  
-    /* muted / greys */
-    --muted: #2E3342;             /* for subtle UI elements */
-    --muted-foreground: #8C8C8C;
-  
-    /* destructive */
-    --destructive: #FF6B6B;
-  
-    /* borders, inputs, ring (lightened for dark bg) */
-    --border: rgba(255,255,255,0.1);
-    --input: rgba(255,255,255,0.05);
-    --ring: rgba(108, 99, 255, 0.25);
-  
-    /* charts (tuned for dark) */
-    --chart-1: #2117dc;
-    --chart-2: #5A54E0;
-    --chart-3: #8C8C8C;
-    --chart-4: #00C853;
-    --chart-5: #FFFFFF;
-  
-    /* sidebar specifics */
-    --sidebar: var(--sidebar-bg);
-    --sidebar-foreground: var(--sidebar-option-fg);
-    --sidebar-primary: var(--primary);
-    --sidebar-primary-foreground: var(--primary-foreground);
-    --sidebar-accent: var(--accent);
-    --sidebar-accent-foreground: var(--accent-foreground);
-    --sidebar-border: rgba(255,255,255,0.06);
-    --sidebar-ring: rgba(108, 99, 255, 0.16);
-  }
-  
+.dark {
+  /* page */
+  --background: #0f1117;           /* deeper neutral dark */
+  --foreground: #e8ecf2;           /* soft white text */
+
+  /* sidebar */
+  --sidebar-bg: #151821;           /* blends with background */
+  --sidebar-option-bg: #1d212b;    /* slightly lifted for hover/active */
+  --sidebar-option-fg: #e8ecf2;
+
+  /* surfaces */
+  --card: #1a1e27;                 /* dark neutral card */
+  --card-foreground: var(--foreground);
+  --popover: #1d212b;
+  --popover-foreground: var(--foreground);
+
+  /* brand (primary / secondary / accent) */
+  --primary: #3d63ff;              /* elegant blue */
+  --primary-alt: #3355e8;          /* darker hover variant */
+  --primary-foreground: #ffffff;
+
+  --secondary: #181b23;
+  --secondary-foreground: #e8ecf2;
+
+  --accent: #4ac1ff;               /* cyan accent for highlights */
+  --accent-foreground: #0f1117;
+
+  /* muted / greys */
+  --muted: #242a36;                /* neutral section background */
+  --muted-foreground: #a0a8b5;
+
+  /* destructive */
+  --destructive: #e74c3c;
+
+  /* borders, inputs, ring */
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.05);
+  --ring: rgba(61, 99, 255, 0.25);
+
+  /* charts */
+  --chart-1: #3d63ff;
+  --chart-2: #4ac1ff;
+  --chart-3: #9b51e0;
+  --chart-4: #00c853;
+  --chart-5: #e8ecf2;
+
+  /* sidebar specifics */
+  --sidebar: var(--sidebar-bg);
+  --sidebar-foreground: var(--sidebar-option-fg);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--accent-foreground);
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-ring: rgba(61, 99, 255, 0.16);
+}
 
 /* ==========================
    Base layer (tailwind + basic rules)
@@ -204,4 +204,22 @@ div::-webkit-scrollbar {
 .badge-accent {
   background-color: var(--accent);
   color: var(--accent-foreground);
+}
+
+
+
+input {
+  border: 1px solid var(--border);
+  background-color: var(--input);
+  transition: border-color 0.2s ease;
+}
+
+input:hover {
+  border-color: var(--input-border-hover);
+}
+
+input:focus {
+  border-color: var(--input-border-focus);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 95, 182, 0.2);
 }

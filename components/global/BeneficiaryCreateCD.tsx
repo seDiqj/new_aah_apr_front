@@ -15,6 +15,7 @@ import { useState } from "react";
 import { SingleSelect } from "@/components/single-select";
 import { useParentContext } from "@/contexts/ParentContext";
 import { CommunityDialogBeneficiaryForm } from "@/types/Types";
+import { withPermission } from "@/lib/withPermission";
 
 interface DatabaseSummaryProps {
   open: boolean;
@@ -255,4 +256,4 @@ const BeneficiaryCreateCD: React.FC<DatabaseSummaryProps> = ({
   );
 };
 
-export default BeneficiaryCreateCD;
+export default withPermission(BeneficiaryCreateCD, "Dialogue.create");

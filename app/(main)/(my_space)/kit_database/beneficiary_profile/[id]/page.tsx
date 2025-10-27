@@ -15,7 +15,6 @@ import { beneficiaryKitListColumns } from "@/definitions/DataTableColumnsDefinit
 import { createAxiosInstance } from "@/lib/axios";
 import { withPermission } from "@/lib/withPermission";
 import { MainDatabaseProgram } from "@/types/Types";
-import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
 
 interface ComponentProps {
@@ -29,7 +28,6 @@ const KitDbBeneficiaryProfilePage: React.FC<ComponentProps> = (
 ) => {
   const { id } = use(params.params);
 
-  const router = useRouter();
   const axiosInstance = createAxiosInstance();
   const { reqForToastAndSetMessage } = useParentContext();
 
@@ -183,11 +181,13 @@ const KitDbBeneficiaryProfilePage: React.FC<ComponentProps> = (
           </Tabs>
         </div>
 
-        <KitForm
-          open={reqForKitCreationForm}
-          onOpenChange={setReqForKitCreationForm}
-          mode={"create"}
-        ></KitForm>
+        {reqForKitCreationForm && (
+          <KitForm
+            open={reqForKitCreationForm}
+            onOpenChange={setReqForKitCreationForm}
+            mode={"create"}
+          ></KitForm>
+        )}
       </div>
     </>
   );

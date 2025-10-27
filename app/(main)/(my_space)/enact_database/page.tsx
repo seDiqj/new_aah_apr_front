@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AssessmentForm from "@/components/global/CreateNewAssessmentForm";
 import { useRouter } from "next/navigation";
+import Preloader from "@/components/global/Preloader";
 
 const EnactDatabasePage = () => {
   const router = useRouter();
@@ -50,9 +51,13 @@ const EnactDatabasePage = () => {
       openAssessmentProfile(true, idFeildForShowStateSetter);
   }, [idFeildForShowStateSetter]);
 
+
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+
+
   return (
     <>
-      <div className="max-w-full w-full h-full p-2">
+      <div className="max-w-[1020px] h-full p-2">
         <Navbar14 />
         <div className="flex flex-row items-center justify-start my-2">
           <BreadcrumbWithCustomSeparator></BreadcrumbWithCustomSeparator>
@@ -75,16 +80,18 @@ const EnactDatabasePage = () => {
             className="h-full max-w-full w-full overflow-auto"
           >
             {/* List of tabs */}
-            <TabsList className="max-w-full overflow-auto">
-              <TabsTrigger value="ENACT: FOUNDATIONAL HELPING SKILLS-ADULT">
-                ENACT: FOUNDATIONAL HELPING SKILLS-ADULT
-              </TabsTrigger>
-              {enactTabsList.map((tab) => (
-                <TabsTrigger disabled value="tab">
-                  {tab}
+            <div className="overflow-x-auto">
+              <TabsList className="max-w-full overflow-auto">
+                <TabsTrigger value="ENACT: FOUNDATIONAL HELPING SKILLS-ADULT">
+                  ENACT: FOUNDATIONAL HELPING SKILLS-ADULT
                 </TabsTrigger>
-              ))}
-            </TabsList>
+                {enactTabsList.map((tab) => (
+                  <TabsTrigger disabled value="tab">
+                    {tab}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </div>
 
             {/* Project */}
             <TabsContent
@@ -100,6 +107,7 @@ const EnactDatabasePage = () => {
                 editModelOpenerStateSetter={setReqForAssessmentUpdateForm}
                 idFeildForShowStateSetter={setIdFeildForShowStateSetter}
                 showModelOpenerStateSetter={setReqForAssessmentShowForm}
+                loadingStateSetter={setIsLoading}
               ></DataTableDemo>
             </TabsContent>
           </Tabs>
@@ -119,6 +127,9 @@ const EnactDatabasePage = () => {
               projectId={idFeildForEditStateSetter as unknown as number}
             ></AssessmentForm>
           )}
+
+          {isLoading && <Preloader reqForLoading={isLoading} />}
+
         </div>
       </div>
     </>

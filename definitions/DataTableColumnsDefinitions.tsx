@@ -883,3 +883,43 @@ export const submittedAndFirstApprovedDatabasesTableColumn: ColumnDef<any>[] = [
     cell: ({ row }) => <div>{row.getValue("toDate")}</div>,
   },
 ];
+
+export const communityDialoguesSessionTableColumns: ColumnDef<any>[] = [
+  {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    accessorKey: "type",
+    header: "Type",
+    cell: ({ row }) => <div>{row.getValue("type")}</div>,
+  },
+  {
+    accessorKey: "topic",
+    header: "Topic",
+    cell: ({ row }) => <div>{row.getValue("topic")}</div>,
+  },
+  {
+    accessorKey: "date",
+    header: "Date",
+    cell: ({ row }) => <div>{row.getValue("date")}</div>,
+  },
+]

@@ -60,7 +60,6 @@ const TrainingDatabasePage = () => {
             Trainings
           </Button>
           <Button onClick={() => setOpen(!open)}>Create New Beneficiary</Button>
-          <Button onClick={() => setReqForReloadData("shoib")}>Reload</Button>
         </div>
       </SubHeader>
       <DataTableDemo
@@ -86,7 +85,6 @@ const TrainingDatabasePage = () => {
             </Button>
           </div>
         }
-        reloadDataCondationName="mosa"
       ></DataTableDemo>
 
       {open && (

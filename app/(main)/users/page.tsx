@@ -93,4 +93,4 @@ const UsersPage = () => {
   );
 };
 
-export default UsersPage;
+export default withPermission(UsersPage, "List User");

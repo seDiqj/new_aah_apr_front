@@ -1,5 +1,6 @@
 "use client";
 
+import { Can } from "@/components/Can";
 import BreadcrumbWithCustomSeparator from "@/components/global/BreadCrumb";
 import DataTableDemo from "@/components/global/MulitSelectTable";
 import SubHeader from "@/components/global/SubHeader";
@@ -32,8 +33,14 @@ const CommunityDialogDatabasePage = () => {
     setReqForCommunityDialogueCreationForm,
   ] = useState<boolean>(false);
 
-  const [reqForBeneficiaryEditionForm, setReqForBeneficiaryEditionForm] =
+  const [
+    reqForCommunityDialogueEditionForm,
+    setReqForCommunityDialogueEditionForm,
+  ] = useState<boolean>(false);
+
+  const [reqForCommunityDialogueShowForm, setReqForCommunityDialogueShowForm] =
     useState<boolean>(false);
+
 
   const openCommunityDialogueProfile = (id: number) => {
     router.push(
@@ -54,7 +61,9 @@ const CommunityDialogDatabasePage = () => {
           <BreadcrumbWithCustomSeparator></BreadcrumbWithCustomSeparator>
         </div>
         <SubHeader pageTitle={"Community Dialogues"}>
-          <div className="flex flex-row items-center justify-around gap-2">
+          {
+            <Can permission="Dialogue.create">
+              <div className="flex flex-row items-center justify-around gap-2">
             <Button
               onClick={() =>
                 setReqForCommunityDialogueCreationForm(
@@ -65,6 +74,8 @@ const CommunityDialogDatabasePage = () => {
               Create New Community Dialogue
             </Button>
           </div>
+            </Can>
+          }
         </SubHeader>
         <DataTableDemo
           columns={mainDatabaseAndKitDatabaseBeneficiaryColumns}
@@ -72,15 +83,34 @@ const CommunityDialogDatabasePage = () => {
           deleteUrl="community_dialogue_db/delete_beneficiaries"
           searchableColumn="name"
           idFeildForEditStateSetter={setIdFeildForEditStateSetter}
-          editModelOpenerStateSetter={setReqForBeneficiaryEditionForm}
+          editModelOpenerStateSetter={setReqForCommunityDialogueEditionForm}
           idFeildForShowStateSetter={setIdFeildForShowStateSetter}
           showModelOpenerStateSetter={() => {}}
+          editBtnPermission="Dialogue.edit"
+          deleteBtnPermission="Dialogue.delete"
         ></DataTableDemo>
 
         {reqForCommunityDialogueCreationForm && (
           <CreateCD
             open={reqForCommunityDialogueCreationForm}
             onOpenChange={setReqForCommunityDialogueCreationForm}
+            mode="create"
+          ></CreateCD>
+        )}
+        {reqForCommunityDialogueEditionForm && (
+          <CreateCD
+            open={reqForCommunityDialogueEditionForm}
+            onOpenChange={setReqForCommunityDialogueEditionForm}
+            mode="update"
+            dialogueId={idFeildForEditStateSetter as unknown as number}
+          ></CreateCD>
+        )}
+        {reqForCommunityDialogueShowForm && (
+          <CreateCD
+            open={reqForCommunityDialogueShowForm}
+            onOpenChange={setReqForCommunityDialogueShowForm}
+            mode="show"
+            dialogueId={idFeildForShowStateSetter as unknown as number}
           ></CreateCD>
         )}
       </div>

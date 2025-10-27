@@ -59,14 +59,17 @@ import { useParentContext } from "@/contexts/ParentContext";
 import { createAxiosInstance } from "@/lib/axios";
 import { withPermission } from "@/lib/withPermission";
 import { Edit, Plus, Trash } from "lucide-react";
-import calculateEachIndicatorProvinceTargetAccordingTONumberOFCouncilorCount from "@/lib/IndicatorProvincesTargetCalculator";
-import React, { useRef } from "react";
+import calculateEachIndicatorProvinceTargetAccordingTONumberOFCouncilorCount, { calculateEachSubIndicatorProvinceTargetAccordingTONumberOFCouncilorCount } from "@/lib/IndicatorProvincesTargetCalculator";
+import React from "react";
 import { useEffect, useState } from "react";
 import EditIndicatorModal from "@/components/global/IndicatorEditModel";
 import { useParams } from "next/navigation";
 
 
 const NewProjectPage = () => {
+
+  const {id} = useParams();
+
   // These states will be used for showing the full version of comment that is being selected.
   const [open, setOpen] = useState(false);
   const [selectedComment, setSelectedComment] = useState("");
@@ -461,6 +464,8 @@ const NewProjectPage = () => {
   // temp variable
   const [projectId, setProjectId] = useState<number | null>(null);
 
+  useEffect(() => console.log(projectId), [projectId])
+
   const hundleSubmit = (
     parts: "project" | "outcome" | "output" | "indicator" | "dessaggration"
   ) => {
@@ -470,10 +475,10 @@ const NewProjectPage = () => {
 
     const [url, form]: [string, any] =
       parts == "project"
-        ? ["/projects", formData]
+        ? [`/projects/`, formData]
         : parts == "outcome"
         ? [
-            "/projects/outcome",
+            "/projects/o/outcome",
             {
               project_id: projectId,
               outcomes: outcomes,
@@ -481,7 +486,7 @@ const NewProjectPage = () => {
           ]
         : parts == "output"
         ? [
-            "/projects/output",
+            "/projects/o/output",
             {
               outputs: outputs.map((output) => {
                 const correspondingOutcomeId = outcomes.find(
@@ -506,9 +511,9 @@ const NewProjectPage = () => {
           ]
         : parts == "indicator"
         ? [
-            "/projects/indicator",
+            "/projects/i/indicator",
             {
-              indicators: indicators.map((indicator) => {
+              indicators: indicators.filter((indicator) => indicator.id == null).map((indicator) => {
                 const correspondingOutputId = outputs.find(
                   (output) => output.outputRef == indicator.outputRef
                 )?.id;
@@ -521,7 +526,7 @@ const NewProjectPage = () => {
                   );
 
                   return;
-                }
+                } 
 
                 const { outputRef, ...updatedIndicatoForApi } = indicator;
 
@@ -530,44 +535,19 @@ const NewProjectPage = () => {
             },
           ]
         : parts == "dessaggration" ? [
-            "/projects/disaggregation",
+            "/projects/d/disaggregation",
             {
-              dessaggregations: desaggregations.map((dessaggregation) => {
-                let correspondingIndicatorId = indicators.find(
-                  (indicator) =>
-                    indicator.indicatorRef == dessaggregation.indicatorRef
-                )?.id;
-
-                if (!correspondingIndicatorId)
-                  correspondingIndicatorId = indicators.find(
-                    (indicator) =>
-                      indicator.subIndicator?.indicatorRef ==
-                      dessaggregation.indicatorRef
-                  )?.id;
-
-                dessaggregation.indicatorId = correspondingIndicatorId ?? null;
-
-                if (!dessaggregation.indicatorId) {
-                  reqForToastAndSetMessage(
-                    `Dessaggregation with description ${dessaggregation.dessaggration} has no valid indicator \n Note : Before creating some dessaggregations to a indicator please ensure that the indicator is already stored in database !`
-                  );
-
-                  return;
-                }
-
-                const { indicatorRef, ...updatedDessaggregationForApi } =
-                  dessaggregation;
-
-                return dessaggregation;
-              }),
+              dessaggregations: desaggregations,
             },
-          ] : parts == "isp3" ? ["/projects/isp3", ""] : ["", ""];
+          ] : parts == "isp3" ? ["/projects/is/isp3", {
+            isp3s: isp3
+          }] : ["", ""];
 
     axiosInstance
       .post(url, form)
       .then((response: any) => {
-        if (url == "/projects") setProjectId(response.data.data.id);
-        if (url == "/projects/outcome")
+        if (url == "/projects/") setProjectId(response.data.data.id);
+        if (url == "/projects/o/outcome")
           setOutcomes(
             outcomes.map((outcome) => {
               const outcomeId = response.data.data.find(
@@ -580,7 +560,7 @@ const NewProjectPage = () => {
               return outcome;
             })
           );
-        if (url == "/projects/output")
+        if (url == "/projects/o/output")
           setOutputs(
             outputs.map((output) => {
               const outputId = response.data.data.find(
@@ -593,7 +573,7 @@ const NewProjectPage = () => {
               return output;
             })
           );
-        if (url == "/projects/indicator")
+        if (url == "/projects/i/indicator")
           setIndicators(
             indicators.map((indicator) => {
               const indicatorId = response.data.data.find(
@@ -844,7 +824,10 @@ const NewProjectPage = () => {
     axiosInstance
       .put(`/projects/indicator/${updatedIndicator.id}`, updatedIndicator)
       .then((response: any) =>
-        reqForToastAndSetMessage(response.data.message)
+      {
+        reqForToastAndSetMessage(response.data.message);
+        console.log(response.data.data)
+      }
       )
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
@@ -863,6 +846,16 @@ const NewProjectPage = () => {
   }[]>([]);
 
   const [projectAprStatus, setProjectAprStatus] = useState<string>("notCreatedYet");
+
+  const [actionLogs, setActionLogs] = useState( [
+    ]);
+  
+    useEffect(() => {
+      axiosInstance.get(`/projects/get_project_finalizers_details/${id}`)
+      .then((response: any) => setActionLogs(response.data.data))
+      .catch((error: any) => reqForToastAndSetMessage(error.response.data.message))
+    }, [])
+  
 
   return (
     <>
@@ -1476,6 +1469,8 @@ const NewProjectPage = () => {
                                   setIndicator((prev) => ({
                                     ...prev,
                                     database: value,
+                                    dessaggregationType: value == "main_database" ? "session" : value == "enact_database"
+                                    ? "enact" : "indevidual"
                                   }))
                                 }
                               />
@@ -1641,7 +1636,7 @@ const NewProjectPage = () => {
                               }}
                               className="flex gap-6"
                             >
-                              {(indicator.database == "main_database" || indicator.database == "cd_database") && 
+                              {(indicator.database == "main_database") && 
                               <div className="flex items-center gap-2">
                                 <RadioGroupItem
                                   value="session"
@@ -1650,7 +1645,8 @@ const NewProjectPage = () => {
                                 <Label htmlFor={`r1-${index}`}>Session</Label>
                               </div>}
                               
-                              <div className="flex items-center gap-2">
+                              {indicator.database != "enact_database" && (
+                                <div className="flex items-center gap-2">
                                 <RadioGroupItem
                                   value="indevidual"
                                   id={`r2-${index}`}
@@ -1659,13 +1655,16 @@ const NewProjectPage = () => {
                                   Indevidual
                                 </Label>
                               </div>
-                              <div className="flex items-center gap-2">
+                              )}  
+                              {indicator.database == "enact_database" && (
+                                <div className="flex items-center gap-2">
                                 <RadioGroupItem
                                   value="enact"
                                   id={`r3-${index}`}
                                 />
                                 <Label htmlFor={`r3-${index}`}>Enact</Label>
                               </div>
+                              )}
                             </RadioGroup>
                           </div>
 
@@ -1746,14 +1745,41 @@ const NewProjectPage = () => {
                                             name="subIndicatorProvinceCouncilorCount"
                                             value={province.councilorCount || 0}
                                             onChange={(e) => {
-                                              hundleIndicatorFormChange({
-                                                target: {
-                                                  province: province,
-                                                  name: e.target.name,
-                                                  value: e.target.value,
-                                                },
-                                              });
-                                            }}
+                                            const value = Number(
+                                              e.target.value
+                                            );
+                                            setIndicator((prev) => {
+                                              const updatedSubIndicatorProvinces = 
+                                                prev.subIndicator!.provinces.map((p) =>
+                                                  p.province == province.province ?
+                                                {
+                                                  ...p,
+                                                  councilorCount: value
+                                                }:
+                                                p
+                                                )
+
+                                                if (prev.subIndicator)
+                                                  calculateEachSubIndicatorProvinceTargetAccordingTONumberOFCouncilorCount(
+                                                    {
+                                                      ...prev,
+                                                      subIndicator: {
+                                                        ...prev.subIndicator,
+                                                        provinces: updatedSubIndicatorProvinces
+                                                      },
+                                                    }
+                                                    ,setIndicator,
+                                                  );
+
+                                              return {
+                                                ...prev,
+                                                subIndicator: prev.subIndicator ? {
+                                                  ...prev.subIndicator,
+                                                  provinces: updatedSubIndicatorProvinces
+                                                } : null,
+                                              };
+                                            });
+                                          }}
                                           />
                                         </div>
                                         <div className="flex flex-col gap-1">
@@ -1903,7 +1929,7 @@ const NewProjectPage = () => {
                     {selectedIndicator && (
                       <Dialog
                         open={true}
-                        onOpenChange={() => setSelectedIndicator(null)}
+                        onOpenChange={() => {setDessaggregations(dessaggregationBeforeEdit); setSelectedIndicator(null)}}
                       >
                         <DialogContent className="flex flex-col justify-between sm:max-w-2xl md:max-w-4xl lg:max-w-6xl h-[90vh] overflow-auto">
                           <DialogHeader>
@@ -1945,7 +1971,7 @@ const NewProjectPage = () => {
                                   )}
                                 </TabsList>
 
-                                {/* Main indicator dessaggregation page */}
+                                {/* Main indicator dessaggregation tab */}
                                 <TabsContent
                                   className="w-full"
                                   value={selectedIndicator.dessaggregationType.toLowerCase()}
@@ -2139,7 +2165,7 @@ const NewProjectPage = () => {
                                   )}
                                 </TabsContent>
 
-                                {/* Sub indicator dessaggration page */}
+                                {/* Sub indicator dessaggration tab */}
                                 {selectedIndicator.subIndicator && (
                                   <TabsContent
                                     value={selectedIndicator.subIndicator.dessaggregationType.toLowerCase()}
@@ -2405,10 +2431,11 @@ const NewProjectPage = () => {
                               </Tabs>
                             </div>
                           </div>
-                          <DialogFooter>
+                          <DialogFooter className="z-50">
                             <div className="flex flex-row items-center justify-end fixed -bottom-40 gap-2">
                               <Button className="bg-blue-400" onClick={() => {
-                                setDessaggregations([])
+                                setDessaggregations((prev) => prev.filter((d) => (d.indicatorId != indicator.id)  
+                              ))
                               }}>
                                 Reset
                               </Button>
@@ -2418,34 +2445,39 @@ const NewProjectPage = () => {
                               }} className="bg-red-400">
                                 Cancel
                               </Button>
-                              <Button className="bg-green-400" disabled={(() => {
-                                const selectedIndicatorId = selectedIndicator.id;
-                                let selectedIndicatorSubIndicatorId = null;
-                                if (selectedIndicator.subIndicator) {
-                                  selectedIndicatorSubIndicatorId = selectedIndicator.subIndicator.id
-                                }
+                              <Button
+                                className="bg-green-400"
+                                disabled={(() => {
+                                  const selectedIndicatorId = selectedIndicator.id;
+                                  const subIndicatorId = selectedIndicator.subIndicator?.id ?? null;
 
-                                let selectedIndicatorDessaggregationsTotal = 0;
+                                  let mainTotal = 0;
+                                  let subTotal = 0;
 
-                                desaggregations.forEach((d) => d.indicatorId == selectedIndicatorId ? selectedIndicatorDessaggregationsTotal += Number(d.target) : selectedIndicatorDessaggregationsTotal += 0)
+                                  desaggregations.forEach((d) => {
+                                    if (d.indicatorId == selectedIndicatorId) mainTotal += Number(d.target);
+                                    if (subIndicatorId && d.indicatorId == subIndicatorId) subTotal += Number(d.target);
+                                  });
 
-                                let selectedIndicatorSubIndicatorDessaggregationsTotal = 0;
+                                  const mainTarget = Number(selectedIndicator.target ?? 0);
+                                  const subTarget = Number(selectedIndicator.subIndicator?.target ?? 0);
 
-                                if (selectedIndicatorSubIndicatorId) {
+                                  if (
+                                    mainTarget === mainTotal &&
+                                    (!subIndicatorId || subTarget === subTotal)
+                                  ) {
+                                    return false; 
+                                  }
 
-                                  desaggregations.forEach((d) => d.indicatorId == selectedIndicatorSubIndicatorId ? selectedIndicatorSubIndicatorDessaggregationsTotal += Number(d.target) : selectedIndicatorSubIndicatorDessaggregationsTotal += 0)
-
-                                }
-
-                                if (selectedIndicator.target == selectedIndicatorDessaggregationsTotal && selectedIndicator.subIndicator?.target == selectedIndicatorSubIndicatorDessaggregationsTotal) return false;
-                                return true;
-                              })()}
-                              onClick={() => {
-                                setSelectedIndicator(null);
-                              }}
+                                  return true;
+                                })()}
+                                onClick={() => {
+                                  setSelectedIndicator(null);
+                                }}
                               >
                                 Done
                               </Button>
+
                             </div>
                         </DialogFooter> 
                         </DialogContent>    
@@ -2568,6 +2600,7 @@ const NewProjectPage = () => {
                 <CardHeader>
                   <CardTitle>Apr Finalization</CardTitle>
                 </CardHeader>
+
                 <CardContent className="grid gap-6">
                   {[
                     {
@@ -2575,30 +2608,34 @@ const NewProjectPage = () => {
                       label: "Create",
                       description:
                         "This action will change the status of project to CREATED and send notification to manager for submitting.",
-                      statusValue: "created",
+                      acceptStatusValue: "created",
                     },
                     {
                       id: "submit",
                       label: "Manager Submit",
                       description:
                         "This action will mark the project as submitted by manager.",
-                      statusValue: "hodDhodApproved",
+                      acceptStatusValue: "hodDhodApproved",
+                      rejectStatusValue: "hodDhodRejected"
                     },
                     {
                       id: "grantFinalize",
                       label: "Grant Finalization",
                       description:
                         "This action will finalize the grant and update project status.",
-                      statusValue: "grantFinalized",
+                      acceptStatusValue: "grantFinalized",
+                      rejectStatusValue: "grantRejected"
                     },
                     {
                       id: "hqFinalize",
                       label: "HQ Finalization",
                       description:
                         "This action will finalize the project at HQ level.",
-                      statusValue: "hqFinalized",
+                      acceptStatusValue: "hqFinalized",
+                      rejectStatusValue: "hqRejected"
                     },
-                  ].map((step) => {
+                  ].map((step, index) => {
+                    const canReject = index !== 0;
                     return (
                       <div
                         key={step.id}
@@ -2611,26 +2648,32 @@ const NewProjectPage = () => {
                                 id={step.id}
                                 checked={(() => {
                                   const currentIdx = projectAprStatusList.indexOf(projectAprStatus);
-                                  const stepIdx = projectAprStatusList.indexOf(step.statusValue);
-                                  return stepIdx !== -1 && currentIdx >= stepIdx;
+                                  const stepIdx = projectAprStatusList.indexOf(step.acceptStatusValue!);
+
+                                  const isRejected = step.rejectStatusValue
+                                    ? projectAprStatus === step.rejectStatusValue
+                                    : false;
+
+                                  return !isRejected && stepIdx !== -1 && currentIdx >= stepIdx;
                                 })()}
-                                onCheckedChange={(checked: boolean) => {
-                                  const stepIdx = projectAprStatusList.indexOf(step.statusValue);
-                                  if (checked) {
-                                    // move forward to this step
-                                    setProjectAprStatus(step.statusValue);
-                                  } else {
-                                    // on uncheck, revert to the previous status (or the first one)
-                                    const prev = stepIdx > 0 ? projectAprStatusList[stepIdx - 1] : projectAprStatusList[0];
-                                    setProjectAprStatus(prev);
-                                  }
-                                }}
+                                onCheckedChange={() => {}}
                               />
                             </AlertDialogTrigger>
+
                             <AlertDialogContent className="space-y-4">
                               <AlertDialogHeader>
                                 <AlertDialogTitle>
-                                  Confirm {step.label}?
+                                  {canReject ? (
+                                    <>
+                                      Do you want to{" "}
+                                      <span className="text-green-600">Accept</span> or{" "}
+                                      <span className="text-red-600">Reject</span> this step?
+                                    </>
+                                  ) : (
+                                    <>
+                                      Confirm <span className="text-green-600">{step.label}</span>?
+                                    </>
+                                  )}
                                 </AlertDialogTitle>
                                 <AlertDialogDescription>
                                   {step.description}
@@ -2654,28 +2697,95 @@ const NewProjectPage = () => {
                                 />
                               </div>
 
-                              <AlertDialogFooter>
+                              <AlertDialogFooter className="flex justify-between">
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => {
-                                    if (comment.trim())
-                                      changeProjectAprStatus(step.statusValue);
-                                    else
-                                      reqForToastAndSetMessage(
-                                        "Comment section is required !"
-                                      );
-                                  }}
-                                >
-                                  Continue
-                                </AlertDialogAction>
+
+                                {canReject ? (
+                                  <div className="flex gap-2">
+                                    <Button
+                                      variant="destructive"
+                                      onClick={() => {
+                                        if (comment.trim()) {
+                                          changeProjectAprStatus(step.rejectStatusValue!);
+                                        } else {
+                                          reqForToastAndSetMessage("Comment section is required !");
+                                        }
+                                      }}
+                                    >
+                                      Reject
+                                    </Button>
+
+                                    <Button
+                                      onClick={() => {
+                                        if (comment.trim()) {
+                                          changeProjectAprStatus(step.acceptStatusValue!);
+                                        } else {
+                                          reqForToastAndSetMessage("Comment section is required !");
+                                        }
+                                      }}
+                                    >
+                                      Accept
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <Button
+                                    onClick={() => {
+                                      if (comment.trim()) {
+                                        changeProjectAprStatus(step.acceptStatusValue!);
+                                      } else {
+                                        reqForToastAndSetMessage("Comment section is required !");
+                                      }
+                                    }}
+                                  >
+                                    Continue
+                                  </Button>
+                                )}
                               </AlertDialogFooter>
                             </AlertDialogContent>
                           </AlertDialog>
+
                           <Label htmlFor={step.id}>{step.label}</Label>
                         </div>
                       </div>
                     );
                   })}
+
+                  {/* Action Progress Bar */}
+                  <div className="mt-8">
+                    <h3 className="text-lg font-semibold mb-4">Action Progress</h3>
+
+                    <div className="flex items-center gap-4 overflow-x-auto p-3  rounded-xl shadow-inner">
+                      {actionLogs.map((log: any, i) => (
+                        <div
+                          key={log.id}
+                          className="flex items-center gap-2 shrink-0"
+                        >
+                          <div className="flex flex-col items-center text-center">
+                            <img
+                              src={log.avatar}
+                              alt={log.name}
+                              className="w-10 h-10 rounded-full border-2 border-gray-300 object-cover"
+                            />
+                            <span className="text-xs mt-1 font-medium">{log.name}</span>
+                            <span
+                              className={`text-xs px-2 py-1 rounded-full mt-1 ${
+                                log.action === "Accepted"
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-red-100 text-red-700"
+                              }`}
+                            >
+                              {log.action}
+                            </span>
+                          </div>
+
+                          {i < actionLogs.length - 1 && (
+                            <div className="w-10 h-[2px] bg-gray-300 mx-2"></div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
                 </CardContent>
               </Card>
             </TabsContent>
@@ -2753,6 +2863,7 @@ const NewProjectPage = () => {
           }}
           indicatorData={reqForIndicatorEditModel}
           indicators={indicators}
+          mode="edit"
         />
         )}
       </div>
@@ -2761,7 +2872,7 @@ const NewProjectPage = () => {
 };
 
 
-const cardsBottomButtons = (backBtnOnClick: any, backBtnOnClickFuncInput: string, saveBtnOnClick: any, saveBtnOnClickFuncInput: string, nextBtnOnClick: any, nextBtnOnClickFuncInput: string, backBtnDisabled?: boolean, nextBtnDisabled?: boolean) => {
+const cardsBottomButtons = (backBtnOnClick: any, backBtnOnClickFuncInput: string, saveBtnOnClick: any, saveBtnOnClickFuncInput: string | null, nextBtnOnClick: any, nextBtnOnClickFuncInput: string, backBtnDisabled?: boolean, nextBtnDisabled?: boolean) => {
 
   return (
     <>
@@ -2790,6 +2901,4 @@ const cardsBottomButtons = (backBtnOnClick: any, backBtnOnClickFuncInput: string
 
 }
 
-// export default withPermission(NewProjectPage, "Project.create");
-
-export default NewProjectPage;
+export default withPermission(NewProjectPage, "Project.create");

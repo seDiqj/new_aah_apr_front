@@ -3,10 +3,8 @@
 import BreadcrumbWithCustomSeparator from "@/components/global/BreadCrumb";
 import DataTableDemo from "@/components/global/MulitSelectTable";
 import SubHeader from "@/components/global/SubHeader";
-import MainDatabaseBeneficiaryForm from "@/components/global/MainDatabaseBeneficiaryCreationForm";
 import { Button } from "@/components/ui/button";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
-import { useParentContext } from "@/contexts/ParentContext";
 import { mainDatabaseAndKitDatabaseBeneficiaryColumns } from "@/definitions/DataTableColumnsDefinitions";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -14,6 +12,9 @@ import BeneficiaryCreateCD from "@/components/global/BeneficiaryCreateCD";
 import { Plus } from "lucide-react";
 import CommunityDialogueSelector from "@/components/global/CommunityDialogSelector";
 import BeneficiaryUpdateCD from "@/components/global/BeneficiaryUpdateFormCd";
+import Preloader from "@/components/global/Preloader";
+import { withPermission } from "@/lib/withPermission";
+import { Can } from "@/components/Can";
 
 const CommunityDialogDatabasePage = () => {
   const router = useRouter();
@@ -46,6 +47,7 @@ const CommunityDialogDatabasePage = () => {
       openBeneficiaryProfile(true, idFeildForShowStateSetter);
   }, [idFeildForShowStateSetter]);
 
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   return (
     <>
@@ -63,13 +65,17 @@ const CommunityDialogDatabasePage = () => {
             >
               Community Dialogues
             </Button>
-            <Button
+            {
+              <Can permission="Dialogue.create">
+                <Button
               onClick={() =>
                 setReqForBeneficiaryCreationForm(!reqForBeneficiaryCreationForm)
               }
             >
               Create New Benficiary
             </Button>
+              </Can>
+            }
           </div>
         </SubHeader>
         <DataTableDemo
@@ -101,6 +107,9 @@ const CommunityDialogDatabasePage = () => {
           filtersList={["dateOfRegistration",
             "age", "maritalStatus"
           ]}
+          loadingStateSetter={setIsLoading}
+          editBtnPermission="Dialogue.edit"
+          deleteBtnPermission="Dialogue.delete"
         ></DataTableDemo>
 
         {reqForBeneficiaryCreationForm && (
@@ -125,9 +134,11 @@ const CommunityDialogDatabasePage = () => {
             ids={Object.keys(selectedRowsIds)}
           ></CommunityDialogueSelector>
         )}
+        
+        {isLoading && <Preloader reqForLoading={isLoading} />}
       </div>
     </>
   );
 };
 
-export default CommunityDialogDatabasePage;
+export default withPermission(CommunityDialogDatabasePage, "Dialogue.view");

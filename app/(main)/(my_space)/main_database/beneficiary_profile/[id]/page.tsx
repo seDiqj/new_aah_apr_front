@@ -2,6 +2,7 @@
 
 import SessionsPage from "@/components/global/BnfProfileTest";
 import BreadcrumbWithCustomSeparator from "@/components/global/BreadCrumb";
+import MealToolForm from "@/components/global/MealToolForm";
 import SubHeader from "@/components/global/SubHeader";
 import {
   Accordion,
@@ -21,6 +22,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useParentContext } from "@/contexts/ParentContext";
 import { createAxiosInstance } from "@/lib/axios";
+import { withPermission } from "@/lib/withPermission";
 import { MainDatabaseProgram } from "@/types/Types";
 import { use, useEffect, useState } from "react";
 
@@ -55,19 +57,7 @@ const BeneficiaryProfilePage: React.FC<ComponentProps> = (
     referredForProtection: boolean;
   }>();
 
-  const [mealTool, setMealTool] = useState({
-    beneficiary_id: id,
-    type: "",
-    baselineDate: "",
-    endlineDate: "",
-    baselineTotalScore: "",
-    endlineTotalScore: "",
-    improvementPercentage: "",
-    isBaselineActive: false,
-    isEndlineActive: false,
-    evaluation: "",
-  });
-
+  
   const [evaluationForm, setEvaluationForm] = useState<{
     date: string;
     clientSessionEvaluation: string[];
@@ -90,9 +80,6 @@ const BeneficiaryProfilePage: React.FC<ComponentProps> = (
 
   const [mealTools, setMealTools] = useState<any[]>([]);
 
-  const handleFormChange = (e: any) => {
-    setMealTool({ ...mealTool, [e.target.name]: e.target.value });
-  };
 
   const handleEvaluationFormChange = (e: any) => {
     const name: string = e.target.name;
@@ -104,26 +91,8 @@ const BeneficiaryProfilePage: React.FC<ComponentProps> = (
     }));
   };
 
-  const handleAdd = () => {
-    if (!mealTool.type) return;
-    setMealTools([...mealTools, mealTool]);
-    setMealTool({
-      beneficiary_id: id,
-      type: "",
-      baselineDate: "",
-      endlineDate: "",
-      baselineTotalScore: "",
-      endlineTotalScore: "",
-      improvementPercentage: "",
-      isBaselineActive: false,
-      isEndlineActive: false,
-      evaluation: "",
-    });
-  };
-
-  const handleDelete = (index: number) => {
-    setMealTools(mealTools.filter((_, i) => i !== index));
-  };
+  const [reqForMealToolForm, setReqForMealToolForm] = useState<boolean>(false);
+  
 
   const handleSubmitMealtoolForm = (e: any) => {
     e.preventDefault();
@@ -164,23 +133,9 @@ const BeneficiaryProfilePage: React.FC<ComponentProps> = (
     else reqForToastAndSetMessage("Please fill all the fields !");
   };
 
-  const [baselineSelection, setBaselineSelection] = useState<string>("");
-  const [endlineSelection, setEndlineSelection] = useState<string>("");
-
-  const baselineOptions = [
-    "Low",
-    "Moderate",
-    "High",
-    "Evaluation Not Possible",
-    "N / A",
-  ];
-  const endlineOptions = [
-    "Low",
-    "Moderate",
-    "High",
-    "Evaluation Not Possible",
-    "N / A",
-  ];
+  const handleDelete = (index: number) => {
+    setMealTools(mealTools.filter((_: any, i: number) => i !== index));
+  };
 
   const [programInfo, setProgramInfo] = useState<MainDatabaseProgram[]>();
 
@@ -232,21 +187,7 @@ const BeneficiaryProfilePage: React.FC<ComponentProps> = (
       });
   }, []);
 
-  const [mainDbIndicators, setMainDbIndicators] = useState<
-    {
-      indicatorRef: string;
-      type: string;
-    }[]
-  >([]);
-
-  useEffect(() => {
-    axiosInstance
-      .get("/main_db/indicators")
-      .then((response: any) => setMainDbIndicators(response.data.data))
-      .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
-      );
-  }, []);
+  const [currentTab, setCurrentTab] = useState<string>("beneficiaryInfo");
 
   return (
     <>
@@ -255,15 +196,21 @@ const BeneficiaryProfilePage: React.FC<ComponentProps> = (
         <div className="flex flex-row items-center justify-start my-2">
           <BreadcrumbWithCustomSeparator></BreadcrumbWithCustomSeparator>
         </div>
-        <SubHeader pageTitle={"Benficiary Profile"}></SubHeader>
+        <SubHeader pageTitle={"Benficiary Profile"}>
+          {currentTab == "mealtool" && (
+            <div className="flex flex-row items-center justify-end gap-2">
+            <Button onClick={() => setReqForMealToolForm(!reqForMealToolForm)}>Add MealTool</Button>
+          </div>
+          )}
+        </SubHeader>
 
         {/* Main Content */}
         <div className="flex flex-1 h-[440px] w-full flex-col gap-6">
-          <Tabs defaultValue="beneficiaryInfo" className="h-full">
+          <Tabs onValueChange={(value: string) => setCurrentTab(value)} defaultValue="beneficiaryInfo" className="h-full">
             {/* List of tabs */}
             <TabsList className="w-full">
               <TabsTrigger value="beneficiaryInfo">Beneficiary</TabsTrigger>
-              <TabsTrigger value="outcome">Activity</TabsTrigger>
+              <TabsTrigger value="activity">Activity</TabsTrigger>
               <TabsTrigger value="mealtool">Meal Tools</TabsTrigger>
               <TabsTrigger value="evaluation">Evaluation</TabsTrigger>
             </TabsList>
@@ -316,7 +263,7 @@ const BeneficiaryProfilePage: React.FC<ComponentProps> = (
             </TabsContent>
 
             {/* Activity */}
-            <TabsContent value="outcome" className="h-full">
+            <TabsContent value="activity" className="h-full">
               <Card className="relative h-full flex flex-col">
                 <CardContent className="flex flex-col gap-4 overflow-auto">
                   <SessionsPage></SessionsPage>
@@ -329,190 +276,6 @@ const BeneficiaryProfilePage: React.FC<ComponentProps> = (
             <TabsContent value="mealtool" className="h-full">
               <Card className="h-full flex flex-col overflow-auto">
                 <CardContent className="flex flex-col gap-6">
-                  {/* Header */}
-                  <h2 className="text-black-800 font-bold text-lg text-center px-6 py-2 rounded-xl shadow-sm max-w-fit mx-auto">
-                    Add Meal Tool
-                  </h2>
-
-                  {/* Section 1: Basic Info */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {/* Type */}
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="type">Type</Label>
-                      <Input
-                        id="type"
-                        name="type"
-                        value={mealTool.type}
-                        onChange={handleFormChange}
-                        className="border w-full"
-                      />
-                    </div>
-
-                    {/* Date Of Baseline */}
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="baselineDate">Date Of Baseline</Label>
-                      <Input
-                        id="baselineDate"
-                        name="baselineDate"
-                        type="date"
-                        value={mealTool.baselineDate}
-                        onChange={handleFormChange}
-                        className="border w-full"
-                      />
-                    </div>
-
-                    {/* Date Of Endline */}
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="endlineDate">Date Of Endline</Label>
-                      <Input
-                        id="endlineDate"
-                        name="endlineDate"
-                        type="date"
-                        value={mealTool.endlineDate}
-                        onChange={handleFormChange}
-                        className="border w-full"
-                      />
-                    </div>
-
-                    {/* Activate baseline/endline */}
-                    <div className="flex flex-col gap-2 pt-6">
-                      <div className="flex items-center gap-3">
-                        <Checkbox
-                          id="baseline"
-                          checked={mealTool.isBaselineActive}
-                          onCheckedChange={(e: boolean) => {
-                            setMealTool((prev) => ({
-                              ...prev,
-                              isBaselineActive: e,
-                            }));
-                          }}
-                        />
-                        <Label htmlFor="baseline">Activate Baseline</Label>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <Checkbox
-                          id="endline"
-                          checked={mealTool.isEndlineActive}
-                          onCheckedChange={(e: boolean) => {
-                            setMealTool((prev) => ({
-                              ...prev,
-                              isEndlineActive: e,
-                            }));
-                          }}
-                        />
-                        <Label htmlFor="endline">Activate Endline</Label>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Section 2: Scores */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {/* Baseline Total Score */}
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="baselineTotalScore">
-                        Baseline Total Score
-                      </Label>
-                      <Input
-                        id="baselineTotalScore"
-                        name="baselineTotalScore"
-                        type="number"
-                        value={mealTool.baselineTotalScore}
-                        onChange={handleFormChange}
-                        className="border w-full"
-                      />
-                    </div>
-
-                    {/* Endline Total Score */}
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="endlineTotalScore">
-                        Endline Total Score
-                      </Label>
-                      <Input
-                        id="endlineTotalScore"
-                        name="endlineTotalScore"
-                        type="number"
-                        value={mealTool.endlineTotalScore}
-                        onChange={handleFormChange}
-                        className="border w-full"
-                      />
-                    </div>
-
-                    {/* Improvement Percentage */}
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="improvementPercentage">
-                        Percentage Of Improvement
-                      </Label>
-                      <Input
-                        id="improvementPercentage"
-                        name="improvementPercentage"
-                        type="number"
-                        value={mealTool.improvementPercentage}
-                        onChange={handleFormChange}
-                        className="border w-full"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Evaluation */}
-                  <div className="flex items-center gap-4">
-                    <Label className="whitespace-nowrap">
-                      Evaluation Based On General Judgment
-                    </Label>
-                    <Input
-                      name="evaluation"
-                      value={mealTool.evaluation}
-                      onChange={handleFormChange}
-                      className="flex-1 border"
-                    />
-                  </div>
-
-                  {/* Section 4: Baseline & Endline Options */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Baseline */}
-                    <div className="border rounded-xl p-4">
-                      <Label className="font-semibold">Baseline</Label>
-                      <div className="flex flex-wrap gap-4 mt-2">
-                        {baselineOptions.map((option) => (
-                          <div key={option} className="flex items-center gap-2">
-                            <Checkbox
-                              checked={baselineSelection === option}
-                              onCheckedChange={() =>
-                                setBaselineSelection(option)
-                              }
-                            />
-                            <Label>{option}</Label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Endline */}
-                    <div className="border rounded-xl p-4">
-                      <Label className="font-semibold">Endline</Label>
-                      <div className="flex flex-wrap gap-4 mt-2">
-                        {endlineOptions.map((option) => (
-                          <div key={option} className="flex items-center gap-2">
-                            <Checkbox
-                              checked={endlineSelection === option}
-                              onCheckedChange={() =>
-                                setEndlineSelection(option)
-                              }
-                            />
-                            <Label>{option}</Label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Action Button */}
-                  <div className="flex justify-end">
-                    <Button onClick={handleAdd}>Add Meal Tool</Button>
-                  </div>
-
-                  <Separator className="rounded-2xl" />
-
-                  {/* Accordion Section */}
                   <Accordion type="single" collapsible className="mt-4">
                     {mealTools.map((tool, index) => (
                       <AccordionItem key={index} value={`item-${index}`}>
@@ -811,9 +574,14 @@ const BeneficiaryProfilePage: React.FC<ComponentProps> = (
             </TabsContent>
           </Tabs>
         </div>
+
+        {reqForMealToolForm && (
+          <MealToolForm open={reqForMealToolForm} onOpenChange={setReqForMealToolForm} onSubmit={handleSubmitMealtoolForm} mealToolsStateSetter={setMealTools} mealToolsState={mealTools} mode={"create"}></MealToolForm>
+        )}
+        
       </div>
     </>
   );
 };
 
-export default BeneficiaryProfilePage;
+export default withPermission(BeneficiaryProfilePage, "Maindatabase.view");

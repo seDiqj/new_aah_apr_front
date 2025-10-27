@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import {
   projectColumns,
-  userColumns,
 } from "@/definitions/DataTableColumnsDefinitions";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -69,5 +68,4 @@ const ProjectsPage = () => {
   );
 };
 
-// export default withPermission(ProjectsPage, "List User");
-export default ProjectsPage;
+export default withPermission(ProjectsPage, "Project.view");

@@ -58,13 +58,24 @@ import { Textarea } from "@/components/ui/textarea";
 import { useParentContext } from "@/contexts/ParentContext";
 import { createAxiosInstance } from "@/lib/axios";
 import { withPermission } from "@/lib/withPermission";
-import { Edit, Plus, Trash } from "lucide-react";
+import { Edit, Eye, Plus, Trash } from "lucide-react";
 import calculateEachIndicatorProvinceTargetAccordingTONumberOFCouncilorCount from "@/lib/IndicatorProvincesTargetCalculator";
-import React, { useRef } from "react";
+import React from "react";
 import { useEffect, useState } from "react";
 import EditIndicatorModal from "@/components/global/IndicatorEditModel";
 import { useParams } from "next/navigation";
+import OutcomeEditModal from "@/components/global/OutcomeEditModel";
+import OutputEditModel from "@/components/global/OutputEditModel";
 
+
+const isp3s: string[] = [
+  "Improved Mental health and psychosocial well-being",
+  "Total transfers for the MHPSS & Protection sector",
+  "Reach of Care Practices",
+  "Reach of Mental health and Psychosocial Support and Protection",
+  "Reach of MHPSS, Care Practices and Protection capacity building activities",
+  "Reach of MHPSS, Care Practices and Protection kits deliveries",
+];
 
 const EditProjectPage = () => {
 
@@ -431,35 +442,26 @@ const EditProjectPage = () => {
     })),
   };
 
-  const isp3s: string[] = [
-    "Improved Mental health and psychosocial well-being",
-    "Total transfers for the MHPSS & Protection sector",
-    "Reach of Care Practices",
-    "Reach of Mental health and Psychosocial Support and Protection",
-    "Reach of MHPSS, Care Practices and Protection capacity building activities",
-    "Reach of MHPSS, Care Practices and Protection kits deliveries",
-  ];
-
   const [isp3, setIsp3] = useState<
     {
       name: string;
       indicators: string[];
     }[]
-  >([
-    ...isp3s.map((i) => ({
+  >(
+    isp3s.map((i) => ({
       name: i,
       indicators: [],
     })),
-  ]);
+  );
 
-  useEffect(() => {
-    console.log("formData", formData);
-    console.log("outcomes", outcomes);
-    console.log("outputs", outputs);
-    console.log("indicators", indicators);
-    console.log("dessaggregations", desaggregations);
-    console.log(isp3);
-  }, [formData, outcomes, outputs, indicators, desaggregations, isp3]);
+  // useEffect(() => {
+  //   console.log("formData", formData);
+  //   console.log("outcomes", outcomes);
+  //   console.log("outputs", outputs);
+  //   console.log("indicators", indicators);
+  //   console.log("dessaggregations", desaggregations);
+  //   console.log(isp3);
+  // }, [formData, outcomes, outputs, indicators, desaggregations, isp3]);
 
   // temp variable
   const [projectId, setProjectId] = useState<number | null>(null);
@@ -479,14 +481,14 @@ const EditProjectPage = () => {
             "/projects/outcome",
             {
               project_id: projectId,
-              outcomes: outcomes,
+              outcomes: outcomes.filter((outcome) => outcome.id == null),
             },
           ]
         : parts == "output"
         ? [
-            "/projects/output",
+            "/projects/o/output",
             {
-              outputs: outputs.map((output) => {
+              outputs: outputs.filter((output) => output.id == null).map((output) => {
                 const correspondingOutcomeId = outcomes.find(
                   (outcome) => outcome.outcomeRef == output.outcomeRef
                 )?.id;
@@ -509,9 +511,9 @@ const EditProjectPage = () => {
           ]
         : parts == "indicator"
         ? [
-            "/projects/indicator",
+            "/projects/i/indicator",
             {
-              indicators: indicators.map((indicator) => {
+              indicators: indicators.filter((indicator) => indicator.id == null).map((indicator) => {
                 const correspondingOutputId = outputs.find(
                   (output) => output.outputRef == indicator.outputRef
                 )?.id;
@@ -564,7 +566,9 @@ const EditProjectPage = () => {
                 return dessaggregation;
               }),
             },
-          ] : parts == "isp3" ? ["/projects/isp3", ""] : ["", ""];
+          ] : parts == "isp3" ? ["/projects/is/isp3", {
+            isp3s: isp3
+          }] : ["", ""];
 
     axiosInstance
       .post(url, form)
@@ -640,8 +644,11 @@ const EditProjectPage = () => {
     "notCreatedYet",
     "created",
     "hodDhodApproved",
+    "hodDhodRejected",
     "grantFinalized",
+    "grantRejected",
     "hqFinalized",
+    "hqRejected"
   ];
 
   const changeProjectAprStatus = (status: string) => {
@@ -649,6 +656,8 @@ const EditProjectPage = () => {
       reqForToastAndSetMessage("Wronge status !");
       return;
     }
+
+    console.log(status)
 
     axiosInstance
       .post(`projects/status/change_apr_status/${projectId}`, {
@@ -659,6 +668,8 @@ const EditProjectPage = () => {
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
       );
+
+    setComment("");
   };
 
   const [comment, setComment] = useState<string>("");
@@ -847,14 +858,107 @@ const EditProjectPage = () => {
     axiosInstance
       .put(`/projects/indicator/${updatedIndicator.id}`, updatedIndicator)
       .then((response: any) =>
+      {
         reqForToastAndSetMessage(response.data.message)
+        console.log(response.data.data)
+      }
       )
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
       );
   }
 
+  const handleUpdateProjectDetails = () => {
+    console.log(123);
+    axiosInstance.post(`projects/${id}`, formData)
+    .then((response: any) => reqForToastAndSetMessage(response.data.message))
+    .catch((error: any) => reqForToastAndSetMessage(error.response.data.message))
+  }
+
+  const handleUpdateOutcome = async (local: {id: string, outcome:string, outcomeRef: string}) => {
+      if (!local.outcome.trim() || !local.outcomeRef.trim()) {
+        reqForToastAndSetMessage("Please fill all the fields !");
+        return;
+      }
+
+      try {
+        // If backend expects PUT to /projects/outcome/:id to update
+        const id = local!.id;
+        const payload = {
+          outcome: local.outcome,
+          outcomeRef: local.outcomeRef,
+        };
+
+        const response = await axiosInstance.put(
+          `/projects/outcome/${id}`,
+          payload
+        );
+
+        // Update local outcomes state
+        setOutcomes((prev) =>
+          prev.map((o) =>
+            o.id === id ? { ...o, outcome: local.outcome, outcomeRef: local.outcomeRef } : o
+          )
+        );
+
+        reqForToastAndSetMessage(response.data?.message || "Outcome updated");
+      } catch (error: any) {
+        reqForToastAndSetMessage(
+          error?.response?.data?.message || "Failed to update outcome"
+        );
+      } finally {
+      }
+  };
+
+  const handleUpdateOutput = async (local: {id: string, output:string, outputRef: string}) => {
+      if (!local.output.trim() || !local.outputRef.trim()) {
+        reqForToastAndSetMessage("Please fill all the fields !");
+        return;
+      }
+
+      try {
+        // If backend expects PUT to /projects/outcome/:id to update
+        const id = local!.id;
+        const payload = {
+          output: local.output,
+          outputRef: local.outputRef,
+        };
+
+        const response = await axiosInstance.put(
+          `/projects/output/${id}`,
+          payload
+        );
+
+        // Update local outputs state
+        setOutputs((prev) =>
+          prev.map((o) =>
+            o.id === id ? { ...o, outcome: local.output, outcomeRef: local.outputRef } : o
+          )
+        );
+
+        reqForToastAndSetMessage(response.data?.message || "Output updated");
+        setReqForOutputEditModel(null);
+      } catch (error: any) {
+        reqForToastAndSetMessage(
+          error?.response?.data?.message || "Failed to update output"
+        );
+      } finally {
+      }
+  };
+
+  const handleUpdateDessaggregation = () => {
+
+    axiosInstance.put("/projects/dissaggregation", {
+      "dessaggregations": desaggregations
+    })
+    .then((response: any) => reqForToastAndSetMessage(response.data.message))
+    .catch((error: any) => reqForToastAndSetMessage(error.response.data.message))
+
+  }
+
   const [reqForIndicatorEditModel, setReqForIndicatorEditModel] = useState<Indicator | null>(null);
+  const [reqForOutcomeEditModel, setReqForOutcomeEditModel] = useState<{id: string, outcome: string, outcomeRef: string} | null>(null);
+  const [reqForOutputEditModel, setReqForOutputEditModel] = useState<{id: string, output: string, outputRef: string} | null>(null);
 
 
   const [dessaggregationBeforeEdit, setDessaggregationBeforeEdit] = useState<{
@@ -871,6 +975,7 @@ const EditProjectPage = () => {
 
     axiosInstance.get(`/projects/${id}`)
     .then((response: any) => {
+      console.log(response.data.data)
       const {outcomesInfo, ...project} = response.data.data;
       setFormData(project);
       setOutcomes(outcomesInfo.map((outcome: any) => {
@@ -914,15 +1019,35 @@ const EditProjectPage = () => {
       }));
       setProjectAprStatus(project.aprStatus);
       setProjectId(project.id)
-      setIsp3(outcomesInfo.flatMap((outcome: any) => {
+      outcomesInfo.flatMap((outcome: any) => {
         const isp3s = outcome.outputs.flatMap((output: any) => output.indicators.flatMap((indicator: any) => indicator.isp3.flatMap((isp: any) => {
 
-          return isp;
+          setIsp3((prev) => prev.map((i) => 
+            i.name == isp.description ?
+            {
+              ...i,
+              indicators: [...i.indicators, isp.pivot.indicator_id]
+            }:
+            i
+          ))
 
         })))
         return isp3s;
-      }));
+      });
     }).catch((error: any) => reqForToastAndSetMessage(error.response.data.message));
+  }, [])
+
+  const mode: "edit" | "show" = "edit";
+
+  const readOnly = mode == "show";
+
+  const [actionLogs, setActionLogs] = useState( [
+  ]);
+
+  useEffect(() => {
+    axiosInstance.get(`/projects/get_project_finalizers_details/${id}`)
+    .then((response: any) => setActionLogs(response.data.data))
+    .catch((error: any) => reqForToastAndSetMessage(error.response.data.message))
   }, [])
 
   return (
@@ -969,6 +1094,7 @@ const EditProjectPage = () => {
                         name="projectCode"
                         value={formData.projectCode}
                         onChange={hundleFormChange}
+                        disabled={readOnly}
                       />
                     </div>
 
@@ -979,6 +1105,7 @@ const EditProjectPage = () => {
                         name="projectTitle"
                         value={formData.projectTitle}
                         onChange={hundleFormChange}
+                        disabled={readOnly}
                       />
                     </div>
 
@@ -989,6 +1116,7 @@ const EditProjectPage = () => {
                         name="projectGoal"
                         value={formData.projectGoal}
                         onChange={hundleFormChange}
+                        disabled={readOnly}
                       />
                     </div>
 
@@ -999,6 +1127,7 @@ const EditProjectPage = () => {
                         name="projectDonor"
                         value={formData.projectDonor}
                         onChange={hundleFormChange}
+                        disabled={readOnly}
                       />
                     </div>
 
@@ -1010,6 +1139,7 @@ const EditProjectPage = () => {
                         type="date"
                         value={formData.startDate}
                         onChange={hundleFormChange}
+                        disabled={readOnly}
                       />
                     </div>
 
@@ -1021,6 +1151,7 @@ const EditProjectPage = () => {
                         type="date"
                         value={formData.endDate}
                         onChange={hundleFormChange}
+                        disabled={readOnly}
                       />
                     </div>
 
@@ -1042,6 +1173,7 @@ const EditProjectPage = () => {
                           }));
                         }}
                         placeholder="Project Status"
+                        disabled={readOnly}
                       />
                     </div>
 
@@ -1052,6 +1184,7 @@ const EditProjectPage = () => {
                         name="projectManager"
                         value={formData.projectManager}
                         onChange={hundleFormChange}
+                        disabled={readOnly}
                       />
                     </div>
 
@@ -1074,6 +1207,7 @@ const EditProjectPage = () => {
                           }));
                         }}
                         placeholder="Project Provinces ..."
+                        disabled={readOnly}
                       />
                     </div>
 
@@ -1093,7 +1227,7 @@ const EditProjectPage = () => {
                             thematicSector: value,
                           }));
                         }}
-                        placeholder="Project Status"
+                        disabled={readOnly}
                       />
                     </div>
 
@@ -1105,6 +1239,7 @@ const EditProjectPage = () => {
                         value={formData.reportingPeriod}
                         onChange={hundleFormChange}
                         type="text"
+                        disabled={readOnly}
                       />
                     </div>
 
@@ -1116,6 +1251,7 @@ const EditProjectPage = () => {
                         value={formData.reportingDate}
                         onChange={hundleFormChange}
                         type="text"
+                        disabled={readOnly}
                       />
                     </div>
 
@@ -1127,13 +1263,14 @@ const EditProjectPage = () => {
                         name="description"
                         value={formData.description}
                         onChange={hundleFormChange}
+                        disabled={readOnly}
                       />
                     </div>
                   </div>
                 </CardContent>
 
                 <CardFooter className="flex justify-end gap-2">
-                    {cardsBottomButtons(setCurrentTab, "project", hundleSubmit, "project", setCurrentTab, "outcome", true)}
+                    {cardsBottomButtons(setCurrentTab, "project", handleUpdateProjectDetails, null, setCurrentTab, "outcome", true, false, readOnly)}
                 </CardFooter>
               </Card>
             </TabsContent>
@@ -1157,6 +1294,7 @@ const EditProjectPage = () => {
                         value={outcome}
                         onChange={(e) => setOutcome(e.target.value)}
                         placeholder="Enter outcome title..."
+                        disabled={readOnly}
                       />
                     </div>
                     <div className="flex flex-col gap-1">
@@ -1166,18 +1304,21 @@ const EditProjectPage = () => {
                         value={outcomeRef}
                         onChange={(e) => setOutcomeRef(e.target.value)}
                         placeholder="Enter outcome reference..."
+                        disabled={readOnly}
                       />
                     </div>
                   </div>
-                  <div className="flex justify-end">
-                    <Button
-                      type="button"
-                      onClick={handleAddOutcome}
-                      className="flex items-center gap-2"
-                    >
-                      <Plus size={16} /> Add Outcome
-                    </Button>
-                  </div>
+                  {!readOnly && (
+                    <div className="flex justify-end">
+                      <Button
+                        type="button"
+                        onClick={handleAddOutcome}
+                        className="flex items-center gap-2"
+                      >
+                        <Plus size={16} /> Add Outcome
+                      </Button>
+                    </div>
+                  )}
 
                   <div className="mt-4 max-h-60 ">
                     {outcomes.length === 0 && (
@@ -1196,7 +1337,10 @@ const EditProjectPage = () => {
                             {item.outcomeRef}
                           </span>
                         </div>
-                        <Trash
+                        
+                          <div className="flex flex-row items-center justify-end gap-2">
+                          {!readOnly && (
+                            <Trash
                           onClick={() =>
                           {setOutcomes((prev) =>
                               prev.filter((_, i) => i !== index)
@@ -1204,16 +1348,30 @@ const EditProjectPage = () => {
                             handleDelete(`projects/outcome`, item.id)
                             }
                           }
+                          
                           className="cursor-pointer text-red-500 hover:text-red-700"
                           size={18}
                         />
+                          )}
+                        {item.id != null && 
+                            !readOnly ? <Edit className="cursor-pointer text-orange-500 hover:text-orange-700" onClick={() => setReqForOutcomeEditModel({
+                              id: item.id!,
+                              outcome: item.outcome,
+                              outcomeRef: item.outcomeRef
+                            })} size={18}></Edit> : <Eye className="cursor-pointer text-orange-500 hover:text-orange-700" onClick={() => setReqForOutcomeEditModel({
+                              id: item.id!,
+                              outcome: item.outcome,
+                              outcomeRef: item.outcomeRef
+                            })} size={18}></Eye>
+                        }
+                        </div>
                       </div>
                     ))}
                   </div>
                 </CardContent>
 
                 <CardFooter className="flex flex-row w-full gap-2 items-start justify-end bottom-1">
-                  {cardsBottomButtons(setCurrentTab, "project", hundleSubmit, "outcome", setCurrentTab, "output")}
+                  {cardsBottomButtons(setCurrentTab, "project", hundleSubmit, "outcome", setCurrentTab, "output", false, false, readOnly)}
                 </CardFooter>
               </Card>
             </TabsContent>
@@ -1248,6 +1406,7 @@ const EditProjectPage = () => {
                                 value={output}
                                 onChange={(e) => setOutput(e.target.value)}
                                 placeholder="Enter output title..."
+                                disabled={readOnly}
                               />
                             </div>
                             <div className="flex flex-col gap-1">
@@ -1259,11 +1418,13 @@ const EditProjectPage = () => {
                                 value={outputRef}
                                 onChange={(e) => setOutputRef(e.target.value)}
                                 placeholder="Enter output reference..."
+                                disabled={readOnly}
                               />
                             </div>
                           </div>
                           {/* Add Btn */}
-                          <div className="flex justify-end">
+                          {!readOnly && (
+                            <div className="flex justify-end">
                             <Button
                               type="button"
                               onClick={() => handleAddOutput({
@@ -1278,6 +1439,7 @@ const EditProjectPage = () => {
                               <Plus size={16} /> Add Output
                             </Button>
                           </div>
+                          )}
 
                           {/* List of added outputs for current outcome */}
                           <div className="mt-4 max-h-60 overflow-auto border rounded-xl">
@@ -1306,7 +1468,8 @@ const EditProjectPage = () => {
                                       {outputItem.outputRef}
                                     </span>
                                   </div>
-                                  <Trash
+                                    <div className="flex flex-row items-center justify-end gap-2">
+                                    {!readOnly && <Trash
                                     onClick={() =>
                                     {
                                       setOutputs((prev) =>
@@ -1317,7 +1480,19 @@ const EditProjectPage = () => {
                                     }
                                     className="cursor-pointer text-red-500 hover:text-red-700"
                                     size={18}
-                                  />
+                                  />}
+                                  {outputItem.id && (
+                                    !readOnly ? <Edit className="cursor-pointer text-orange-500 hover:text-orange-700" onClick={() => setReqForOutputEditModel({
+                                      id: outputItem.id!,
+                                      output: outputItem.output,
+                                      outputRef: outputItem.outputRef
+                                    })} size={18}></Edit> : <Eye className="cursor-pointer text-orange-500 hover:text-orange-700" onClick={() => setReqForOutputEditModel({
+                                      id: outputItem.id!,
+                                      output: outputItem.output,
+                                      outputRef: outputItem.outputRef
+                                    })} size={18}></Eye>
+                                  )}
+                                  </div>
                                 </div>
                               ))}
                           </div>
@@ -1328,7 +1503,7 @@ const EditProjectPage = () => {
                 </CardContent>
 
                 <CardFooter className="flex justify-end gap-2 bottom-1">
-                    {cardsBottomButtons(setCurrentTab, "outcome", hundleSubmit, "output", setCurrentTab, "indicator")}
+                    {cardsBottomButtons(setCurrentTab, "outcome", hundleSubmit, "output", setCurrentTab, "indicator", false, false, readOnly)}
                 </CardFooter>
               </Card>
             </TabsContent>
@@ -1367,6 +1542,7 @@ const EditProjectPage = () => {
                                 value={indicator.indicator}
                                 onChange={hundleIndicatorFormChange}
                                 placeholder="Enter indicator"
+                                disabled={readOnly}
                               />
                             </div>
 
@@ -1381,6 +1557,7 @@ const EditProjectPage = () => {
                                 value={indicator.indicatorRef}
                                 onChange={hundleIndicatorFormChange}
                                 placeholder="Enter indicator reference..."
+                                disabled={readOnly}
                               />
                             </div>
 
@@ -1395,6 +1572,7 @@ const EditProjectPage = () => {
                                 value={indicator.target}
                                 onChange={hundleIndicatorFormChange}
                                 placeholder="Enter indicator target..."
+                                disabled={readOnly}
                               />
                             </div>
 
@@ -1422,6 +1600,7 @@ const EditProjectPage = () => {
                                   }));
                                 }}
                                 placeholder="Indicator Status"
+                                disabled={readOnly}
                               />
                             </div>
 
@@ -1481,6 +1660,7 @@ const EditProjectPage = () => {
                                   }
                                 }
                                 }
+                                disabled={readOnly}
                               />
                             </div>
 
@@ -1537,8 +1717,11 @@ const EditProjectPage = () => {
                                   setIndicator((prev) => ({
                                     ...prev,
                                     database: value,
+                                    dessaggregationType: value == "main_database" ? "session" : value == "enact_database"
+                                    ? "enact" : "indevidual"
                                   }))
                                 }
+                                disabled={readOnly}
                               />
 
                               {/* Type if the database is main database (backend helper) */}
@@ -1571,6 +1754,7 @@ const EditProjectPage = () => {
                                         type: value,
                                       }))
                                     }
+                                    disabled={readOnly}
                                   />
                                 </div>
                               )}
@@ -1636,6 +1820,7 @@ const EditProjectPage = () => {
                                               .slice(1)
                                               .toLowerCase()
                                           } Councular Count ...`}
+                                          disabled={readOnly}
                                         />
                                       </div>
                                       <div className="flex flex-col gap-1">
@@ -1674,6 +1859,7 @@ const EditProjectPage = () => {
                                               .slice(1)
                                               .toLowerCase()
                                           } Target ...`}
+                                          disabled={readOnly}
                                         />
                                       </div>
                                     </div>
@@ -1701,32 +1887,40 @@ const EditProjectPage = () => {
                                 hundleIndicatorFormChange(e);
                               }}
                               className="flex gap-6"
+                              disabled={readOnly}
                             >
-                              {(indicator.database == "main_database" || indicator.database == "cd_database") && 
+                              {(indicator.database == "main_database") && 
                               <div className="flex items-center gap-2">
                                 <RadioGroupItem
                                   value="session"
                                   id={`r1-${index}`}
+                                  disabled={readOnly}
                                 />
                                 <Label htmlFor={`r1-${index}`}>Session</Label>
                               </div>}
                               
-                              <div className="flex items-center gap-2">
+                              {indicator.database != "enact_database" && (
+                                <div className="flex items-center gap-2">
                                 <RadioGroupItem
                                   value="indevidual"
                                   id={`r2-${index}`}
+                                  disabled={readOnly}
                                 />
                                 <Label htmlFor={`r2-${index}`}>
                                   Indevidual
                                 </Label>
                               </div>
-                              <div className="flex items-center gap-2">
+                              )}  
+                              {indicator.database == "enact_database" && (
+                                <div className="flex items-center gap-2">
                                 <RadioGroupItem
                                   value="enact"
                                   id={`r3-${index}`}
+                                  disabled={readOnly}
                                 />
                                 <Label htmlFor={`r3-${index}`}>Enact</Label>
                               </div>
+                              )}
                             </RadioGroup>
                           </div>
 
@@ -1741,6 +1935,7 @@ const EditProjectPage = () => {
                               value={indicator.description}
                               onChange={hundleIndicatorFormChange}
                               placeholder="Enter description..."
+                              disabled={readOnly}
                             />
                           </div>
 
@@ -1765,6 +1960,7 @@ const EditProjectPage = () => {
                                   value={indicator.subIndicator?.name}
                                   onChange={hundleIndicatorFormChange}
                                   placeholder="Enter sub indicator name..."
+                                  disabled={readOnly}
                                 />
                               </div>
                               {/* sub indicator target */}
@@ -1778,6 +1974,7 @@ const EditProjectPage = () => {
                                   value={indicator.subIndicator?.target}
                                   onChange={hundleIndicatorFormChange}
                                   placeholder="Enter sub indicator target..."
+                                  disabled={readOnly}
                                 />
                               </div>
                             </div>
@@ -1815,6 +2012,7 @@ const EditProjectPage = () => {
                                                 },
                                               });
                                             }}
+                                            disabled={readOnly}
                                           />
                                         </div>
                                         <div className="flex flex-col gap-1">
@@ -1837,6 +2035,7 @@ const EditProjectPage = () => {
                                                 },
                                               });
                                             }}
+                                            disabled={readOnly}
                                           />
                                         </div>
                                       </div>
@@ -1847,13 +2046,14 @@ const EditProjectPage = () => {
                           </div>
 
                           {/* Buttons */}
-                          <div className="flex justify-end mt-4 gap-2">
+                          {!readOnly && (
+                            <div className="flex justify-end mt-4 gap-2">
                             <Button
                               type="button"
                               className="flex items-center gap-2"
                               onClick={handleAddSubIndicator}
                               disabled={
-                                indicator.dessaggregationType == "enact"
+                                indicator.dessaggregationType == "enact" 
                               }
                             >
                               <Plus size={16} />
@@ -1872,6 +2072,7 @@ const EditProjectPage = () => {
                               <Plus size={16} /> Add Indicator
                             </Button>
                           </div>
+                          )}
 
                           {/* indicators list */}
                           <div className="mt-4 min-h-[240px] overflow-auto border rounded-xl">
@@ -1890,8 +2091,8 @@ const EditProjectPage = () => {
                                       {indItem.indicatorRef}
                                     </span> 
                                   </div>
-                                  <div className="flex flex-row items-center justify-end gap-2">
-                                    <Trash
+                                    <div className="flex flex-row items-center justify-end gap-2">
+                                    {!readOnly && <Trash
                                     onClick={() =>
                                     {
                                       setIndicators((prev) =>
@@ -1902,9 +2103,10 @@ const EditProjectPage = () => {
                                     }
                                     className="cursor-pointer text-red-500 hover:text-red-700"
                                     size={18}
-                                  />
+                                  />}
                                   {indItem.id && (
-                                    <Edit className="cursor-pointer text-orange-500 hover:text-orange-700" onClick={() => setReqForIndicatorEditModel(indItem)} size={18}></Edit>
+                                    !readOnly ? <Edit className="cursor-pointer text-orange-500 hover:text-orange-700" onClick={() => setReqForIndicatorEditModel(indItem)} size={18}></Edit>
+                                    : <Eye className="cursor-pointer text-orange-500 hover:text-orange-700" onClick={() => setReqForIndicatorEditModel(indItem)} size={18}></Eye>
                                   )}
                                   </div>
                                 </div>
@@ -1917,7 +2119,7 @@ const EditProjectPage = () => {
                 </CardContent>
 
                 <CardFooter className="flex justify-end gap-2">
-                  {cardsBottomButtons(setCurrentTab, "output", hundleSubmit, "indicator", setCurrentTab, "dessaggregation")}
+                  {cardsBottomButtons(setCurrentTab, "output", hundleSubmit, "indicator", setCurrentTab, "dessaggregation", false, false, readOnly)}
                 </CardFooter>
               </Card>
             </TabsContent>
@@ -1955,7 +2157,7 @@ const EditProjectPage = () => {
                               setDessaggregationBeforeEdit(desaggregations);
                             }}
                           >
-                            Add
+                            {!readOnly ? "Add" : "Check"}
                           </Button>
                         </CardContent>
                       </Card>
@@ -2072,6 +2274,7 @@ const EditProjectPage = () => {
                                                   <TableRow key={i}>
                                                     <TableCell className="text-center w-10">
                                                       <Checkbox
+                                                      disabled={readOnly}
                                                         checked={isChecked}
                                                         onCheckedChange={(
                                                           checked
@@ -2136,6 +2339,7 @@ const EditProjectPage = () => {
                                                     <TableCell>
                                                       <Input
                                                         type="number"
+                                                        disabled={readOnly}
                                                         value={
                                                           existing
                                                             ? String(
@@ -2269,6 +2473,7 @@ const EditProjectPage = () => {
                                                     <TableRow key={i}>
                                                       <TableCell className="text-center w-10">
                                                         <Checkbox
+                                                        disabled={readOnly}
                                                           checked={isChecked}
                                                           onCheckedChange={(
                                                             checked
@@ -2337,6 +2542,7 @@ const EditProjectPage = () => {
 
                                                       <TableCell>
                                                         <Input
+                                                        disabled={readOnly}
                                                           type="number"
                                                           value={
                                                             existing
@@ -2466,7 +2672,8 @@ const EditProjectPage = () => {
                               </Tabs>
                             </div>
                           </div>
-                          <DialogFooter>
+                          {!readOnly && (
+                            <DialogFooter>
                             <div className="flex flex-row items-center justify-end fixed -bottom-40 gap-2">
                               <Button className="bg-blue-400" onClick={() => {
                                 setDessaggregations([])
@@ -2509,38 +2716,16 @@ const EditProjectPage = () => {
                               </Button>
                             </div>
                         </DialogFooter> 
+                          )}
                         </DialogContent>    
                               
                       </Dialog>
                     )}
                   </div>
                 </CardContent>
+
                 <CardFooter className="flex flex-row items-center justify-end w-full absolute bottom-5">
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button>Save</Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>
-                          Are you absolutely sure?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone. This will permanently
-                          delete your account and remove your data from our
-                          servers.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => hundleSubmit("dessaggration")}
-                        >
-                          Continue
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  {cardsBottomButtons(setCurrentTab, "indicator", handleUpdateDessaggregation, null, setCurrentTab, "aprPreview", false, false, readOnly)}
                 </CardFooter>
               </Card>
             </TabsContent>
@@ -2555,7 +2740,7 @@ const EditProjectPage = () => {
 
             {/* ISP3 */}
             <TabsContent value="isp3" className="h-full">
-              <Card className="h-full">
+              <Card className="h-full w-full relative overflow-auto">
 
                 <CardHeader>
                   <CardTitle>ISP3</CardTitle>
@@ -2576,49 +2761,32 @@ const EditProjectPage = () => {
                             .filter((indicator) => indicator.id != null)
                             .map((ind) => ({
                               label: ind.indicatorRef,
-                              value: ind.indicatorRef,
+                              value: ind.id!,
                             }))}
                           value={
-                            isp3
-                              .find((i) => i.name === name)
-                              ?.indicators.map((indicatorId) => {
-                                const correspondingIndicatorRef =
-                                  indicators.find(
-                                    (indicator) => indicator.id == indicatorId
-                                  )?.indicatorRef!;
-
-                                return correspondingIndicatorRef;
-                              }) ?? []
+                            isp3.find((i) => i.name == name)?.indicators ?? []
                           }
-                          onValueChange={(value: string[]) =>
-                            setIsp3((prev) =>
-                              prev.map((item) =>
-                                item.name === name
-                                  ? {
-                                      ...item,
-                                      indicators: value.map((v) => {
-                                        const correspondingIndicatorId =
-                                          indicators.find(
-                                            (indicator) =>
-                                              indicator.indicatorRef == v
-                                          )?.id!;
-
-                                        return correspondingIndicatorId;
-                                      }),
-                                    }
-                                  : item
-                              )
-                            )
+                          onValueChange={
+                            (value: string[]) => {
+                              console.log(value)
+                              setIsp3((prev) => prev.map((i) => 
+                              i.name == name ? 
+                              {
+                                ...i, indicators: value
+                              } : i
+                            ))
+                            }
                           }
                           placeholder="Select indicator to link"
+                          disabled={readOnly}
                         />
                       </div>
                     </div>
                   ))}
                 </CardContent>
 
-                <CardFooter>
-                  {cardsBottomButtons(setCurrentTab, "aprPreview", hundleSubmit, "isp3", setCurrentTab, "finalization")}
+                <CardFooter className="flex flex-row items-center justify-end w-full absolute bottom-5">
+                  {cardsBottomButtons(setCurrentTab, "aprPreview", hundleSubmit, "isp3", setCurrentTab, "finalization", false, false, readOnly)}
                 </CardFooter>
               </Card>
             </TabsContent>
@@ -2629,6 +2797,7 @@ const EditProjectPage = () => {
                 <CardHeader>
                   <CardTitle>Apr Finalization</CardTitle>
                 </CardHeader>
+
                 <CardContent className="grid gap-6">
                   {[
                     {
@@ -2636,30 +2805,34 @@ const EditProjectPage = () => {
                       label: "Create",
                       description:
                         "This action will change the status of project to CREATED and send notification to manager for submitting.",
-                      statusValue: "created",
+                      acceptStatusValue: "created",
                     },
                     {
                       id: "submit",
                       label: "Manager Submit",
                       description:
                         "This action will mark the project as submitted by manager.",
-                      statusValue: "hodDhodApproved",
+                      acceptStatusValue: "hodDhodApproved",
+                      rejectStatusValue: "hodDhodRejected"
                     },
                     {
                       id: "grantFinalize",
                       label: "Grant Finalization",
                       description:
                         "This action will finalize the grant and update project status.",
-                      statusValue: "grantFinalized",
+                      acceptStatusValue: "grantFinalized",
+                      rejectStatusValue: "grantRejected"
                     },
                     {
                       id: "hqFinalize",
                       label: "HQ Finalization",
                       description:
                         "This action will finalize the project at HQ level.",
-                      statusValue: "hqFinalized",
+                      acceptStatusValue: "hqFinalized",
+                      rejectStatusValue: "hqRejected"
                     },
-                  ].map((step) => {
+                  ].map((step, index) => {
+                    const canReject = index !== 0;
                     return (
                       <div
                         key={step.id}
@@ -2672,26 +2845,33 @@ const EditProjectPage = () => {
                                 id={step.id}
                                 checked={(() => {
                                   const currentIdx = projectAprStatusList.indexOf(projectAprStatus);
-                                  const stepIdx = projectAprStatusList.indexOf(step.statusValue);
-                                  return stepIdx !== -1 && currentIdx >= stepIdx;
+                                  const stepIdx = projectAprStatusList.indexOf(step.acceptStatusValue!);
+
+                                  // اگر مرحله reject شده، تیک نخورده باشد
+                                  const isRejected = step.rejectStatusValue
+                                    ? projectAprStatus === step.rejectStatusValue
+                                    : false;
+
+                                  return !isRejected && stepIdx !== -1 && currentIdx >= stepIdx;
                                 })()}
-                                onCheckedChange={(checked: boolean) => {
-                                  const stepIdx = projectAprStatusList.indexOf(step.statusValue);
-                                  if (checked) {
-                                    // move forward to this step
-                                    setProjectAprStatus(step.statusValue);
-                                  } else {
-                                    // on uncheck, revert to the previous status (or the first one)
-                                    const prev = stepIdx > 0 ? projectAprStatusList[stepIdx - 1] : projectAprStatusList[0];
-                                    setProjectAprStatus(prev);
-                                  }
-                                }}
+                                onCheckedChange={() => {}}
                               />
                             </AlertDialogTrigger>
+
                             <AlertDialogContent className="space-y-4">
                               <AlertDialogHeader>
                                 <AlertDialogTitle>
-                                  Confirm {step.label}?
+                                  {canReject ? (
+                                    <>
+                                      Do you want to{" "}
+                                      <span className="text-green-600">Accept</span> or{" "}
+                                      <span className="text-red-600">Reject</span> this step?
+                                    </>
+                                  ) : (
+                                    <>
+                                      Confirm <span className="text-green-600">{step.label}</span>?
+                                    </>
+                                  )}
                                 </AlertDialogTitle>
                                 <AlertDialogDescription>
                                   {step.description}
@@ -2715,28 +2895,95 @@ const EditProjectPage = () => {
                                 />
                               </div>
 
-                              <AlertDialogFooter>
+                              <AlertDialogFooter className="flex justify-between">
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => {
-                                    if (comment.trim())
-                                      changeProjectAprStatus(step.statusValue);
-                                    else
-                                      reqForToastAndSetMessage(
-                                        "Comment section is required !"
-                                      );
-                                  }}
-                                >
-                                  Continue
-                                </AlertDialogAction>
+
+                                {canReject ? (
+                                  <div className="flex gap-2">
+                                    <Button
+                                      variant="destructive"
+                                      onClick={() => {
+                                        if (comment.trim()) {
+                                          changeProjectAprStatus(step.rejectStatusValue!);
+                                        } else {
+                                          reqForToastAndSetMessage("Comment section is required !");
+                                        }
+                                      }}
+                                    >
+                                      Reject
+                                    </Button>
+
+                                    <Button
+                                      onClick={() => {
+                                        if (comment.trim()) {
+                                          changeProjectAprStatus(step.acceptStatusValue!);
+                                        } else {
+                                          reqForToastAndSetMessage("Comment section is required !");
+                                        }
+                                      }}
+                                    >
+                                      Accept
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <Button
+                                    onClick={() => {
+                                      if (comment.trim()) {
+                                        changeProjectAprStatus(step.acceptStatusValue!);
+                                      } else {
+                                        reqForToastAndSetMessage("Comment section is required !");
+                                      }
+                                    }}
+                                  >
+                                    Continue
+                                  </Button>
+                                )}
                               </AlertDialogFooter>
                             </AlertDialogContent>
                           </AlertDialog>
+
                           <Label htmlFor={step.id}>{step.label}</Label>
                         </div>
                       </div>
                     );
                   })}
+
+                  {/* Action Progress Bar */}
+                  <div className="mt-8">
+                    <h3 className="text-lg font-semibold mb-4">Action Progress</h3>
+
+                    <div className="flex items-center gap-4 overflow-x-auto p-3  rounded-xl shadow-inner">
+                      {actionLogs.map((log: any, i) => (
+                        <div
+                          key={log.id}
+                          className="flex items-center gap-2 shrink-0"
+                        >
+                          <div className="flex flex-col items-center text-center">
+                            <img
+                              src={log.avatar}
+                              alt={log.name}
+                              className="w-10 h-10 rounded-full border-2 border-gray-300 object-cover"
+                            />
+                            <span className="text-xs mt-1 font-medium">{log.name}</span>
+                            <span
+                              className={`text-xs px-2 py-1 rounded-full mt-1 ${
+                                log.action === "Accepted"
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-red-100 text-red-700"
+                              }`}
+                            >
+                              {log.action}
+                            </span>
+                          </div>
+
+                          {i < actionLogs.length - 1 && (
+                            <div className="w-10 h-[2px] bg-gray-300 mx-2"></div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
                 </CardContent>
               </Card>
             </TabsContent>
@@ -2814,20 +3061,27 @@ const EditProjectPage = () => {
           }}
           indicatorData={reqForIndicatorEditModel}
           indicators={indicators}
+          mode={!readOnly ? "edit" : "show"}
         />
         )}
+
+        {reqForOutcomeEditModel && <OutcomeEditModal isOpen={!!reqForOutcomeEditModel} onSave={handleUpdateOutcome} onClose={() => setReqForOutcomeEditModel(null)} outcomeData={reqForOutcomeEditModel} outcomes={outcomes} mode={!readOnly ? "edit" : "show"} ></OutcomeEditModal> }
+        
+        {reqForOutputEditModel && <OutputEditModel isOpen={!!reqForOutputEditModel} onClose={() => setReqForOutputEditModel(null)} onSave={handleUpdateOutput} outputData={reqForOutputEditModel} outputs={outputs} mode={!readOnly ? "edit" : "show"} ></OutputEditModel>}
+        
       </div>
     </>
   );
 };
 
 
-const cardsBottomButtons = (backBtnOnClick: any, backBtnOnClickFuncInput: string, saveBtnOnClick: any, saveBtnOnClickFuncInput: string, nextBtnOnClick: any, nextBtnOnClickFuncInput: string, backBtnDisabled?: boolean, nextBtnDisabled?: boolean) => {
+const cardsBottomButtons = (backBtnOnClick: any, backBtnOnClickFuncInput: string, saveBtnOnClick: any, saveBtnOnClickFuncInput: string | null, nextBtnOnClick: any, nextBtnOnClickFuncInput: string, backBtnDisabled?: boolean, nextBtnDisabled?: boolean, saveBtnDisabled?: boolean) => {
 
   return (
     <>
       <Button disabled={backBtnDisabled} variant="outline" onClick={() => backBtnOnClick(backBtnOnClickFuncInput)}>Back</Button>
-        <AlertDialog>
+        {!saveBtnDisabled && (
+          <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button>Save</Button>
           </AlertDialogTrigger>
@@ -2838,19 +3092,25 @@ const cardsBottomButtons = (backBtnOnClick: any, backBtnOnClickFuncInput: string
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
-                onClick={() => saveBtnOnClick(saveBtnOnClickFuncInput)}
+                onClick={() => {
+                  if (saveBtnOnClickFuncInput)
+                    saveBtnOnClick(saveBtnOnClickFuncInput)
+
+                  else 
+                    saveBtnOnClick()
+                }}
               >
                 OK
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+        )}
       <Button disabled={nextBtnDisabled} onClick={() => nextBtnOnClick(nextBtnOnClickFuncInput)} variant={"outline"}>Next</Button>
     </>
   )
 
 }
 
-// export default withPermission(NewProjectPage, "Project.create");
+export default withPermission(EditProjectPage, "Project.edit");
 
-export default EditProjectPage;

@@ -9,13 +9,13 @@ import { Separator } from "../ui/separator";
 import calculateEachIndicatorProvinceTargetAccordingTONumberOFCouncilorCount from "@/lib/IndicatorProvincesTargetCalculator";
 
 
-
-interface EditIndicatorModalProps {
+interface ComponentProps {
     isOpen: boolean;
     onClose: () => void;
     onSave: (indicator: Indicator) => void;
     indicatorData?: Indicator | null;
     indicators: Indicator[];
+    mode: "edit" | "show"
 }
 
 const defaultIndicatorState = (): Indicator => ({
@@ -34,12 +34,13 @@ const defaultIndicatorState = (): Indicator => ({
     subIndicator: null,
 });
 
-export const EditIndicatorModal: React.FC<EditIndicatorModalProps> = ({
+export const EditIndicatorModal: React.FC<ComponentProps> = ({
     isOpen,
     onClose,
     onSave,
     indicatorData,
     indicators,
+    mode
 }) => {
     const [local, setLocal] = useState<Indicator>(defaultIndicatorState());
 
@@ -145,7 +146,7 @@ export const EditIndicatorModal: React.FC<EditIndicatorModalProps> = ({
         }}
         >
         <DialogHeader>
-            <DialogTitle>Edit Indicator</DialogTitle>
+            <DialogTitle>{mode == "edit" ? "Edit Indicator" : "Show Indicator"}</DialogTitle>
         </DialogHeader>
 
         <div className="grid gap-4">
@@ -157,6 +158,7 @@ export const EditIndicatorModal: React.FC<EditIndicatorModalProps> = ({
                 value={local.indicator || ""}
                 onChange={handleChange}
                 placeholder="Indicator name"
+                disabled={mode == "show"}
             />
             </div>
 
@@ -168,6 +170,7 @@ export const EditIndicatorModal: React.FC<EditIndicatorModalProps> = ({
                 value={local.indicatorRef || ""}
                 onChange={handleChange}
                 placeholder="Indicator reference"
+                disabled={mode == "show"}
             />
             </div>
 
@@ -181,6 +184,7 @@ export const EditIndicatorModal: React.FC<EditIndicatorModalProps> = ({
                 value={local.target ?? 0}
                 onChange={handleChange}
                 placeholder="Target"
+                disabled={mode == "show"}
                 />
             </div>
 
@@ -199,6 +203,7 @@ export const EditIndicatorModal: React.FC<EditIndicatorModalProps> = ({
                     { value: "notAchived", label: "Not Achived" },
                 ]}
                 placeholder="Select status"
+                disabled={mode == "show"}
                 />
             </div>
             </div>
@@ -257,6 +262,7 @@ export const EditIndicatorModal: React.FC<EditIndicatorModalProps> = ({
                     database: value,
                     }))
                 }
+                disabled={mode == "show"}
                 />
 
                 {/* Type if the database is main database (backend helper) */}
@@ -291,6 +297,7 @@ export const EditIndicatorModal: React.FC<EditIndicatorModalProps> = ({
                         type: value,
                         }))
                     }
+                    disabled={mode == "show"}
                     />
                 </div>
                 )}
@@ -317,7 +324,7 @@ export const EditIndicatorModal: React.FC<EditIndicatorModalProps> = ({
                         <Input
                             id={`${province.province}-count`}
                             type="number"
-                            value={province.councilorCount || 0}
+                            value={province.councilorCount}
                             onChange={(e) => {
                             const value = Number(
                                 e.target.value
@@ -357,6 +364,7 @@ export const EditIndicatorModal: React.FC<EditIndicatorModalProps> = ({
                                 .slice(1)
                                 .toLowerCase()
                             } Councular Count ...`}
+                            disabled={mode == "show"}
                         />
                         </div>
                         <div className="flex flex-col gap-1">
@@ -395,6 +403,7 @@ export const EditIndicatorModal: React.FC<EditIndicatorModalProps> = ({
                                 .slice(1)
                                 .toLowerCase()
                             } Target ...`}
+                            disabled={mode == "show"}
                         />
                         </div>
                     </div>
@@ -410,6 +419,7 @@ export const EditIndicatorModal: React.FC<EditIndicatorModalProps> = ({
                     value={local.description || ""}
                     onChange={handleChange}
                     placeholder="Optional description"
+                    disabled={mode == "show"}
                 />
             </div>
 
@@ -423,6 +433,7 @@ export const EditIndicatorModal: React.FC<EditIndicatorModalProps> = ({
                             value={local.subIndicator.name}
                             onChange={handleChange}
                             placeholder="Sub Indicator Name"
+                            disabled={mode == "show"}
                         />
                         <Input
                             name="subIndicatorTarget"
@@ -430,6 +441,7 @@ export const EditIndicatorModal: React.FC<EditIndicatorModalProps> = ({
                             value={local.subIndicator.target}
                             onChange={handleChange}
                             placeholder="Sub Indicator Target"
+                            disabled={mode == "show"}
                         />
                         {/* sub indicator provinces and its target */}
                         {local.subIndicator?.provinces.map((province, index) => (
@@ -460,6 +472,7 @@ export const EditIndicatorModal: React.FC<EditIndicatorModalProps> = ({
                                 },
                                 });
                             }}
+                            disabled={mode == "show"}
                             />
                         </div>
                         <div className="flex flex-col gap-1">
@@ -482,6 +495,7 @@ export const EditIndicatorModal: React.FC<EditIndicatorModalProps> = ({
                                 },
                                 });
                             }}
+                            disabled={mode == "show"}
                             />
                         </div>
                         </div>
@@ -491,7 +505,8 @@ export const EditIndicatorModal: React.FC<EditIndicatorModalProps> = ({
             )}
         </div>
 
-        <DialogFooter>
+        {mode != "show" && (
+            <DialogFooter>
             <div className="flex gap-2 justify-end w-full">
             <Button variant="outline" onClick={onClose}>
                 Cancel
@@ -499,6 +514,7 @@ export const EditIndicatorModal: React.FC<EditIndicatorModalProps> = ({
             <Button onClick={handleSave}>Save</Button>
             </div>
         </DialogFooter>
+        )}
         </DialogContent>
     </Dialog>
     );

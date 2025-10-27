@@ -10,13 +10,15 @@ import { useParentContext } from "@/contexts/ParentContext";
 import { mainDatabaseAndKitDatabaseBeneficiaryColumns } from "@/definitions/DataTableColumnsDefinitions";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Share2 } from "lucide-react";
+import { Share2, ToggleRight } from "lucide-react";
 import { Can } from "@/components/Can";
-import KitDatabaseBeneficiaryUpdateForm from "@/components/global/KitDatabaseBeneficiaryUpdateForm";
 import Preloader from "@/components/global/Preloader";
+import MainDatabaseBeneficiaryUpdateForm from "@/components/global/MainDatabaseBeneficiaryUpdateForm";
+import { withPermission } from "@/lib/withPermission";
 
 const MainDatabasePage = () => {
-  const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
+  const { reqForToastAndSetMessage, axiosInstance, changeBeneficairyAprIncludedStatus
+ } = useParentContext();
   const router = useRouter();
 
   let [idFeildForEditStateSetter, setIdFeildForEditStateSetter] = useState<
@@ -97,13 +99,16 @@ const MainDatabasePage = () => {
           selectedRowsIdsStateSetter={setSelectedRows}
           showModelOpenerStateSetter={() => {}}
           injectedElement={
-            <div>
+            <div className="flex flex-row items-center justify-end gap-2">
               <Button
                 title="Send Beneficiary to referral"
                 onClick={referrBeneficiaies}
                 variant="outline"
               >
                 <Share2 />
+              </Button>
+              <Button variant={"outline"} onClick={() => changeBeneficairyAprIncludedStatus(idFeildForEditStateSetter)} title="Change Apr Included">
+                <ToggleRight></ToggleRight>
               </Button>
             </div>
           }
@@ -122,12 +127,11 @@ const MainDatabasePage = () => {
           ></MainDatabaseBeneficiaryForm>
         )}
         {reqForBeneficiaryEditionForm && (
-          <KitDatabaseBeneficiaryUpdateForm
-            title={"Edit Beneficiary"}
+          <MainDatabaseBeneficiaryUpdateForm
             open={reqForBeneficiaryEditionForm}
             onOpenChange={setReqForBeneficiaryEditionForm}
             beneficiaryId={idFeildForEditStateSetter as unknown as string}
-          ></KitDatabaseBeneficiaryUpdateForm>
+          ></MainDatabaseBeneficiaryUpdateForm>
         )}
 
         {isLoading && <Preloader reqForLoading={isLoading} />}
@@ -136,4 +140,4 @@ const MainDatabasePage = () => {
   );
 };
 
-export default MainDatabasePage;
+export default withPermission(MainDatabasePage, "Maindatabase.create");

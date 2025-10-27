@@ -29,8 +29,6 @@ const MainDatabaseProgramsPage = () => {
     number | null
   >(null);
 
-  // useEffect(() => console.log(idFeildForEditStateSetter), [idFeildForEditStateSetter]);
-
   return (
     <>
       <div className="w-full h-full p-2">
@@ -62,12 +60,14 @@ const MainDatabaseProgramsPage = () => {
         ></DataTableDemo>
 
         {/* Program create form */}
-        <CreateNewProgramKit
+        {open && (
+          <CreateNewProgramKit
           open={open}
           onOpenChange={setOpen}
           mode="create"
         ></CreateNewProgramKit>
 
+        )}
         {openEditMode && idFeildForEditStateSetter !== null && (
           <CreateNewProgramKit
             open={openEditMode}

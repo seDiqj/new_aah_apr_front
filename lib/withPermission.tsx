@@ -8,14 +8,16 @@ export function withPermission<P extends object>(
   requiredPermission: string
 ) {
   const ComponentWithPermission = (props: P) => {
-    const {permissions} = usePermissions();
+    const { permissions, loading } = usePermissions();
     const router = useRouter();
 
     useEffect(() => {
-      if (!permissions.includes(requiredPermission)) {
+      if (!loading && permissions && !permissions.includes(requiredPermission)) {
         router.replace("/403");
       }
-    }, [permissions, router]);
+    }, [permissions, loading, router]);
+
+    if (loading) return null;
 
     if (!permissions.includes(requiredPermission)) return null;
 
@@ -24,3 +26,4 @@ export function withPermission<P extends object>(
 
   return ComponentWithPermission;
 }
+
