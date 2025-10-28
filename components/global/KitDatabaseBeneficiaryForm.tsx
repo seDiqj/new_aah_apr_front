@@ -17,6 +17,7 @@ import { useParentContext } from "@/contexts/ParentContext";
 import { createAxiosInstance } from "@/lib/axios";
 import { MultiSelect } from "../multi-select";
 import { withPermission } from "@/lib/withPermission";
+import CreateNewProgramKit from "./CreateNewProgramKit";
 
 type BeneficiaryForm = {
   program: string;
@@ -121,13 +122,14 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
     axiosInstanse
       .get(`global/indicators/kit_database`)
       .then((response: any) => {
-        console.log(response.data.data);
         setIndicators(response.data.data);
       })
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
       );
   }, [open]);
+
+  const [reqForCreateNewProgram, setReqForCreateNewProgram] = useState<boolean>(false);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -181,7 +183,7 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
 
             {/* Create New Program Button */}
             <div className="w-full border-2 rounded-2xl">
-              <Button className="w-full">Create New Program</Button>
+              <Button onClick={() => setReqForCreateNewProgram(!reqForCreateNewProgram)} className="w-full">Create New Program</Button>
             </div>
           </div>
         </div>
@@ -444,6 +446,18 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
               </div>
             </div>
           </div>
+
+          {/* Program create form */}
+          {reqForCreateNewProgram && (
+            <CreateNewProgramKit
+            open={reqForCreateNewProgram}
+            onOpenChange={setReqForCreateNewProgram}
+            mode="create"
+            createdProgramStateSetter={handleFormChange}
+            programsListStateSetter={setPrograms}
+          ></CreateNewProgramKit>
+          )}
+
         </div>
 
         {/* Submit Button */}

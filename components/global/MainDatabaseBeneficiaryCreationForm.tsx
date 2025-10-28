@@ -5,24 +5,17 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { SingleSelect } from "../single-select";
 import { useEffect, useState } from "react";
 import { useParentContext } from "@/contexts/ParentContext";
 import { createAxiosInstance } from "@/lib/axios";
 import { withPermission } from "@/lib/withPermission";
+import CreateNewProgramMain from "./CreateNewProgramMain";
 
 type BeneficiaryForm = {
   program: string;
@@ -45,14 +38,14 @@ interface DatabaseSummaryProps {
   open: boolean;
   onOpenChange: (value: boolean) => void;
   title: string;
-  status?: string;
+  createdProgramStateSetter: any  
 }
 
 const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
   open,
   onOpenChange,
   title,
-  status = "Pending Approval",
+  createdProgramStateSetter
 }) => {
   const { reqForToastAndSetMessage } = useParentContext();
 
@@ -116,6 +109,9 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
 
   useEffect(() => console.log(formData), [formData]);
 
+  const [reqForProgramCreationForm, setReqForProgramCreationForm] = useState<boolean>(false);
+
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -168,7 +164,7 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
 
             {/* Create New Program Button */}
             <div className="w-full border-2 rounded-2xl">
-              <Button className="w-full">Create New Program</Button>
+              <Button onClick={() => setReqForProgramCreationForm(!reqForProgramCreationForm)} className="w-full">Create New Program</Button>
             </div>
           </div>
         </div>
@@ -411,6 +407,17 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
               </div>
             </div>
           </div>
+
+          {/* Program create form */}
+          {reqForProgramCreationForm && (
+              <CreateNewProgramMain
+              open={reqForProgramCreationForm}
+              onOpenChange={setReqForProgramCreationForm}
+              mode="create"
+              createdProgramStateSetter={handleFormChange}
+              programsListStateSetter={setPrograms}
+            ></CreateNewProgramMain>
+          )} 
         </div>
 
         {/* Submit Button */}

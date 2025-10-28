@@ -26,7 +26,10 @@ const TrainingsPage = () => {
     number | null
   >(null);
 
-  const [reqForBeneficiaryEditionForm, setReqForBeneficiaryEditionForm] =
+  const [reqForTrainingCreationForm, setReqForTrainingCreationForm] =
+    useState<boolean>(false);
+
+  const [reqForTrainingEditionForm, setReqForTrainingEditionForm] =
     useState<boolean>(false);
 
   const openTrainingProfilePage = (value: boolean, id: number) => {
@@ -57,16 +60,26 @@ const TrainingsPage = () => {
           deleteUrl="training_db/delete_trainings"
           searchableColumn="name"
           idFeildForEditStateSetter={setIdFeildForEditStateSetter}
-          editModelOpenerStateSetter={setReqForBeneficiaryEditionForm}
+          editModelOpenerStateSetter={setReqForTrainingEditionForm}
           idFeildForShowStateSetter={setIdFeildForShowStateSetter}
           showModelOpenerStateSetter={() => {}}
         ></DataTableDemo>
 
-        {open && (
+        {reqForTrainingCreationForm && (
           <CreateNewTrainingForm
-            open={open}
-            onOpenChange={setOpen}
+            open={reqForTrainingCreationForm}
+            onOpenChange={setReqForTrainingCreationForm}
             title={"Create New Training"}
+            mode="create"
+          ></CreateNewTrainingForm>
+        )}
+        {reqForTrainingEditionForm && (
+          <CreateNewTrainingForm
+            open={reqForTrainingEditionForm}
+            onOpenChange={setReqForTrainingEditionForm}
+            title={"Edit Training"}
+            mode="edit"
+            id={idFeildForEditStateSetter as unknown as number}
           ></CreateNewTrainingForm>
         )}
       </div>

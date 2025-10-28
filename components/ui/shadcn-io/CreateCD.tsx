@@ -72,7 +72,6 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
 
   const isReadOnly = mode === "show";
 
-  // --- Load projects initially ---
   useEffect(() => {
     axiosInstance
       .get("/projects/p/cd_database")
@@ -82,7 +81,6 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
       );
   }, []);
 
-  // --- Load dialogue data if update/show ---
   useEffect(() => {
     if ((mode === "update" || mode === "show") && dialogueId) {
       axiosInstance
@@ -104,7 +102,6 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
     }
   }, [mode, dialogueId]);
 
-  // --- Load indicators/provinces/districts when project changes ---
   useEffect(() => {
     if (!formData.project_id) return;
     const projectId = formData.project_id;
@@ -137,6 +134,7 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
   };
 
   const handleSubmit = () => {
+
     if (mode === "create") {
       axiosInstance
         .post("/community_dialogue_db/community_dialogue", {
@@ -164,7 +162,6 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
     }
   };
 
-  // --- Add group/session functions ---
   const addGroup = () => setGroups([...groups, { name: "" }]);
   const addSession = () =>
     setSessions([...sessions, { type: "followUp", topic: "", date: "" }]);

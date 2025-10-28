@@ -17,7 +17,6 @@ import React from "react";
 import { useParams } from "next/navigation";
 import { Separator } from "@/components/ui/separator";
 import * as XLSX from "xlsx";
-import { saveAs } from "file-saver";
 
 type Disaggregation = { name: string; target: number; months?: number[] };
 type Indicator = {
@@ -114,13 +113,6 @@ export default function MonitoringTablePage() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const sheetRef = useRef<HTMLDivElement>(null);
 
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement && sheetRef.current) {
-      sheetRef.current.requestFullscreen();
-    }
-  };
-
-  useEffect(() => toggleFullscreen(), []);
 
   const [data, setData] = useState<{
     impact: string;
@@ -521,9 +513,6 @@ export default function MonitoringTablePage() {
       {" "}
       <div className="flex justify-end">
         {" "}
-        <Button variant="outline" onClick={toggleFullscreen}>
-          {isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}{" "}
-        </Button>{" "}
         <Button onClick={() => exportToExcel(data)}>Download Excel</Button>
       </div>
       <div

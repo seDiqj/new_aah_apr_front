@@ -92,7 +92,7 @@ const BeneficiaryCreateCD: React.FC<DatabaseSummaryProps> = ({
 
         {/* Beneficiary Form Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 ">
-          <div>
+          <div className="flex flex-col gap-4">
             <Label htmlFor="clientName">Client Name</Label>
             <Input
               name="name"
@@ -100,11 +100,11 @@ const BeneficiaryCreateCD: React.FC<DatabaseSummaryProps> = ({
               onChange={handleFormChange}
               id="clientName"
               placeholder="Client Name"
-              className="border w-full mt-4"
+              className="border w-full"
             />
           </div>
 
-          <div>
+          <div className="flex flex-col gap-4">
             <Label htmlFor="fatherName">Father/Husband Name</Label>
             <Input
               name="fatherHusbandName"
@@ -112,11 +112,11 @@ const BeneficiaryCreateCD: React.FC<DatabaseSummaryProps> = ({
               onChange={handleFormChange}
               id="fatherName"
               placeholder="Father/Husband Name"
-              className="border w-full mt-4"
+              className="border w-full"
             />
           </div>
 
-          <div>
+          <div className="flex flex-col gap-4">
             <Label htmlFor="age">Age</Label>
             <Input
               name="age"
@@ -125,11 +125,11 @@ const BeneficiaryCreateCD: React.FC<DatabaseSummaryProps> = ({
               id="age"
               type="number"
               placeholder="Age"
-              className="border w-full mt-4"
+              className="border w-full"
             />
           </div>
 
-          <div>
+          <div className="flex flex-col gap-4">
             <Label htmlFor="maritalStatus">Marital Status</Label>
             <SingleSelect
               options={[
@@ -149,7 +149,7 @@ const BeneficiaryCreateCD: React.FC<DatabaseSummaryProps> = ({
             ></SingleSelect>
           </div>
 
-          <div>
+          <div className="flex flex-col gap-4">
             <Label htmlFor="gender">Gender</Label>
             <SingleSelect
               options={[
@@ -166,7 +166,7 @@ const BeneficiaryCreateCD: React.FC<DatabaseSummaryProps> = ({
             ></SingleSelect>
           </div>
 
-          <div>
+          <div className="flex flex-col gap-4">
             <Label htmlFor="phone">Phone</Label>
             <Input
               name="phone"
@@ -175,11 +175,11 @@ const BeneficiaryCreateCD: React.FC<DatabaseSummaryProps> = ({
               id="phone"
               type="tel"
               placeholder="Phone"
-              className="border w-full mt-4"
+              className="border w-full"
             />
           </div>
 
-          <div>
+          <div className="flex flex-col gap-4">
             <Label htmlFor="nid">NID Number</Label>
             <Input
               name="nationalId"
@@ -187,11 +187,11 @@ const BeneficiaryCreateCD: React.FC<DatabaseSummaryProps> = ({
               onChange={handleFormChange}
               id="nid"
               placeholder="NID Number"
-              className="border w-full mt-4"
+              className="border w-full"
             />
           </div>
 
-          <div>
+          <div className="flex flex-col gap-4">
             <Label htmlFor="jobTitle">Job Title</Label>
             <Input
               name="jobTitle"
@@ -199,11 +199,11 @@ const BeneficiaryCreateCD: React.FC<DatabaseSummaryProps> = ({
               onChange={handleFormChange}
               id="jobTitle"
               placeholder="Job Title"
-              className="border w-full mt-4"
+              className="border w-full"
             />
           </div>
 
-          <div>
+          <div className="flex flex-col gap-4">
             <Label htmlFor="incentiveReceived">Incentive Received</Label>
             <SingleSelect
               options={[
@@ -222,7 +222,7 @@ const BeneficiaryCreateCD: React.FC<DatabaseSummaryProps> = ({
             ></SingleSelect>
           </div>
 
-          <div>
+          <div className="flex flex-col gap-4">
             <Label htmlFor="incentiveAmount">Incentive Amount</Label>
             <Input
               name="incentiveAmount"
@@ -231,11 +231,11 @@ const BeneficiaryCreateCD: React.FC<DatabaseSummaryProps> = ({
               id="incentiveAmount"
               type="text"
               placeholder="Incentive Amount"
-              className="border w-full mt-4"
+              className="border w-full"
             />
           </div>
           
-          <div>
+          <div className="flex flex-col gap-4">
             <Label htmlFor="dateOfRegistration">Date Of Registration</Label>
             <Input
               id="dateOfRegistration"

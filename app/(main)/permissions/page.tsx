@@ -18,9 +18,14 @@ const PermissionsPage = () => {
         <SubHeader pageTitle={"Permissions"}></SubHeader>
         <DataTableDemo
           columns={permissionColumns}
-          indexUrl="user_mng/permissions"
-          deleteUrl="user_mng/delete_permissions"
+          indexUrl="user_mng/table_permissions"
           searchableColumn="name"
+          filterUrl=""
+          filtersList={[
+            "name",
+            "label",
+            "group_name"
+          ]}
         ></DataTableDemo>
       </div>
     </>

@@ -107,7 +107,7 @@ const EditProjectPage = () => {
     description: "",
   });
 
-  const [projectProvinces, setProjectProvinces] = useState<string[]>([]);
+  // const [projectProvinces, setProjectProvinces] = useState<string[]>([]);
 
   let [outcome, setOutcome] = useState<string>("");
   let [outcomeRef, setOutcomeRef] = useState<string>("");
@@ -478,7 +478,7 @@ const EditProjectPage = () => {
         ? ["/projects", formData]
         : parts == "outcome"
         ? [
-            "/projects/outcome",
+            "/projects/o/outcome",
             {
               project_id: projectId,
               outcomes: outcomes.filter((outcome) => outcome.id == null),
@@ -786,8 +786,8 @@ const EditProjectPage = () => {
     if (!output.trim()) {
       reqForToastAndSetMessage("Please fill all the fields !")
       return
-    } else if (outputs.find((outputFromOutputs) => (outputFromOutputs.outputRef == newOutputData.outputRef && outputFromOutputs.outcomeRef == newOutputData.outcomeRef))) {
-      reqForToastAndSetMessage("A outcome can not have two outputs with same referance !");
+    } else if (outputs.find((outputFromOutputs) => (outputFromOutputs.outputRef == newOutputData.outputRef))) {
+      reqForToastAndSetMessage("A project can not have two outputs with same referance !");
       return;
     }
 
@@ -975,8 +975,10 @@ const EditProjectPage = () => {
 
     axiosInstance.get(`/projects/${id}`)
     .then((response: any) => {
-      console.log(response.data.data)
+      console.log(response);
       const {outcomesInfo, ...project} = response.data.data;
+      project["provinces"] = project.provinces.map((province: {id: string, name: string, pivo: any}) => province.name);
+      console.log(project.provinces )
       setFormData(project);
       setOutcomes(outcomesInfo.map((outcome: any) => {
         const {outputs, ...outcomeInfo} = outcome;
@@ -1198,9 +1200,8 @@ const EditProjectPage = () => {
                           { value: "helmand", label: "Helmand" },
                           { value: "daikundi", label: "Daikundi" },
                         ]}
-                        value={projectProvinces}
+                        value={formData.provinces}
                         onValueChange={(value: string[]) => {
-                          setProjectProvinces(value);
                           setFormData((prev) => ({
                             ...prev,
                             provinces: value,
@@ -1609,7 +1610,7 @@ const EditProjectPage = () => {
                                 Indicator Provinces
                               </Label>
                               <MultiSelect
-                                options={projectProvinces.map((province) => ({
+                                options={formData.provinces.map((province) => ({
                                   label: province.toLowerCase(),
                                   value:
                                     province.charAt(0).toUpperCase() +

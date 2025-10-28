@@ -8,7 +8,6 @@ import TrainingSelectorDialog from "@/components/global/TrainingSelectorDialog";
 import { Button } from "@/components/ui/button";
 
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
-import { useParentContext } from "@/contexts/ParentContext";
 import { trainingDatabaseBeneificiaryListColumn } from "@/definitions/DataTableColumnsDefinitions";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -17,9 +16,7 @@ import { useEffect, useState } from "react";
 const TrainingDatabasePage = () => {
   const router = useRouter();
 
-  const {setReqForReloadData} = useParentContext();
-
-  const [open, setOpen] = useState<boolean>(false);
+  const [reqForBeneficiaryCreationForm, setReqForBeneficiaryCreationForm] = useState<boolean>(false);
 
   const [openTrainingSelectorDialog, setOpenTrainingSelectorDialog] =
     useState<boolean>(false);
@@ -46,8 +43,6 @@ const TrainingDatabasePage = () => {
       openTrainingProfilePage(true, idFeildForShowStateSetter);
   }, [idFeildForShowStateSetter]);
 
-  useEffect(() => console.log(selectedRowsIds), [selectedRowsIds]);
-
   return (
     <div className="w-full h-full p-2">
       <Navbar14 />
@@ -59,7 +54,7 @@ const TrainingDatabasePage = () => {
           <Button onClick={() => router.push("/training_database/trainings")}>
             Trainings
           </Button>
-          <Button onClick={() => setOpen(!open)}>Create New Beneficiary</Button>
+          <Button onClick={() => setReqForBeneficiaryCreationForm(!open)}>Create New Beneficiary</Button>
         </div>
       </SubHeader>
       <DataTableDemo
@@ -85,13 +80,27 @@ const TrainingDatabasePage = () => {
             </Button>
           </div>
         }
+        filterUrl="/filter/main_database/beneficiaries"
+        filtersList={["projectCode", "indicator", "focalPoint", "province", "siteCode", "healthFacilitator", "dateOfRegistration",
+          "age", "maritalStatus", "householdStatus"]}
       ></DataTableDemo>
 
-      {open && (
+      {reqForBeneficiaryCreationForm && (
         <CreateNewBeneficiaryTraining
-          open={open}
-          onOpenChange={setOpen}
+          open={reqForBeneficiaryCreationForm}
+          onOpenChange={setReqForBeneficiaryCreationForm}
           title={"Create New Beneficiary"}
+          mode="create"
+        ></CreateNewBeneficiaryTraining>
+      )}
+
+      {reqForBeneficiaryEditionForm && idFeildForEditStateSetter && (
+        <CreateNewBeneficiaryTraining
+          open={reqForBeneficiaryEditionForm}
+          onOpenChange={setReqForBeneficiaryEditionForm}
+          title={"Create New Beneficiary"}
+          mode="edit"
+          editId={idFeildForEditStateSetter}
         ></CreateNewBeneficiaryTraining>
       )}
 

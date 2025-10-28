@@ -16,6 +16,12 @@ interface ComponentProps {
   onOpenChange: (value: boolean) => void;
   mode: "create" | "edit" | "show";
   programId?: number;
+
+  // Only for creation mode, temp
+  createdProgramStateSetter?: any
+
+  // temp
+  programsListStateSetter?: any;
 }
 
 const ProgramMainForm: React.FC<ComponentProps> = ({
@@ -23,6 +29,8 @@ const ProgramMainForm: React.FC<ComponentProps> = ({
   onOpenChange,
   mode,
   programId,
+  createdProgramStateSetter,
+  programsListStateSetter
 }) => {
   const { reqForToastAndSetMessage } = useParentContext();
   const axiosInstance = createAxiosInstance();
@@ -70,7 +78,24 @@ const ProgramMainForm: React.FC<ComponentProps> = ({
       axiosInstance
         .post("/global/program/main_database", formData)
         .then((response: any) =>
-          reqForToastAndSetMessage(response.data.message)
+        {
+          reqForToastAndSetMessage(response.data.message);
+          if (createdProgramStateSetter)
+            createdProgramStateSetter({
+            target: {
+              name: "program",
+              value: formData.focalPoint
+              }
+            })
+
+          if (programsListStateSetter)
+            programsListStateSetter((prev: {focalPoint: number}[]) => [
+              ...prev,
+              {
+                focalPoint: formData.focalPoint
+              }
+            ])
+        }
         )
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)

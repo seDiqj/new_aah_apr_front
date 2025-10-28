@@ -67,7 +67,8 @@ const KitDbBeneficiaryProfilePage: React.FC<ComponentProps> = (
       .get(`/kit_db/beneficiary/${id}`)
       .then((response: any) => {
         console.log(response.data.data);
-        if (response.data.status) setBeneficiaryInfo(response.data.data);
+        const {programs, ...benefciaryDetails} = response.data.data
+        if (response.data.status) setBeneficiaryInfo(benefciaryDetails);
       })
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
@@ -106,7 +107,7 @@ const KitDbBeneficiaryProfilePage: React.FC<ComponentProps> = (
 
         {/* Main Content */}
         <div className="flex flex-1 h-[440px] w-full flex-col gap-6">
-          <Tabs defaultValue="project" className="h-full">
+          <Tabs defaultValue="beneficiaryInfo" className="h-full">
             {/* List of tabs */}
             <TabsList className="w-full">
               <TabsTrigger value="beneficiaryInfo">
@@ -126,7 +127,10 @@ const KitDbBeneficiaryProfilePage: React.FC<ComponentProps> = (
                       <div className="flex flex-col w-full max-h-[160px] border-2 border-green-100 rounded-2xl p-4 overflow-y-auto">
                         {beneficiaryInfo &&
                           Object.entries(beneficiaryInfo).map(
-                            ([key, value], index) => (
+                            ([key, value], index) => {
+                              if (key == "id" || value == null) return
+
+                              return (
                               <div
                                 key={index}
                                 className="flex flex-row items-center justify-between gap-6 w-full"
@@ -135,6 +139,7 @@ const KitDbBeneficiaryProfilePage: React.FC<ComponentProps> = (
                                 <span>{value}</span>
                               </div>
                             )
+                            }
                           )}
                       </div>
                     </div>
@@ -142,7 +147,7 @@ const KitDbBeneficiaryProfilePage: React.FC<ComponentProps> = (
                       <Label>Program Information</Label>
                       <div className="flex flex-col w-full max-h-[160px] border-2 border-green-100 rounded-2xl p-4 overflow-y-auto">
                         {programInfo &&
-                          programInfo.map((programInfo, index) =>
+                          programInfo.map((programInfo) =>
                             Object.entries(programInfo).map(
                               ([key, value], index) => (
                                 <div
@@ -174,6 +179,12 @@ const KitDbBeneficiaryProfilePage: React.FC<ComponentProps> = (
                   idFeildForEditStateSetter={setIdFeildForEditStateSetter}
                   idFeildForShowStateSetter={setIdFeildForShowStateSetter}
                   showModelOpenerStateSetter={() => {}}
+                  filterUrl=""
+                  filtersList={[
+                    "kit",
+                    "distributionDate",
+                    "isReceived"
+                  ]}
                 ></DataTableDemo>
                 <CardFooter className="flex flex-row w-full gap-2 items-center justify-end"></CardFooter>
               </Card>

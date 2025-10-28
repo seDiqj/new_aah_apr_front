@@ -68,9 +68,9 @@ export type BeneficiaryForm = {
 };
 
 export type TrainingBenefeciaryForm = {
-    clientName: string;
+    name: string;
     fatherHusbandName: string;
-    gender: "male" | "female" | "other";
+    gender: string;
     age: number;
     phone: string;
     email: string;

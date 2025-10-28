@@ -70,6 +70,12 @@ const PsychoeducationDatabasePage = () => {
           showModelOpenerStateSetter={setReqForPsychoeducationShowForm}
           editBtnPermission="Psychoeducation.edit"
           deleteBtnPermission="Psychoeducation.delete"
+          filterUrl=""
+          filtersList={[
+            "indicator",
+            "awarenessTopic",
+            "awarenessDate"
+          ]}
         ></DataTableDemo>
 
         {reqForPsychoeducationCreationForm && (

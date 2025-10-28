@@ -50,7 +50,7 @@ const MainDatabaseProgramsPage = () => {
         ></DataTableDemo>
 
 
-        {/* Program show form */}
+        {/* Program create form */}
         {reqForProgramCreationForm && (
             <CreateNewProgramMain
             open={reqForProgramCreationForm}

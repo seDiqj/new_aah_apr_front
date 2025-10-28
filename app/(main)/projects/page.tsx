@@ -54,7 +54,7 @@ const ProjectsPage = () => {
           columns={projectColumns}
           indexUrl="projects"
           filterUrl="/filter/projects"
-          deleteUrl="projects/delete_projects"
+          deleteUrl="/projects/d/delete_projects"
           searchableColumn="projectTitle"
           deleteBtnPermission="Project.delete"
           editBtnPermission="Project.edit"

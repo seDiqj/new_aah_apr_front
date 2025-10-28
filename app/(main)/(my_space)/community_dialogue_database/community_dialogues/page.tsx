@@ -80,7 +80,7 @@ const CommunityDialogDatabasePage = () => {
         <DataTableDemo
           columns={mainDatabaseAndKitDatabaseBeneficiaryColumns}
           indexUrl="/community_dialogue_db/community_dialogues"
-          deleteUrl="community_dialogue_db/delete_beneficiaries"
+          deleteUrl="community_dialogue_db/delete_cds"
           searchableColumn="name"
           idFeildForEditStateSetter={setIdFeildForEditStateSetter}
           editModelOpenerStateSetter={setReqForCommunityDialogueEditionForm}

@@ -52,7 +52,7 @@ const MainDatabasePage = () => {
         <DataTableDemo
           columns={mainDatabaseAndKitDatabaseBeneficiaryColumns}
           indexUrl="/referral_db/beneficiaries"
-          deleteUrl="referral/delete_beneficiaries"
+          deleteUrl="/referral_db/delete_beneficiaries"
           searchableColumn="name"
           idFeildForEditStateSetter={setIdFeildForEditStateSetter}
           editModelOpenerStateSetter={setReqForBeneficiaryEditionForm}
@@ -60,6 +60,9 @@ const MainDatabasePage = () => {
           selectedRowsIdsStateSetter={setSelectedRows}
           showModelOpenerStateSetter={() => {}}
           loadingStateSetter={setIsLoading}
+          filterUrl="/filter/main_database/beneficiaries"
+          filtersList={["projectCode", "indicator", "focalPoint", "province", "siteCode", "healthFacilitator", "dateOfRegistration",
+          "age", "maritalStatus", "householdStatus"]}
         ></DataTableDemo>
 
         {isLoading && <Preloader reqForLoading={isLoading} />}

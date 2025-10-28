@@ -21,22 +21,29 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "@/components/ui/accordion";
-import { Chapter, TrainingForm } from "@/types/Types";
+import { ChapterForm, TrainingForm } from "@/types/Types";
 
 interface ComponentProps {
   open: boolean;
   onOpenChange: (value: boolean) => void;
   title: string;
+  mode: "create" | "edit" | "show";
+  id?: number;
 }
 
-const CreateNewTrainingForm: React.FC<ComponentProps> = ({
+const TrainingFormDialog: React.FC<ComponentProps> = ({
   open,
   onOpenChange,
   title,
+  mode,
+  id,
 }) => {
   const { reqForToastAndSetMessage } = useParentContext();
   const axiosInstance = createAxiosInstance();
 
+  const isReadOnly = mode === "show";
+
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<TrainingForm>({
     projectCode: "",
     province: "",
@@ -50,16 +57,47 @@ const CreateNewTrainingForm: React.FC<ComponentProps> = ({
     endDate: "",
     indicator: "",
   });
-
-  const [chapter, setChapter] = useState<Chapter>({
+  const [chapters, setChapters] = useState<ChapterForm[]>([]);
+  const [chapter, setChapter] = useState<ChapterForm>({
     topic: "",
     facilitatorName: "",
     facilitatorJobTitle: "",
     startDate: "",
     endDate: "",
   });
-  const [chapters, setChapters] = useState<Chapter[]>([]);
 
+  useEffect(() => {
+    if ((mode === "edit" || mode === "show") && id) {
+      setLoading(true);
+  
+      axiosInstance
+        .get(`/training_db/training/${id}`)
+        .then((res: any) => {
+          const data = res.data.data;
+          console.log(data)
+          setFormData({
+            projectCode: data.projectCode || "",
+            province: data.province || "",
+            district: data.district || "",
+            trainingLocation: data.trainingLocation || "",
+            name: data.name || "",
+            participantCatagory: data.participantCatagory || "",
+            aprIncluded: data.aprIncluded ?? true,
+            trainingModality: data.trainingModality || "",
+            startDate: data.startDate || "",
+            endDate: data.endDate || "",
+            indicator: data.indicator || "",
+          });
+          setChapters(data.chapters || []);
+        })
+        .catch((err) => {
+          reqForToastAndSetMessage(err.response?.data?.message || "Error loading data");
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [mode, id]);
+
+  // 📋 هندل تغییرات
   const handleChange = (
     e:
       | React.ChangeEvent<HTMLInputElement>
@@ -67,13 +105,6 @@ const CreateNewTrainingForm: React.FC<ComponentProps> = ({
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleCheckboxChange = <T extends keyof TrainingForm>(
-    field: T,
-    value: any
-  ) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleChapterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,14 +128,23 @@ const CreateNewTrainingForm: React.FC<ComponentProps> = ({
     setChapters((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    axiosInstance
-      .post("/training_db/training", { ...formData, chapters })
-      .then((res) => reqForToastAndSetMessage(res.data.message))
-      .catch((err) =>
-        reqForToastAndSetMessage(err.response?.data?.message || "Error")
-      );
+    const payload = { ...formData, chapters };
+
+    try {
+      let res;
+      if (mode === "edit" && id) {
+        res = await axiosInstance.put(`/training_db/training/${id}`, payload);
+      } else if (mode === "create") {
+        res = await axiosInstance.post("/training_db/training", payload);
+      } else return;
+
+      reqForToastAndSetMessage(res.data.message);
+      onOpenChange(false);
+    } catch (err: any) {
+      reqForToastAndSetMessage(err.response?.data?.message || "Error");
+    }
   };
 
   const [districts, setDistricts] = useState<{ name: string }[]>([]);
@@ -113,29 +153,29 @@ const CreateNewTrainingForm: React.FC<ComponentProps> = ({
   const [indicators, setIndicators] = useState<{ indicator: string }[]>([]);
 
   useEffect(() => {
-    axiosInstance
-      .get("/global/districts")
-      .then((res: any) => setDistricts(Object.values(res.data.data)))
-      .catch((error: any) => reqForToastAndSetMessage(error.response.data));
-    axiosInstance
-      .get("/global/provinces")
-      .then((res: any) => setProvinces(Object.values(res.data.data)))
-      .catch((error: any) => reqForToastAndSetMessage(error.response.data));
-    axiosInstance
-      .get("/global/projects")
-      .then((res: any) => setProjects(Object.values(res.data.data)))
-      .catch((error: any) => reqForToastAndSetMessage(error.response.data));
+    axiosInstance.get("/global/districts").then((res: any) => {
+      setDistricts(Object.values(res.data.data));
+    });
+    axiosInstance.get("/global/provinces").then((res: any) => {
+      setProvinces(Object.values(res.data.data));
+    });
+    axiosInstance.get("/global/projects").then((res: any) => {
+      setProjects(Object.values(res.data.data));
+    });
     axiosInstance
       .get("/global/indicators/training_database")
-      .then((res: any) => {
-        setIndicators(Object.values(res.data.data));
-      })
-      .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
-      );
+      .then((res: any) => setIndicators(Object.values(res.data.data)));
   }, []);
 
-  useEffect(() => console.log(formData), [formData]);
+  if (loading) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent>
+          <p className="text-center py-8">Loading data...</p>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -155,9 +195,11 @@ const CreateNewTrainingForm: React.FC<ComponentProps> = ({
             Program Information
           </h2>
 
+          {/* --- Project --- */}
           <div className="flex flex-col gap-1">
             <Label>Select Project</Label>
             <SingleSelect
+              disabled={isReadOnly}
               options={projects.map((p) => ({
                 value: p.projectCode,
                 label: p.projectCode.toUpperCase(),
@@ -168,9 +210,12 @@ const CreateNewTrainingForm: React.FC<ComponentProps> = ({
               }
             />
           </div>
+
+          {/* --- Indicator --- */}
           <div className="flex flex-col gap-1">
             <Label>Select Indicator</Label>
             <SingleSelect
+              disabled={isReadOnly}
               options={indicators.map((i) => ({
                 value: i.indicator,
                 label: i.indicator.toUpperCase(),
@@ -181,9 +226,12 @@ const CreateNewTrainingForm: React.FC<ComponentProps> = ({
               }
             />
           </div>
+
+          {/* --- Province --- */}
           <div className="flex flex-col gap-1">
             <Label>Select Province</Label>
             <SingleSelect
+              disabled={isReadOnly}
               options={provinces.map((p) => ({
                 value: p.name,
                 label: p.name.toUpperCase(),
@@ -194,9 +242,12 @@ const CreateNewTrainingForm: React.FC<ComponentProps> = ({
               }
             />
           </div>
+
+          {/* --- District --- */}
           <div className="flex flex-col gap-1">
             <Label>Select District</Label>
             <SingleSelect
+              disabled={isReadOnly}
               options={districts.map((d) => ({
                 value: d.name,
                 label: d.name.toUpperCase(),
@@ -207,168 +258,70 @@ const CreateNewTrainingForm: React.FC<ComponentProps> = ({
               }
             />
           </div>
+
+          {/* --- Text Inputs --- */}
           <div className="flex flex-col gap-1">
             <Label>Training Location</Label>
             <Input
               name="trainingLocation"
+              disabled={isReadOnly}
               value={formData.trainingLocation}
               onChange={handleChange}
             />
           </div>
           <div className="flex flex-col gap-1">
             <Label>Training Name</Label>
-            <Input name="name" value={formData.name} onChange={handleChange} />
-          </div>
-          <div className="flex flex-col gap-1">
-            <Label>Participant Category</Label>
-            <div className="flex flex-row items-center gap-4">
-              <div className="flex items-center gap-1">
-                <Checkbox
-                  checked={formData.participantCatagory === "acf-staff"}
-                  onCheckedChange={(val) =>
-                    handleCheckboxChange(
-                      "participantCatagory",
-                      val ? "acf-staff" : ""
-                    )
-                  }
-                />
-                <Label>ACF Staff</Label>
-              </div>
-              <div className="flex items-center gap-1">
-                <Checkbox
-                  checked={formData.participantCatagory === "stakeholder"}
-                  onCheckedChange={(val) =>
-                    handleCheckboxChange(
-                      "participantCatagory",
-                      val ? "stakeholder" : ""
-                    )
-                  }
-                />
-                <Label>Stakeholder</Label>
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col gap-1">
-            <Label>APR Included</Label>
-            <div className="flex flex-row items-center gap-4">
-              <div className="flex items-center gap-1">
-                <Checkbox
-                  checked={formData.aprIncluded === true}
-                  onCheckedChange={(val) =>
-                    val && handleCheckboxChange("aprIncluded", true)
-                  }
-                />
-                <Label>Yes</Label>
-              </div>
-              <div className="flex items-center gap-1">
-                <Checkbox
-                  checked={formData.aprIncluded === false}
-                  onCheckedChange={(val) =>
-                    val && handleCheckboxChange("aprIncluded", false)
-                  }
-                />
-                <Label>No</Label>
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col gap-1">
-            <Label>Training Modality</Label>
-            <div className="flex flex-row items-center gap-4">
-              <div className="flex items-center gap-1">
-                <Checkbox
-                  checked={formData.trainingModality === "face-to-face"}
-                  onCheckedChange={(val) =>
-                    handleCheckboxChange(
-                      "trainingModality",
-                      val ? "face-to-face" : ""
-                    )
-                  }
-                />
-                <Label>Face-to-Face</Label>
-              </div>
-              <div className="flex items-center gap-1">
-                <Checkbox
-                  checked={formData.trainingModality === "online"}
-                  onCheckedChange={(val) =>
-                    handleCheckboxChange(
-                      "trainingModality",
-                      val ? "online" : ""
-                    )
-                  }
-                />
-                <Label>Online</Label>
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col gap-1">
-            <Label>Start Date</Label>
             <Input
-              name="startDate"
-              type="date"
-              value={formData.startDate}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <Label>End Date</Label>
-            <Input
-              name="endDate"
-              type="date"
-              value={formData.endDate}
+              name="name"
+              disabled={isReadOnly}
+              value={formData.name}
               onChange={handleChange}
             />
           </div>
 
-          {/* Chapter Info */}
+          {/* --- Chapter Section --- */}
           <div className="col-span-2 mt-6">
             <h2 className="text-center font-bold mb-4">Chapter Information</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex flex-col gap-1">
-                <Label>Chapter Topic</Label>
-                <Input
-                  name="topic"
-                  value={chapter.topic}
-                  onChange={handleChapterChange}
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <Label>Facilitator Name</Label>
-                <Input
-                  name="facilitatorName"
-                  value={chapter.facilitatorName}
-                  onChange={handleChapterChange}
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <Label>Facilitator Job Title</Label>
-                <Input
-                  name="facilitatorJobTitle"
-                  value={chapter.facilitatorJobTitle}
-                  onChange={handleChapterChange}
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <Label>Start Date</Label>
-                <Input
-                  type="date"
-                  name="startDate"
-                  value={chapter.startDate}
-                  onChange={handleChapterChange}
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <Label>End Date</Label>
-                <Input
-                  type="date"
-                  name="endDate"
-                  value={chapter.endDate}
-                  onChange={handleChapterChange}
-                />
-              </div>
-            </div>
-            <Button onClick={handleAddChapter} className="mt-4">
-              Add Chapter
-            </Button>
+
+            {!isReadOnly && (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Input
+                    name="topic"
+                    placeholder="Topic"
+                    value={chapter.topic}
+                    onChange={handleChapterChange}
+                  />
+                  <Input
+                    name="facilitatorName"
+                    placeholder="Facilitator"
+                    value={chapter.facilitatorName}
+                    onChange={handleChapterChange}
+                  />
+                  <Input
+                    name="facilitatorJobTitle"
+                    placeholder="Job Title"
+                    value={chapter.facilitatorJobTitle}
+                    onChange={handleChapterChange}
+                  />
+                  <Input
+                    type="date"
+                    name="startDate"
+                    value={chapter.startDate}
+                    onChange={handleChapterChange}
+                  />
+                  <Input
+                    type="date"
+                    name="endDate"
+                    value={chapter.endDate}
+                    onChange={handleChapterChange}
+                  />
+                </div>
+                <Button onClick={handleAddChapter} className="mt-4">
+                  Add Chapter
+                </Button>
+              </>
+            )}
 
             {chapters.length > 0 && (
               <Accordion type="multiple" className="mt-4">
@@ -390,19 +343,17 @@ const CreateNewTrainingForm: React.FC<ComponentProps> = ({
                           <strong>End:</strong> {ch.endDate}
                         </p>
                       </div>
-                      <div className="flex flex-row items-center justify-end">
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          className="ml-4"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteChapter(index);
-                          }}
-                        >
-                          Delete
-                        </Button>
-                      </div>
+                      {!isReadOnly && (
+                        <div className="flex justify-end">
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            onClick={() => handleDeleteChapter(index)}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      )}
                     </AccordionContent>
                   </AccordionItem>
                 ))}
@@ -410,10 +361,22 @@ const CreateNewTrainingForm: React.FC<ComponentProps> = ({
             )}
           </div>
 
-          <div className="col-span-2">
-            <Button onClick={handleSubmit} className="w-full mt-6">
-              Submit All
-            </Button>
+          {/* --- Buttons --- */}
+          <div className="col-span-2 mt-6">
+            {mode !== "show" ? (
+              <Button type="submit" className="w-full">
+                {mode === "edit" ? "Update" : "Submit All"}
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                variant="secondary"
+                className="w-full"
+                onClick={() => onOpenChange(false)}
+              >
+                Close
+              </Button>
+            )}
           </div>
         </form>
       </DialogContent>
@@ -421,4 +384,4 @@ const CreateNewTrainingForm: React.FC<ComponentProps> = ({
   );
 };
 
-export default CreateNewTrainingForm;
+export default TrainingFormDialog;

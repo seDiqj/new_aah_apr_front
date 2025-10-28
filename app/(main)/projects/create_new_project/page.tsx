@@ -752,8 +752,8 @@ const NewProjectPage = () => {
     if (!output.trim()) {
       reqForToastAndSetMessage("Please fill all the fields !")
       return
-    } else if (outputs.find((outputFromOutputs) => (outputFromOutputs.outputRef == newOutputData.outputRef && outputFromOutputs.outcomeRef == newOutputData.outcomeRef))) {
-      reqForToastAndSetMessage("A outcome can not have two outputs with same referance !");
+    } else if (outputs.find((outputFromOutputs) => (outputFromOutputs.outputRef == newOutputData.outputRef))) {
+      reqForToastAndSetMessage("A project can not have two outputs with same referance !");
       return;
     }
 

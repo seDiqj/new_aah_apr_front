@@ -77,7 +77,7 @@ const SubmittedDatabasesPage = () => {
           </div>
         }
       ></SubHeader>
-      <Cards mockStats={aprStates}/>
+      <Cards />
       <DataTableDemo
         columns={submittedAndFirstApprovedDatabasesTableColumn}
         indexUrl="/db_management/submitted_databases"

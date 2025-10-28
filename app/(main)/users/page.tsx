@@ -60,6 +60,15 @@ const UsersPage = () => {
           editModelOpenerStateSetter={setReqForUserUpdateForm}
           idFeildForShowStateSetter={setIdFeildForShowStateSetter}
           showModelOpenerStateSetter={setReqForUserShowForm}
+          filterUrl=""
+          filtersList={[
+            "name",
+            "email",
+            "title",
+            "status",
+            "create_at",
+            "updated_at",
+          ]}
         ></DataTableDemo>
       </div>
 

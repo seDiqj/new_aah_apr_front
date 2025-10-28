@@ -10,7 +10,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useParentContext } from "@/contexts/ParentContext";
 import { useParams } from "next/navigation";
 import { Button } from "../ui/button";
@@ -49,7 +48,6 @@ export default function SessionsPage() {
     axiosInstance
       .get(`/main_db/indicators/${id}`)
       .then((response: any) => {
-        console.log(response.data.data);
         const mapped = response.data.data.map((ind: any) => ({
           id: ind.id,
           type: ind.type,
@@ -67,7 +65,6 @@ export default function SessionsPage() {
             })) || [],
         }));
 
-        console.log(mapped);
         setIndicators(mapped);
       })
       .catch((error: any) => {
@@ -78,7 +75,6 @@ export default function SessionsPage() {
       });
   }, []);
 
-  // Add session row
   const addSessionRow = (indicatorId: number) => {
     const indicator = indicators.find((i) => i.id === indicatorId);
 
@@ -97,7 +93,6 @@ export default function SessionsPage() {
     );
   };
 
-  // Add group row
   const addGroupRow = (indicatorId: number) => {
     const indicator = indicators.find((i) => i.id === indicatorId);
 
@@ -116,10 +111,7 @@ export default function SessionsPage() {
     );
   };
 
-  // Handle submit
   const handleSubmit = () => {
-    // console.log(indicators);
-    // return
     axiosInstance
       .post(`/main_db/sessions/${id}`, {
         indicators: indicators,

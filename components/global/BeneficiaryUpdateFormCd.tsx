@@ -29,6 +29,7 @@ const BeneficiaryUpdateCD: React.FC<ComponentProps> = ({
   beneficiaryId,
 }) => {
   const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
+  console.log(234);
 
   const [formData, setFormData] = useState<CommunityDialogBeneficiaryForm>({
     name: "",
@@ -108,7 +109,7 @@ const BeneficiaryUpdateCD: React.FC<ComponentProps> = ({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div>
+          <div className="flex flex-col gap-4">
             <Label htmlFor="clientName">Client Name</Label>
             <Input
               name="name"
@@ -116,11 +117,11 @@ const BeneficiaryUpdateCD: React.FC<ComponentProps> = ({
               onChange={handleFormChange}
               id="clientName"
               placeholder="Client Name"
-              className="border w-full mt-4"
+              className="border w-full"
             />
           </div>
 
-          <div>
+          <div className="flex flex-col gap-4">
             <Label htmlFor="fatherName">Father/Husband Name</Label>
             <Input
               name="fatherHusbandName"
@@ -128,11 +129,11 @@ const BeneficiaryUpdateCD: React.FC<ComponentProps> = ({
               onChange={handleFormChange}
               id="fatherName"
               placeholder="Father/Husband Name"
-              className="border w-full mt-4"
+              className="border w-full"
             />
           </div>
 
-          <div>
+          <div className="flex flex-col gap-4">
             <Label htmlFor="age">Age</Label>
             <Input
               name="age"
@@ -141,11 +142,11 @@ const BeneficiaryUpdateCD: React.FC<ComponentProps> = ({
               id="age"
               type="number"
               placeholder="Age"
-              className="border w-full mt-4"
+              className="border w-full"
             />
           </div>
 
-          <div>
+          <div className="flex flex-col gap-4">
             <Label htmlFor="maritalStatus">Marital Status</Label>
             <SingleSelect
               options={[
@@ -165,7 +166,7 @@ const BeneficiaryUpdateCD: React.FC<ComponentProps> = ({
             />
           </div>
 
-          <div>
+          <div className="flex flex-col gap-4">
             <Label htmlFor="gender">Gender</Label>
             <SingleSelect
               options={[
@@ -182,7 +183,7 @@ const BeneficiaryUpdateCD: React.FC<ComponentProps> = ({
             />
           </div>
 
-          <div>
+          <div className="flex flex-col gap-4">
             <Label htmlFor="phone">Phone</Label>
             <Input
               name="phone"
@@ -191,11 +192,11 @@ const BeneficiaryUpdateCD: React.FC<ComponentProps> = ({
               id="phone"
               type="tel"
               placeholder="Phone"
-              className="border w-full mt-4"
+              className="border w-full"
             />
           </div>
 
-          <div>
+          <div className="flex flex-col gap-4">
             <Label htmlFor="nid">NID Number</Label>
             <Input
               name="nationalId"
@@ -203,11 +204,11 @@ const BeneficiaryUpdateCD: React.FC<ComponentProps> = ({
               onChange={handleFormChange}
               id="nid"
               placeholder="NID Number"
-              className="border w-full mt-4"
+              className="border w-full"
             />
           </div>
 
-          <div>
+          <div className="flex flex-col gap-4">
             <Label htmlFor="jobTitle">Job Title</Label>
             <Input
               name="jobTitle"
@@ -215,11 +216,11 @@ const BeneficiaryUpdateCD: React.FC<ComponentProps> = ({
               onChange={handleFormChange}
               id="jobTitle"
               placeholder="Job Title"
-              className="border w-full mt-4"
+              className="border w-full"
             />
           </div>
 
-          <div>
+          <div className="flex flex-col gap-4">
             <Label htmlFor="incentiveReceived">Incentive Received</Label>
             <SingleSelect
               options={[
@@ -238,7 +239,7 @@ const BeneficiaryUpdateCD: React.FC<ComponentProps> = ({
             />
           </div>
 
-          <div>
+          <div className="flex flex-col gap-4">
             <Label htmlFor="incentiveAmount">Incentive Amount</Label>
             <Input
               name="incentiveAmount"
@@ -247,7 +248,7 @@ const BeneficiaryUpdateCD: React.FC<ComponentProps> = ({
               id="incentiveAmount"
               type="text"
               placeholder="Incentive Amount"
-              className="border w-full mt-4"
+              className="border w-full"
             />
           </div>
         </div>

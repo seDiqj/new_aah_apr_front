@@ -54,7 +54,7 @@ const SubmittedDatabasesPage = () => {
   };
 
   const previewApr = () => {
-    router.push(`/preview_apr/${idFeildForEditStateSetter}`);
+    router.push(`/test/${idFeildForEditStateSetter}`);
   };
 
   return (
@@ -91,13 +91,7 @@ const SubmittedDatabasesPage = () => {
               title="Review Apr"
               className="text-blue-600"
               variant={"outline"}
-              onClick={() =>
-                reqForConfirmationDialogue(
-                  "Are You Absolutely Sure ?",
-                  "",
-                  () => previewApr()
-                )
-              }
+              onClick={previewApr}
             >
               <Eye />
             </Button>

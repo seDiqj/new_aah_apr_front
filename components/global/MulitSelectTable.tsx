@@ -37,17 +37,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { createAxiosInstance } from "@/lib/axios";
 import { useParentContext } from "@/contexts/ParentContext";
 import { ChevronDown, Edit, Filter, Trash } from "lucide-react";
 import { Can } from "../Can";
-import useSWR from "swr";
 
 interface ComponentProps {
   columns: ColumnDef<any>[];
   indexUrl: string;
   filterUrl?: string;
-  deleteUrl: string;
+  deleteUrl?: string;
   searchableColumn: string;
 
   // For Edit modal
@@ -239,7 +237,7 @@ const DataTableDemo: React.FC<ComponentProps> = ({
               </Can>
             )}
 
-          {Object.keys(rowSelection).length >= 1 && (
+          {deleteUrl && Object.keys(rowSelection).length >= 1 && (
             <Can permission={deleteBtnPermission ?? "ok"}>
               <Button onClick={handleDelete} variant="outline">
                 <Trash color="red" />
