@@ -87,6 +87,7 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
         .get(`/community_dialogue_db/community_dialogue_for_edit/${dialogueId}`)
         .then((res: any) => {
           const data = res.data.data;
+          console.log(data)
           setFormData(data.programInformation);
           setGroups(data.groups?.map((g: any) => ({ ...g })) ?? []);
           setSessions(

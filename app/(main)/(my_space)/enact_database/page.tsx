@@ -57,7 +57,7 @@ const EnactDatabasePage = () => {
 
   return (
     <>
-      <div className="max-w-[1020px] h-full p-2">
+      <div className="max-w-full h-full p-2">
         <Navbar14 />
         <div className="flex flex-row items-center justify-start my-2">
           <BreadcrumbWithCustomSeparator></BreadcrumbWithCustomSeparator>
@@ -85,11 +85,11 @@ const EnactDatabasePage = () => {
                 <TabsTrigger value="ENACT: FOUNDATIONAL HELPING SKILLS-ADULT">
                   ENACT: FOUNDATIONAL HELPING SKILLS-ADULT
                 </TabsTrigger>
-                {enactTabsList.map((tab) => (
+                {/* {enactTabsList.map((tab) => (
                   <TabsTrigger disabled value="tab">
                     {tab}
                   </TabsTrigger>
-                ))}
+                ))} */}
               </TabsList>
             </div>
 

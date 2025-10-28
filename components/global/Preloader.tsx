@@ -90,10 +90,9 @@ const Preloader: React.FC<ComponentProps> = ({ reqForLoading }) => {
 
       <div className="absolute inset-0 bg-green-400 dark:bg-[#00bfff] opacity-80 mix-blend-screen transition-opacity duration-500"></div>
 
-      {/* لوگوی مرکزی */}
       <div className="relative z-10 transition-all duration-500">
         <img
-          src="/logo.jpg"
+          src="/AAHLogo.png"
           alt="logo"
           className="w-36 h-36 brightness-125 rounded-full shadow-xl"
         />

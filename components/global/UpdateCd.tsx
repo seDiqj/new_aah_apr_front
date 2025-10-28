@@ -40,11 +40,11 @@ const CommunityDialogueUpdateCD: React.FC<DatabaseSummaryProps> = ({
     jobTitle: "",
     incentiveReceived: false,
     incentiveAmount: "",
+    dateOfRegistration: ""
   });
 
   const [loading, setLoading] = useState<boolean>(false);
 
-  // گرفتن داده‌ها هنگام باز شدن مودال
   useEffect(() => {
     if (open && beneficiaryId) {
       setLoading(true);
@@ -64,6 +64,7 @@ const CommunityDialogueUpdateCD: React.FC<DatabaseSummaryProps> = ({
             jobTitle: data.jobTitle ?? "",
             incentiveReceived: data.incentiveReceived ?? false,
             incentiveAmount: data.incentiveAmount ?? "",
+            dateOfRegistration: data.dateOfRegistration ?? ""
           });
         })
         .catch((err: any) => {
