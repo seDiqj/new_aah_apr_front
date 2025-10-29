@@ -32,7 +32,7 @@ const ProgramMainForm: React.FC<ComponentProps> = ({
   createdProgramStateSetter,
   programsListStateSetter
 }) => {
-  const { reqForToastAndSetMessage } = useParentContext();
+  const { reqForToastAndSetMessage, handleReload } = useParentContext();
   const axiosInstance = createAxiosInstance();
 
   const [formData, setFormData] = useState<MainDatabaseProgram>({
@@ -95,6 +95,8 @@ const ProgramMainForm: React.FC<ComponentProps> = ({
                 focalPoint: formData.focalPoint
               }
             ])
+
+            handleReload()
         }
         )
         .catch((error: any) =>
@@ -104,7 +106,10 @@ const ProgramMainForm: React.FC<ComponentProps> = ({
       axiosInstance
         .put(`/global/program/${programId}`, formData)
         .then((response: any) =>
-          reqForToastAndSetMessage(response.data.message)
+        {
+          reqForToastAndSetMessage(response.data.message);
+          handleReload()
+        }
         )
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)

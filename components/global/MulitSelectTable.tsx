@@ -141,14 +141,14 @@ const DataTableDemo: React.FC<ComponentProps> = ({
     axiosInstance
       .get(indexUrl)
       .then((res: any) => {
-        console.log(res.data.data);
         setData(res.data.data);
       })
       .catch((err: any) => {
-        console.log(err);
         reqForToastAndSetMessage(
           err.response?.data?.message || "Failed to fetch data"
         );
+
+        if (err.response.data.data) setData(err.response.data.data)
       })
       .finally(() => {setLoading(false); loadingStateSetter?.(false);});
   };
