@@ -100,11 +100,11 @@ const MainDatabasePage = () => {
         )}
 
         {reqForBeneficiaryUpdateForm && idFeildForEditStateSetter != null && (
-          <MainDatabaseBeneficiaryUpdateForm
+          <KitDatabaseBeneficiaryUpdateForm
             open={reqForBeneficiaryUpdateForm}
             onOpenChange={setReqForBeneficiaryUpdateForm}
-            beneficiaryId={idFeildForEditStateSetter as unknown as string}
-          ></MainDatabaseBeneficiaryUpdateForm>
+            beneficiaryId={idFeildForEditStateSetter as unknown as string} title={""}
+          ></KitDatabaseBeneficiaryUpdateForm>
         )}
 
         {isLoading && <Preloader reqForLoading={isLoading} />}

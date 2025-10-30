@@ -13,7 +13,6 @@ import {
 import { SingleSelect } from "../single-select";
 import { useEffect, useState } from "react";
 import { useParentContext } from "@/contexts/ParentContext";
-import { createAxiosInstance } from "@/lib/axios";
 import { TrainingBenefeciaryForm } from "@/types/Types";
 
 interface TrainingBeneficiaryFormProps {
@@ -31,8 +30,7 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormProps> = ({
   mode,
   editId,
 }) => {
-  const { reqForToastAndSetMessage } = useParentContext();
-  const axiosInstance = createAxiosInstance();
+  const { reqForToastAndSetMessage, axiosInstance, handleReload } = useParentContext();
 
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -53,8 +51,8 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormProps> = ({
       setLoading(true);
       axiosInstance
         .get(`/training_db/beneficiary/${editId}`)
-        .then((res) => {
-          setFormData(res.data.data);
+        .then((response: any) => {
+          setFormData(response.data.data);
         })
         .catch(() => {
           reqForToastAndSetMessage("Failed to load beneficiary data!");
@@ -89,6 +87,7 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormProps> = ({
           : await axiosInstance.post(url, formData);
 
       reqForToastAndSetMessage(response.data.message);
+      handleReload()
       onOpenChange(false);
     } catch (error: any) {
       reqForToastAndSetMessage(

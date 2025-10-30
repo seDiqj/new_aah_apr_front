@@ -38,8 +38,7 @@ const TrainingFormDialog: React.FC<ComponentProps> = ({
   mode,
   id,
 }) => {
-  const { reqForToastAndSetMessage } = useParentContext();
-  const axiosInstance = createAxiosInstance();
+  const { reqForToastAndSetMessage, axiosInstance, handleReload } = useParentContext();
 
   const isReadOnly = mode === "show";
 
@@ -72,9 +71,8 @@ const TrainingFormDialog: React.FC<ComponentProps> = ({
   
       axiosInstance
         .get(`/training_db/training/${id}`)
-        .then((res: any) => {
-          const data = res.data.data;
-          console.log(data)
+        .then((response: any) => {
+          const data = response.data.data;
           setFormData({
             projectCode: data.projectCode || "",
             province: data.province || "",
@@ -90,14 +88,13 @@ const TrainingFormDialog: React.FC<ComponentProps> = ({
           });
           setChapters(data.chapters || []);
         })
-        .catch((err) => {
-          reqForToastAndSetMessage(err.response?.data?.message || "Error loading data");
+        .catch((error: any) => {
+          reqForToastAndSetMessage(error.response?.data?.message || "Error loading data");
         })
         .finally(() => setLoading(false));
     }
   }, [mode, id]);
 
-  // 📋 هندل تغییرات
   const handleChange = (
     e:
       | React.ChangeEvent<HTMLInputElement>
@@ -141,6 +138,7 @@ const TrainingFormDialog: React.FC<ComponentProps> = ({
       } else return;
 
       reqForToastAndSetMessage(res.data.message);
+      handleReload()
       onOpenChange(false);
     } catch (err: any) {
       reqForToastAndSetMessage(err.response?.data?.message || "Error");

@@ -8,7 +8,6 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { useEffect, useState } from "react";
 import { MainDatabaseProgram } from "@/types/Types";
-import { createAxiosInstance } from "@/lib/axios";
 import { withPermission } from "@/lib/withPermission";
 
 interface ComponentProps {
@@ -32,8 +31,7 @@ const ProgramMainForm: React.FC<ComponentProps> = ({
   createdProgramStateSetter,
   programsListStateSetter
 }) => {
-  const { reqForToastAndSetMessage, handleReload } = useParentContext();
-  const axiosInstance = createAxiosInstance();
+  const { reqForToastAndSetMessage, axiosInstance, handleReload } = useParentContext();
 
   const [formData, setFormData] = useState<MainDatabaseProgram>({
     projectCode: "",

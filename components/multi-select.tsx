@@ -65,7 +65,7 @@ export function MultiSelect({
             "w-full justify-between",
             disabled ? "cursor-not-allowed opacity-50" : ""
           )}
-          disabled={disabled} // غیرفعال کردن Button
+          disabled={disabled}
         >
           <div className="flex flex-wrap gap-1 max-h-16 overflow-auto">
             {selectedOptions.length > 0 ? (

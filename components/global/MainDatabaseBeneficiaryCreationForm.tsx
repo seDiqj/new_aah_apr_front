@@ -13,7 +13,6 @@ import {
 import { SingleSelect } from "../single-select";
 import { useEffect, useState } from "react";
 import { useParentContext } from "@/contexts/ParentContext";
-import { createAxiosInstance } from "@/lib/axios";
 import { withPermission } from "@/lib/withPermission";
 import CreateNewProgramMain from "./CreateNewProgramMain";
 
@@ -38,7 +37,7 @@ interface DatabaseSummaryProps {
   open: boolean;
   onOpenChange: (value: boolean) => void;
   title: string;
-  createdProgramStateSetter: any  
+  createdProgramStateSetter?: any  
 }
 
 const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
@@ -47,9 +46,7 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
   title,
   createdProgramStateSetter
 }) => {
-  const { reqForToastAndSetMessage } = useParentContext();
-
-  const axiosInstanse = createAxiosInstance();
+  const { reqForToastAndSetMessage, axiosInstance, handleReload } = useParentContext();
 
   const [formData, setFormData] = useState<BeneficiaryForm>({
     program: "",
@@ -80,11 +77,14 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
-    axiosInstanse
+    axiosInstance
       .post("/main_db/beneficiary", formData)
-      .then((response: any) => reqForToastAndSetMessage(response.data.message))
+      .then((response: any) => {
+        reqForToastAndSetMessage(response.data.message);
+        
+        handleReload()
+      })
       .catch((error: any) => {
-        console.log(error.response.data.data);
         reqForToastAndSetMessage(error.response.data.message);
       });
   };
@@ -97,7 +97,7 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
 
   useEffect(() => {
     // Fetching kit database programs
-    axiosInstanse
+    axiosInstance
       .get(`global/programs/main_database`)
       .then((response: any) => {
         setPrograms(response.data.data);
@@ -107,10 +107,7 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
       );
   }, [open]);
 
-  useEffect(() => console.log(formData), [formData]);
-
   const [reqForProgramCreationForm, setReqForProgramCreationForm] = useState<boolean>(false);
-
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

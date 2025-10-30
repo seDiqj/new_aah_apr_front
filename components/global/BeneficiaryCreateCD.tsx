@@ -26,7 +26,7 @@ const BeneficiaryCreateCD: React.FC<DatabaseSummaryProps> = ({
   open,
   onOpenChange,
 }) => {
-  const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
+  const { reqForToastAndSetMessage, axiosInstance, handleReload } = useParentContext();
 
   const [formData, setFormData] = useState<CommunityDialogBeneficiaryForm>({
     name: "",
@@ -54,7 +54,10 @@ const BeneficiaryCreateCD: React.FC<DatabaseSummaryProps> = ({
   const handleSubmit = () => {
     axiosInstance
       .post("/community_dialogue_db/beneficiary", formData)
-      .then((response: any) => reqForToastAndSetMessage(response.data.message))
+      .then((response: any) => {
+        reqForToastAndSetMessage(response.data.message);
+        handleReload();
+      })
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
       );

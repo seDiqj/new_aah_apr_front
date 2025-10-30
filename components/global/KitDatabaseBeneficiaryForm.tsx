@@ -9,12 +9,10 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { SingleSelect } from "../single-select";
 import { useEffect, useState } from "react";
 import { useParentContext } from "@/contexts/ParentContext";
-import { createAxiosInstance } from "@/lib/axios";
 import { MultiSelect } from "../multi-select";
 import { withPermission } from "@/lib/withPermission";
 import CreateNewProgramKit from "./CreateNewProgramKit";
@@ -49,9 +47,7 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
   onOpenChange,
   title,
 }) => {
-  const { reqForToastAndSetMessage } = useParentContext();
-
-  const axiosInstanse = createAxiosInstance();
+  const { reqForToastAndSetMessage, axiosInstance, handleReload } = useParentContext();
 
   const [formData, setFormData] = useState<BeneficiaryForm>({
     program: "",
@@ -84,17 +80,18 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
-    axiosInstanse
+    axiosInstance
       .post("/kit_db/beneficiary", formData)
-      .then((response: any) => reqForToastAndSetMessage(response.data.message))
+      .then((response: any) => {
+        reqForToastAndSetMessage(response.data.message);
+        handleReload();
+      })
       .catch((error: any) =>
         {
           reqForToastAndSetMessage(error.response.data.message)
         }
       );
   };
-
-  useEffect(() => console.log(formData), [formData]);
 
   const [programs, setPrograms] = useState<
     {
@@ -110,7 +107,7 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
 
   useEffect(() => {
     // Fetching kit database programs
-    axiosInstanse
+    axiosInstance
       .get(`global/programs/kit_database`)
       .then((response: any) => {
         setPrograms(response.data.data);
@@ -119,7 +116,7 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
         reqForToastAndSetMessage(error.response.data.message)
       );
     // Fetching kit database indicators
-    axiosInstanse
+    axiosInstance
       .get(`global/indicators/kit_database`)
       .then((response: any) => {
         setIndicators(response.data.data);

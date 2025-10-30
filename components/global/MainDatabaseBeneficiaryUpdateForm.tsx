@@ -46,8 +46,7 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<UpdateFormProps> = ({
   onOpenChange,
   beneficiaryId,
 }) => {
-  const { reqForToastAndSetMessage } = useParentContext();
-  const axiosInstanse = createAxiosInstance();
+  const { reqForToastAndSetMessage, axiosInstance, handleReload } = useParentContext();
 
   const [formData, setFormData] = useState<BeneficiaryForm>({
     id: "",
@@ -74,7 +73,7 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<UpdateFormProps> = ({
   // Fetch beneficiary data
   useEffect(() => {
     if (open && beneficiaryId) {
-      axiosInstanse
+      axiosInstance
         .get(`/kit_db/beneficiary/${beneficiaryId}`)
         .then((response: any) => {
           const data = response.data.data;
@@ -109,7 +108,7 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<UpdateFormProps> = ({
   // Fetch programs & indicators
   useEffect(() => {
     if (open) {
-      axiosInstanse
+      axiosInstance
         .get(`global/programs/main_database`)
         .then((res: any) => {
           setPrograms(res.data.data);
@@ -135,7 +134,7 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<UpdateFormProps> = ({
   const handleSubmit = (e: any) => {
     e.preventDefault();
     setLoading(true);
-    axiosInstanse
+    axiosInstance
       .put(`/main_db/beneficiary/${beneficiaryId}`, {
         bnfData: formData,
         program: program,
@@ -143,6 +142,7 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<UpdateFormProps> = ({
       .then((response: any) => {
         reqForToastAndSetMessage(response.data.message);
         onOpenChange(false);
+        handleReload()
       })
       .catch((error: any) => {
         reqForToastAndSetMessage(

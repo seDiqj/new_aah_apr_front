@@ -4,7 +4,6 @@ import * as React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Calendar } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -74,7 +73,7 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
   mode,
   psychoeducationId,
 }) => {
-  const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
+  const { reqForToastAndSetMessage, axiosInstance, handleReload } = useParentContext();
 
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>();
 
@@ -146,7 +145,10 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
       axiosInstance
         .post("/psychoeducation_db/psychoeducation", formData)
         .then((response: any) =>
-          reqForToastAndSetMessage(response.data.message)
+        {
+          reqForToastAndSetMessage(response.data.message);
+          handleReload()
+        }
         )
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)
@@ -157,7 +159,10 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
         formData
       )
         .then((response: any) =>
-          reqForToastAndSetMessage(response.data.message)
+        {
+          reqForToastAndSetMessage(response.data.message);
+          handleReload()
+        }
         )
         .catch((error: any) =>
           {reqForToastAndSetMessage(error.response.data.message);console.log(error.response.data)}

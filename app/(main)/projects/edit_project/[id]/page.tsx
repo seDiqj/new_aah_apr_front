@@ -56,10 +56,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useParentContext } from "@/contexts/ParentContext";
-import { createAxiosInstance } from "@/lib/axios";
 import { withPermission } from "@/lib/withPermission";
 import { Edit, Eye, Plus, Trash } from "lucide-react";
-import calculateEachIndicatorProvinceTargetAccordingTONumberOFCouncilorCount from "@/lib/IndicatorProvincesTargetCalculator";
+import calculateEachIndicatorProvinceTargetAccordingTONumberOFCouncilorCount, { calculateEachSubIndicatorProvinceTargetAccordingTONumberOFCouncilorCount } from "@/lib/IndicatorProvincesTargetCalculator";
 import React from "react";
 import { useEffect, useState } from "react";
 import EditIndicatorModal from "@/components/global/IndicatorEditModel";
@@ -107,7 +106,6 @@ const EditProjectPage = () => {
     description: "",
   });
 
-  // const [projectProvinces, setProjectProvinces] = useState<string[]>([]);
 
   let [outcome, setOutcome] = useState<string>("");
   let [outcomeRef, setOutcomeRef] = useState<string>("");
@@ -166,13 +164,6 @@ const EditProjectPage = () => {
       ...prev,
       [name]: value,
     }));
-  };
-
-  const hundleOutPutFormChange = (e: any) => {
-    const name: string = e.target.name;
-    const value: string = e.target.value;
-
-    name == "output" ? setOutput(value) : setOutputRef(value);
   };
 
   const hundleIndicatorFormChange = (e: any) => {
@@ -262,30 +253,6 @@ const EditProjectPage = () => {
       [name]: value,
     }));
   };
-
-  function hasEmptyField(value: any): boolean {
-    console.log(value);
-    if (value === null || value === undefined) return true;
-
-    console.log("pass", value);
-    if (typeof value === "string") {
-      return value.trim() === "";
-    }
-
-    if (typeof value === "number") {
-      return Number.isNaN(value);
-    }
-
-    if (Array.isArray(value)) {
-      if (value.length === 0) return true;
-      return value.some((v) => hasEmptyField(v));
-    }
-
-    if (typeof value === "object") {
-      return Object.values(value).some((v) => hasEmptyField(v));
-    }
-    return false;
-  }
 
   const addIndicatorToIndicatorsState = (outputRef: string) => {
 
@@ -454,24 +421,12 @@ const EditProjectPage = () => {
     })),
   );
 
-  // useEffect(() => {
-  //   console.log("formData", formData);
-  //   console.log("outcomes", outcomes);
-  //   console.log("outputs", outputs);
-  //   console.log("indicators", indicators);
-  //   console.log("dessaggregations", desaggregations);
-  //   console.log(isp3);
-  // }, [formData, outcomes, outputs, indicators, desaggregations, isp3]);
-
   // temp variable
   const [projectId, setProjectId] = useState<number | null>(null);
 
   const hundleSubmit = (
     parts: "project" | "outcome" | "output" | "indicator" | "dessaggration"
   ) => {
-
-    // if (parts == "outcome" && outcome.trim() && outcomeRef.trim()) handleAddOutcome();
-    // if (parts == "output" && output.trim() && outputRef.trim()) handleAddOutput();
 
     const [url, form]: [string, any] =
       parts == "project"
@@ -657,14 +612,15 @@ const EditProjectPage = () => {
       return;
     }
 
-    console.log(status)
-
     axiosInstance
       .post(`projects/status/change_apr_status/${projectId}`, {
         newStatus: status,
         comment: comment,
       })
-      .then((response: any) => reqForToastAndSetMessage(response.data.message))
+      .then((response: any) => {
+        reqForToastAndSetMessage(response.data.message);
+        setProjectAprStatus(response.data.data)
+      })
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
       );
@@ -801,15 +757,10 @@ const EditProjectPage = () => {
   }
 
   const handleAddSubIndicator = () => {
-     if (
-      !indicator.dessaggregationType ||
-      indicator.dessaggregationType == "enact"
-    ) {
-      const errorText: string =
-        !indicator.dessaggregationType
-          ? "Main indicator dessaggregation type is empty !"
-          : "Enact indicator can not have sub indicator";
-      reqForToastAndSetMessage(errorText);
+      if (
+      indicator.database != "main_database"
+    ) {        
+      reqForToastAndSetMessage("Only main database can have a sub indicator.");
       return;
     }
 
@@ -1371,7 +1322,7 @@ const EditProjectPage = () => {
                   </div>
                 </CardContent>
 
-                <CardFooter className="flex flex-row w-full gap-2 items-start justify-end bottom-1">
+                <CardFooter className="flex flex-row items-center justify-end w-full absolute bottom-5">
                   {cardsBottomButtons(setCurrentTab, "project", hundleSubmit, "outcome", setCurrentTab, "output", false, false, readOnly)}
                 </CardFooter>
               </Card>
@@ -1379,7 +1330,7 @@ const EditProjectPage = () => {
 
             {/* Output */}
             <TabsContent value="output" className="h-full">
-              <Card className="h-full flex flex-col overflow-auto">
+              <Card className="relative h-full flex flex-col">
                 <CardHeader>
                   <CardTitle>Add Output</CardTitle>
                   <CardDescription>
@@ -1503,7 +1454,7 @@ const EditProjectPage = () => {
                   </Accordion>
                 </CardContent>
 
-                <CardFooter className="flex justify-end gap-2 bottom-1">
+                <CardFooter className="flex flex-row items-center justify-end min-w-full max-w-full absolute bottom-5">
                     {cardsBottomButtons(setCurrentTab, "outcome", hundleSubmit, "output", setCurrentTab, "indicator", false, false, readOnly)}
                 </CardFooter>
               </Card>
@@ -1511,7 +1462,7 @@ const EditProjectPage = () => {
 
             {/* Indicator */}
             <TabsContent value="indicator" className="h-full">
-              <Card className="h-full flex flex-col">
+              <Card className="relative h-full flex flex-col">
                 <CardHeader>
                   <CardTitle>Add Indicator</CardTitle>
                   <CardDescription>
@@ -2005,15 +1956,41 @@ const EditProjectPage = () => {
                                             name="subIndicatorProvinceCouncilorCount"
                                             value={province.councilorCount || 0}
                                             onChange={(e) => {
-                                              hundleIndicatorFormChange({
-                                                target: {
-                                                  province: province,
-                                                  name: e.target.name,
-                                                  value: e.target.value,
-                                                },
-                                              });
-                                            }}
-                                            disabled={readOnly}
+                                            const value = Number(
+                                              e.target.value
+                                            );
+                                            setIndicator((prev) => {
+                                              const updatedSubIndicatorProvinces = 
+                                                prev.subIndicator!.provinces.map((p) =>
+                                                  p.province == province.province ?
+                                                {
+                                                  ...p,
+                                                  councilorCount: value
+                                                }:
+                                                p
+                                                )
+
+                                                if (prev.subIndicator)
+                                                  calculateEachSubIndicatorProvinceTargetAccordingTONumberOFCouncilorCount(
+                                                    {
+                                                      ...prev,
+                                                      subIndicator: {
+                                                        ...prev.subIndicator,
+                                                        provinces: updatedSubIndicatorProvinces
+                                                      },
+                                                    }
+                                                    ,setIndicator,
+                                                  );
+
+                                              return {
+                                                ...prev,
+                                                subIndicator: prev.subIndicator ? {
+                                                  ...prev.subIndicator,
+                                                  provinces: updatedSubIndicatorProvinces
+                                                } : null,
+                                              };
+                                            });
+                                          }}
                                           />
                                         </div>
                                         <div className="flex flex-col gap-1">
@@ -2054,7 +2031,7 @@ const EditProjectPage = () => {
                               className="flex items-center gap-2"
                               onClick={handleAddSubIndicator}
                               disabled={
-                                indicator.dessaggregationType == "enact" 
+                                indicator.database != "main_database" 
                               }
                             >
                               <Plus size={16} />
@@ -2119,7 +2096,7 @@ const EditProjectPage = () => {
                   </Accordion>
                 </CardContent>
 
-                <CardFooter className="flex justify-end gap-2">
+                <CardFooter className="flex flex-row items-center justify-end w-full absolute bottom-5">
                   {cardsBottomButtons(setCurrentTab, "output", hundleSubmit, "indicator", setCurrentTab, "dessaggregation", false, false, readOnly)}
                 </CardFooter>
               </Card>
@@ -2674,7 +2651,7 @@ const EditProjectPage = () => {
                             </div>
                           </div>
                           {!readOnly && (
-                            <DialogFooter>
+                            <DialogFooter className="z-50">
                             <div className="flex flex-row items-center justify-end fixed -bottom-40 gap-2">
                               <Button className="bg-blue-400" onClick={() => {
                                 setDessaggregations([])
@@ -2688,27 +2665,29 @@ const EditProjectPage = () => {
                                 Cancel
                               </Button>
                               <Button className="bg-green-400" disabled={(() => {
-                                const selectedIndicatorId = selectedIndicator.id;
-                                let selectedIndicatorSubIndicatorId = null;
-                                if (selectedIndicator.subIndicator) {
-                                  selectedIndicatorSubIndicatorId = selectedIndicator.subIndicator.id
-                                }
+                                  const selectedIndicatorId = selectedIndicator.id;
+                                  const subIndicatorId = selectedIndicator.subIndicator?.id ?? null;
 
-                                let selectedIndicatorDessaggregationsTotal = 0;
+                                  let mainTotal = 0;
+                                  let subTotal = 0;
 
-                                desaggregations.forEach((d) => d.indicatorId == selectedIndicatorId ? selectedIndicatorDessaggregationsTotal += Number(d.target) : selectedIndicatorDessaggregationsTotal += 0)
+                                  desaggregations.forEach((d) => {
+                                    if (d.indicatorId == selectedIndicatorId) mainTotal += Number(d.target);
+                                    if (subIndicatorId && d.indicatorId == subIndicatorId) subTotal += Number(d.target);
+                                  });
 
-                                let selectedIndicatorSubIndicatorDessaggregationsTotal = 0;
+                                  const mainTarget = Number(selectedIndicator.target ?? 0);
+                                  const subTarget = Number(selectedIndicator.subIndicator?.target ?? 0);
 
-                                if (selectedIndicatorSubIndicatorId) {
+                                  if (
+                                    mainTarget === mainTotal &&
+                                    (!subIndicatorId || subTarget === subTotal)
+                                  ) {
+                                    return false; 
+                                  }
 
-                                  desaggregations.forEach((d) => d.indicatorId == selectedIndicatorSubIndicatorId ? selectedIndicatorSubIndicatorDessaggregationsTotal += Number(d.target) : selectedIndicatorSubIndicatorDessaggregationsTotal += 0)
-
-                                }
-
-                                if (selectedIndicator.target == selectedIndicatorDessaggregationsTotal && selectedIndicator.subIndicator?.target == selectedIndicatorSubIndicatorDessaggregationsTotal) return false;
-                                return true;
-                              })()}
+                                  return true;
+                                })()}
                               onClick={() => {
                                 setSelectedIndicator(null);
                               }}
@@ -2848,13 +2827,12 @@ const EditProjectPage = () => {
                                   const currentIdx = projectAprStatusList.indexOf(projectAprStatus);
                                   const stepIdx = projectAprStatusList.indexOf(step.acceptStatusValue!);
 
-                                  // اگر مرحله reject شده، تیک نخورده باشد
                                   const isRejected = step.rejectStatusValue
                                     ? projectAprStatus === step.rejectStatusValue
                                     : false;
 
                                   return !isRejected && stepIdx !== -1 && currentIdx >= stepIdx;
-                                })()}
+                                })() || projectAprStatus == step.acceptStatusValue}
                                 onCheckedChange={() => {}}
                               />
                             </AlertDialogTrigger>
@@ -2950,7 +2928,7 @@ const EditProjectPage = () => {
                   })}
 
                   {/* Action Progress Bar */}
-                  <div className="mt-8">
+                  <div className="mt-8 max-w-full overflow-x-auto">
                     <h3 className="text-lg font-semibold mb-4">Action Progress</h3>
 
                     <div className="flex items-center gap-4 overflow-x-auto p-3  rounded-xl shadow-inner">
@@ -2990,14 +2968,14 @@ const EditProjectPage = () => {
             </TabsContent>
 
             {/* APR Logs */}
-            <TabsContent value="logs" className="h-full">
+            <TabsContent value="logs" className="h-full overflow-hidden">
               <Card className="h-full">
                 <CardHeader>
                   <CardTitle>Apr Finalization</CardTitle>
                 </CardHeader>
-                <CardContent className="grid gap-6">
+                <CardContent className="grid gap-6 overflow-auto">
                   <>
-                    <Table className="w-full">
+                    <Table className="w-full overflow-auto">
                       <TableHeader>
                         <TableRow>
                           <TableHead className="w-[150px]">Action</TableHead>

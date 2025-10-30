@@ -6,11 +6,9 @@ import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import { use, useEffect, useState } from "react";
-import { KitForm, MainDatabaseProgram } from "@/types/Types";
-import { createAxiosInstance } from "@/lib/axios";
+import { useEffect, useState } from "react";
+import { KitFormType } from "@/types/Types";
 import { MultiSelect } from "../multi-select";
-import { size } from "zod";
 import { useParams } from "next/navigation";
 import { withPermission } from "@/lib/withPermission";
 
@@ -32,10 +30,9 @@ const KitForm: React.FC<ComponentProps> = ({
   mode = mode;
 
   const { id } = useParams();
-  const { reqForToastAndSetMessage } = useParentContext();
-  const axiosInstance = createAxiosInstance();
+  const { reqForToastAndSetMessage, axiosInstance, handleReload } = useParentContext();
 
-  const [formData, setFormData] = useState<KitForm>({
+  const [formData, setFormData] = useState<KitFormType>({
     kits: [],
     distributionDate: "",
     remark: "",
@@ -59,7 +56,10 @@ const KitForm: React.FC<ComponentProps> = ({
       axiosInstance
         .post(`/kit_db/add_kit_to_bnf/${id}`, formData)
         .then((response: any) =>
-          reqForToastAndSetMessage(response.data.message)
+        {
+          reqForToastAndSetMessage(response.data.message);
+          handleReload();
+        }
         )
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)
@@ -68,7 +68,10 @@ const KitForm: React.FC<ComponentProps> = ({
       axiosInstance
         .put(`/kit_db/kit/${kitId}`, formData)
         .then((response: any) =>
-          reqForToastAndSetMessage(response.data.message)
+        {
+          reqForToastAndSetMessage(response.data.message);
+          handleReload();
+        }
         )
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)

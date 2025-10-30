@@ -17,7 +17,6 @@ const SubmittedDatabasesPage = () => {
     reqForToastAndSetMessage,
     reqForConfirmationDialogue,
     axiosInstance,
-    aprStates
   } = useParentContext();
 
   let [reqForPermissionUpdateForm, setReqForPermissionUpdateForm] =

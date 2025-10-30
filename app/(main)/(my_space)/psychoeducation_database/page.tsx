@@ -8,16 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { useParentContext } from "@/contexts/ParentContext";
 import {
-  mainDatabaseAndKitDatabaseBeneficiaryColumns,
   psychoeducationTableListColumn,
 } from "@/definitions/DataTableColumnsDefinitions";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const PsychoeducationDatabasePage = () => {
-  const { reqForToastAndSetMessage } = useParentContext();
-  const router = useRouter();
-
   let [idFeildForEditStateSetter, setIdFeildForEditStateSetter] = useState<
     number | null
   >(null);

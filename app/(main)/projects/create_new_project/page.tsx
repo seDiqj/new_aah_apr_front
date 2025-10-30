@@ -56,7 +56,6 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useParentContext } from "@/contexts/ParentContext";
-import { createAxiosInstance } from "@/lib/axios";
 import { withPermission } from "@/lib/withPermission";
 import { Edit, Plus, Trash } from "lucide-react";
 import calculateEachIndicatorProvinceTargetAccordingTONumberOFCouncilorCount, { calculateEachSubIndicatorProvinceTargetAccordingTONumberOFCouncilorCount } from "@/lib/IndicatorProvincesTargetCalculator";
@@ -95,8 +94,6 @@ const NewProjectPage = () => {
     aprStatus: "NotCreatedYet",
     description: "",
   });
-
-  const [projectProvinces, setProjectProvinces] = useState<string[]>([]);
 
   let [outcome, setOutcome] = useState<string>("");
   let [outcomeRef, setOutcomeRef] = useState<string>("");
@@ -155,13 +152,6 @@ const NewProjectPage = () => {
       ...prev,
       [name]: value,
     }));
-  };
-
-  const hundleOutPutFormChange = (e: any) => {
-    const name: string = e.target.name;
-    const value: string = e.target.value;
-
-    name == "output" ? setOutput(value) : setOutputRef(value);
   };
 
   const hundleIndicatorFormChange = (e: any) => {
@@ -251,30 +241,6 @@ const NewProjectPage = () => {
       [name]: value,
     }));
   };
-
-  function hasEmptyField(value: any): boolean {
-    console.log(value);
-    if (value === null || value === undefined) return true;
-
-    console.log("pass", value);
-    if (typeof value === "string") {
-      return value.trim() === "";
-    }
-
-    if (typeof value === "number") {
-      return Number.isNaN(value);
-    }
-
-    if (Array.isArray(value)) {
-      if (value.length === 0) return true;
-      return value.some((v) => hasEmptyField(v));
-    }
-
-    if (typeof value === "object") {
-      return Object.values(value).some((v) => hasEmptyField(v));
-    }
-    return false;
-  }
 
   const addIndicatorToIndicatorsState = (outputRef: string) => {
 
@@ -632,7 +598,10 @@ const NewProjectPage = () => {
         newStatus: status,
         comment: comment,
       })
-      .then((response: any) => reqForToastAndSetMessage(response.data.message))
+      .then((response: any) => {
+        reqForToastAndSetMessage(response.data.message);
+        setProjectAprStatus(response.data.data)
+      })
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
       );
@@ -768,14 +737,9 @@ const NewProjectPage = () => {
 
   const handleAddSubIndicator = () => {
      if (
-      !indicator.dessaggregationType ||
-      indicator.dessaggregationType == "enact"
-    ) {
-      const errorText: string =
-        !indicator.dessaggregationType
-          ? "Main indicator dessaggregation type is empty !"
-          : "Enact indicator can not have sub indicator";
-      reqForToastAndSetMessage(errorText);
+      indicator.database != "main_database"
+    ) {        
+      reqForToastAndSetMessage("Only main database can have a sub indicator.");
       return;
     }
 
@@ -997,9 +961,8 @@ const NewProjectPage = () => {
                           { value: "helmand", label: "Helmand" },
                           { value: "daikundi", label: "Daikundi" },
                         ]}
-                        value={projectProvinces}
+                        value={formData.provinces}
                         onValueChange={(value: string[]) => {
-                          setProjectProvinces(value);
                           setFormData((prev) => ({
                             ...prev,
                             provinces: value,
@@ -1144,7 +1107,7 @@ const NewProjectPage = () => {
                   </div>
                 </CardContent>
 
-                <CardFooter className="flex flex-row w-full gap-2 items-start justify-end bottom-1">
+                <CardFooter className="flex flex-row w-full gap-2 items-start justify-end absolute bottom-5">
                   {cardsBottomButtons(setCurrentTab, "project", hundleSubmit, "outcome", setCurrentTab, "output")}
                 </CardFooter>
               </Card>
@@ -1152,7 +1115,7 @@ const NewProjectPage = () => {
 
             {/* Output */}
             <TabsContent value="output" className="h-full">
-              <Card className="h-full flex flex-col overflow-auto">
+              <Card className="relative h-full flex flex-col">
                 <CardHeader>
                   <CardTitle>Add Output</CardTitle>
                   <CardDescription>
@@ -1259,7 +1222,7 @@ const NewProjectPage = () => {
                   </Accordion>
                 </CardContent>
 
-                <CardFooter className="flex justify-end gap-2 bottom-1">
+                <CardFooter className="flex flex-row w-full gap-2 items-start justify-end absolute bottom-5">
                     {cardsBottomButtons(setCurrentTab, "outcome", hundleSubmit, "output", setCurrentTab, "indicator")}
                 </CardFooter>
               </Card>
@@ -1267,7 +1230,7 @@ const NewProjectPage = () => {
 
             {/* Indicator */}
             <TabsContent value="indicator" className="h-full">
-              <Card className="h-full flex flex-col">
+              <Card className="relative h-full flex flex-col">
                 <CardHeader>
                   <CardTitle>Add Indicator</CardTitle>
                   <CardDescription>
@@ -1357,12 +1320,13 @@ const NewProjectPage = () => {
                               />
                             </div>
 
+                            {/* provinces */}
                             <div className="flex flex-col gap-1 col-span-full">
                               <Label htmlFor={`province-${index}`}>
                                 Indicator Provinces
                               </Label>
                               <MultiSelect
-                                options={projectProvinces.map((province) => ({
+                                options={formData.provinces.map((province) => ({
                                   label: province.toLowerCase(),
                                   value:
                                     province.charAt(0).toUpperCase() +
@@ -1818,7 +1782,7 @@ const NewProjectPage = () => {
                               className="flex items-center gap-2"
                               onClick={handleAddSubIndicator}
                               disabled={
-                                indicator.dessaggregationType == "enact"
+                                indicator.database != "main_database"
                               }
                             >
                               <Plus size={16} />
@@ -1881,7 +1845,7 @@ const NewProjectPage = () => {
                   </Accordion>
                 </CardContent>
 
-                <CardFooter className="flex justify-end gap-2">
+                <CardFooter className="flex flex-row w-full gap-2 items-start justify-end absolute bottom-5">
                   {cardsBottomButtons(setCurrentTab, "output", hundleSubmit, "indicator", setCurrentTab, "dessaggregation")}
                 </CardFooter>
               </Card>
@@ -2486,32 +2450,10 @@ const NewProjectPage = () => {
                     )}
                   </div>
                 </CardContent>
+
+
                 <CardFooter className="flex flex-row items-center justify-end w-full absolute bottom-5">
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button>Save</Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>
-                          Are you absolutely sure?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone. This will permanently
-                          delete your account and remove your data from our
-                          servers.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => hundleSubmit("dessaggration")}
-                        >
-                          Continue
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  {cardsBottomButtons(setCurrentTab, "indicator", hundleSubmit, "dessaggration", setCurrentTab, "aprPreview")}
                 </CardFooter>
               </Card>
             </TabsContent>
@@ -2526,7 +2468,7 @@ const NewProjectPage = () => {
 
             {/* ISP3 */}
             <TabsContent value="isp3" className="h-full">
-              <Card className="h-full">
+              <Card className="h-full w-full relative overflow-auto">
 
                 <CardHeader>
                   <CardTitle>ISP3</CardTitle>
@@ -2588,7 +2530,7 @@ const NewProjectPage = () => {
                   ))}
                 </CardContent>
 
-                <CardFooter>
+                <CardFooter className="flex flex-row items-center justify-end w-full absolute bottom-5">
                   {cardsBottomButtons(setCurrentTab, "aprPreview", hundleSubmit, "isp3", setCurrentTab, "finalization")}
                 </CardFooter>
               </Card>
@@ -2655,7 +2597,7 @@ const NewProjectPage = () => {
                                     : false;
 
                                   return !isRejected && stepIdx !== -1 && currentIdx >= stepIdx;
-                                })()}
+                                })() || projectAprStatus == step.acceptStatusValue}
                                 onCheckedChange={() => {}}
                               />
                             </AlertDialogTrigger>
@@ -2796,7 +2738,7 @@ const NewProjectPage = () => {
                 <CardHeader>
                   <CardTitle>Apr Finalization</CardTitle>
                 </CardHeader>
-                <CardContent className="grid gap-6">
+                <CardContent className="grid gap-6 overflow-y-auto">
                   <>
                     <Table className="w-full">
                       <TableHeader>

@@ -7,7 +7,6 @@ import SubHeader from "@/components/global/SubHeader";
 import { Button } from "@/components/ui/button";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import {
-  mainDatabaseAndKitDatabaseBeneficiaryColumns,
   trainingsListColumns,
 } from "@/definitions/DataTableColumnsDefinitions";
 import { useRouter } from "next/navigation";

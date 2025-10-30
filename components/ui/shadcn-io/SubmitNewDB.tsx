@@ -53,7 +53,7 @@ interface ComponentProps {
 }
 
 const SubmitNewDB: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
-  const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
+  const { reqForToastAndSetMessage, axiosInstance, handleReload } = useParentContext();
 
   const [fromMonth, setFromMonth] = React.useState<string | undefined>();
   const [fromYear, setFromYear] = React.useState<number | undefined>();
@@ -128,22 +128,6 @@ const SubmitNewDB: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
   const handleSubmit = () => {
     let error: boolean = false;
 
-    // [
-    //   selectedProject,
-    //   selectedDatabase,
-    //   selectedProvince,
-    //   fromMonth,
-    //   fromYear,
-    //   toMonth,
-    //   toYear,
-    // ].forEach((value: any, index: number) => {
-    //   if (value && value.trim() != "") error = true;
-    // });
-
-    // if (error) {
-    //   reqForToastAndSetMessage("Please fill all fields !");
-    // }
-
     axiosInstance
       .post("/db_management/submit_new_database", {
         project_id: selectedProject?.id,
@@ -152,7 +136,10 @@ const SubmitNewDB: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
         fromDate: `${fromYear}-${fromMonth}`,
         toDate: `${toYear}-${toMonth}`,
       })
-      .then((response: any) => reqForToastAndSetMessage(response.data.message))
+      .then((response: any) => {
+        reqForToastAndSetMessage(response.data.message)
+        handleReload()
+      })
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
       );

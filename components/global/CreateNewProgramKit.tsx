@@ -8,7 +8,6 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { useEffect, useState } from "react";
 import { MainDatabaseProgram } from "@/types/Types";
-import { createAxiosInstance } from "@/lib/axios";
 import { withPermission } from "@/lib/withPermission";
 
 interface ComponentProps {
@@ -32,8 +31,7 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
   createdProgramStateSetter,
   programsListStateSetter
 }) => {
-  const { reqForToastAndSetMessage } = useParentContext();
-  const axiosInstance = createAxiosInstance();
+  const { reqForToastAndSetMessage, axiosInstance, handleReload } = useParentContext();
 
   const [formData, setFormData] = useState<MainDatabaseProgram>({
     projectCode: "",
@@ -95,6 +93,7 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
                 focalPoint: formData.focalPoint
               }
             ])
+            handleReload()
         }
         )
         .catch((error: any) =>
@@ -104,7 +103,10 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
       axiosInstance
         .put(`/global/program/${programId}`, formData)
         .then((response: any) =>
-          reqForToastAndSetMessage(response.data.message)
+        {
+          reqForToastAndSetMessage(response.data.message);
+          handleReload()
+        }
         )
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)

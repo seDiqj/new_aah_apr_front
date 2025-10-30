@@ -16,7 +16,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Separator } from "@/components/ui/separator";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,8 +36,7 @@ const BeneficiaryProfilePage: React.FC<ComponentProps> = (
 ) => {
   const { id } = use(params.params);
 
-  const axiosInstance = createAxiosInstance();
-  const { reqForToastAndSetMessage } = useParentContext();
+  const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
 
   const [beneficiaryInfo, setBeneficiaryInfo] = useState<{
     dateOfRegistration: string;
@@ -80,7 +78,6 @@ const BeneficiaryProfilePage: React.FC<ComponentProps> = (
 
   const [mealTools, setMealTools] = useState<any[]>([]);
 
-
   const handleEvaluationFormChange = (e: any) => {
     const name: string = e.target.name;
     const value: string = e.target.value;
@@ -93,7 +90,6 @@ const BeneficiaryProfilePage: React.FC<ComponentProps> = (
 
   const [reqForMealToolForm, setReqForMealToolForm] = useState<boolean>(false);
   
-
   const handleSubmitMealtoolForm = (e: any) => {
     e.preventDefault();
 

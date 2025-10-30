@@ -28,8 +28,7 @@ const BeneficiaryUpdateCD: React.FC<ComponentProps> = ({
   onOpenChange,
   beneficiaryId,
 }) => {
-  const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
-  console.log(234);
+  const { reqForToastAndSetMessage, axiosInstance, handleReload } = useParentContext();
 
   const [formData, setFormData] = useState<CommunityDialogBeneficiaryForm>({
     name: "",
@@ -76,6 +75,7 @@ const BeneficiaryUpdateCD: React.FC<ComponentProps> = ({
           response.data.message || "Updated successfully"
         );
         onOpenChange(false);
+        handleReload();
       })
       .catch((error: any) =>
         reqForToastAndSetMessage(

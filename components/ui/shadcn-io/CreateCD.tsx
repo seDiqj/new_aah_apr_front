@@ -40,7 +40,7 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
   mode,
   dialogueId,
 }) => {
-  const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
+  const { reqForToastAndSetMessage, axiosInstance, handleReload } = useParentContext();
 
   const [formData, setFormData] = useState<CommunityDialogueForm>({
     project_id: "",
@@ -87,7 +87,6 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
         .get(`/community_dialogue_db/community_dialogue_for_edit/${dialogueId}`)
         .then((res: any) => {
           const data = res.data.data;
-          console.log(data)
           setFormData(data.programInformation);
           setGroups(data.groups?.map((g: any) => ({ ...g })) ?? []);
           setSessions(
@@ -144,9 +143,12 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
           groups,
           remark,
         })
-        .then((res: any) => reqForToastAndSetMessage(res.data.message))
-        .catch((err: any) =>
-          reqForToastAndSetMessage(err.response?.data?.message)
+        .then((response: any) => {
+          reqForToastAndSetMessage(response.data.message);
+          handleReload()
+        })
+        .catch((error: any) =>
+          reqForToastAndSetMessage(error.response?.data?.message)
         );
     } else if (mode === "update" && dialogueId) {
       axiosInstance
@@ -156,9 +158,12 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
           groups,
           remark,
         })
-        .then((res: any) => reqForToastAndSetMessage(res.data.message))
-        .catch((err: any) =>
-          reqForToastAndSetMessage(err.response?.data?.message)
+        .then((response: any) => {
+          reqForToastAndSetMessage(response.data.message);
+          handleReload()
+        })
+        .catch((error: any) =>
+          reqForToastAndSetMessage(error.response?.data?.message)
         );
     }
   };

@@ -40,6 +40,7 @@ import {
 import { useParentContext } from "@/contexts/ParentContext";
 import { ChevronDown, Edit, Filter, Trash } from "lucide-react";
 import { Can } from "../Can";
+import ConfirmationModel from "@/generals/ConfirmationModel";
 
 interface ComponentProps {
   columns: ColumnDef<any>[];
@@ -204,6 +205,8 @@ const DataTableDemo: React.FC<ComponentProps> = ({
     },
   });
 
+  const [reqForConfirmationModel, setReqForConfirmationModel] = React.useState<boolean>(false);
+
   return (
     <div className="w-full">
       {/* Toolbar */}
@@ -239,7 +242,10 @@ const DataTableDemo: React.FC<ComponentProps> = ({
 
           {deleteUrl && Object.keys(rowSelection).length >= 1 && (
             <Can permission={deleteBtnPermission ?? "ok"}>
-              <Button onClick={handleDelete} variant="outline">
+              <Button onClick={() => {
+                  setReqForConfirmationModel(true);
+                    <ConfirmationModel open={true} onOpenChange={setReqForConfirmationModel} message={"Are you sure to delete the selected rows ?"} onOk={handleDelete}></ConfirmationModel>
+                }} variant="outline">
                 <Trash color="red" />
               </Button>
             </Can>

@@ -79,7 +79,7 @@ export type TrainingBenefeciaryForm = {
     dateOfRegistration: string;
 };
 
-export type KitForm = {
+export type KitFormType = {
     kits: string[],
     distributionDate: string,
     remark: string,
