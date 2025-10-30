@@ -9,6 +9,8 @@ import { Label } from "../ui/label";
 import { useEffect, useState } from "react";
 import { MainDatabaseProgram } from "@/types/Types";
 import { withPermission } from "@/lib/withPermission";
+import { z } from "zod";
+
 
 interface ComponentProps {
   open: boolean;
@@ -33,6 +35,17 @@ const ProgramMainForm: React.FC<ComponentProps> = ({
 }) => {
   const { reqForToastAndSetMessage, axiosInstance, handleReload } = useParentContext();
 
+  const programSchema = z.object({
+    projectCode: z.string().min(1, "Project code is required"),
+    focalPoint: z.string().min(3, "Focal point must be at least 3 characters"),
+    province: z.string().min(1, "Province is required"),
+    district: z.string().min(1, "District is required"),
+    village: z.string().min(1, "Village is required"),
+    siteCode: z.string().min(1),
+    healthFacilityName: z.string().min(3, "Health facility name is required"),
+    interventionModality: z.string().min(1, "Intervention modality is required"),
+  });
+
   const [formData, setFormData] = useState<MainDatabaseProgram>({
     projectCode: "",
     focalPoint: "",
@@ -43,6 +56,8 @@ const ProgramMainForm: React.FC<ComponentProps> = ({
     healthFacilityName: "",
     interventionModality: "",
   });
+
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
   // Fetch program data from backend in edit and show mode.
   useEffect(() => {
@@ -71,6 +86,24 @@ const ProgramMainForm: React.FC<ComponentProps> = ({
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
+
+
+    const result = programSchema.safeParse(formData);
+
+    if (!result.success) {
+    const errors: { [key: string]: string } = {};
+    result.error.issues.forEach((issue) => {
+      const field = issue.path[0];
+      if (field) errors[field as string] = issue.message;
+    });
+
+    setFormErrors(errors);
+      reqForToastAndSetMessage("Please fix validation errors before submitting.");
+      return;
+    }
+
+    setFormErrors({});
+
 
     if (mode === "create") {
       axiosInstance
@@ -157,6 +190,7 @@ const ProgramMainForm: React.FC<ComponentProps> = ({
                 })
               }
               disabled={readOnly}
+              error={formErrors.projectCode}
             />
           </div>
           {/* Focal point */}
@@ -167,6 +201,7 @@ const ProgramMainForm: React.FC<ComponentProps> = ({
               value={formData.focalPoint}
               onChange={handleFormChange}
               disabled={readOnly}
+              className={`border p-2 rounded ${formErrors.focalPoint ? "!border-red-500" : ""}`}
             />
           </div>
           {/* Province */}
@@ -184,6 +219,7 @@ const ProgramMainForm: React.FC<ComponentProps> = ({
                 })
               }
               disabled={readOnly}
+              error={formErrors.province}
             />
           </div>
           {/* District */}
@@ -201,6 +237,7 @@ const ProgramMainForm: React.FC<ComponentProps> = ({
                 })
               }
               disabled={readOnly}
+              error={formErrors.district}
             />
           </div>
           {/* Village */}
@@ -211,6 +248,7 @@ const ProgramMainForm: React.FC<ComponentProps> = ({
               value={formData.village}
               onChange={handleFormChange}
               disabled={readOnly}
+              className={`border p-2 rounded ${formErrors.village ? "!border-red-500" : ""}`}
             />
           </div>
           {/* Site code */}
@@ -221,6 +259,7 @@ const ProgramMainForm: React.FC<ComponentProps> = ({
               value={formData.siteCode}
               onChange={handleFormChange}
               disabled={readOnly}
+              className={`border p-2 rounded ${formErrors.siteCode ? "!border-red-500" : ""}`}
             />
           </div>
           {/* Health Facility Name */}
@@ -231,6 +270,7 @@ const ProgramMainForm: React.FC<ComponentProps> = ({
               value={formData.healthFacilityName}
               onChange={handleFormChange}
               disabled={readOnly}
+              className={`border p-2 rounded ${formErrors.healthFacilityName ? "!border-red-500" : "!border-gray-300"}`}
             />
           </div>
           {/* Intervention Modality */}
@@ -241,6 +281,7 @@ const ProgramMainForm: React.FC<ComponentProps> = ({
               value={formData.interventionModality}
               onChange={handleFormChange}
               disabled={readOnly}
+              className={`border p-2 rounded ${formErrors.interventionModality ? "!border-red-500" : "!border-gray-300"}`}
             />
           </div>
           {/* Submit */}

@@ -18,7 +18,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
 
 type Option = {
   value: string;
@@ -31,15 +30,16 @@ interface SingleSelectProps {
   onValueChange: (value: string) => void;
   placeholder?: string;
   disabled?: boolean;
+  error?: string | undefined;
 }
-
 
 export function SingleSelect({
   options,
   value,
   onValueChange,
   placeholder = "Select...",
-  disabled
+  disabled,
+  error,
 }: SingleSelectProps) {
   const [open, setOpen] = React.useState(false);
 
@@ -49,54 +49,65 @@ export function SingleSelect({
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-full justify-between"
-          disabled={disabled}
-        >
-          <div className="flex flex-wrap gap-1">
-            {value ? (
-              <Badge variant="secondary">
-                {options.find((v) => v.value === value)?.label?.toUpperCase()}
-              </Badge>
-            ) : (
-              <span className="text-muted-foreground">{placeholder}</span>
+    <div className="w-full">
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            aria-invalid={!!error}
+            disabled={disabled}
+            className={cn(
+              // use strong overrides to beat global css
+              "w-full justify-between text-left",
+              // if there's an error, force a visible red border and ring
+              error
+                ? "!border-2 !border-red-500 focus:!ring-red-200 focus:!ring-4"
+                : "!border !border-[var(--border)]",
+              disabled && "opacity-60 cursor-not-allowed"
             )}
-          </div>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[300px] p-0">
-        <Command>
-          <CommandInput placeholder="Search..." disabled={disabled} />{" "}
-          <CommandEmpty>No results found.</CommandEmpty>
-          <CommandGroup>
-            {options.map((opt) => {
-              const isSelected = value === opt.value;
-              return (
-                <CommandItem
-                  key={opt.value}
-                  onSelect={() => !disabled && toggleOption(opt.value)}
-                >
-                  <div
-                    className={cn(
-                      "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
-                      isSelected ? "bg-primary text-primary-foreground" : ""
-                    )}
+          >
+            <div className="flex flex-wrap gap-1 items-center">
+              {value ? (
+                <Badge variant="secondary">
+                  {options.find((v) => v.value === value)?.label?.toUpperCase()}
+                </Badge>
+              ) : (
+                <span className="text-muted-foreground">{placeholder}</span>
+              )}
+            </div>
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[300px] p-0">
+          <Command>
+            <CommandInput placeholder="Search..." disabled={disabled} />
+            <CommandEmpty>No results found.</CommandEmpty>
+            <CommandGroup>
+              {options.map((opt) => {
+                const isSelected = value === opt.value;
+                return (
+                  <CommandItem
+                    key={opt.value}
+                    onSelect={() => !disabled && toggleOption(opt.value)}
                   >
-                    {isSelected && <Check className="h-3 w-3" />}
-                  </div>
-                  {opt.label}
-                </CommandItem>
-              );
-            })}
-          </CommandGroup>
-        </Command>
-      </PopoverContent>
-    </Popover>
+                    <div
+                      className={cn(
+                        "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border",
+                        isSelected ? "bg-primary text-primary-foreground border-primary" : "border-[var(--border)]"
+                      )}
+                    >
+                      {isSelected && <Check className="h-3 w-3" />}
+                    </div>
+                    {opt.label}
+                  </CommandItem>
+                );
+              })}
+            </CommandGroup>
+          </Command>
+        </PopoverContent>
+      </Popover>
+    </div>
   );
 }
