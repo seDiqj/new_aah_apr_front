@@ -5,8 +5,7 @@ import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import { useEffect, useState } from "react";
-import { AssessmentFormType } from "@/types/Types";
+import { useEffect, useState, useMemo } from "react";
 import { createAxiosInstance } from "@/lib/axios";
 import { useParams } from "next/navigation";
 
@@ -23,33 +22,18 @@ const AssessmentForm: React.FC<ComponentProps> = ({
   mode,
   projectId,
 }) => {
-  const { id } = useParams<{
-    id: string;
-  }>();
-
+  const { id } = useParams<{ id: string }>();
   const { reqForToastAndSetMessage } = useParentContext();
   const axiosInstance = createAxiosInstance();
 
-  const [formData, setFormData] = useState<Record<string, number>>({
-    1: 0,
-    2: 0,
-    3: 0,
-    4: 0,
-    5: 0,
-    6: 0,
-    7: 0,
-    8: 0,
-    9: 0,
-    10: 0,
-    11: 0,
-    12: 0,
-    13: 0,
-    14: 0,
-    15: 0,
-  });
+  const [formData, setFormData] = useState<Record<string, number>>(
+    Array.from({ length: 15 }, (_, i) => i + 1).reduce(
+      (acc, cur) => ({ ...acc, [cur]: 0 }),
+      {}
+    )
+  );
 
   const [assessmentDate, setAssessmentData] = useState<string>("");
-
   const [assessmentsList, setAssessmentsList] = useState<
     Record<string, { id: string; group: string; description: string }[]>
   >({});
@@ -57,109 +41,137 @@ const AssessmentForm: React.FC<ComponentProps> = ({
   useEffect(() => {
     axiosInstance
       .get("/enact_database/assessments_list")
-      .then((response: any) => setAssessmentsList(response.data.data))
-      .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+      .then((res: any) => setAssessmentsList(res.data.data))
+      .catch((err: any) =>
+        reqForToastAndSetMessage(err.response?.data?.message || "Error")
       );
   }, []);
 
   const handleFormChange = (e: any) => {
-    const name: string = e.target.name;
-    const value: number = e.target.value;
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: Number(value) }));
+  };
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const handleReset = () => {
+    const resetData = Object.keys(formData).reduce((acc, key) => {
+      acc[key] = 0;
+      return acc;
+    }, {} as Record<string, number>);
+    setFormData(resetData);
   };
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
-
     const request =
       mode === "create"
         ? axiosInstance.post("/enact_database/assess_assessment", {
             enactId: id,
             scores: formData,
-            date: assessmentDate
+            date: assessmentDate,
           })
         : axiosInstance.put(`/enact_database/${projectId}`, formData);
 
     request
-      .then((response: any) => {
-        reqForToastAndSetMessage(response.data.message);
-        console.log(response.data.data);
-      })
-      .catch((error: any) => {
-        reqForToastAndSetMessage(error.response.data.message);
-        console.log(error.response.data.data);
-      });
+      .then((res: any) => reqForToastAndSetMessage(res.data.message))
+      .catch((err: any) =>
+        reqForToastAndSetMessage(err.response?.data?.message || "Error")
+      );
   };
-
-  useEffect(() => console.log(formData), [formData]);
 
   const readOnly = mode === "show";
 
+  const totalScore = useMemo(
+    () => Object.values(formData).reduce((acc, val) => acc + val, 0),
+    [formData]
+  );
+
+  const titleColors = ["#1E3A8A", "#059669", "#7C3AED", "#F97316"];
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex flex-col h-[85vh] w-[70vw] max-w-[900px] overflow-y-auto">
-        <DialogTitle className="text-lg font-semibold mb-2">
-          {mode === "create" && "Create New Assessment"}
-          {mode === "edit" && "Edit Assessment"}
-          {mode === "show" && "Assessment Details"}
+      <DialogContent
+        className="sm:max-w-4xl border dark:border-gray-600 rounded-lg ml-16 overflow-y-auto"
+        style={{
+          maxHeight: "85vh",
+          paddingTop: "10px",
+          paddingBottom: "10px",
+          paddingLeft: "16px",
+          paddingRight: "16px",
+        }}
+      >
+        <DialogTitle className="text-3xl font-extrabold mb-6 text-gray-900">
+          {mode === "create"
+            ? "Create New Assessment"
+            : mode === "edit"
+            ? "Edit Assessment"
+            : "Assessment Details"}
         </DialogTitle>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-          <div>
-            <Label>Assessment Date</Label>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-8">
+          <div className="flex flex-col gap-2">
+            <Label className="font-semibold text-gray-800">Assessment Date</Label>
             <Input
-            type="date"
-            value={assessmentDate}
-            onChange={(e) => setAssessmentData(e.target.value)}
-             />
+              type="date"
+              value={assessmentDate}
+              onChange={(e) => setAssessmentData(e.target.value)}
+              className="border-gray-300 rounded-lg shadow-sm px-4 py-2 w-full md:w-64"
+            />
           </div>
-          {Object.entries(assessmentsList).map(
-            ([groupName, assessments], i) => (
-              <div key={groupName} className="flex flex-col gap-3">
-                <Label
-                  className={`font-semibold border-b pb-1 ${
-                    i == 0
-                      ? "text-blue-600"
-                      : i == 1
-                      ? "text-green-500"
-                      : i == 2
-                      ? "text-purple-700"
-                      : "text-orange-400"
-                  }`}
-                >
-                  {groupName.toUpperCase()}
-                </Label>
 
-                <div className="flex flex-col gap-2">
-                  {assessments.map((assessment, i) => (
-                    <div
-                      key={assessment.id}
-                      className={`flex items-center justify-between border-b pb-2`}
-                    >
-                      <span className="text-sm">{assessment.description}</span>
-                      <Input
-                        type="number"
-                        name={assessment.id}
-                        value={formData[assessment.id]}
-                        className="w-[80px] text-center"
-                        readOnly={readOnly}
-                        onChange={handleFormChange}
-                      />
-                    </div>
-                  ))}
-                </div>
+          {Object.entries(assessmentsList).map(([groupName, assessments], i) => (
+            <div
+              key={groupName}
+              className="flex flex-col gap-6 p-6 rounded-xl shadow-inner w-full"
+            >
+              <Label
+                className="font-bold text-xl mb-4"
+                style={{ color: titleColors[i % titleColors.length] }}
+              >
+                {groupName.toUpperCase()}
+              </Label>
+
+              <div className="flex flex-col gap-4 w-full">
+                {assessments.map((assessment) => (
+                  <div
+                    key={assessment.id}
+                    className="flex flex-col md:flex-row items-start md:items-center justify-between border-b pb-4 pt-4 px-4 rounded-lg shadow-sm min-h-[70px]"
+                  >
+                    <span className="text-base md:text-lg mb-2 md:mb-0">
+                      {assessment.description}
+                    </span>
+                    <Input
+                      type="number"
+                      name={assessment.id}
+                      value={formData[assessment.id]}
+                      className="w-full md:w-40 lg:w-48 text-center border-gray-300 rounded-lg px-3 py-2 text-lg"
+                      readOnly={readOnly}
+                      onChange={handleFormChange}
+                    />
+                  </div>
+                ))}
               </div>
-            )
-          )}
+            </div>
+          ))}
+
+
+          <div className="flex justify-between items-center p-4 rounded-xl shadow-inner">
+            <span className="font-semibold text-lg">Total Score:</span>
+            <span className="font-bold text-xl text-blue-600">{totalScore}</span>
+          </div>
 
           {!readOnly && (
-            <div className="flex justify-end mt-4">
-              <Button type="submit" className="px-6">
+            <div className="flex justify-end gap-4 mt-4">
+              <Button
+                type="button"
+                className="px-6 py-2 bg-gray-400 hover:bg-gray-500 rounded-xl shadow-md"
+                onClick={handleReset}
+              >
+                Reset
+              </Button>
+              <Button
+                type="submit"
+                className="px-8 py-3 bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg"
+              >
                 {mode === "create" ? "Save" : "Update"}
               </Button>
             </div>

@@ -244,7 +244,7 @@ const DataTableDemo: React.FC<ComponentProps> = ({
             <Can permission={deleteBtnPermission ?? "ok"}>
               <Button onClick={() => {
                   setReqForConfirmationModel(true);
-                    <ConfirmationModel open={true} onOpenChange={setReqForConfirmationModel} message={"Are you sure to delete the selected rows ?"} onOk={handleDelete}></ConfirmationModel>
+                  
                 }} variant="outline">
                 <Trash color="red" />
               </Button>
@@ -423,6 +423,10 @@ const DataTableDemo: React.FC<ComponentProps> = ({
           </Button>
         </div>
       </div>
+
+      {reqForConfirmationModel && (
+        <ConfirmationModel open={reqForConfirmationModel} onOpenChange={setReqForConfirmationModel} message={"Are you sure to delete the selected rows ?"} onOk={handleDelete}></ConfirmationModel>
+      )}
     </div>
   );
 };

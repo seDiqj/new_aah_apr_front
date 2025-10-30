@@ -82,6 +82,8 @@ const CommunityDialogDatabasePage = () => {
           showModelOpenerStateSetter={() => {}}
           editBtnPermission="Dialogue.edit"
           deleteBtnPermission="Dialogue.delete"
+          filterUrl="/filter/cd_database/cds"
+          filtersList={["projectCode", "focalPoint", "province", "indicator"]}
         ></DataTableDemo>
 
         {reqForCommunityDialogueCreationForm && (

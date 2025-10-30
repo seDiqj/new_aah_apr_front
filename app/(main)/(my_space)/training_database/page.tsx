@@ -54,7 +54,7 @@ const TrainingDatabasePage = () => {
           <Button onClick={() => router.push("/training_database/trainings")}>
             Trainings
           </Button>
-          <Button onClick={() => setReqForBeneficiaryCreationForm(!open)}>Create New Beneficiary</Button>
+          <Button onClick={() => setReqForBeneficiaryCreationForm(!reqForBeneficiaryCreationForm)}>Create New Beneficiary</Button>
         </div>
       </SubHeader>
       <DataTableDemo

@@ -49,7 +49,7 @@ const TrainingsPage = () => {
         </div>
         <SubHeader pageTitle={"Trainings"}>
           <div className="flex flex-row items-center justify-around gap-2">
-            <Button onClick={() => setOpen(!open)}>Create New Training</Button>
+            <Button onClick={() => setReqForTrainingCreationForm(!reqForTrainingCreationForm)}>Create New Training</Button>
           </div>
         </SubHeader>
 

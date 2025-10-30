@@ -596,7 +596,6 @@ const ShowProjectPage = () => {
       }
 
       try {
-        // If backend expects PUT to /projects/outcome/:id to update
         const id = local!.id;
         const payload = {
           outcome: local.outcome,
@@ -689,8 +688,8 @@ const ShowProjectPage = () => {
 
     axiosInstance.get(`/projects/${id}`)
     .then((response: any) => {
-      console.log(response.data.data)
       const {outcomesInfo, ...project} = response.data.data;
+      project["provinces"] = project.provinces.map((province: {id: string, name: string, pivo: any}) => province.name);
       setFormData(project);
       setOutcomes(outcomesInfo.map((outcome: any) => {
         const {outputs, ...outcomeInfo} = outcome;
@@ -912,9 +911,8 @@ const ShowProjectPage = () => {
                           { value: "helmand", label: "Helmand" },
                           { value: "daikundi", label: "Daikundi" },
                         ]}
-                        value={projectProvinces}
+                        value={formData.provinces}
                         onValueChange={(value: string[]) => {
-                          setProjectProvinces(value);
                           setFormData((prev) => ({
                             ...prev,
                             provinces: value,

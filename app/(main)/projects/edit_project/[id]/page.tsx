@@ -529,7 +529,7 @@ const EditProjectPage = () => {
       .post(url, form)
       .then((response: any) => {
         if (url == "/projects") setProjectId(response.data.data.id);
-        if (url == "/projects/outcome")
+        if (url == "/projects/o/outcome")
           setOutcomes(
             outcomes.map((outcome) => {
               const outcomeId = response.data.data.find(
@@ -542,7 +542,7 @@ const EditProjectPage = () => {
               return outcome;
             })
           );
-        if (url == "/projects/output")
+        if (url == "/projects/o/output")
           setOutputs(
             outputs.map((output) => {
               const outputId = response.data.data.find(
@@ -555,7 +555,7 @@ const EditProjectPage = () => {
               return output;
             })
           );
-        if (url == "/projects/indicator")
+        if (url == "/projects/i/indicator")
           setIndicators(
             indicators.map((indicator) => {
               const indicatorId = response.data.data.find(
@@ -926,10 +926,8 @@ const EditProjectPage = () => {
 
     axiosInstance.get(`/projects/${id}`)
     .then((response: any) => {
-      console.log(response);
       const {outcomesInfo, ...project} = response.data.data;
       project["provinces"] = project.provinces.map((province: {id: string, name: string, pivo: any}) => province.name);
-      console.log(project.provinces )
       setFormData(project);
       setOutcomes(outcomesInfo.map((outcome: any) => {
         const {outputs, ...outcomeInfo} = outcome;

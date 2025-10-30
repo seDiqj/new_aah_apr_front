@@ -103,9 +103,6 @@ const CommunityDialogDatabasePage = () => {
               </Button>
             </div>
           }
-          filterUrl="/filter/main_database/beneficiaries"
-          filtersList={["projectCode", "indicator", "focalPoint", "province", "siteCode", "healthFacilitator", "dateOfRegistration",
-            "age", "maritalStatus", "householdStatus"]}
           loadingStateSetter={setIsLoading}
           editBtnPermission="Dialogue.edit"
           deleteBtnPermission="Dialogue.delete"
