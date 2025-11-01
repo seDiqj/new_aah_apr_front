@@ -6,7 +6,7 @@ import {
   Permission,
   Project,
   BeneficiaryForm,
-  KitForm,
+  KitFormType,
 } from "@/types/Types";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
@@ -480,7 +480,7 @@ export const mainDatabaseAndKitDatabaseBeneficiaryColumns: ColumnDef<Beneficiary
     },
   ];
 
-export const beneficiaryKitListColumns: ColumnDef<KitForm>[] = [
+export const beneficiaryKitListColumns: ColumnDef<KitFormType>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -525,7 +525,7 @@ export const beneficiaryKitListColumns: ColumnDef<KitForm>[] = [
   },
 ];
 
-export const trainingsListColumns: ColumnDef<KitForm>[] = [
+export const trainingsListColumns: ColumnDef<KitFormType>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -606,7 +606,7 @@ export const trainingsListColumns: ColumnDef<KitForm>[] = [
   },
 ];
 
-export const trainingDatabaseBeneificiaryListColumn: ColumnDef<KitForm>[] = [
+export const trainingDatabaseBeneificiaryListColumn: ColumnDef<KitFormType>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -761,6 +761,11 @@ export const beneficiarySessionsTableColumn: ColumnDef<any>[] = [
     accessorKey: "date",
     header: "Date",
     cell: ({ row }) => <div>{row.getValue("date")}</div>,
+  },
+  {
+    accessorKey: "isPresent",
+    header: "Is Present",
+    cell: ({ row }) => <div>{row.getValue("isPresent") ? <span className="rounded border bg-green-500">Yes</span> : <span className="rounded border bg-red-500">No</span>}</div>,
   },
 ];
 

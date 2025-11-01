@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { AssessmentFormType } from "@/types/Types";
 import { createAxiosInstance } from "@/lib/axios";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
+import { AssessmentFormSchema } from "@/schemas/FormsSchema";
 
 interface ComponentProps {
   open: boolean;
@@ -38,6 +39,11 @@ const AssessmentForm: React.FC<ComponentProps> = ({
     aprIncluded: true,
   });
 
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+
+  useEffect(() => console.log(formErrors), [formErrors])
+
+
   const handleFormChange = (e: any) => {
     const name: string = e.target.name;
     const value: string = e.target.value;
@@ -50,6 +56,22 @@ const AssessmentForm: React.FC<ComponentProps> = ({
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
+
+    const result = AssessmentFormSchema.safeParse(formData);
+
+    if (!result.success) {
+    const errors: { [key: string]: string } = {};
+    result.error.issues.forEach((issue) => {
+      const field = issue.path[0];
+      if (field) errors[field as string] = issue.message;
+    });
+
+    setFormErrors(errors);
+      reqForToastAndSetMessage("Please fix validation errors before submitting.");
+      return;
+    }
+
+    setFormErrors({});
 
     if (mode === "create") {
       axiosInstance
@@ -159,11 +181,12 @@ const AssessmentForm: React.FC<ComponentProps> = ({
                 })
               }
               disabled={readOnly}
+              error={formErrors.project_id}
             />
           </div>
           {/* Indicator */}
           <div className="flex flex-col gap-2">
-            <Label>Indicatr</Label>
+            <Label>Indicator</Label>
             <SingleSelect
               options={indicators.map((indicator) => ({
                 value: indicator.indicatorRef,
@@ -185,6 +208,7 @@ const AssessmentForm: React.FC<ComponentProps> = ({
                 })
               }
               disabled={readOnly}
+              error={formErrors.indicator_id}
             />
           </div>
           {/* Province */}
@@ -210,6 +234,7 @@ const AssessmentForm: React.FC<ComponentProps> = ({
                 })
               }
               disabled={readOnly}
+              error={formErrors.province_id}
             />
           </div>
           {/* Councilor Name */}
@@ -220,6 +245,8 @@ const AssessmentForm: React.FC<ComponentProps> = ({
               value={formData.councilorName}
               onChange={handleFormChange}
               disabled={readOnly}
+              className={`border p-2 rounded ${formErrors.councilorName ? "!border-red-500" : ""}`}
+              title={formErrors.councilorName}
             />
           </div>
           {/* Rater Name */}
@@ -230,6 +257,8 @@ const AssessmentForm: React.FC<ComponentProps> = ({
               value={formData.raterName}
               onChange={handleFormChange}
               disabled={readOnly}
+              className={`border p-2 rounded ${formErrors.raterName ? "!border-red-500" : ""}`}
+              title={formErrors.raterName}
             />
           </div>
           {/* Type Of Assessment */}
@@ -251,6 +280,7 @@ const AssessmentForm: React.FC<ComponentProps> = ({
                   })
                 }
                 disabled={readOnly}
+                error={formErrors.type}
               />
             </div>
           </div>
@@ -263,6 +293,8 @@ const AssessmentForm: React.FC<ComponentProps> = ({
               value={formData.date}
               onChange={handleFormChange}
               disabled={readOnly}
+              className={`border p-2 rounded ${formErrors.date ? "!border-red-500" : ""}`}
+              title={formErrors.date}
             />
           </div>
           {/* Apr Included */}

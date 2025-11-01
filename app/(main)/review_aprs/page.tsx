@@ -64,6 +64,8 @@ const SubmittedDatabasesPage = () => {
             </Button>
           </div>
         }
+        filterUrl="/filter/reviewed_aprs"
+        filtersList={["projectCode", "province", "database", "fromDate", "toDate"]}
       ></DataTableDemo>
 
       {OpenSubmittedDatabaseSummaryModel && (

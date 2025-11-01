@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { SingleSelect } from "@/components/single-select";
 import { useParentContext } from "@/contexts/ParentContext";
+import { CdFormSchema } from "@/schemas/FormsSchema";
 
 type CommunityDialogueForm = {
   project_id: string;
@@ -50,6 +51,9 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
     village: "",
     indicator_id: "",
   });
+
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+
 
   const [groups, setGroups] = useState<{ id?: number; name: string }[]>([]);
   const [sessions, setSessions] = useState<
@@ -135,6 +139,22 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
 
   const handleSubmit = () => {
 
+    const result = CdFormSchema.safeParse(formData);
+
+    if (!result.success) {
+    const errors: { [key: string]: string } = {};
+    result.error.issues.forEach((issue) => {
+      const field = issue.path[0];
+      if (field) errors[field as string] = issue.message;
+    });
+
+    setFormErrors(errors);
+      reqForToastAndSetMessage("Please fix validation errors before submitting.");
+      return;
+    }
+
+    setFormErrors({});
+
     if (mode === "create") {
       axiosInstance
         .post("/community_dialogue_db/community_dialogue", {
@@ -215,6 +235,7 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
                 })
               }
               disabled={isReadOnly}
+              error={formErrors.project_id}
             />
           </div>
 
@@ -226,8 +247,10 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
               value={formData.focalPoint}
               onChange={handleFormChange}
               placeholder="Focal Point"
-              className={inputClass}
+              // className={inputClass}
               disabled={isReadOnly}
+              className={`border p-2 rounded ${formErrors.focalPoint ? "!border-red-500" : ""}`}
+              title={formErrors.focalPoint}
             />
           </div>
 
@@ -251,6 +274,7 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
                 })
               }
               disabled={isReadOnly}
+              error={formErrors.province_id}
             />
           </div>
 
@@ -274,6 +298,7 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
                 })
               }
               disabled={isReadOnly}
+              error={formErrors.district_id}
             />
           </div>
 
@@ -285,8 +310,10 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
               value={formData.village}
               onChange={handleFormChange}
               placeholder="Village"
-              className={inputClass}
+              // className={inputClass}
               disabled={isReadOnly}
+              className={`border p-2 rounded ${formErrors.village ? "!border-red-500" : ""}`}
+              title={formErrors.village}
             />
           </div>
 
@@ -311,6 +338,7 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
                 })
               }
               disabled={isReadOnly}
+              error={formErrors.indicator_id}
             />
           </div>
 

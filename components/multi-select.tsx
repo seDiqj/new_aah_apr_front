@@ -29,7 +29,8 @@ interface MultiSelectProps {
   value: string[];
   onValueChange?: (value: string[]) => void;
   placeholder?: string;
-  disabled?: boolean; // اضافه شد
+  disabled?: boolean;
+  error?: string | undefined;
 }
 
 export function MultiSelect({
@@ -38,13 +39,14 @@ export function MultiSelect({
   onValueChange,
   placeholder = "Select...",
   disabled = false,
+  error
 }: MultiSelectProps) {
   const [open, setOpen] = React.useState(false);
 
   const selectedOptions = options.filter((opt) => value?.includes(opt.value));
 
   const toggleOption = (val: string) => {
-    if (disabled) return; // اگر غیرفعال بود کاری نکند
+    if (disabled) return;
     if (!onValueChange) return;
 
     if (value.includes(val)) {
@@ -62,9 +64,15 @@ export function MultiSelect({
           role="combobox"
           aria-expanded={open}
           className={cn(
-            "w-full justify-between",
-            disabled ? "cursor-not-allowed opacity-50" : ""
+            // use strong overrides to beat global css
+            "w-full justify-between text-left",
+            // if there's an error, force a visible red border and ring
+            error
+              ? "!border-2 !border-red-500 focus:!ring-red-200 focus:!ring-4"
+              : "!border !border-[var(--border)]",
+            disabled && "opacity-60 cursor-not-allowed"
           )}
+          title={error ? error : undefined}
           disabled={disabled}
         >
           <div className="flex flex-wrap gap-1 max-h-16 overflow-auto">

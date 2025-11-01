@@ -2,24 +2,26 @@
 
 import { useState, useEffect, useRef } from "react";
 import {
-  Tabs as ShadcnTabs,
   TabsList,
   TabsTrigger,
   TabsContent,
+  Tabs,
 } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import DataTableDemo from "@/components/global/MulitSelectTable";
-import { beneficiarySessionsTableColumn, permissionColumns } from "@/definitions/DataTableColumnsDefinitions";
+import { beneficiarySessionsTableColumn } from "@/definitions/DataTableColumnsDefinitions";
 import { useParams } from "next/navigation";
 import { useParentContext } from "@/contexts/ParentContext";
 import { CommunityDialogBeneficiaryForm } from "@/types/Types";
+import { Button } from "../button";
+import { ToggleRight } from "lucide-react";
 
 export default function BeneProfileTabs() {
   const { id } = useParams<{
     id: string;
   }>();
 
-  const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
+  const { reqForToastAndSetMessage, axiosInstance, handleReload } = useParentContext();
 
   let [reqForPermissionUpdateForm, setReqForPermissionUpdateForm] =
     useState<boolean>(false);
@@ -31,26 +33,6 @@ export default function BeneProfileTabs() {
   const tabs = ["Beneficiary Info", "Sessions"];
 
   const [activeTab, setActiveTab] = useState(tabs[0]);
-  const [underlineStyle, setUnderlineStyle] = useState<{
-    left: number;
-    width: number;
-  }>({
-    left: 0,
-    width: 0,
-  });
-
-  const tabRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
-
-  useEffect(() => {
-    
-    const currentTab = tabRefs.current[activeTab];
-    if (currentTab) {
-      setUnderlineStyle({
-        left: currentTab.offsetLeft,
-        width: currentTab.offsetWidth,
-      });
-    }
-  }, [activeTab, tabs]);
 
   const hasRef = useRef(false);
 
@@ -66,6 +48,7 @@ export default function BeneProfileTabs() {
       jobTitle: "",
       incentiveReceived: false,
       incentiveAmount: "",
+      dateOfRegistration: ""
     });
 
   useEffect(() => {
@@ -74,15 +57,25 @@ export default function BeneProfileTabs() {
 
     axiosInstance
       .get(`/community_dialogue_db/beneficiary/${id}`)
-      .then((response: any) => {console.log(response.data.data);  setBneficiaryInfo(response.data.data)})
+      .then((response: any) => {setBneficiaryInfo(response.data.data)})
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
       );
   }, []);
 
+  const [selectedRows, setSelectedRows] = useState<any>();
+
+  const togglePresence = () => {
+    axiosInstance.post(`/community_dialogue_db/beneficiaries/toggle_presence/${id}`, {
+      selectedRows: Object.keys(selectedRows)
+    })
+    .then((response: any) => {reqForToastAndSetMessage(response.data.message); handleReload()})
+    .catch((error: any) => reqForToastAndSetMessage(error.response.data.message))
+  }
+
   return (
     <div className="w-full px-4">
-      <ShadcnTabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         {/* Tabs header */}
         <div className="relative w-full border-b border-border mb-2">
           <TabsList className="flex justify-start gap-6 bg-transparent p-0 w-fit [&>*]:flex-none">
@@ -90,21 +83,11 @@ export default function BeneProfileTabs() {
               <TabsTrigger
                 key={tab}
                 value={tab}
-                ref={(el: HTMLButtonElement | null) => {
-                  tabRefs.current[tab] = el;
-                }}
-                className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground data-[state=active]:text-foreground data-[state=active]:font-semibold border-none shadow-none ring-0 focus:outline-none"
               >
                 {tab}
               </TabsTrigger>
             ))}
           </TabsList>
-
-          {/* Animated underline */}
-          <span
-            className="absolute bottom-0 h-[3px] bg-foreground rounded-t-md transition-all duration-300 ease-in-out"
-            style={{ left: underlineStyle.left, width: underlineStyle.width }}
-          />
         </div>
 
         {/* Tab 1 - Beneficiary Information */}
@@ -148,11 +131,20 @@ export default function BeneProfileTabs() {
                 searchableColumn="name"
                 idFeildForEditStateSetter={setIdFeildForEditStateSetter}
                 editModelOpenerStateSetter={setReqForPermissionUpdateForm}
+                selectedRowsIdsStateSetter={setSelectedRows}
+                injectedElement={
+                  <div className="flex flex-row items-center justify-end gap-2">
+                    <Button onClick={togglePresence} variant={"outline"} title="Toggle precence for selected sessions">
+                      <ToggleRight 
+                      />
+                    </Button>
+                  </div>
+                }
               ></DataTableDemo>
             </CardContent>
           </Card>
         </TabsContent>
-      </ShadcnTabs>
+      </Tabs>
     </div>
   );
 }

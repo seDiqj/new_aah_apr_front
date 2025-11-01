@@ -14,6 +14,7 @@ import { SingleSelect } from "../single-select";
 import { useEffect, useState } from "react";
 import { useParentContext } from "@/contexts/ParentContext";
 import { TrainingBenefeciaryForm } from "@/types/Types";
+import { TrainingDatabaseBenefeciaryForm } from "@/schemas/FormsSchema";
 
 interface TrainingBeneficiaryFormProps {
   open: boolean;
@@ -46,6 +47,9 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormProps> = ({
     dateOfRegistration: "",
   });
 
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+
+
   useEffect(() => {
     if (mode === "edit" && editId) {
       setLoading(true);
@@ -72,6 +76,23 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormProps> = ({
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
+
+    const result = TrainingDatabaseBenefeciaryForm.safeParse(formData);
+
+    if (!result.success) {
+    const errors: { [key: string]: string } = {};
+    result.error.issues.forEach((issue) => {
+      const field = issue.path[0];
+      if (field) errors[field as string] = issue.message;
+    });
+
+    setFormErrors(errors);
+      reqForToastAndSetMessage("Please fix validation errors before submitting.");
+      return;
+    }
+
+    setFormErrors({});
+
     setLoading(true);
 
     try {
@@ -111,7 +132,6 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormProps> = ({
           <DialogTitle className="text-lg">{title}</DialogTitle>
         </DialogHeader>
 
-        {/* فرم */}
         <form onSubmit={handleSubmit}>
           <div className="flex flex-col gap-4 w-full">
             <div className="bg-white-200 text-black-800 font-bold text-base text-center px-6 py-2 rounded-xl mb-6 shadow-sm max-w-fit mx-auto">
@@ -128,6 +148,8 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormProps> = ({
                   placeholder="Client Name ..."
                   value={formData.name}
                   onChange={handleFormChange}
+                  className={`border p-2 rounded ${formErrors.name ? "!border-red-500" : ""}`}
+                  title={formErrors.name}
                 />
               </div>
 
@@ -142,6 +164,8 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormProps> = ({
                   placeholder="Father / Husband Name ..."
                   value={formData.fatherHusbandName}
                   onChange={handleFormChange}
+                  className={`border p-2 rounded ${formErrors.fatherHusbandName ? "!border-red-500" : ""}`}
+                title={formErrors.fatherHusbandName}
                 />
               </div>
 
@@ -158,6 +182,7 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormProps> = ({
                   onValueChange={(value: string) =>
                     setFormData((prev) => ({ ...prev, gender: value }))
                   }
+                  error={formErrors.gender}
                 />
               </div>
 
@@ -171,6 +196,8 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormProps> = ({
                   placeholder="Age ..."
                   value={formData.age}
                   onChange={handleFormChange}
+                  className={`border p-2 rounded ${formErrors.age ? "!border-red-500" : ""}`}
+                title={formErrors.age}
                 />
               </div>
 
@@ -183,6 +210,8 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormProps> = ({
                   placeholder="Phone ..."
                   value={formData.phone}
                   onChange={handleFormChange}
+                  className={`border p-2 rounded ${formErrors.phone ? "!border-red-500" : ""}`}
+                title={formErrors.phone}
                 />
               </div>
 
@@ -195,6 +224,8 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormProps> = ({
                   placeholder="Email ..."
                   value={formData.email}
                   onChange={handleFormChange}
+                  className={`border p-2 rounded ${formErrors.email ? "!border-red-500" : ""}`}
+                  title={formErrors.email}
                 />
               </div>
 
@@ -209,6 +240,8 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormProps> = ({
                   placeholder="Organization ..."
                   value={formData.participantOrganization}
                   onChange={handleFormChange}
+                  className={`border p-2 rounded ${formErrors.participantOrganization ? "!border-red-500" : ""}`}
+                  title={formErrors.participantOrganization}
                 />
               </div>
 
@@ -221,6 +254,8 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormProps> = ({
                   placeholder="Job Title ..."
                   value={formData.jobTitle}
                   onChange={handleFormChange}
+                  className={`border p-2 rounded ${formErrors.jobTitle ? "!border-red-500" : ""}`}
+                  title={formErrors.jobTitle}
                 />
               </div>
 
@@ -233,6 +268,8 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormProps> = ({
                   type="date"
                   value={formData.dateOfRegistration}
                   onChange={handleFormChange}
+                  className={`border p-2 rounded ${formErrors.dateOfRegistration ? "!border-red-500" : ""}`}
+                  title={formErrors.dateOfRegistration}
                 />
               </div>
             </div>

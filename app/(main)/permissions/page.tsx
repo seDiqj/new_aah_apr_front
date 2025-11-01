@@ -20,10 +20,8 @@ const PermissionsPage = () => {
           columns={permissionColumns}
           indexUrl="user_mng/table_permissions"
           searchableColumn="name"
-          filterUrl=""
+          filterUrl="/filter/permissions"
           filtersList={[
-            "name",
-            "label",
             "group_name"
           ]}
         ></DataTableDemo>

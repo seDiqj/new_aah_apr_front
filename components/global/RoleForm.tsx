@@ -27,6 +27,7 @@ import { createAxiosInstance } from "@/lib/axios";
 import { useParentContext } from "@/contexts/ParentContext";
 import { withPermission } from "@/lib/withPermission";
 import { Skeleton } from "../ui/skeleton";
+import { RoleFormSchema } from "@/schemas/FormsSchema";
 
 interface ComponentProps {
   open: boolean;
@@ -55,7 +56,7 @@ const RoleForm: React.FC<ComponentProps> = ({
 }) => {
   mode = mode;
 
-  const { reqForToastAndSetMessage } = useParentContext();
+  const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
 
   const [name, setName] = useState<string>("");
   const [status, setStatus] = useState<string>("active");
@@ -65,7 +66,9 @@ const RoleForm: React.FC<ComponentProps> = ({
   const [rolePermissions, setRolePermissions] = useState<number[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const axiosInstance = createAxiosInstance();
+
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+
 
   useEffect(() => {
     setLoading(true);
@@ -110,6 +113,23 @@ const RoleForm: React.FC<ComponentProps> = ({
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    const result = RoleFormSchema.safeParse({name: name});
+
+    if (!result.success) {
+    const errors: { [key: string]: string } = {};
+    result.error.issues.forEach((issue) => {
+      const field = issue.path[0];
+      if (field) errors[field as string] = issue.message;
+    });
+
+    setFormErrors(errors);
+      reqForToastAndSetMessage("Please fix validation errors before submitting.");
+      return;
+    }
+
+    setFormErrors({});
+
     const url =
       mode === "create"
         ? "user_mng/role"
@@ -155,6 +175,8 @@ const RoleForm: React.FC<ComponentProps> = ({
                 name="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                className={`border p-2 rounded ${formErrors.name ? "!border-red-500" : ""}`}
+                title={formErrors.name}
               />
             </div>
             <div className="flex-1 min-w-[180px]">

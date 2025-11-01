@@ -36,15 +36,15 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
   const { reqForToastAndSetMessage, axiosInstance, handleReload } = useParentContext();
 
   const programSchema = z.object({
-      projectCode: z.string().min(1, "Project code is required"),
-      focalPoint: z.string().min(3, "Focal point must be at least 3 characters"),
-      province: z.string().min(1, "Province is required"),
-      district: z.string().min(1, "District is required"),
-      village: z.string().min(1, "Village is required"),
-      siteCode: z.string().min(1),
-      healthFacilityName: z.string().min(3, "Health facility name is required"),
-      interventionModality: z.string().min(1, "Intervention modality is required"),
-    });
+    projectCode: z.string().min(1, "Project code is required"),
+    focalPoint: z.string().min(3, "Focal point must be at least 3 characters or 3 digits"),
+    province: z.string().min(1, "Select a valid province"),
+    district: z.string().min(1, "Select a valid district"),
+    village: z.string().min(1, "Village name should be at least 2 characters"),
+    siteCode: z.string().min(1, "Site code should be at least 1 characters !"),
+    healthFacilityName: z.string().min(3, "Health facility name is required"),
+    interventionModality: z.string().min(1, "Intervention modality is required"),
+  });
 
   const [formData, setFormData] = useState<MainDatabaseProgram>({
     projectCode: "",
@@ -201,6 +201,7 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
               onChange={handleFormChange}
               disabled={readOnly}
               className={`border p-2 rounded ${formErrors.focalPoint ? "!border-red-500" : ""}`}
+              title={formErrors.focalPoint}
             />
           </div>
           {/* Province */}
@@ -248,6 +249,7 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
               onChange={handleFormChange}
               disabled={readOnly}
               className={`border p-2 rounded ${formErrors.village ? "!border-red-500" : ""}`}
+              title={formErrors.village}
             />
           </div>
           {/* Site code */}
@@ -259,6 +261,7 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
               onChange={handleFormChange}
               disabled={readOnly}
               className={`border p-2 rounded ${formErrors.siteCode ? "!border-red-500" : ""}`}
+              title={formErrors.siteCode}
             />
           </div>
           {/* Health Facility Name */}
@@ -270,6 +273,7 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
               onChange={handleFormChange}
               disabled={readOnly}
               className={`border p-2 rounded ${formErrors.healthFacilityName ? "!border-red-500" : ""}`}
+              title={formErrors.healthFacilityName}
             />
           </div>
           {/* Intervention Modality */}
@@ -281,6 +285,7 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
               onChange={handleFormChange}
               disabled={readOnly}
               className={`border p-2 rounded ${formErrors.interventionModality ? "!border-red-500" : ""}`}
+              title={formErrors.interventionModality}
             />
           </div>
           {/* Submit */}

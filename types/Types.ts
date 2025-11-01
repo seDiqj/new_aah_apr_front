@@ -37,6 +37,24 @@ export type Project = {
     description: string
 };
 
+export type MainDatabaseBeneficiary = {
+  program: string;
+  beneficiaryCode: string;
+  clientName: string;
+  fatherHusbandName: string;
+  gender: "male" | "female" | "other";
+  age: number;
+  childCode: string;
+  childAge: number;
+  phone: string;
+  householdStatus: string;
+  maritalStatus: string;
+  literacyLevel: string;
+  disabilityType: string;
+  referredForProtection: boolean;
+  dateOfRegistration: string;
+};
+
 export type MainDatabaseProgram = {
     projectCode: string;
     focalPoint: string;

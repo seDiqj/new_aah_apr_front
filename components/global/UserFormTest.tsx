@@ -20,6 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useParentContext } from "@/contexts/ParentContext"
 import { SingleSelect } from "../single-select"
 import { withPermission } from "@/lib/withPermission"
+import { UserFormSchema } from "@/schemas/FormsSchema"
 
 interface ComponentProps {
   open: boolean
@@ -58,7 +59,11 @@ const ProfileModal: React.FC<ComponentProps> = ({
     photo_path: "",
     department: "",
     status: "active",
+    role: ""
   })
+
+    const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+
 
   const [allPermissions, setAllPermissions] = useState<{ [key: string]: Record<string, string>[] }>({})
   const [userPermissions, setUserPermissions] = useState<string[]>([])
@@ -98,6 +103,23 @@ const ProfileModal: React.FC<ComponentProps> = ({
 
 
   const handleSubmit = () => {
+
+    const result = UserFormSchema.safeParse(form);
+
+    if (!result.success) {
+    const errors: { [key: string]: string } = {};
+    result.error.issues.forEach((issue) => {
+      const field = issue.path[0];
+      if (field) errors[field as string] = issue.message;
+    });
+
+    setFormErrors(errors);
+      reqForToastAndSetMessage("Please fix validation errors before submitting.");
+      return;
+    }
+
+    setFormErrors({});
+
     const formData = new FormData()
     formData.append("name", form.name)
     formData.append("title", form.title)
@@ -278,7 +300,7 @@ const ProfileModal: React.FC<ComponentProps> = ({
                       {
 
                         if (field === "password" && mode !== "create") {
-                          return null; // Skip rendering password field in edit/show mode
+                          return null;
                         }
                       
                       return <div key={field}>
@@ -291,7 +313,8 @@ const ProfileModal: React.FC<ComponentProps> = ({
                           value={(form as any)[field] || ""}
                           onChange={handleChange}
                           disabled={isReadOnly}
-                          className="bg-[#2a2a2a] border-gray-700 text-white disabled:opacity-70"
+                          className={`border p-2 rounded ${formErrors[field] ? "!border-red-500" : ""} disabled:opacity-70`}
+                          title={formErrors[field]}
                         />
                       </div>}
                     )}
@@ -302,7 +325,9 @@ const ProfileModal: React.FC<ComponentProps> = ({
                         label: role.name
                       }))} value={
                         userRole
-                      } onValueChange={(value: string) => {setUserRole(value); handleSelectRole(allRoles.find(role => role.name === value))}} disabled={isReadOnly}>
+                      } onValueChange={(value: string) => {setUserRole(value); handleSelectRole(allRoles.find(role => role.name === value)); setForm((prev) => ({...prev, role: value}))}} disabled={isReadOnly}
+                      error={formErrors.role}
+                      >
                       </SingleSelect>
                     </div>
                   </div>

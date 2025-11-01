@@ -16,6 +16,9 @@ import { SingleSelect } from "../single-select";
 import { useEffect, useState } from "react";
 import { useParentContext } from "@/contexts/ParentContext";
 import { withPermission } from "@/lib/withPermission";
+import { z } from "zod";
+import { PsychoeducationFormSchema } from "@/schemas/FormsSchema";
+
 
 type PsychoeducationForm = {
   programInformation: {
@@ -75,8 +78,6 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
 }) => {
   const { reqForToastAndSetMessage, axiosInstance, handleReload } = useParentContext();
 
-  const [selectedDate, setSelectedDate] = React.useState<Date | undefined>();
-
   const [formData, setFormData] = useState<PsychoeducationForm>({
     programInformation: {
       indicator_id: "",
@@ -120,6 +121,8 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
     },
   });
 
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+
   const handleFormChange = (e: any, part: "program" | "psychoeducation") => {
     const { name, value } = e.target;
 
@@ -138,9 +141,28 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
             [name]: value,
           },
         }));
+    PsychoeducationFormSchema.safeParse(formData);
   };
 
   const handleSubmit = () => {
+
+
+    const result = PsychoeducationFormSchema.safeParse(formData);
+
+    if (!result.success) {
+    const errors: { [key: string]: string } = {};
+    result.error.issues.forEach((issue) => {
+      const field = issue.path[0];
+      if (field) errors[field as string] = issue.message;
+    });
+
+    setFormErrors(errors);
+      reqForToastAndSetMessage("Please fix validation errors before submitting.");
+      return;
+    }
+
+    setFormErrors({});
+
     if (mode == "create") {
       axiosInstance
         .post("/psychoeducation_db/psychoeducation", formData)
@@ -280,7 +302,7 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
 
         {/* Form Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div>
+          <div className="flex flex-col gap-2">
             <Label>Project Code</Label>
             <SingleSelect
               options={projects.map((project, i) => ({
@@ -308,10 +330,11 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
                 )
               }
               disabled={readOnly}
+              error={formErrors.project_id}
             ></SingleSelect>
           </div>
 
-          <div>
+          <div className="flex flex-col gap-2">
             <Label>Select Indicator</Label>
             <SingleSelect
               options={indicators.map((indicator, i) => ({
@@ -339,22 +362,24 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
                 )
               }
               disabled={readOnly}
+              error={formErrors.indicator_id}
             ></SingleSelect>
           </div>
 
-          <div>
+          <div className="flex flex-col gap-2">
             <Label>Focal Point</Label>
             <Input
               name="focalPoint"
               value={formData.programInformation.focalPoint}
               onChange={(e) => handleFormChange(e, "program")}
               placeholder="Focal Point"
-              className="border w-full mt-2"
               disabled={readOnly}
+              className={`border p-2 rounded ${formErrors.focalPoint ? "!border-red-500" : ""}`}
+              title={formErrors.focalPoint ? formErrors["focalPoint"] : undefined}
             />
           </div>
 
-          <div>
+          <div className="flex flex-col gap-2">
             <Label>Province</Label>
             <SingleSelect
               options={provinces.map((province, i) => ({
@@ -382,10 +407,11 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
                 )
               }
               disabled={readOnly}
+              error={formErrors.province_id}
             ></SingleSelect>
           </div>
 
-          <div>
+          <div className="flex flex-col gap-2">
             <Label>District</Label>
             <SingleSelect
               options={districts.map((district, i) => ({
@@ -413,54 +439,59 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
                 )
               }
               disabled={readOnly}
+              error={formErrors.district_id}
             ></SingleSelect>
           </div>
 
-          <div>
+          <div className="flex flex-col gap-2">
             <Label>Village</Label>
             <Input
               name="village"
               value={formData.programInformation.village}
               onChange={(e) => handleFormChange(e, "program")}
               placeholder="Village"
-              className="border w-full mt-2"
               disabled={readOnly}
+              className={`border p-2 rounded ${formErrors.village ? "!border-red-500" : ""}`}
+              title={formErrors.village ? formErrors["village"] : undefined}
             />
           </div>
 
-          <div>
+          <div className="flex flex-col gap-2">
             <Label>Sit Code</Label>
             <Input
               name="siteCode"
               value={formData.programInformation.siteCode}
               onChange={(e) => handleFormChange(e, "program")}
               placeholder="Sit Code"
-              className="border w-full mt-2"
               disabled={readOnly}
+              className={`border p-2 rounded ${formErrors.siteCode ? "!border-red-500" : ""}`}
+              title={formErrors.siteCode ? formErrors["siteCode"] : undefined}
             />
           </div>
 
-          <div>
+          <div className="flex flex-col gap-2">
             <Label>Health Facility Name</Label>
             <Input
               name="healthFacilityName"
               value={formData.programInformation.healthFacilityName}
               onChange={(e) => handleFormChange(e, "program")}
               placeholder="Health Facility Name"
-              className="border w-full mt-2"
               disabled={readOnly}
+              className={`border p-2 rounded ${formErrors.healthFacilityName ? "!border-red-500" : ""}`}
+              title={formErrors.healthFacilityName ? formErrors["healthFacilityName"] : undefined}
             />
           </div>
 
-          <div>
+          <div className="flex flex-col gap-2">
             <Label>Intervention Modality</Label>
             <Input
               name="interventionModality"
               value={formData.programInformation.interventionModality}
               onChange={(e) => handleFormChange(e, "program")}
               placeholder="Intervention Modality"
-              className="border w-full mt-2"
               disabled={readOnly}
+              className={`border p-2 rounded ${formErrors.interventionModality ? "!border-red-500" : ""}`}
+              title={formErrors.interventionModality ? formErrors["interventionModality"] : undefined}
             />
           </div>
         </div>
@@ -474,6 +505,8 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
               value={formData.psychoeducationInformation.awarenessTopic}
               onChange={(e) => handleFormChange(e, "psychoeducation")}
               disabled={readOnly}
+              className={`border p-2 rounded ${formErrors.awarenessTopic ? "!border-red-500" : ""}`}
+              title={formErrors.awarenessTopic ? formErrors["awarenessTopic"] : undefined}
             />
           </div>
 
@@ -485,6 +518,8 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
               value={formData.psychoeducationInformation.awarenessDate}
               onChange={(e) => handleFormChange(e, "psychoeducation")}
               disabled={readOnly}
+              className={`border p-2 rounded ${formErrors.awarenessDate ? "!border-red-500" : ""}`}
+              title={formErrors.awarenessDate ? formErrors["awarenessDate"] : undefined}
             ></Input>
           </div>
         </div>
@@ -533,9 +568,9 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
         </div>
 
         {/* Submit Button */}
-        <Button className="w-full mt-6" onClick={handleSubmit}>
+        {mode != "show" && <Button className="w-full mt-6" onClick={handleSubmit}>
           Submit
-        </Button>
+        </Button>}
       </DialogContent>
     </Dialog>
   );

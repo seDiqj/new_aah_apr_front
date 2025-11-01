@@ -3,16 +3,25 @@
 import BreadcrumbWithCustomSeparator from "@/components/global/BreadCrumb";
 import DataTableDemo from "@/components/global/MulitSelectTable";
 import SubHeader from "@/components/global/SubHeader";
-import MainDatabaseBeneficiaryForm from "@/components/global/MainDatabaseBeneficiaryCreationForm";
 import { Button } from "@/components/ui/button";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
-import { enactTableColumn, mainDatabaseAndKitDatabaseBeneficiaryColumns } from "@/definitions/DataTableColumnsDefinitions";
+import { enactTableColumn } from "@/definitions/DataTableColumnsDefinitions";
 import { useEffect, useState } from "react";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AssessmentForm from "@/components/global/CreateNewAssessmentForm";
 import { useRouter } from "next/navigation";
 import Preloader from "@/components/global/Preloader";
+
+// Will be used in version 2.
+const enactTabsList = [
+  "ENACT: FOUNDATIONAL HELPING SKILLS-ADULT",
+  "PROBLEUM MANAGEMENT PLUS (COMINED ENACT & PM+)",
+  "PROBLEUM MANAGEMENT PLUS (PM+) COMPETENCIES [LEGACY VERSION]",
+  "SELF HELP PLUS",
+  "BEHAVIORAL ACTIVATION COMPETENCIES",
+];
+
 
 const EnactDatabasePage = () => {
   const router = useRouter();
@@ -33,14 +42,6 @@ const EnactDatabasePage = () => {
 
   const [reqForAssessmentShowForm, setReqForAssessmentShowForm] =
     useState<boolean>(false);
-
-  const enactTabsList = [
-    "ENACT: FOUNDATIONAL HELPING SKILLS-ADULT",
-    "PROBLEUM MANAGEMENT PLUS (COMINED ENACT & PM+)",
-    "PROBLEUM MANAGEMENT PLUS (PM+) COMPETENCIES [LEGACY VERSION]",
-    "SELF HELP PLUS",
-    "BEHAVIORAL ACTIVATION COMPETENCIES",
-  ];
 
   const openAssessmentProfile = (value: boolean, id: number) => {
     router.push(`enact_database/enact_profile/${id}`);
@@ -85,6 +86,7 @@ const EnactDatabasePage = () => {
                 <TabsTrigger value="ENACT: FOUNDATIONAL HELPING SKILLS-ADULT">
                   ENACT: FOUNDATIONAL HELPING SKILLS-ADULT
                 </TabsTrigger>
+                {/* for version 2 */}
                 {/* {enactTabsList.map((tab) => (
                   <TabsTrigger disabled value="tab">
                     {tab}
@@ -108,6 +110,8 @@ const EnactDatabasePage = () => {
                 idFeildForShowStateSetter={setIdFeildForShowStateSetter}
                 showModelOpenerStateSetter={setReqForAssessmentShowForm}
                 loadingStateSetter={setIsLoading}
+                filterUrl="/filter/enact_database/enacts"
+                filtersList={["projectCode", "province", "indicator", "date"]}
               ></DataTableDemo>
             </TabsContent>
           </Tabs>

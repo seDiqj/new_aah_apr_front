@@ -15,23 +15,8 @@ import { useEffect, useState } from "react";
 import { useParentContext } from "@/contexts/ParentContext";
 import { withPermission } from "@/lib/withPermission";
 import CreateNewProgramMain from "./CreateNewProgramMain";
-
-type BeneficiaryForm = {
-  program: string;
-  beneficiaryCode: string;
-  clientName: string;
-  fatherHusbandName: string;
-  gender: "male" | "female" | "other";
-  age: number;
-  childCode: string;
-  childAge: number;
-  phone: string;
-  householdStatus: string;
-  maritalStatus: string;
-  literacyLevel: string;
-  disabilityType: string;
-  referredForProtection: boolean;
-};
+import { MainDatabaseBeneficiaryFormSchema } from "@/schemas/FormsSchema";
+import { MainDatabaseBeneficiary } from "@/types/Types";
 
 interface DatabaseSummaryProps {
   open: boolean;
@@ -48,7 +33,7 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
 }) => {
   const { reqForToastAndSetMessage, axiosInstance, handleReload } = useParentContext();
 
-  const [formData, setFormData] = useState<BeneficiaryForm>({
+  const [formData, setFormData] = useState<MainDatabaseBeneficiary>({
     program: "",
     beneficiaryCode: "",
     clientName: "",
@@ -58,12 +43,15 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
     childCode: "",
     childAge: 0,
     phone: "",
-    householdStatus: "",
+    householdStatus: "idp_drought",
     literacyLevel: "",
-    maritalStatus: "",
-    disabilityType: "",
+    maritalStatus: "single",
+    disabilityType: "person_without_disability",
     referredForProtection: false,
+    dateOfRegistration: ""
   });
+
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
   const handleFormChange = (e: any) => {
     const name: string = e.target.name;
@@ -77,6 +65,23 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
+
+    const result = MainDatabaseBeneficiaryFormSchema.safeParse(formData);
+
+    if (!result.success) {
+    const errors: { [key: string]: string } = {};
+    result.error.issues.forEach((issue) => {
+      const field = issue.path[0];
+      if (field) errors[field as string] = issue.message;
+    });
+
+    setFormErrors(errors);
+      reqForToastAndSetMessage("Please fix validation errors before submitting.");
+      return;
+    }
+
+    setFormErrors({});
+
     axiosInstance
       .post("/main_db/beneficiary", formData)
       .then((response: any) => {
@@ -148,6 +153,7 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
                   });
                 }}
                 placeholder="Select Exising Program"
+                error={formErrors.program}
               ></SingleSelect>
             </div>
             {/* Seperator */}
@@ -183,8 +189,9 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
                   id="dateOfRegistration"
                   name="dateOfRegistration"
                   type="date"
-                  className="border w-full"
                   onChange={handleFormChange}
+                  className={`border rounded-xl p-2 rounded ${formErrors.dateOfRegistration ? "!border-red-500" : ""} w-full`}
+                  title={formErrors.dateOfRegistration ? formErrors["dateOfRegistration"] : undefined}
                 />
               </div>
 
@@ -192,22 +199,24 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
               <div className="flex flex-col gap-4">
                 <Label htmlFor="code">Beneficiary Code</Label>
                 <Input
+                  title={formErrors.code ? formErrors["code"] : undefined}
                   id="code"
                   name="code"
                   placeholder="Code ..."
-                  className="border w-full"
+                  className={`border p-2 rounded ${formErrors.code ? "!border-red-500" : ""} w-full`}
                   onChange={handleFormChange}
                 />
               </div>
 
               {/* Client Name */}
               <div className="flex flex-col gap-4">
-                <Label htmlFor="name">Client Name</Label>
+                <Label htmlFor="clientName">Client Name</Label>
                 <Input
-                  id="name"
-                  name="name"
+                  title={formErrors.clientName ? formErrors["clientName"] : undefined}
+                  id="clientName"
+                  name="clientName"
                   placeholder="Client Name ..."
-                  className="border w-full"
+                  className={`border p-2 rounded ${formErrors.clientName ? "!border-red-500" : ""} w-full`}
                   onChange={handleFormChange}
                 />
               </div>
@@ -216,10 +225,11 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
               <div className="flex flex-col gap-4">
                 <Label htmlFor="fatherHusbandName">Father / Husbend Name</Label>
                 <Input
+                  title={formErrors.fatherHusbandName ? formErrors["fatherHusbandName"] : undefined}
                   id="fatherHusbandName"
                   name="fatherHusbandName"
                   placeholder="Father / Husbend Name ..."
-                  className="border w-full"
+                  className={`border p-2 rounded ${formErrors.fatherHusbandName ? "!border-red-500" : ""} w-full`}
                   onChange={handleFormChange}
                 />
               </div>
@@ -242,6 +252,7 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
                       },
                     });
                   }}
+                  error={formErrors.gender}
                 ></SingleSelect>
               </div>
 
@@ -249,11 +260,12 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
               <div className="flex flex-col gap-4">
                 <Label htmlFor="age">Age</Label>
                 <Input
+                  title={formErrors.age ? formErrors["age"] : undefined}
                   id="age"
                   name="age"
                   type="number"
                   placeholder="Age ..."
-                  className="border w-full"
+                  className={`border p-2 rounded ${formErrors.age ? "!border-red-500" : ""} w-full`}
                   onChange={handleFormChange}
                 />
               </div>
@@ -262,10 +274,11 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
               <div className="flex flex-col gap-4">
                 <Label htmlFor="childCode">Child Of BNF Code</Label>
                 <Input
+                  title={formErrors.childCode ? formErrors["childCode"] : undefined}
                   id="childCode"
                   name="childCode"
                   placeholder="Child Code ..."
-                  className="border w-full"
+                  className={`border p-2 rounded ${formErrors.childCode ? "!border-red-500" : ""} w-full`}
                   onChange={handleFormChange}
                 />
               </div>
@@ -274,11 +287,12 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
               <div className="flex flex-col gap-4">
                 <Label htmlFor="childAge">Age Of Child OF BNF</Label>
                 <Input
+                  title={formErrors.childAge ? formErrors["childAge"] : undefined}
                   id="childAge"
                   name="childAge"
                   type="number"
                   placeholder="Age Of Child ..."
-                  className="border w-full"
+                  className={`border p-2 rounded ${formErrors.childAge ? "!border-red-500" : ""} w-full`}
                   onChange={handleFormChange}
                 />
               </div>
@@ -287,18 +301,19 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
               <div className="flex flex-col gap-4">
                 <Label htmlFor="phone">Client Phone</Label>
                 <Input
+                  title={formErrors.phone ? formErrors["phone"] : undefined}
                   id="phone"
                   name="phone"
                   type="tel"
                   placeholder="Phone ..."
-                  className="border w-full"
+                  className={`border p-2 rounded ${formErrors.phone ? "!border-red-500" : ""} w-full`}
                   onChange={handleFormChange}
                 />
               </div>
 
               {/* Marital status */}
               <div className="flex flex-col gap-4">
-                <Label htmlFor="houseHoldStatus">HouseHold Status of BNF</Label>
+                <Label htmlFor="maritalStatus">Marital Status</Label>
                 <SingleSelect
                   options={[
                     { value: "single", label: "Single" },
@@ -317,6 +332,7 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
                       },
                     })
                   }
+                  error={formErrors.maritalStatus}
                 />
               </div>
 
@@ -340,6 +356,7 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
                       },
                     })
                   }
+                  error={formErrors.householdStatus}
                 />
               </div>
 
@@ -347,17 +364,18 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
               <div className="flex flex-col gap-4">
                 <Label htmlFor="literacyLevel">Literacy Level Of BNF</Label>
                 <Input
+                  title={formErrors.literacyLevel ? formErrors["literacyLevel"] : undefined}
                   id="literacyLevel"
                   name="literacyLevel"
                   placeholder="Literacy Level ..."
-                  className="border w-full"
+                  className={`border p-2 rounded ${formErrors.literacyLevel ? "!border-red-500" : ""} w-full`}
                   onChange={handleFormChange}
                 />
               </div>
 
               {/* Disablility Type */}
               <div className="flex flex-col gap-4">
-                <Label htmlFor="disablilityType">Disablility Type</Label>
+                <Label htmlFor="disabilityType">Disablility Type</Label>
                 <SingleSelect
                   options={[
                     {
@@ -378,6 +396,7 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
                       },
                     })
                   }
+                  error={formErrors.disabilityType}
                 />
               </div>
 
@@ -400,6 +419,7 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
                       },
                     })
                   }
+                  error={formErrors.referredForProtection}
                 />
               </div>
             </div>

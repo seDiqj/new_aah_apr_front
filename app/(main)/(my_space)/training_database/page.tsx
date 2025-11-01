@@ -80,9 +80,8 @@ const TrainingDatabasePage = () => {
             </Button>
           </div>
         }
-        filterUrl="/filter/main_database/beneficiaries"
-        filtersList={["projectCode", "indicator", "focalPoint", "province", "siteCode", "healthFacilitator", "dateOfRegistration",
-          "age", "maritalStatus", "householdStatus"]}
+        filterUrl="/filter/training_database/beneficiaries"
+        filtersList={["projectCode", "indicator", "province", "age", "gender"]}
       ></DataTableDemo>
 
       {reqForBeneficiaryCreationForm && (

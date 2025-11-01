@@ -11,7 +11,6 @@ import { AssessmentFormType } from "@/types/Types";
 import { useParentContext } from "@/contexts/ParentContext";
 import { InfoItem } from "../../../referral_database/beneficiary_profile/[id]/page";
 import { useParams } from "next/navigation";
-import AssessmentForm from "@/components/global/CreateNewAssessmentForm";
 import AssessmentScoreForm from "@/components/global/AssessmentScoreForm";
 
 const MainDatabasePage = () => {
@@ -20,17 +19,6 @@ const MainDatabasePage = () => {
   const { id } = useParams<{
     id: string;
   }>();
-
-  let [idFeildForEditStateSetter, setIdFeildForEditStateSetter] = useState<
-    number | null
-  >(null);
-
-  let [idFeildForShowStateSetter, setIdFeildForShowStateSetter] = useState<
-    number | null
-  >(null);
-
-  const [reqForAssessmentCreationForm, setReqForAssessmentCreationForm] =
-    useState<boolean>(false);
 
   const [reqForAddNewAssessment, setReqForAddNewAssessment] =
     useState<boolean>(false);
@@ -52,20 +40,16 @@ const MainDatabasePage = () => {
     hasRef.current = true;
 
     axiosInstance
-      .get(`/enact_database/${id}`)
+      .get(`/enact_database/show_for_profile/${id}`)
       .then((response: any) => {
-        console.log(response.data.data);
         const { assessments, ...assessmentData } = response.data.data;
         setAssessmentInfo(assessmentData);
         setAssessmentsData(assessments);
       })
       .catch((error: any) => {
         reqForToastAndSetMessage(error.response.data.message);
-        console.log(error.response.data);
       });
   }, []);
-
-  useEffect(() => console.log(assessmentsData), [assessmentsData]);
 
   return (
     <>
@@ -134,7 +118,6 @@ const MainDatabasePage = () => {
                         key={i}
                         className="flex flex-row items-center justify-between w-full px-2 mb-2"
                       >
-                        {/* <CardHeader>{`Assessment ${i}`}</CardHeader> */}
                         <div>
                           <span>{`Assessment ${i + 1}`}</span>
                         </div>

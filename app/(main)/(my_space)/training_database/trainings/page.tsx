@@ -62,6 +62,8 @@ const TrainingsPage = () => {
           editModelOpenerStateSetter={setReqForTrainingEditionForm}
           idFeildForShowStateSetter={setIdFeildForShowStateSetter}
           showModelOpenerStateSetter={() => {}}
+          filterUrl="/filter/training_database/trainings"
+          filtersList={["projectCode", "indicatorRef", "province"]}
         ></DataTableDemo>
 
         {reqForTrainingCreationForm && (

@@ -106,6 +106,8 @@ const CommunityDialogDatabasePage = () => {
           loadingStateSetter={setIsLoading}
           editBtnPermission="Dialogue.edit"
           deleteBtnPermission="Dialogue.delete"
+          filterUrl="/filter/cd_database/beneficiaries"
+          filtersList={["projectCode", "province", "indicator", "age", "gender", "dateOfRegistration"]}
         ></DataTableDemo>
 
         {reqForBeneficiaryCreationForm && (

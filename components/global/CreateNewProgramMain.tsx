@@ -37,11 +37,11 @@ const ProgramMainForm: React.FC<ComponentProps> = ({
 
   const programSchema = z.object({
     projectCode: z.string().min(1, "Project code is required"),
-    focalPoint: z.string().min(3, "Focal point must be at least 3 characters"),
-    province: z.string().min(1, "Province is required"),
-    district: z.string().min(1, "District is required"),
-    village: z.string().min(1, "Village is required"),
-    siteCode: z.string().min(1),
+    focalPoint: z.string().min(3, "Focal point must be at least 3 characters or 3 digits"),
+    province: z.string().min(1, "Select a valid province"),
+    district: z.string().min(1, "Select a valid district"),
+    village: z.string().min(1, "Village name should be at least 2 characters"),
+    siteCode: z.string().min(1, "Site code should be at least 1 characters !"),
     healthFacilityName: z.string().min(3, "Health facility name is required"),
     interventionModality: z.string().min(1, "Intervention modality is required"),
   });
@@ -49,8 +49,8 @@ const ProgramMainForm: React.FC<ComponentProps> = ({
   const [formData, setFormData] = useState<MainDatabaseProgram>({
     projectCode: "",
     focalPoint: "",
-    province: "",
-    district: "",
+    province: "kabul",
+    district: "District 1",
     village: "",
     siteCode: "",
     healthFacilityName: "",
@@ -202,6 +202,7 @@ const ProgramMainForm: React.FC<ComponentProps> = ({
               onChange={handleFormChange}
               disabled={readOnly}
               className={`border p-2 rounded ${formErrors.focalPoint ? "!border-red-500" : ""}`}
+              title={formErrors.focalPoint ? formErrors["focalPoint"] : undefined}
             />
           </div>
           {/* Province */}
@@ -249,6 +250,7 @@ const ProgramMainForm: React.FC<ComponentProps> = ({
               onChange={handleFormChange}
               disabled={readOnly}
               className={`border p-2 rounded ${formErrors.village ? "!border-red-500" : ""}`}
+              title={formErrors.village ? formErrors["village"] : undefined}
             />
           </div>
           {/* Site code */}
@@ -260,6 +262,7 @@ const ProgramMainForm: React.FC<ComponentProps> = ({
               onChange={handleFormChange}
               disabled={readOnly}
               className={`border p-2 rounded ${formErrors.siteCode ? "!border-red-500" : ""}`}
+              title={formErrors.siteCode ? formErrors["siteCode"] : undefined}
             />
           </div>
           {/* Health Facility Name */}
@@ -271,6 +274,7 @@ const ProgramMainForm: React.FC<ComponentProps> = ({
               onChange={handleFormChange}
               disabled={readOnly}
               className={`border p-2 rounded ${formErrors.healthFacilityName ? "!border-red-500" : "!border-gray-300"}`}
+              title={formErrors.healthFacilityName ? formErrors["healthFacilityName"] : undefined}
             />
           </div>
           {/* Intervention Modality */}
@@ -282,6 +286,7 @@ const ProgramMainForm: React.FC<ComponentProps> = ({
               onChange={handleFormChange}
               disabled={readOnly}
               className={`border p-2 rounded ${formErrors.interventionModality ? "!border-red-500" : "!border-gray-300"}`}
+              title={formErrors.interventionModality ? formErrors["interventionModality"] : undefined}
             />
           </div>
           {/* Submit */}

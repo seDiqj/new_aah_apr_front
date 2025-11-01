@@ -6,11 +6,9 @@ import DataTableDemo from "@/components/global/MulitSelectTable";
 import SubHeader from "@/components/global/SubHeader";
 import { Button } from "@/components/ui/button";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
-import { useParentContext } from "@/contexts/ParentContext";
 import {
   psychoeducationTableListColumn,
 } from "@/definitions/DataTableColumnsDefinitions";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const PsychoeducationDatabasePage = () => {
@@ -66,7 +64,7 @@ const PsychoeducationDatabasePage = () => {
           showModelOpenerStateSetter={setReqForPsychoeducationShowForm}
           editBtnPermission="Psychoeducation.edit"
           deleteBtnPermission="Psychoeducation.delete"
-          filterUrl=""
+          filterUrl="filter/psychoeducation_db/psychoeducations"
           filtersList={[
             "indicator",
             "awarenessTopic",

@@ -16,6 +16,9 @@ import { useParentContext } from "@/contexts/ParentContext";
 import { MultiSelect } from "../multi-select";
 import { withPermission } from "@/lib/withPermission";
 import CreateNewProgramKit from "./CreateNewProgramKit";
+import { z } from "zod";
+import { KitDatabaseBeneficiaryFormSchema } from "@/schemas/FormsSchema";
+
 
 type BeneficiaryForm = {
   program: string;
@@ -49,6 +52,8 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
 }) => {
   const { reqForToastAndSetMessage, axiosInstance, handleReload } = useParentContext();
 
+  
+
   const [formData, setFormData] = useState<BeneficiaryForm>({
     program: "",
     indicators: [],
@@ -68,6 +73,9 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
     referredForProtection: false,
   });
 
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+
+
   const handleFormChange = (e: any) => {
     const name: string = e.target.name;
     const value: string = e.target.value;
@@ -80,6 +88,23 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
+
+    const result = KitDatabaseBeneficiaryFormSchema.safeParse(formData);
+
+    if (!result.success) {
+    const errors: { [key: string]: string } = {};
+    result.error.issues.forEach((issue) => {
+      const field = issue.path[0];
+      if (field) errors[field as string] = issue.message;
+    });
+
+    setFormErrors(errors);
+      reqForToastAndSetMessage("Please fix validation errors before submitting.");
+      return;
+    }
+
+    setFormErrors({});
+
     axiosInstance
       .post("/kit_db/beneficiary", formData)
       .then((response: any) => {
@@ -167,6 +192,7 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
                   });
                 }}
                 placeholder="Select Exising Program"
+                error={formErrors.program}
               ></SingleSelect>
             </div>
             {/* Seperator */}
@@ -210,6 +236,7 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
                   });
                 }}
                 placeholder="Assign Indicator"
+                error={formErrors.indicators}
               ></MultiSelect>
             </div>
 
@@ -222,8 +249,9 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
                   id="dateOfRegistration"
                   name="dateOfRegistration"
                   type="date"
-                  className="border w-full"
+                  className={`border rounded-xl p-2 rounded ${formErrors.dateOfRegistration ? "!border-red-500" : ""} w-full`}
                   onChange={handleFormChange}
+                  title={formErrors.dateOfRegistration ? formErrors["dateOfRegistration"] : undefined}
                 />
               </div>
 
@@ -234,8 +262,9 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
                   id="code"
                   name="code"
                   placeholder="Code ..."
-                  className="border w-full"
+                  className={`border rounded-xl p-2 rounded ${formErrors.code ? "!border-red-500" : ""} w-full`}
                   onChange={handleFormChange}
+                  title={formErrors.code ? formErrors["code"] : undefined}
                 />
               </div>
 
@@ -246,8 +275,9 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
                   id="name"
                   name="name"
                   placeholder="Client Name ..."
-                  className="border w-full"
+                  className={`border rounded-xl p-2 rounded ${formErrors.name ? "!border-red-500" : ""} w-full`}
                   onChange={handleFormChange}
+                  title={formErrors.name ? formErrors["name"] : undefined}
                 />
               </div>
 
@@ -258,8 +288,9 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
                   id="fatherHusbandName"
                   name="fatherHusbandName"
                   placeholder="Father / Husbend Name ..."
-                  className="border w-full"
+                  className={`border rounded-xl p-2 rounded ${formErrors.fatherHusbandName ? "!border-red-500" : ""} w-full`}
                   onChange={handleFormChange}
+                  title={formErrors.fatherHusbandName ? formErrors["fatherHusbandName"] : undefined}
                 />
               </div>
 
@@ -281,6 +312,7 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
                       },
                     });
                   }}
+                  error={formErrors.gender}
                 ></SingleSelect>
               </div>
 
@@ -292,8 +324,9 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
                   name="age"
                   type="number"
                   placeholder="Age ..."
-                  className="border w-full"
+                  className={`border rounded-xl p-2 rounded ${formErrors.age ? "!border-red-500" : ""} w-full`}
                   onChange={handleFormChange}
+                  title={formErrors.age ? formErrors["age"] : undefined}
                 />
               </div>
 
@@ -304,8 +337,9 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
                   id="childCode"
                   name="childCode"
                   placeholder="Child Code ..."
-                  className="border w-full"
+                  className={`border rounded-xl p-2 rounded ${formErrors.childCode ? "!border-red-500" : ""} w-full`}
                   onChange={handleFormChange}
+                  title={formErrors.childCode ? formErrors["childCode"] : undefined}
                 />
               </div>
 
@@ -317,8 +351,9 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
                   name="ageOfChild"
                   type="number"
                   placeholder="Age Of Child ..."
-                  className="border w-full"
+                  className={`border rounded-xl p-2 rounded ${formErrors.ageOfChild ? "!border-red-500" : ""} w-full`}
                   onChange={handleFormChange}
+                  title={formErrors.ageOfChild}
                 />
               </div>
 
@@ -330,14 +365,15 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
                   name="phone"
                   type="tel"
                   placeholder="Phone ..."
-                  className="border w-full"
+                  className={`border rounded-xl p-2 rounded ${formErrors.phone ? "!border-red-500" : ""} w-full`}
                   onChange={handleFormChange}
+                  title={formErrors.phone ? formErrors["phone"] : undefined}
                 />
               </div>
 
               {/* Marital status */}
               <div className="flex flex-col gap-4">
-                <Label htmlFor="houseHoldStatus">HouseHold Status of BNF</Label>
+                <Label htmlFor="houseHoldStatus">Marital Status of BNF</Label>
                 <SingleSelect
                   options={[
                     { value: "single", label: "Single" },
@@ -356,6 +392,7 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
                       },
                     })
                   }
+                  error={formErrors.maritalStatus}
                 />
               </div>
 
@@ -379,6 +416,7 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
                       },
                     })
                   }
+                  error={formErrors.houseHoldStatus}
                 />
               </div>
 
@@ -389,8 +427,9 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
                   id="literacyLevel"
                   name="literacyLevel"
                   placeholder="Literacy Level ..."
-                  className="border w-full"
+                  className={`border rounded-xl p-2 rounded ${formErrors.literacyLevel ? "!border-red-500" : ""} w-full`}
                   onChange={handleFormChange}
+                  title={formErrors.literacyLevel}
                 />
               </div>
 
@@ -417,6 +456,7 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
                       },
                     })
                   }
+                  error={formErrors.disabilityType}
                 />
               </div>
 
@@ -439,6 +479,7 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
                       },
                     })
                   }
+                  error={formErrors.referredForProtection}
                 />
               </div>
             </div>

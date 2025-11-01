@@ -21,20 +21,9 @@ const SubmittedDatabasesPage = () => {
     aprStats
   } = useParentContext();
 
-  const router = useRouter();
-
-  let [reqForPermissionUpdateForm, setReqForPermissionUpdateForm] =
-    useState<boolean>(false);
-
-  let [reqForConfirmationModel, setReqForConfirmationModel] =
-    useState<boolean>(false);
-
   let [idFeildForEditStateSetter, setIdFeildForEditStateSetter] = useState<
     number | null
   >(null);
-
-  const [openSubmitNewDatabase, setOpenSubmitNewDatabase] =
-    useState<boolean>(false);
 
   const [
     OpenSubmittedDatabaseSummaryModel,
@@ -46,7 +35,6 @@ const SubmittedDatabasesPage = () => {
       .post(`/apr_management/generate_apr/${idFeildForEditStateSetter}`)
       .then((response: any) => {
         reqForToastAndSetMessage(response.data.message);
-        console.log(response.data.data);
       })
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
@@ -58,7 +46,7 @@ const SubmittedDatabasesPage = () => {
     <>
       <Navbar14 />
       <SubHeader pageTitle={"Approved Databases"}></SubHeader>
-      <Cards mockStats={aprStats} />
+      <Cards/>
 
       <DataTableDemo
         columns={submittedAndFirstApprovedDatabasesTableColumn}
@@ -87,6 +75,8 @@ const SubmittedDatabasesPage = () => {
             
           </div>
         }
+        filterUrl="/filter/approved_databases"
+        filtersList={["projectCode", "province", "database", "fromDate", "toDate"]}
       ></DataTableDemo>
 
       {OpenSubmittedDatabaseSummaryModel && (

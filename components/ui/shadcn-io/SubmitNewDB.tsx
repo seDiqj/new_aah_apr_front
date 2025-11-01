@@ -24,6 +24,7 @@ import {
 import { CalendarIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParentContext } from "@/contexts/ParentContext";
+import { SubmittNewDatabaseFormSchema } from "@/schemas/FormsSchema";
 
 const months = [
   "January",
@@ -99,16 +100,16 @@ const SubmitNewDB: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
     name: string;
   } | null>(null);
 
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+
   useEffect(() => {
     if (projects.length == 0)
       axiosInstance
         .get("/projects/projects_for_submition")
         .then((response: any) => {
-          console.log(response.data.data);
           setProjects(response.data.data);
         })
         .catch((error: any) => {
-          console.log(error.response.data);
           reqForToastAndSetMessage(error.response.data.message);
         });
 
@@ -126,7 +127,30 @@ const SubmitNewDB: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
   }, [selectedProject]);
 
   const handleSubmit = () => {
-    let error: boolean = false;
+
+    const result = SubmittNewDatabaseFormSchema.safeParse({
+      selectedProject,
+      selectedDatabase,
+      selectedProvince,
+      fromMonth,
+      fromYear,
+      toMonth,
+      toYear
+    });
+
+    if (!result.success) {
+    const errors: { [key: string]: string } = {};
+    result.error.issues.forEach((issue) => {
+      const field = issue.path[0];
+      if (field) errors[field as string] = issue.message;
+    });
+
+    setFormErrors(errors);
+      reqForToastAndSetMessage("Please fix validation errors before submitting.");
+      return;
+    }
+
+    setFormErrors({});
 
     axiosInstance
       .post("/db_management/submit_new_database", {

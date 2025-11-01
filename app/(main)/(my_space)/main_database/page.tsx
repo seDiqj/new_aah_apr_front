@@ -40,7 +40,7 @@ const MainDatabasePage = () => {
   const referrBeneficiaies = () => {
     if (Object.values(selectedRowsIds).length == 0) return;
     axiosInstance
-      .post("/referral_db/beneficiaries/referrBeneficiaries", {
+      .post("/main_db/beneficiaries/referrBeneficiaries", {
         ids: Object.keys(selectedRowsIds),
       })
       .then((response: any) => reqForToastAndSetMessage(response.data.message))

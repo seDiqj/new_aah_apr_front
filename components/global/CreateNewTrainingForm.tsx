@@ -145,6 +145,13 @@ const TrainingFormDialog: React.FC<ComponentProps> = ({
     }
   };
 
+  const handleCheckboxChange = <T extends keyof TrainingForm>(
+    field: T,
+    value: any
+  ) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
   const [districts, setDistricts] = useState<{ name: string }[]>([]);
   const [provinces, setProvinces] = useState<{ name: string }[]>([]);
   const [projects, setProjects] = useState<{ projectCode: string }[]>([]);
@@ -276,7 +283,105 @@ const TrainingFormDialog: React.FC<ComponentProps> = ({
               onChange={handleChange}
             />
           </div>
-
+<div className="flex flex-col gap-1">
+            <Label>Participant Category</Label>
+            <div className="flex flex-row items-center gap-4">
+              <div className="flex items-center gap-1">
+                <Checkbox
+                  checked={formData.participantCatagory === "acf-staff"}
+                  onCheckedChange={(val) =>
+                    handleCheckboxChange(
+                      "participantCatagory",
+                      val ? "acf-staff" : ""
+                    )
+                  }
+                />
+                <Label>ACF Staff</Label>
+              </div>
+              <div className="flex items-center gap-1">
+                <Checkbox
+                  checked={formData.participantCatagory === "stakeholder"}
+                  onCheckedChange={(val) =>
+                    handleCheckboxChange(
+                      "participantCatagory",
+                      val ? "stakeholder" : ""
+                    )
+                  }
+                />
+                <Label>Stakeholder</Label>
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-col gap-1">
+            <Label>APR Included</Label>
+            <div className="flex flex-row items-center gap-4">
+              <div className="flex items-center gap-1">
+                <Checkbox
+                  checked={formData.aprIncluded === true}
+                  onCheckedChange={(val) =>
+                    val && handleCheckboxChange("aprIncluded", true)
+                  }
+                />
+                <Label>Yes</Label>
+              </div>
+              <div className="flex items-center gap-1">
+                <Checkbox
+                  checked={formData.aprIncluded === false}
+                  onCheckedChange={(val) =>
+                    val && handleCheckboxChange("aprIncluded", false)
+                  }
+                />
+                <Label>No</Label>
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-col gap-1">
+            <Label>Training Modality</Label>
+            <div className="flex flex-row items-center gap-4">
+              <div className="flex items-center gap-1">
+                <Checkbox
+                  checked={formData.trainingModality === "face-to-face"}
+                  onCheckedChange={(val) =>
+                    handleCheckboxChange(
+                      "trainingModality",
+                      val ? "face-to-face" : ""
+                    )
+                  }
+                />
+                <Label>Face-to-Face</Label>
+              </div>
+              <div className="flex items-center gap-1">
+                <Checkbox
+                  checked={formData.trainingModality === "online"}
+                  onCheckedChange={(val) =>
+                    handleCheckboxChange(
+                      "trainingModality",
+                      val ? "online" : ""
+                    )
+                  }
+                />
+                <Label>Online</Label>
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-col gap-1">
+            <Label>Start Date</Label>
+            <Input
+              name="startDate"
+              type="date"
+              value={formData.startDate}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <Label>End Date</Label>
+            <Input
+              name="endDate"
+              type="date"
+              value={formData.endDate}
+              onChange={handleChange}
+            />
+          </div>
           {/* --- Chapter Section --- */}
           <div className="col-span-2 mt-6">
             <h2 className="text-center font-bold mb-4">Chapter Information</h2>

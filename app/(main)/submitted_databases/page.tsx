@@ -117,6 +117,8 @@ const SubmittedDatabasesPage = () => {
             </Button>
           </div>
         }
+        filterUrl="/filter/submitted_databases"
+        filtersList={["projectCode", "province", "database", "fromDate", "toDate"]}
       ></DataTableDemo>
 
       {openSubmitNewDatabase && (

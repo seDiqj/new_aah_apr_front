@@ -53,12 +53,10 @@ const RolesPage = () => {
           editModelOpenerStateSetter={() => setReqForRoleUpdateForm(true)}
           idFeildForShowStateSetter={setIdFeildForShowStateSetter}
           showModelOpenerStateSetter={() => setReqForRoleShowForm(true)}
-          filterUrl=""
+          filterUrl="/filter/roles"
           filtersList={[
             "name",
             "status",
-            "created_at",
-            "updated_at"
           ]}
         ></DataTableDemo>
 

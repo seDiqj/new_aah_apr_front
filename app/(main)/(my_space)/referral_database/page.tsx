@@ -22,14 +22,6 @@ const MainDatabasePage = () => {
     number | null
   >(null);
 
-  const [reqForBeneficiaryCreationForm, setReqForBeneficiaryCreationForm] =
-    useState<boolean>(false);
-
-  const [reqForBeneficiaryEditionForm, setReqForBeneficiaryEditionForm] =
-    useState<boolean>(false);
-
-  const [selectedRowsIds, setSelectedRows] = useState<{}>({});
-
   const openBeneficiaryProfile = (value: boolean, id: number) => {
     router.push(`referral_database/beneficiary_profile/${id}`);
   };
@@ -54,15 +46,9 @@ const MainDatabasePage = () => {
           indexUrl="/referral_db/beneficiaries"
           deleteUrl="/referral_db/delete_beneficiaries"
           searchableColumn="name"
-          idFeildForEditStateSetter={setIdFeildForEditStateSetter}
-          editModelOpenerStateSetter={setReqForBeneficiaryEditionForm}
-          idFeildForShowStateSetter={setIdFeildForShowStateSetter}
-          selectedRowsIdsStateSetter={setSelectedRows}
-          showModelOpenerStateSetter={() => {}}
           loadingStateSetter={setIsLoading}
-          filterUrl="/filter/main_database/beneficiaries"
-          filtersList={["projectCode", "indicator", "focalPoint", "province", "siteCode", "healthFacilitator", "dateOfRegistration",
-          "age", "maritalStatus", "householdStatus"]}
+          filterUrl="/filter/refferal_database/beneficiaries"
+          filtersList={["projectCode", "province", "age", "gender", "dateOfRegistration"]}
         ></DataTableDemo>
 
         {isLoading && <Preloader reqForLoading={isLoading} />}

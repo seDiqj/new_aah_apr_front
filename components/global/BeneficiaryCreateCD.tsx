@@ -16,6 +16,8 @@ import { SingleSelect } from "@/components/single-select";
 import { useParentContext } from "@/contexts/ParentContext";
 import { CommunityDialogBeneficiaryForm } from "@/types/Types";
 import { withPermission } from "@/lib/withPermission";
+import { CdDatabaseBenefciaryFormSchema } from "@/schemas/FormsSchema";
+
 
 interface DatabaseSummaryProps {
   open: boolean;
@@ -42,6 +44,9 @@ const BeneficiaryCreateCD: React.FC<DatabaseSummaryProps> = ({
     dateOfRegistration: "",
   });
 
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+  
+
   const handleFormChange = (e: any) => {
     const { name, value } = e.target;
 
@@ -52,6 +57,23 @@ const BeneficiaryCreateCD: React.FC<DatabaseSummaryProps> = ({
   };
 
   const handleSubmit = () => {
+
+    const result = CdDatabaseBenefciaryFormSchema.safeParse(formData);
+
+    if (!result.success) {
+    const errors: { [key: string]: string } = {};
+    result.error.issues.forEach((issue) => {
+      const field = issue.path[0];
+      if (field) errors[field as string] = issue.message;
+    });
+
+    setFormErrors(errors);
+      reqForToastAndSetMessage("Please fix validation errors before submitting.");
+      return;
+    }
+
+    setFormErrors({});
+
     axiosInstance
       .post("/community_dialogue_db/beneficiary", formData)
       .then((response: any) => {
@@ -103,7 +125,8 @@ const BeneficiaryCreateCD: React.FC<DatabaseSummaryProps> = ({
               onChange={handleFormChange}
               id="clientName"
               placeholder="Client Name"
-              className="border w-full"
+              className={`border rounded-xl p-2 rounded ${formErrors.name ? "!border-red-500" : ""} w-full`}
+              title={formErrors.name}
             />
           </div>
 
@@ -115,7 +138,8 @@ const BeneficiaryCreateCD: React.FC<DatabaseSummaryProps> = ({
               onChange={handleFormChange}
               id="fatherName"
               placeholder="Father/Husband Name"
-              className="border w-full"
+              className={`border rounded-xl p-2 rounded ${formErrors.fatherHusbandName ? "!border-red-500" : ""} w-full`}
+              title={formErrors.fatherHusbandName}
             />
           </div>
 
@@ -128,7 +152,8 @@ const BeneficiaryCreateCD: React.FC<DatabaseSummaryProps> = ({
               id="age"
               type="number"
               placeholder="Age"
-              className="border w-full"
+              className={`border rounded-xl p-2 rounded ${formErrors.age ? "!border-red-500" : ""} w-full`}
+              title={formErrors.age}
             />
           </div>
 
@@ -149,6 +174,7 @@ const BeneficiaryCreateCD: React.FC<DatabaseSummaryProps> = ({
                   target: { name: "maritalStatus", value: value },
                 });
               }}
+              error={formErrors.maritalStatus}
             ></SingleSelect>
           </div>
 
@@ -166,6 +192,7 @@ const BeneficiaryCreateCD: React.FC<DatabaseSummaryProps> = ({
                   target: { name: "gender", value: value },
                 });
               }}
+              error={formErrors.gender}
             ></SingleSelect>
           </div>
 
@@ -178,7 +205,8 @@ const BeneficiaryCreateCD: React.FC<DatabaseSummaryProps> = ({
               id="phone"
               type="tel"
               placeholder="Phone"
-              className="border w-full"
+              className={`border rounded-xl p-2 rounded ${formErrors.phone ? "!border-red-500" : ""} w-full`}
+              title={formErrors.phone}
             />
           </div>
 
@@ -190,7 +218,8 @@ const BeneficiaryCreateCD: React.FC<DatabaseSummaryProps> = ({
               onChange={handleFormChange}
               id="nid"
               placeholder="NID Number"
-              className="border w-full"
+              className={`border rounded-xl p-2 rounded ${formErrors.nationalId ? "!border-red-500" : ""} w-full`}
+              title={formErrors.nationalId}
             />
           </div>
 
@@ -202,7 +231,8 @@ const BeneficiaryCreateCD: React.FC<DatabaseSummaryProps> = ({
               onChange={handleFormChange}
               id="jobTitle"
               placeholder="Job Title"
-              className="border w-full"
+              className={`border rounded-xl p-2 rounded ${formErrors.jobTitle ? "!border-red-500" : ""} w-full`}
+              title={formErrors.jobTitle}
             />
           </div>
 
@@ -222,6 +252,7 @@ const BeneficiaryCreateCD: React.FC<DatabaseSummaryProps> = ({
                   },
                 });
               }}
+              error={formErrors.incentiveReceived}
             ></SingleSelect>
           </div>
 
@@ -234,7 +265,8 @@ const BeneficiaryCreateCD: React.FC<DatabaseSummaryProps> = ({
               id="incentiveAmount"
               type="text"
               placeholder="Incentive Amount"
-              className="border w-full"
+              className={`border rounded-xl p-2 rounded ${formErrors.incentiveAmount ? "!border-red-500" : ""} w-full`}
+              title={formErrors.incentiveAmount}
             />
           </div>
           
@@ -244,8 +276,9 @@ const BeneficiaryCreateCD: React.FC<DatabaseSummaryProps> = ({
               id="dateOfRegistration"
               name="dateOfRegistration"
               type="date"
-              className="border w-full"
               onChange={handleFormChange}
+              className={`border rounded-xl p-2 rounded ${formErrors.dateOfRegistration ? "!border-red-500" : ""} w-full`}
+              title={formErrors.dateOfRegistration}
             />
           </div>
         </div>

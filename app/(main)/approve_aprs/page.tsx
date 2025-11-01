@@ -22,23 +22,13 @@ const SubmittedDatabasesPage = () => {
     reqForToastAndSetMessage,
     reqForConfirmationDialogue,
     axiosInstance,
-    aprStats
   } = useParentContext();
 
   const router = useRouter();
 
-  let [reqForPermissionUpdateForm, setReqForPermissionUpdateForm] =
-    useState<boolean>(false);
-
-  let [reqForConfirmationModel, setReqForConfirmationModel] =
-    useState<boolean>(false);
-
   let [idFeildForEditStateSetter, setIdFeildForEditStateSetter] = useState<
     number | null
   >(null);
-
-  const [openSubmitNewDatabase, setOpenSubmitNewDatabase] =
-    useState<boolean>(false);
 
   const [
     OpenSubmittedDatabaseSummaryModel,
@@ -97,6 +87,8 @@ const SubmittedDatabasesPage = () => {
             </Button>
           </div>
         }
+        filterUrl="/filter/aprroved_aprs"
+        filtersList={["projectCode", "province", "database", "fromDate", "toDate"]}
       ></DataTableDemo>
 
       {OpenSubmittedDatabaseSummaryModel && (

@@ -67,6 +67,7 @@ export function SingleSelect({
                 : "!border !border-[var(--border)]",
               disabled && "opacity-60 cursor-not-allowed"
             )}
+            title={error ? error : undefined}
           >
             <div className="flex flex-wrap gap-1 items-center">
               {value ? (
