@@ -40,7 +40,6 @@ import {
 import { useParentContext } from "@/contexts/ParentContext";
 import { ChevronDown, Edit, Filter, Trash } from "lucide-react";
 import { Can } from "../Can";
-import ConfirmationModel from "@/generals/ConfirmationModel";
 
 interface ComponentProps {
   columns: ColumnDef<any>[];
@@ -101,7 +100,7 @@ const DataTableDemo: React.FC<ComponentProps> = ({
   loadingStateSetter,
 
 }) => {
-  const { reqForToastAndSetMessage, axiosInstance, reloadFlag } = useParentContext();
+  const { reqForToastAndSetMessage, axiosInstance, reloadFlag, reqForConfirmationModelFunc } = useParentContext();
 
   const [loading, setLoading] = React.useState(true);
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -166,6 +165,7 @@ const DataTableDemo: React.FC<ComponentProps> = ({
       .catch((err: any) =>
         reqForToastAndSetMessage(err.response?.data?.message || "Delete failed")
       );
+    setRowSelection({});
   };
 
   React.useEffect(() => {
@@ -205,8 +205,6 @@ const DataTableDemo: React.FC<ComponentProps> = ({
     },
   });
 
-  const [reqForConfirmationModel, setReqForConfirmationModel] = React.useState<boolean>(false);
-
   return (
     <div className="w-full">
       {/* Toolbar */}
@@ -243,7 +241,12 @@ const DataTableDemo: React.FC<ComponentProps> = ({
           {deleteUrl && Object.keys(rowSelection).length >= 1 && (
             <Can permission={deleteBtnPermission ?? "ok"}>
               <Button onClick={() => {
-                  setReqForConfirmationModel(true);
+                  
+                  reqForConfirmationModelFunc(
+                    "Are you sure to delete selected rows ?",
+                    "",
+                    handleDelete
+                  );
                   
                 }} variant="outline">
                 <Trash color="red" />
@@ -423,10 +426,6 @@ const DataTableDemo: React.FC<ComponentProps> = ({
           </Button>
         </div>
       </div>
-
-      {reqForConfirmationModel && (
-        <ConfirmationModel open={reqForConfirmationModel} onOpenChange={setReqForConfirmationModel} message={"Are you sure to delete the selected rows ?"} onOk={handleDelete}></ConfirmationModel>
-      )}
     </div>
   );
 };

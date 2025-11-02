@@ -33,7 +33,7 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
   createdProgramStateSetter,
   programsListStateSetter
 }) => {
-  const { reqForToastAndSetMessage, axiosInstance, handleReload } = useParentContext();
+  const { reqForToastAndSetMessage, axiosInstance, handleReload, reqForConfirmationModelFunc } = useParentContext();
 
   const programSchema = z.object({
     projectCode: z.string().min(1, "Project code is required"),
@@ -291,7 +291,11 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
           {/* Submit */}
           {mode !== "show" && (
             <div className="flex justify-end col-span-2">
-              <Button onClick={handleSubmit}>
+              <Button onClick={() => reqForConfirmationModelFunc(
+                "Are you compleatly sure ?",
+                "",
+                handleSubmit
+              )}>
                 {mode === "create" ? "Submit" : "Update"}
               </Button>
             </div>

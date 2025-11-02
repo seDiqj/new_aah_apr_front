@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "../ui/button";
 import { useEffect, useRef, useState } from "react";
-import { createAxiosInstance } from "@/lib/axios";
 import { useParentContext } from "@/contexts/ParentContext";
 import {
   DropdownMenu,
@@ -40,8 +39,7 @@ const CommunityDialogueSelector: React.FC<ComponentProps> = ({
   onOpenChange,
   ids,
 }) => {
-  const { reqForToastAndSetMessage } = useParentContext();
-  const axiosInstance = createAxiosInstance();
+  const { reqForToastAndSetMessage, axiosInstance, reqForConfirmationModelFunc } = useParentContext();
 
   const [communityDialogues, setCommunityDialogues] = useState<
     {
@@ -73,18 +71,12 @@ const CommunityDialogueSelector: React.FC<ComponentProps> = ({
       }[]
     >([]);
 
-  useEffect(() => {
-    console.log(selectedCommunityDialoguesGroup);
-  }, [selectedCommunityDialoguesGroup]);
-
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [hoveredRowTopRectPosision, setHoveredRowTopRectPosision] =
     useState<number>(0);
   const [hoveredCd, setHoveredCd] = useState<any>();
   const dialogContentRef = useRef<HTMLDivElement>(null);
   const [areWeInSubDropDown, setAreWeInSubDropDown] = useState<boolean>(false);
-
-  useEffect(() => console.log(hoveredCd), [hoveredCd]);
 
   const handleSubmit = () => {
     if (!selectedCommunityDialoguesGroup.length) {
@@ -100,7 +92,6 @@ const CommunityDialogueSelector: React.FC<ComponentProps> = ({
       .then((response: any) => reqForToastAndSetMessage(response.data.message))
       .catch((error: any) => {
         reqForToastAndSetMessage(error.response.data.message);
-        console.log(error.response.data);
       });
   };
 
@@ -109,7 +100,6 @@ const CommunityDialogueSelector: React.FC<ComponentProps> = ({
       axiosInstance
         .get("/community_dialogue_db/community_dialogues/for_selection")
         .then((response: any) => {
-          console.log(response.data.data);
           setCommunityDialogues(response.data.data);
         })
         .catch((error: any) =>
@@ -163,7 +153,7 @@ const CommunityDialogueSelector: React.FC<ComponentProps> = ({
               <TableBody className="overflow-visible">
                 {communityDialogues.map((communityDialogue) => (
                   <TableRow
-                    key={communityDialogue.id} // استفاده از id بجای index
+                    key={communityDialogue.id}
                     className="cursor-pointer hover:bg-accent"
                     onMouseEnter={(e) => {
                       const target = e.currentTarget as HTMLElement;
@@ -204,7 +194,11 @@ const CommunityDialogueSelector: React.FC<ComponentProps> = ({
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <Button onClick={handleSubmit} className="w-full mt-6">
+        <Button onClick={() => reqForConfirmationModelFunc(
+          "Are you compleatly sure ?",
+          "",
+          () => handleSubmit()
+        )} className="w-full mt-6">
           Submit
         </Button>
       </DialogContent>

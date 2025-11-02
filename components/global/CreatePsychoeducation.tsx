@@ -76,7 +76,7 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
   mode,
   psychoeducationId,
 }) => {
-  const { reqForToastAndSetMessage, axiosInstance, handleReload } = useParentContext();
+  const { reqForToastAndSetMessage, axiosInstance, handleReload, reqForConfirmationModelFunc } = useParentContext();
 
   const [formData, setFormData] = useState<PsychoeducationForm>({
     programInformation: {
@@ -568,7 +568,11 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
         </div>
 
         {/* Submit Button */}
-        {mode != "show" && <Button className="w-full mt-6" onClick={handleSubmit}>
+        {mode != "show" && <Button className="w-full mt-6" onClick={(e) => reqForConfirmationModelFunc(
+          "Are you compleatly sure ?",
+          "",
+          () => handleSubmit()
+        )}>
           Submit
         </Button>}
       </DialogContent>

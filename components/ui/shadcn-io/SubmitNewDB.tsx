@@ -54,7 +54,7 @@ interface ComponentProps {
 }
 
 const SubmitNewDB: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
-  const { reqForToastAndSetMessage, axiosInstance, handleReload } = useParentContext();
+  const { reqForToastAndSetMessage, axiosInstance, handleReload, reqForConfirmationModelFunc } = useParentContext();
 
   const [fromMonth, setFromMonth] = React.useState<string | undefined>();
   const [fromYear, setFromYear] = React.useState<number | undefined>();
@@ -128,29 +128,29 @@ const SubmitNewDB: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
 
   const handleSubmit = () => {
 
-    const result = SubmittNewDatabaseFormSchema.safeParse({
-      selectedProject,
-      selectedDatabase,
-      selectedProvince,
-      fromMonth,
-      fromYear,
-      toMonth,
-      toYear
-    });
+    // const result = SubmittNewDatabaseFormSchema.safeParse({
+    //   selectedProject,
+    //   selectedDatabase,
+    //   selectedProvince,
+    //   fromMonth,
+    //   fromYear,
+    //   toMonth,
+    //   toYear
+    // });
 
-    if (!result.success) {
-    const errors: { [key: string]: string } = {};
-    result.error.issues.forEach((issue) => {
-      const field = issue.path[0];
-      if (field) errors[field as string] = issue.message;
-    });
+    // if (!result.success) {
+    // const errors: { [key: string]: string } = {};
+    // result.error.issues.forEach((issue) => {
+    //   const field = issue.path[0];
+    //   if (field) errors[field as string] = issue.message;
+    // });
 
-    setFormErrors(errors);
-      reqForToastAndSetMessage("Please fix validation errors before submitting.");
-      return;
-    }
+    // setFormErrors(errors);
+    //   reqForToastAndSetMessage("Please fix validation errors before submitting.");
+    //   return;
+    // }
 
-    setFormErrors({});
+    // setFormErrors({});
 
     axiosInstance
       .post("/db_management/submit_new_database", {
@@ -376,7 +376,11 @@ const SubmitNewDB: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
 
           {/* Submit button */}
           <div className="flex flex-row items-center justify-end w-full px-2">
-            <Button onClick={handleSubmit} className="mt-4 w-32">
+            <Button onClick={() => reqForConfirmationModelFunc(
+              "Are you compleatly sure ?",
+              "",
+              handleSubmit
+            )} className="mt-4 w-32">
               Submit
             </Button>
           </div>

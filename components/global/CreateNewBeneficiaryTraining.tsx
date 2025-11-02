@@ -31,7 +31,7 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormProps> = ({
   mode,
   editId,
 }) => {
-  const { reqForToastAndSetMessage, axiosInstance, handleReload } = useParentContext();
+  const { reqForToastAndSetMessage, axiosInstance, handleReload, reqForConfirmationModelFunc } = useParentContext();
 
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -277,9 +277,14 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormProps> = ({
 
           {/* Submit */}
           <Button
-            type="submit"
+            type="button"
             disabled={loading}
             className="w-full mt-6"
+            onClick={(e) => reqForConfirmationModelFunc(
+              "Are you compleatly sure ?",
+              "",
+              () => handleSubmit(e)
+            )}
           >
             {loading
               ? "Please wait..."

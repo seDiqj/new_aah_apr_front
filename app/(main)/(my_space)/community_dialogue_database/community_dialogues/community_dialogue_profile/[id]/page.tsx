@@ -3,7 +3,7 @@
 import SubHeader from "@/components/global/SubHeader";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { useParams, useRouter } from "next/navigation";
-import { useState, useEffect, useRef, RefObject } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useParentContext } from "@/contexts/ParentContext";
@@ -24,9 +24,7 @@ const CommunityDialogueProfilePage = () => {
     id: string;
   }>();
 
-  const router = useRouter();
-
-  const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
+  const { reqForToastAndSetMessage, axiosInstance, reqForConfirmationModelFunc } = useParentContext();
 
   let [idFeildForEditStateSetter, setIdFeildForEditStateSetter] = useState<
     number | null
@@ -36,13 +34,12 @@ const CommunityDialogueProfilePage = () => {
     number | null
   >(null);
 
-  const [reqForBeneficiaryCreationForm, setReqForBeneficiaryCreationForm] =
-    useState<boolean>(false);
-
   const [reqForSessionCreationForm, setReqForSessionCreationForm] =
     useState<boolean>(false);
+    
   const [reqForSessionEditionForm, setReqForSessionEditionForm] =
     useState<boolean>(false);
+
   const [reqForSessionShowForm, setReqForSessionShowForm] =
     useState<boolean>(false);
 

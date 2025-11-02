@@ -56,7 +56,7 @@ const RoleForm: React.FC<ComponentProps> = ({
 }) => {
   mode = mode;
 
-  const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
+  const { reqForToastAndSetMessage, axiosInstance, reqForConfirmationModelFunc } = useParentContext();
 
   const [name, setName] = useState<string>("");
   const [status, setStatus] = useState<string>("active");
@@ -111,9 +111,7 @@ const RoleForm: React.FC<ComponentProps> = ({
     );
   }, [mode, idFeildForEditStateSetter]);
 
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const onSubmit = () => {
     const result = RoleFormSchema.safeParse({name: name});
 
     if (!result.success) {
@@ -305,7 +303,11 @@ const RoleForm: React.FC<ComponentProps> = ({
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>
-            <Button type="submit" onClick={onSubmit}>
+            <Button type="button" onClick={() => reqForConfirmationModelFunc(
+              "Are you compleatly sure ?",
+              "",
+              () => onSubmit()
+            )}>
               {mode === "create" ? "Create" : "Update"}
             </Button>
           </DialogFooter>

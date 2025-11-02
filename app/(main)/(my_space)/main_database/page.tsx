@@ -18,6 +18,7 @@ import { withPermission } from "@/lib/withPermission";
 
 const MainDatabasePage = () => {
   const { reqForToastAndSetMessage, axiosInstance, changeBeneficairyAprIncludedStatus
+    , reqForConfirmationModelFunc
  } = useParentContext();
   const router = useRouter();
 
@@ -102,12 +103,20 @@ const MainDatabasePage = () => {
             <div className="flex flex-row items-center justify-end gap-2">
               <Button
                 title="Send Beneficiary to referral"
-                onClick={referrBeneficiaies}
+                onClick={() => reqForConfirmationModelFunc(
+                  "Are you compleatly sure ?",
+                  "This action can not be undone !",
+                  referrBeneficiaies
+                )}
                 variant="outline"
               >
                 <Share2 />
               </Button>
-              <Button variant={"outline"} onClick={() => changeBeneficairyAprIncludedStatus(idFeildForEditStateSetter)} title="Change Apr Included">
+              <Button variant={"outline"} onClick={() => reqForConfirmationModelFunc(
+                  "Are you compleatly sure ?",
+                  "This action can not be undone !",
+                  () => {changeBeneficairyAprIncludedStatus(idFeildForEditStateSetter)}
+                )} title="Change Apr Included">
                 <ToggleRight></ToggleRight>
               </Button>
             </div>

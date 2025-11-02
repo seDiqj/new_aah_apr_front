@@ -42,7 +42,7 @@ const TrainingEvaluationForm: React.FC<ComponentProps> = ({
     id: string;
   }>();
 
-  const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
+  const { reqForToastAndSetMessage, axiosInstance, reqForConfirmationModelFunc } = useParentContext();
 
   const [evaluations, setEvaluations] = useState<Evaluation[]>([
     { participant: 1, selected: "" },
@@ -216,7 +216,11 @@ const TrainingEvaluationForm: React.FC<ComponentProps> = ({
           </Button>
           <Button
             className="bg-blue-600 hover:bg-blue-700"
-            onClick={handleSubmit}
+            onClick={() => reqForConfirmationModelFunc(
+              "Are you compleatly sure ?",
+              "",
+              handleSubmit
+            )}
           >
             Submit
           </Button>

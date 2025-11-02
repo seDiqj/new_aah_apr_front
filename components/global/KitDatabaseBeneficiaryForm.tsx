@@ -50,7 +50,7 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
   onOpenChange,
   title,
 }) => {
-  const { reqForToastAndSetMessage, axiosInstance, handleReload } = useParentContext();
+  const { reqForToastAndSetMessage, axiosInstance, handleReload, reqForConfirmationModelFunc } = useParentContext();
 
   
 
@@ -499,7 +499,11 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
         </div>
 
         {/* Submit Button */}
-        <Button className="w-full mt-6" onClick={handleSubmit}>Submit</Button>
+        <Button className="w-full mt-6" onClick={(e) => reqForConfirmationModelFunc(
+          "Are you compleatly sure ?",
+          "",
+          () => handleSubmit(e)
+        )}>Submit</Button>
       </DialogContent>
     </Dialog>
   );

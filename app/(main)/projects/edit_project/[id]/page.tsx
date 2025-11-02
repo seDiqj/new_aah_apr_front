@@ -266,14 +266,6 @@ const EditProjectPage = () => {
       outputRef: outputRef,
     };
 
-    // const error = hasEmptyField(updatedIndicator);
-    // if (error) {
-    //   reqForToastAndSetMessage("Please fill all fields !");
-    //   return;
-    // }
-
-    // console.log(updatedIndicator);
-
     setIndicators((prev) => [...prev, updatedIndicator]);
 
     setIndicator({
@@ -528,55 +520,81 @@ const EditProjectPage = () => {
     axiosInstance
       .post(url, form)
       .then((response: any) => {
+        console.log(response.data.data)
         if (url == "/projects") setProjectId(response.data.data.id);
         if (url == "/projects/o/outcome")
+        {
           setOutcomes(
             outcomes.map((outcome) => {
-              const outcomeId = response.data.data.find(
+              const found = response.data.data.find(
                 (outcomeFromBackend: { id: string; outcomeRef: string }) =>
-                  outcomeFromBackend.outcomeRef == outcome.outcomeRef
-              ).id;
+                {
+                  return outcomeFromBackend.outcomeRef === outcome.outcomeRef;
+                }
+              );
 
-              outcome.id = outcomeId;
+              if (!found) {
+                console.warn("No matching outcome found for", outcome.outcomeRef);
+                return outcome;
+              }
 
-              return outcome;
+              return { ...outcome, id: found.id };
             })
           );
+        }
         if (url == "/projects/o/output")
           setOutputs(
             outputs.map((output) => {
-              const outputId = response.data.data.find(
+              const found = response.data.data.find(
                 (outputFromBackend: { id: string; outputRef: string }) =>
-                  outputFromBackend.outputRef == output.outputRef
-              ).id;
+                  outputFromBackend.outputRef === output.outputRef
+              );
 
-              output.id = outputId;
+              if (!found) {
+                return output;
+              }
 
-              return output;
+              return { ...output, id: found.id };
             })
           );
+
         if (url == "/projects/i/indicator")
           setIndicators(
             indicators.map((indicator) => {
-              const indicatorId = response.data.data.find(
-                (indicatorFromBackend: { id: string; indicatorRef: string }) =>
-                  indicatorFromBackend.indicatorRef == indicator.indicatorRef
-              ).id;
+              const foundIndicator = response.data.data.find(
+                (item: { id: string; indicatorRef: string }) =>
+                  item.indicatorRef === indicator.indicatorRef
+              );
 
-              if (indicator.subIndicator) {
-                const subIndicatorId = response.data.data.find(
-                  (indicatorFromBackend: { id: string; indicatorRef: string }) =>
-                    indicatorFromBackend.indicatorRef == indicator.subIndicator!.indicatorRef
-                ).id;
-
-                indicator.subIndicator.id = subIndicatorId
+              if (!foundIndicator) {
+                return indicator;
               }
 
-              indicator.id = indicatorId;
+              let updatedIndicator = { ...indicator, id: foundIndicator.id };
 
-              return indicator;
+              if (indicator.subIndicator) {
+                const foundSubIndicator = response.data.data.find(
+                  (item: { id: string; indicatorRef: string }) =>
+                    item.indicatorRef === indicator.subIndicator!.indicatorRef
+                );
+
+                if (foundSubIndicator) {
+                  updatedIndicator = {
+                    ...updatedIndicator,
+                    subIndicator: { ...indicator.subIndicator, id: foundSubIndicator.id },
+                  };
+                } else {
+                  console.warn(
+                    "No matching subIndicator found for:",
+                    indicator.subIndicator.indicatorRef
+                  );
+                }
+              }
+
+              return updatedIndicator;
             })
           );
+
         reqForToastAndSetMessage(response.data.message);
       })
       .catch((error: any) => {

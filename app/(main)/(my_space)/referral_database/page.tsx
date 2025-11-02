@@ -46,9 +46,10 @@ const MainDatabasePage = () => {
           indexUrl="/referral_db/beneficiaries"
           deleteUrl="/referral_db/delete_beneficiaries"
           searchableColumn="name"
-          loadingStateSetter={setIsLoading}
+          idFeildForShowStateSetter={setIdFeildForShowStateSetter}
           filterUrl="/filter/refferal_database/beneficiaries"
           filtersList={["projectCode", "province", "age", "gender", "dateOfRegistration"]}
+          loadingStateSetter={setIsLoading}
         ></DataTableDemo>
 
         {isLoading && <Preloader reqForLoading={isLoading} />}

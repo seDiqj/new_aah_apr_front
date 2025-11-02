@@ -1,4 +1,4 @@
-// BASE COMPONENT FOR SEEDING COMMON INFORMATIONS INTO ALL SYSTEM.
+// BASE COMPONENT FOR SEEDING COMMON INFORMATIONS TROUGH ALL SYSTEM.
 
 "use client";
 
@@ -20,12 +20,6 @@ interface ComponentProps {
 const Parent: React.FC<ComponentProps> = ({ children }) => {
   const axiosInstance: AxiosInstance = createAxiosInstance();
 
-  const [reqForConfirmationModel, setReqForConfirmationModel] =
-    useState<boolean>(false);
-  const [confirmationMainText, setConfirmationMainText] = useState<string>("");
-  const [confirmationDetails, setConfirmationDetails] = useState<string>("");
-  const [onContinueOnModel, setOnContinueOnModel] = useState<any>();
-
   const reqForToastAndSetMessage = (
     message: string,
     subMessage?: string,
@@ -38,17 +32,6 @@ const Parent: React.FC<ComponentProps> = ({ children }) => {
       description: subMessage,
       action: action,
     });
-
-  const reqForConfirmationDialogue = (
-    mainText: string,
-    details: string,
-    onContinue: any
-  ) => {
-    setReqForConfirmationModel(true);
-    setConfirmationMainText(mainText);
-    setConfirmationDetails(details);
-    setOnContinueOnModel(onContinue);
-  };
 
   const [reqForProfile, setReqForProfile] = useState<boolean>(false);
 
@@ -123,6 +106,19 @@ const Parent: React.FC<ComponentProps> = ({ children }) => {
   },
   ];
 
+  const [reqForConfirmationModel, setReqForConfirmationModel] = useState(false);
+
+  const [dialogConfig, setDialogConfig] = useState({
+    mainText: "",
+    details: "",
+    onContinue: () => {},
+  });
+  
+  const reqForConfirmationModelFunc = (mainText: string, details: string, onContinue: () => void) => {
+    setDialogConfig({ mainText, details, onContinue });
+    setReqForConfirmationModel(true);
+  };
+
 
   useEffect(() => {
 
@@ -152,31 +148,34 @@ const Parent: React.FC<ComponentProps> = ({ children }) => {
     <ParentContext.Provider
       value={{
         reqForToastAndSetMessage,
-        reqForConfirmationDialogue,
         axiosInstance,
         reloadFlag,
         handleReload,
         myProfileDetails,
         setReqForProfile,
         aprStats,
-        changeBeneficairyAprIncludedStatus
+        changeBeneficairyAprIncludedStatus,
+        reqForConfirmationModelFunc
       }}
     >
       <div className="w-full h-full">{children}</div>
 
-      {reqForConfirmationModel && (
-        <ConfirmationAlertDialogue
-          open={reqForConfirmationModel}
-          onOpenChange={setReqForConfirmationModel}
-          mainText={confirmationMainText}
-          details={confirmationDetails}
-          onContinue={() => {}}
-        ></ConfirmationAlertDialogue>
-      )}
+      
 
       {reqForProfile && (
         <ProfileModal open={reqForProfile} onOpenChange={setReqForProfile} userId={myProfileDetails?.id as unknown as number} mode="show"></ProfileModal>
       )}
+
+      <ConfirmationAlertDialogue
+        open={reqForConfirmationModel}
+        onOpenChange={setReqForConfirmationModel}
+        mainText={dialogConfig.mainText}
+        details={dialogConfig.details}
+        onContinue={() => {
+          dialogConfig.onContinue();
+          setReqForConfirmationModel(false);
+        }}
+      />
       
     </ParentContext.Provider>
   );

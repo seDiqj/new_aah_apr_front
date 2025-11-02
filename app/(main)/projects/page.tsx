@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { withPermission } from "@/lib/withPermission";
 import { Can } from "@/components/Can";
+import Preloader from "@/components/global/Preloader";
 
 const ProjectsPage = () => {
   const router = useRouter();
@@ -31,6 +32,8 @@ const ProjectsPage = () => {
     if (idFeildForShowStateSetter)
       openProjectProfile(true, idFeildForShowStateSetter);
   }, [idFeildForShowStateSetter]);
+
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   return (
     <>
@@ -62,8 +65,11 @@ const ProjectsPage = () => {
           editModelOpenerStateSetter={() => router.push(`/projects/edit_project/${idFeildForEditStateSetter}`)}
           idFeildForShowStateSetter={setIdFeildForShowStateSetter}
           filtersList={["projectCode", "projectManager", "provinces", "thematicSector", "startDate", "endDate", "status"]}
+          loadingStateSetter={setIsLoading}
         ></DataTableDemo>
       </div>
+
+      {isLoading && <Preloader reqForLoading={isLoading} />}
     </>
   );
 };

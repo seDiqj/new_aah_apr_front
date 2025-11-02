@@ -9,7 +9,6 @@ import {
 import { SingleSelect } from "@/components/single-select";
 import { Button } from "../ui/button";
 import { useEffect, useState } from "react";
-import { createAxiosInstance } from "@/lib/axios";
 import { useParentContext } from "@/contexts/ParentContext";
 
 interface ComponentProps {
@@ -23,9 +22,7 @@ const TrainingSelectorDialog: React.FC<ComponentProps> = ({
   onOpenChange,
   ids,
 }) => {
-  const { reqForToastAndSetMessage } = useParentContext();
-
-  const axiosInstance = createAxiosInstance();
+  const { reqForToastAndSetMessage, axiosInstance, reqForConfirmationModelFunc } = useParentContext();
 
   const [trainings, setTrainings] = useState<
     {
@@ -86,7 +83,11 @@ const TrainingSelectorDialog: React.FC<ComponentProps> = ({
         />
 
         {/* Submit Button */}
-        <Button onClick={handleSubmit} className="w-full mt-6">
+        <Button onClick={() => reqForConfirmationModelFunc(
+          "Are you compleatly sure ?",
+          "",
+          () => handleSubmit()
+        )} className="w-full mt-6">
           Submit
         </Button>
       </DialogContent>

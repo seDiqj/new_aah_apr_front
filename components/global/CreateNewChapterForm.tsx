@@ -12,7 +12,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useParentContext } from "@/contexts/ParentContext";
-import { createAxiosInstance } from "@/lib/axios";
 import { ChapterForm } from "@/types/Types";
 import { useParams } from "next/navigation";
 
@@ -29,8 +28,7 @@ const CreateNewChapterForm: React.FC<ComponentProps> = ({
 }) => {
   const { id } = useParams<{ id: string }>();
 
-  const { reqForToastAndSetMessage } = useParentContext();
-  const axiosInstance = createAxiosInstance();
+  const { reqForToastAndSetMessage, axiosInstance, reqForConfirmationModelFunc } = useParentContext();
 
   const [formData, setFormData] = useState<ChapterForm>({
     topic: "",
@@ -119,7 +117,11 @@ const CreateNewChapterForm: React.FC<ComponentProps> = ({
           </div>
 
           <div className="col-span-2">
-            <Button onClick={handleSubmit} className="w-full mt-6">
+            <Button onClick={(e) => reqForConfirmationModelFunc(
+              "Are you compleatly sure ?",
+              "",
+              () => handleSubmit(e)
+            )} className="w-full mt-6">
               Submit
             </Button>
           </div>

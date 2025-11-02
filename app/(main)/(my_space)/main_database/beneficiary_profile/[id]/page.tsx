@@ -20,7 +20,6 @@ import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useParentContext } from "@/contexts/ParentContext";
-import { createAxiosInstance } from "@/lib/axios";
 import { withPermission } from "@/lib/withPermission";
 import { MainDatabaseProgram } from "@/types/Types";
 import { use, useEffect, useState } from "react";
@@ -36,7 +35,7 @@ const BeneficiaryProfilePage: React.FC<ComponentProps> = (
 ) => {
   const { id } = use(params.params);
 
-  const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
+  const { reqForToastAndSetMessage, axiosInstance, reqForConfirmationModelFunc } = useParentContext();
 
   const [beneficiaryInfo, setBeneficiaryInfo] = useState<{
     dateOfRegistration: string;
@@ -92,7 +91,6 @@ const BeneficiaryProfilePage: React.FC<ComponentProps> = (
   
   const handleSubmitMealtoolForm = (e: any) => {
     e.preventDefault();
-
     if (mealTools.length == 0) return;
     axiosInstance
       .post(`/main_db/beneficiary/mealtools/${id}`, { mealtools: mealTools })
@@ -140,7 +138,6 @@ const BeneficiaryProfilePage: React.FC<ComponentProps> = (
     axiosInstance
       .get(`/main_db/beneficiary/${id}`)
       .then((response: any) => {
-        console.log(response.data.data);
         if (response.data.status) setBeneficiaryInfo(response.data.data);
       })
       .catch((error: any) =>
@@ -260,7 +257,7 @@ const BeneficiaryProfilePage: React.FC<ComponentProps> = (
 
             {/* Activity */}
             <TabsContent value="activity" className="h-full">
-              <Card className="relative h-full flex flex-col">
+              <Card className="relative min-h-[350px] h-full flex flex-col">
                 <CardContent className="flex flex-col gap-4 overflow-auto">
                   <SessionsPage></SessionsPage>
                 </CardContent>
@@ -270,7 +267,7 @@ const BeneficiaryProfilePage: React.FC<ComponentProps> = (
 
             {/* Meal tool */}
             <TabsContent value="mealtool" className="h-full">
-              <Card className="h-full flex flex-col overflow-auto">
+              <Card className="min-h-[350px] h-full flex flex-col overflow-auto">
                 <CardContent className="flex flex-col gap-6">
                   <Accordion type="single" collapsible className="mt-4">
                     {mealTools.map((tool, index) => (
@@ -332,10 +329,6 @@ const BeneficiaryProfilePage: React.FC<ComponentProps> = (
                     ))}
                   </Accordion>
                 </CardContent>
-
-                <CardFooter>
-                  <Button onClick={handleSubmitMealtoolForm}>Save</Button>
-                </CardFooter>
               </Card>
             </TabsContent>
 
@@ -563,8 +556,12 @@ const BeneficiaryProfilePage: React.FC<ComponentProps> = (
                   </div>
                 </CardContent>
 
-                <CardFooter>
-                  <Button onClick={handleSubmitEvaluationForm}>Save</Button>
+                <CardFooter className="flex flex-row items-center justify-end">
+                  <Button onClick={(e) => reqForConfirmationModelFunc(
+                    "Are you compleatly sure ?",
+                    "This action can not be undone !",
+                    () => {handleSubmitEvaluationForm(e)}
+                  )}>Save</Button>
                 </CardFooter>
               </Card>
             </TabsContent>

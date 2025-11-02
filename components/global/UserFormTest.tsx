@@ -39,7 +39,7 @@ const ProfileModal: React.FC<ComponentProps> = ({
   reloader,
   permission
 }) => {
-  const { axiosInstance, reqForToastAndSetMessage } = useParentContext()
+  const { axiosInstance, reqForToastAndSetMessage, reqForConfirmationModelFunc } = useParentContext()
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(true)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -409,7 +409,11 @@ const ProfileModal: React.FC<ComponentProps> = ({
                   {step < 3 ? (
                     <Button onClick={() => setStep(step + 1)}>Next</Button>
                   ) : (
-                    <Button onClick={handleSubmit}>Save</Button>
+                    <Button onClick={() => reqForConfirmationModelFunc(
+                      "Are you compleatly sure ?",
+                      "",
+                      handleSubmit
+                    )}>Save</Button>
                   )}
                 </div>
               )}

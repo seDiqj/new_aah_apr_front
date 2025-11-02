@@ -12,10 +12,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useState } from "react";
-import { useParentContext } from "@/contexts/ParentContext";
-import { withPermission } from "@/lib/withPermission";
 import { Skeleton } from "../ui/skeleton";
 import { useParams } from "next/navigation";
+import { useParentContext } from "@/contexts/ParentContext";
 
 interface ComponentProps {
     open: boolean;
@@ -50,7 +49,9 @@ const MealToolForm: React.FC<ComponentProps> = ({
   mode
 }) => {
 
-const {id} = useParams();
+  const {reqForConfirmationModelFunc} = useParentContext()
+
+  const {id} = useParams();
 
   const [loading, setLoading] = useState(false);
 
@@ -294,7 +295,16 @@ const handleAdd = () => {
         )}
 
        <div className="flex justify-end">
-            <Button className="w-full mt-6" onClick={handleAdd}>Add Meal Tool</Button>
+            <Button className="w-full mt-6" onClick={(e) => {
+              reqForConfirmationModelFunc(
+                "Are you sure ?",
+                "This action can not be undone !",
+                () => {
+                  handleAdd();
+                  onSubmit(e);
+                }
+              )
+            }}>Save</Button>
         </div>
       </DialogContent>
     </Dialog>

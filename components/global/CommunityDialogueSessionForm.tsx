@@ -30,7 +30,7 @@ const SessionForm: React.FC<ComponentProps> = ({
 }) => {
   const { id } = useParams();
 
-  const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
+  const { reqForToastAndSetMessage, axiosInstance, reqForConfirmationModelFunc } = useParentContext();
 
   const [formData, setFormData] = useState({
     community_dialogue_id: id,
@@ -144,7 +144,11 @@ const SessionForm: React.FC<ComponentProps> = ({
         </div>
 
         {mode !== "show" && !fetching && (
-          <Button onClick={handleSubmit} disabled={loading}>
+          <Button onClick={() => reqForConfirmationModelFunc(
+            "Are you compleatly sure ?",
+            "",
+            () => handleSubmit()
+          )} disabled={loading}>
             {loading ? "Saving..." : mode === "create" ? "Save" : "Update"}
           </Button>
         )}

@@ -3,6 +3,7 @@
 import BreadcrumbWithCustomSeparator from "@/components/global/BreadCrumb";
 import CreatePsychoeducation from "@/components/global/CreatePsychoeducation";
 import DataTableDemo from "@/components/global/MulitSelectTable";
+import Preloader from "@/components/global/Preloader";
 import SubHeader from "@/components/global/SubHeader";
 import { Button } from "@/components/ui/button";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
@@ -32,6 +33,8 @@ const PsychoeducationDatabasePage = () => {
 
   const [reqForPsychoeducationShowForm, setReqForPsychoeducationShowForm] =
     useState<boolean>(false);
+
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   return (
     <>
@@ -70,6 +73,7 @@ const PsychoeducationDatabasePage = () => {
             "awarenessTopic",
             "awarenessDate"
           ]}
+          loadingStateSetter={setIsLoading}
         ></DataTableDemo>
 
         {reqForPsychoeducationCreationForm && (
@@ -95,6 +99,8 @@ const PsychoeducationDatabasePage = () => {
             psychoeducationId={idFeildForShowStateSetter as unknown as string}
           ></CreatePsychoeducation>
         )}
+
+        {isLoading && <Preloader reqForLoading={isLoading} />}
       </div>
     </>
   );

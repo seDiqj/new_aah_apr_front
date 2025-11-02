@@ -3,6 +3,7 @@
 import BreadcrumbWithCustomSeparator from "@/components/global/BreadCrumb";
 import CreateNewBeneficiaryTraining from "@/components/global/CreateNewBeneficiaryTraining";
 import DataTableDemo from "@/components/global/MulitSelectTable";
+import Preloader from "@/components/global/Preloader";
 import SubHeader from "@/components/global/SubHeader";
 import TrainingSelectorDialog from "@/components/global/TrainingSelectorDialog";
 import { Button } from "@/components/ui/button";
@@ -43,6 +44,8 @@ const TrainingDatabasePage = () => {
       openTrainingProfilePage(true, idFeildForShowStateSetter);
   }, [idFeildForShowStateSetter]);
 
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
   return (
     <div className="w-full h-full p-2">
       <Navbar14 />
@@ -82,6 +85,7 @@ const TrainingDatabasePage = () => {
         }
         filterUrl="/filter/training_database/beneficiaries"
         filtersList={["projectCode", "indicator", "province", "age", "gender"]}
+        loadingStateSetter={setIsLoading}
       ></DataTableDemo>
 
       {reqForBeneficiaryCreationForm && (
@@ -110,6 +114,8 @@ const TrainingDatabasePage = () => {
           ids={Object.keys(selectedRowsIds)}
         ></TrainingSelectorDialog>
       )}
+
+      {isLoading && <Preloader reqForLoading={isLoading} />}
     </div>
   );
 };

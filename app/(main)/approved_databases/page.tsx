@@ -4,21 +4,18 @@ import DataTableDemo from "@/components/global/MulitSelectTable";
 import SubHeader from "@/components/global/SubHeader";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import Cards from "@/components/ui/shadcn-io/Cards";
-import SubmitNewDB from "@/components/ui/shadcn-io/SubmitNewDB";
 import SubmitSummary from "@/components/ui/shadcn-io/submitSummary";
 import { useState } from "react";
 import { submittedAndFirstApprovedDatabasesTableColumn } from "@/definitions/DataTableColumnsDefinitions";
 import { Button } from "@/components/ui/button";
 import { useParentContext } from "@/contexts/ParentContext";
 import { FileChartColumn } from "lucide-react";
-import { useRouter } from "next/navigation";
 
 const SubmittedDatabasesPage = () => {
   const {
     reqForToastAndSetMessage,
-    reqForConfirmationDialogue,
+    reqForConfirmationModelFunc,
     axiosInstance,
-    aprStats
   } = useParentContext();
 
   let [idFeildForEditStateSetter, setIdFeildForEditStateSetter] = useState<
@@ -30,7 +27,7 @@ const SubmittedDatabasesPage = () => {
     setOpenSubmittedDatabaseSummaryModel,
   ] = useState<boolean>(false);
 
-  const approveDatabase = () => {
+  const generateApr = () => {
     axiosInstance
       .post(`/apr_management/generate_apr/${idFeildForEditStateSetter}`)
       .then((response: any) => {
@@ -40,7 +37,6 @@ const SubmittedDatabasesPage = () => {
         reqForToastAndSetMessage(error.response.data.message)
       );
   };
-
 
   return (
     <>
@@ -63,10 +59,10 @@ const SubmittedDatabasesPage = () => {
               className="text-blue-600"
               variant={"outline"}
               onClick={() =>
-                reqForConfirmationDialogue(
-                  "Are You Absolutely Sure ?",
+                reqForConfirmationModelFunc(
+                  "Generate APR ?",
                   "",
-                  () => approveDatabase()
+                  generateApr
                 )
               }
             >

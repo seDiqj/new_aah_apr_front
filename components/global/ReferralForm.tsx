@@ -26,7 +26,7 @@ const ReferralForm: React.FC<ComponentProps> = ({
   const { id } = useParams<{
     id: string;
   }>();
-  const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
+  const { reqForToastAndSetMessage, axiosInstance, reqForConfirmationModelFunc } = useParentContext();
 
   // Question states
   const [q1Yes, setQ1Yes] = useState(false);
@@ -795,7 +795,11 @@ const ReferralForm: React.FC<ComponentProps> = ({
           </div>
 
           <div className="flex justify-end">
-            <Button type="submit">Submit</Button>
+            <Button onClick={(e) => reqForConfirmationModelFunc(
+              "Are you compleatly sure ?",
+              "",
+              () => handleSubmit(e)
+            )}>Submit</Button>
           </div>
         </CardContent>
       </Card>

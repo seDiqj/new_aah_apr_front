@@ -5,7 +5,6 @@ import { useState } from "react";
 import {
   Card,
   CardContent,
-  CardFooter,
   CardHeader,
   CardTitle,
   CardDescription,
@@ -19,7 +18,7 @@ import { useParentContext } from "@/contexts/ParentContext";
 import { useRouter } from "next/navigation";
 
 const LoginPage = () => {
-  const { reqForToastAndSetMessage } = useParentContext();
+  const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
 
   const router = useRouter();
 
@@ -37,8 +36,6 @@ const LoginPage = () => {
       return;
     }
 
-    const axiosInstance = createAxiosInstance();
-
     try {
       setLoading(true);
       axiosInstance
@@ -49,7 +46,7 @@ const LoginPage = () => {
         })
         .then((response: any) => {
           reqForToastAndSetMessage(response.data.message);
-          localStorage.setItem("access_token", response.data.access_token);
+          document.cookie = `access_token=${response.data.access_token}; path=/; max-age=86400; secure; samesite=strict`;
           router.push("/");
         })
         .catch((error: any) =>

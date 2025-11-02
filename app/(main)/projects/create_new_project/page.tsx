@@ -418,26 +418,12 @@ const NewProjectPage = () => {
     })),
   ]);
 
-  useEffect(() => {
-    console.log("formData", formData);
-    console.log("outcomes", outcomes);
-    console.log("outputs", outputs);
-    console.log("indicators", indicators);
-    console.log("dessaggregations", desaggregations);
-    console.log(isp3);
-  }, [formData, outcomes, outputs, indicators, desaggregations, isp3]);
-
   // temp variable
   const [projectId, setProjectId] = useState<number | null>(null);
-
-  useEffect(() => console.log(projectId), [projectId])
 
   const hundleSubmit = (
     parts: "project" | "outcome" | "output" | "indicator" | "dessaggration"
   ) => {
-
-    // if (parts == "outcome" && outcome.trim() && outcomeRef.trim()) handleAddOutcome();
-    // if (parts == "output" && output.trim() && outputRef.trim()) handleAddOutput();
 
     const [url, form]: [string, any] =
       parts == "project"
@@ -514,6 +500,7 @@ const NewProjectPage = () => {
       .then((response: any) => {
         if (url == "/projects/") setProjectId(response.data.data.id);
         if (url == "/projects/o/outcome")
+        {
           setOutcomes(
             outcomes.map((outcome) => {
               const outcomeId = response.data.data.find(
@@ -526,6 +513,8 @@ const NewProjectPage = () => {
               return outcome;
             })
           );
+          console.log(123)
+        }
         if (url == "/projects/o/output")
           setOutputs(
             outputs.map((output) => {

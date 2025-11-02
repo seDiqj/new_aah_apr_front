@@ -41,7 +41,7 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
   mode,
   dialogueId,
 }) => {
-  const { reqForToastAndSetMessage, axiosInstance, handleReload } = useParentContext();
+  const { reqForToastAndSetMessage, axiosInstance, handleReload, reqForConfirmationModelFunc } = useParentContext();
 
   const [formData, setFormData] = useState<CommunityDialogueForm>({
     project_id: "",
@@ -449,12 +449,20 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
         {/* Submit / Update / Close Button */}
         <div className="mt-6">
           {mode === "create" && (
-            <Button className="w-full" onClick={handleSubmit}>
+            <Button className="w-full" onClick={() => reqForConfirmationModelFunc(
+              "Are you compleatly sure ?",
+              "",
+              () => handleSubmit()
+            )}>
               Submit
             </Button>
           )}
           {mode === "update" && (
-            <Button className="w-full" onClick={handleSubmit}>
+            <Button className="w-full" onClick={() => reqForConfirmationModelFunc(
+              "Are you compleatly sure ?",
+              "",
+              () => handleSubmit()
+            )}>
               Update
             </Button>
           )}

@@ -6,7 +6,7 @@ import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import Cards from "@/components/ui/shadcn-io/Cards";
 import SubmitNewDB from "@/components/ui/shadcn-io/SubmitNewDB";
 import SubmitSummary from "@/components/ui/shadcn-io/submitSummary";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { submittedAndFirstApprovedDatabasesTableColumn } from "@/definitions/DataTableColumnsDefinitions";
 import { Button } from "@/components/ui/button";
 import { useParentContext } from "@/contexts/ParentContext";
@@ -15,15 +15,9 @@ import { Check, XCircle } from "lucide-react";
 const SubmittedDatabasesPage = () => {
   const {
     reqForToastAndSetMessage,
-    reqForConfirmationDialogue,
+    reqForConfirmationModelFunc,
     axiosInstance,
   } = useParentContext();
-
-  let [reqForPermissionUpdateForm, setReqForPermissionUpdateForm] =
-    useState<boolean>(false);
-
-  let [reqForConfirmationModel, setReqForConfirmationModel] =
-    useState<boolean>(false);
 
   let [idFeildForEditStateSetter, setIdFeildForEditStateSetter] = useState<
     number | null
@@ -92,10 +86,10 @@ const SubmittedDatabasesPage = () => {
               className="text-green-400"
               variant={"outline"}
               onClick={() =>
-                reqForConfirmationDialogue(
-                  "Are You Absolutely Sure ?",
+                reqForConfirmationModelFunc(
+                  "Are you compleatly sure ?",
                   "",
-                  () => approveDatabase()
+                  approveDatabase
                 )
               }
             >
@@ -106,11 +100,11 @@ const SubmittedDatabasesPage = () => {
               className="text-red-500"
               variant={"outline"}
               onClick={() =>
-                reqForConfirmationDialogue(
-                  "Are You Absolutely Sure ?",
-                  "",
-                  () => rejectDatabase
-                )
+              reqForConfirmationModelFunc(
+                "Are you compleatly sure ?",
+                "",
+                rejectDatabase
+              )
               }
             >
               <XCircle />

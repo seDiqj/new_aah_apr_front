@@ -20,7 +20,7 @@ import { useRouter } from "next/navigation";
 const SubmittedDatabasesPage = () => {
   const {
     reqForToastAndSetMessage,
-    reqForConfirmationDialogue,
+    reqForConfirmationModelFunc,
     axiosInstance,
   } = useParentContext();
 
@@ -68,10 +68,10 @@ const SubmittedDatabasesPage = () => {
               className="text-blue-600"
               variant={"outline"}
               onClick={() =>
-                reqForConfirmationDialogue(
-                  "Are You Absolutely Sure ?",
+                reqForConfirmationModelFunc(
+                  "Are you compleatly sure ?",
                   "",
-                  () => approveApr()
+                  approveApr
                 )
               }
             >

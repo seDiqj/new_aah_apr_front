@@ -39,7 +39,7 @@ export default function SessionsPage() {
     id: string;
   }>();
 
-  const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
+  const { reqForToastAndSetMessage, axiosInstance, reqForConfirmationModelFunc } = useParentContext();
 
   const [indicators, setIndicators] = useState<IndicatorState[]>([]);
 
@@ -407,13 +407,20 @@ export default function SessionsPage() {
                 </div>
               </div>
 
-              <div className="flex flex-row items-center justify-end">
-                <Button onClick={handleSubmit}>Submit</Button>
-              </div>
+              
             </div>
+            
           </div>
         );
       })}
+
+      <div className="flex flex-row items-center justify-end w-full pr-4">
+        <Button onClick={() => reqForConfirmationModelFunc(
+          "Are you compleatly sure ?",
+          "",
+          handleSubmit
+        )}>Submit</Button>
+      </div>
     </div>
   );
 }

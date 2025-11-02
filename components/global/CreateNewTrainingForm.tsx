@@ -38,7 +38,7 @@ const TrainingFormDialog: React.FC<ComponentProps> = ({
   mode,
   id,
 }) => {
-  const { reqForToastAndSetMessage, axiosInstance, handleReload } = useParentContext();
+  const { reqForToastAndSetMessage, axiosInstance, handleReload, reqForConfirmationModelFunc } = useParentContext();
 
   const isReadOnly = mode === "show";
 
@@ -283,7 +283,7 @@ const TrainingFormDialog: React.FC<ComponentProps> = ({
               onChange={handleChange}
             />
           </div>
-<div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1">
             <Label>Participant Category</Label>
             <div className="flex flex-row items-center gap-4">
               <div className="flex items-center gap-1">
@@ -467,7 +467,11 @@ const TrainingFormDialog: React.FC<ComponentProps> = ({
           {/* --- Buttons --- */}
           <div className="col-span-2 mt-6">
             {mode !== "show" ? (
-              <Button type="submit" className="w-full">
+              <Button className="w-full" onClick={(e) => reqForConfirmationModelFunc(
+                "Are you compleatly sure ?",
+                "",
+                () => handleSubmit(e)
+              )}>
                 {mode === "edit" ? "Update" : "Submit All"}
               </Button>
             ) : (

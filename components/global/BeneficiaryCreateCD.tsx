@@ -28,7 +28,7 @@ const BeneficiaryCreateCD: React.FC<DatabaseSummaryProps> = ({
   open,
   onOpenChange,
 }) => {
-  const { reqForToastAndSetMessage, axiosInstance, handleReload } = useParentContext();
+  const { reqForToastAndSetMessage, axiosInstance, handleReload, reqForConfirmationModelFunc } = useParentContext();
 
   const [formData, setFormData] = useState<CommunityDialogBeneficiaryForm>({
     name: "",
@@ -284,7 +284,11 @@ const BeneficiaryCreateCD: React.FC<DatabaseSummaryProps> = ({
         </div>
 
         {/* Submit Button */}
-        <Button className="w-full mt-6" onClick={handleSubmit}>
+        <Button className="w-full mt-6" onClick={() => reqForConfirmationModelFunc(
+          "Are you compleatly sure ?",
+          "",
+          () => handleSubmit()
+        )}>
           Submit
         </Button>
       </DialogContent>
