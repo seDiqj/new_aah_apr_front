@@ -12,7 +12,6 @@ import BeneficiaryCreateCD from "@/components/global/BeneficiaryCreateCD";
 import { Plus } from "lucide-react";
 import CommunityDialogueSelector from "@/components/global/CommunityDialogSelector";
 import BeneficiaryUpdateCD from "@/components/global/BeneficiaryUpdateFormCd";
-import Preloader from "@/components/global/Preloader";
 import { withPermission } from "@/lib/withPermission";
 import { Can } from "@/components/Can";
 
@@ -46,8 +45,6 @@ const CommunityDialogDatabasePage = () => {
     if (idFeildForShowStateSetter)
       openBeneficiaryProfile(true, idFeildForShowStateSetter);
   }, [idFeildForShowStateSetter]);
-
-  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   return (
     <>
@@ -103,7 +100,6 @@ const CommunityDialogDatabasePage = () => {
               </Button>
             </div>
           }
-          loadingStateSetter={setIsLoading}
           editBtnPermission="Dialogue.edit"
           deleteBtnPermission="Dialogue.delete"
           filterUrl="/filter/cd_database/beneficiaries"
@@ -133,7 +129,6 @@ const CommunityDialogDatabasePage = () => {
           ></CommunityDialogueSelector>
         )}
         
-        {isLoading && <Preloader reqForLoading={isLoading} />}
       </div>
     </>
   );

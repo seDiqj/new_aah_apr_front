@@ -32,7 +32,7 @@ const TrainingProfilePage: React.FC<ComponentProps> = (
   let [open, setOpen] = useState<boolean>(false);
 
   const [trainingInfo, setTrainingInfo] = useState<TrainingForm>({
-    projectCode: "",
+    project_id: "",
     province: "",
     district: "",
     trainingLocation: "",

@@ -14,6 +14,7 @@ import { useParentContext } from "@/contexts/ParentContext";
 import {
   Eye,
   ShieldCheck,
+  XCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -39,9 +40,29 @@ const SubmittedDatabasesPage = () => {
     if (!idFeildForEditStateSetter)
       reqForToastAndSetMessage("Please select a valid apr.");
     axiosInstance.post(
-      `/apr_management/approve_apr/${idFeildForEditStateSetter}`
-    );
+      `/apr_management/approve_apr/${idFeildForEditStateSetter}`,
+      {
+        newStatus: "secondApproved"
+      }
+    )
+    .then((response: any) => reqForToastAndSetMessage(response.data.message))
+    .catch((error: any) => reqForToastAndSetMessage(error.response.data.message))
+    ;
   };
+
+  const rejectApr = () => {
+    if (!idFeildForEditStateSetter)
+      reqForToastAndSetMessage("Please select a valid apr.");
+    axiosInstance.post(
+      `/apr_management/approve_apr/${idFeildForEditStateSetter}`,
+      {
+        newStatus: "secondRejected"
+      }
+    )
+    .then((response: any) => reqForToastAndSetMessage(response.data.message))
+    .catch((error: any) => reqForToastAndSetMessage(error.response.data.message))
+    ;
+  }
 
   const previewApr = () => {
     router.push(`/test/${idFeildForEditStateSetter}`);
@@ -55,8 +76,7 @@ const SubmittedDatabasesPage = () => {
 
       <DataTableDemo
         columns={submittedAndFirstApprovedDatabasesTableColumn}
-        indexUrl="/db_management/first_approved_databases"
-        deleteUrl="/db_management/deleted_first_approved_databases"
+        indexUrl="/apr_management/reviewed_aprs"
         searchableColumn="name"
         idFeildForShowStateSetter={setIdFeildForEditStateSetter}
         idFeildForEditStateSetter={setIdFeildForEditStateSetter}
@@ -70,12 +90,26 @@ const SubmittedDatabasesPage = () => {
               onClick={() =>
                 reqForConfirmationModelFunc(
                   "Are you compleatly sure ?",
-                  "",
+                  "This action will mark the selected APR as approved and notify the users who reviewed it.",
                   approveApr
                 )
               }
             >
               <ShieldCheck />
+            </Button>
+            <Button
+              title="Reject"
+              className="text-red-500"
+              variant={"outline"}
+              onClick={() =>
+              reqForConfirmationModelFunc(
+                "Are you compleatly sure ?",
+                "This action will mark the selected APR as rejected and notify the user who reviewed it.",
+                rejectApr
+              )
+              }
+            >
+              <XCircle />
             </Button>
             <Button
               title="Review Apr"

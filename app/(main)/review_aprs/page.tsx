@@ -9,12 +9,14 @@ import { useState } from "react";
 import { submittedAndFirstApprovedDatabasesTableColumn } from "@/definitions/DataTableColumnsDefinitions";
 import { Button } from "@/components/ui/button";
 import { useParentContext } from "@/contexts/ParentContext";
-import { Eye } from "lucide-react";
+import { ClipboardCheck, Eye, XCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const SubmittedDatabasesPage = () => {
   const {
-    reqForConfirmationDialogue,
+    axiosInstance,
+    reqForToastAndSetMessage,
+    reqForConfirmationModelFunc
   } = useParentContext();
 
   const router = useRouter();
@@ -32,6 +34,18 @@ const SubmittedDatabasesPage = () => {
     router.push(`/test/${idFeildForEditStateSetter}`);
   };
 
+  const markAprAsReviewed = () => {
+    axiosInstance.post(`/apr_management/mark_apr_as_reviewed/${idFeildForEditStateSetter}`)
+    .then((response: any) => reqForToastAndSetMessage(response.data.message))
+    .catch((error: any) => reqForToastAndSetMessage(error.response.data.message));
+  }
+
+  const rejectApr = () => {
+    axiosInstance.post(`/apr_management/reject_in_review_stage/${idFeildForEditStateSetter}`)
+    .then((response: any) => reqForToastAndSetMessage(response.data.message))
+    .catch((error: any) => reqForToastAndSetMessage(error.response.data.message))
+  }
+
   return (
     <>
       <Navbar14 />
@@ -40,7 +54,7 @@ const SubmittedDatabasesPage = () => {
 
       <DataTableDemo
         columns={submittedAndFirstApprovedDatabasesTableColumn}
-        indexUrl="/db_management/first_approved_databases"
+        indexUrl="/db_management/first_approved_and_second_rejected_databases"
         deleteUrl="/db_management/deleted_first_approved_databases"
         searchableColumn="name"
         idFeildForShowStateSetter={setIdFeildForEditStateSetter}
@@ -52,15 +66,37 @@ const SubmittedDatabasesPage = () => {
               title="Review Apr"
               className="text-blue-600"
               variant={"outline"}
+              onClick={previewApr}
+            >
+              <Eye />
+            </Button>
+            <Button
+              title="Mark as reviewed"
+              className="text-blue-600"
+              variant={"outline"}
               onClick={() =>
-                reqForConfirmationDialogue(
-                  "Are You Absolutely Sure ?",
-                  "",
-                  () => previewApr()
+                reqForConfirmationModelFunc(
+                  "Are you compleatly sure ?",
+                  "This action will change the selected apr status as Reviewed !",
+                  markAprAsReviewed
                 )
               }
             >
-              <Eye />
+              <ClipboardCheck />
+              <Button
+              title="Reject"
+              className="text-red-500"
+              variant={"outline"}
+              onClick={() =>
+              reqForConfirmationModelFunc(
+                "Are you compleatly sure ?",
+                "This action will mark the selected APR as rejected and notify the user who approved it at the first stage.",
+                rejectApr
+              )
+              }
+            >
+              <XCircle />
+            </Button>
             </Button>
           </div>
         }

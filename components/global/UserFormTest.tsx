@@ -20,7 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useParentContext } from "@/contexts/ParentContext"
 import { SingleSelect } from "../single-select"
 import { withPermission } from "@/lib/withPermission"
-import { UserFormSchema } from "@/schemas/FormsSchema"
+import { UserCreateFormSchema, UserEditFormSchema } from "@/schemas/FormsSchema"
 
 interface ComponentProps {
   open: boolean
@@ -62,8 +62,7 @@ const ProfileModal: React.FC<ComponentProps> = ({
     role: ""
   })
 
-    const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
-
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
   const [allPermissions, setAllPermissions] = useState<{ [key: string]: Record<string, string>[] }>({})
   const [userPermissions, setUserPermissions] = useState<string[]>([])
@@ -104,21 +103,29 @@ const ProfileModal: React.FC<ComponentProps> = ({
 
   const handleSubmit = () => {
 
-    const result = UserFormSchema.safeParse(form);
+    let result;
+
+    if (mode == "create")
+      result = UserCreateFormSchema.safeParse(form);
+
+    else 
+      result = UserEditFormSchema.safeParse(form);
+
 
     if (!result.success) {
-    const errors: { [key: string]: string } = {};
-    result.error.issues.forEach((issue) => {
-      const field = issue.path[0];
-      if (field) errors[field as string] = issue.message;
-    });
+      const errors: { [key: string]: string } = {};
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0];
+        if (field) errors[field as string] = issue.message;
+      });
 
-    setFormErrors(errors);
+      setFormErrors(errors);
       reqForToastAndSetMessage("Please fix validation errors before submitting.");
       return;
     }
 
     setFormErrors({});
+
 
     const formData = new FormData()
     formData.append("name", form.name)
@@ -192,8 +199,6 @@ const ProfileModal: React.FC<ComponentProps> = ({
         className="
           min-w-[1000px]
           max-h-[90vh]
-          bg-[#1e1e1e]
-          text-white
           border border-gray-700
           rounded-2xl
           overflow-hidden
@@ -202,7 +207,7 @@ const ProfileModal: React.FC<ComponentProps> = ({
         "
       >
         {/* Sidebar */}
-        <div className="w-[22%] bg-[#151515] p-8 border-r border-gray-800">
+        <div className="w-[22%] p-8 border-r border-gray-800">
           <h2 className="text-xl font-semibold mb-10">
             {mode === "show" ? "View User" : mode === "edit" ? "Edit User" : "Create User"}
           </h2>
@@ -212,7 +217,7 @@ const ProfileModal: React.FC<ComponentProps> = ({
                 key={s.id}
                 onClick={() => setStep(s.id)}
                 className={`flex items-center gap-4 cursor-pointer ${
-                  step === s.id ? "text-white" : "opacity-60 hover:opacity-100 transition"
+                  step === s.id ? "" : "opacity-60 hover:opacity-100 transition"
                 }`}
               >
                 <div
@@ -344,7 +349,7 @@ const ProfileModal: React.FC<ComponentProps> = ({
                         {perms.map((perm) => (
                           <div
                             key={perm.id}
-                            className="flex items-center gap-3 bg-[#252525] border border-gray-700 rounded-lg px-4 py-3"
+                            className="flex items-center gap-3 border border-gray-700 rounded-lg px-4 py-3"
                           >
                             <Checkbox
                               checked={userPermissions.includes(perm.id)}
@@ -364,7 +369,7 @@ const ProfileModal: React.FC<ComponentProps> = ({
               {/* STEP 3 */}
               {(step === 3 && mode != "show") && (
                 <div className="space-y-4">
-                  <Card className="bg-[#252525] border-gray-700">
+                  <Card className="border-gray-700">
                     <CardContent className="p-6 space-y-2">
                       {Object.entries(form).map(([key, value]) => (
                         <p key={key}>
@@ -377,7 +382,7 @@ const ProfileModal: React.FC<ComponentProps> = ({
                       <p className="pt-3">
                         <strong>Permissions:</strong>
                       </p>
-                      <ul className="list-disc list-inside text-gray-300">
+                      <ul className="list-disc list-inside">
                         {Object.values(allPermissions).map((groupPerms: any) =>
                           groupPerms.map(
                             (perm: any) =>

@@ -66,7 +66,6 @@ const KitDbBeneficiaryProfilePage: React.FC<ComponentProps> = (
     axiosInstance
       .get(`/kit_db/beneficiary/${id}`)
       .then((response: any) => {
-        console.log(response.data.data);
         const {programs, ...benefciaryDetails} = response.data.data
         if (response.data.status) setBeneficiaryInfo(benefciaryDetails);
       })

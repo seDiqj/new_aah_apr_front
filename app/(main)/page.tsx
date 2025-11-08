@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -22,7 +22,9 @@ import {
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import BreadcrumbWithCustomSeparator from "@/components/global/BreadCrumb";
 import SubHeader from "@/components/global/SubHeader";
+import useEcho from "@/hooks/echo";
 import { Button } from "@/components/ui/button";
+import { useParentContext } from "@/contexts/ParentContext";
 
 const pieData = [
   { name: "Category A", value: 400 },
@@ -41,6 +43,28 @@ const barData = [
 ];
 
 export default function DashboardPage() {
+
+  const {axiosInstance, reqForToastAndSetMessage, myProfileDetails} = useParentContext();
+
+  const echo = useEcho();
+  
+  useEffect(() => {
+    if (!echo || !myProfileDetails) return;
+    echo.private(`chat.${myProfileDetails.id}`)
+      .listen('.MessageSent', (event: any) => {
+          reqForToastAndSetMessage(event.message)
+      });
+  }, [echo, myProfileDetails]);
+
+  const sendMessage = () => {
+    axiosInstance.post("/send-message", {
+      user_id: 5,
+      from: 4,
+      message: "Test"
+    })
+    .then((response: any) => console.log("done"))
+  }
+
   return (
     <div className="p-6 space-y-6">
       <Navbar14 />
@@ -48,8 +72,10 @@ export default function DashboardPage() {
                 <BreadcrumbWithCustomSeparator></BreadcrumbWithCustomSeparator>
               </div>
               <SubHeader pageTitle={"Dashboard"}>
+                <div>
+                  <Button onClick={sendMessage}>send</Button>
+                </div>
               </SubHeader>
-        {/* جدول */}
         <Card>
           <CardHeader>
             <CardTitle>Users Table</CardTitle>

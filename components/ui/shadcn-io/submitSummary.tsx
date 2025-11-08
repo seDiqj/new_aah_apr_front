@@ -46,7 +46,6 @@ const SubmitSummary: React.FC<ComponentProps> = ({
       axiosInstance
         .get(`/db_management/show_database/${databaseId}`)
         .then((response: any) => {
-          console.log(response.data.data)
           setDatabaseDetails([
             { label: "Database", value: response.data.data.database },
             { label: "Province", value: `${response.data.data.province}` },

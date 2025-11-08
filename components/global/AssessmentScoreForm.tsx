@@ -99,7 +99,7 @@ const AssessmentForm: React.FC<ComponentProps> = ({
           paddingRight: "16px",
         }}
       >
-        <DialogTitle className="text-3xl font-extrabold mb-6 text-gray-900">
+        <DialogTitle className="text-3xl font-extrabold mb-6">
           {mode === "create"
             ? "Create New Assessment"
             : mode === "edit"
@@ -108,13 +108,13 @@ const AssessmentForm: React.FC<ComponentProps> = ({
         </DialogTitle>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-8">
-          <div className="flex flex-col gap-2">
-            <Label className="font-semibold text-gray-800">Assessment Date</Label>
+          <div className="flex flex-col gap-2 w-full">
+            <Label className="font-semibold">Assessment Date</Label>
             <Input
               type="date"
               value={assessmentDate}
               onChange={(e) => setAssessmentData(e.target.value)}
-              className="border-gray-300 rounded-lg shadow-sm px-4 py-2 w-full md:w-64"
+              className="border-gray-300 rounded-lg shadow-sm px-4 py-2 w-full md:w-64 min-w-full"
             />
           </div>
 

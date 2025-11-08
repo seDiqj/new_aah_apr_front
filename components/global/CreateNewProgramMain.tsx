@@ -160,7 +160,7 @@ const ProgramMainForm: React.FC<ComponentProps> = ({
       .get("/global/provinces")
       .then((res: any) => setProvinces(Object.values(res.data.data)));
     axiosInstance
-      .get("/global/projects")
+      .get("/projects/p/main_database")
       .then((res: any) => setProjects(Object.values(res.data.data)));
   }, []);
 

@@ -83,7 +83,7 @@ export function SingleSelect({
         </PopoverTrigger>
         <PopoverContent className="w-[300px] p-0">
           <Command>
-            <CommandInput placeholder="Search..." disabled={disabled} />
+            <CommandInput className="!border-0 !outline-0" placeholder="Search..." disabled={disabled} />
             <CommandEmpty>No results found.</CommandEmpty>
             <CommandGroup>
               {options.map((opt) => {

@@ -105,7 +105,7 @@ export type KitFormType = {
 }
 
 export type TrainingForm = {
-    projectCode: string;
+    project_id: string;
     province: string;
     district: string;
     trainingLocation: string;

@@ -110,16 +110,24 @@ export const AssessmentFormSchema = z.object({
       // date: z.date(),
 });
 
-export const UserFormSchema = z.object({
+export const UserCreateFormSchema = z.object({
       name: z.string("The name field should be at least 3 characters !").min(3, "The name should be at least 3 characters !"),
       title: z.string("Title field should be at least 3 characters !").min(3, "Title field should be at least 3 characters !"),
       email: z.email("Enter a valid email address !"),
-      password: z.number("Password must be at least 7 characters !").min(7, "Password must be at least 7 characters !"),
+      password: z.string("Password must be at least 7 characters !").min(7, "Password must be at least 7 characters !"),
       department: z.string("Select a valid department !"),
       role: z.string("Select a valid role !"),
       status: z.string("Select a valid status")
 });
 
+export const UserEditFormSchema = z.object({
+      name: z.string("The name field should be at least 3 characters !").min(3, "The name should be at least 3 characters !"),
+      title: z.string("Title field should be at least 3 characters !").min(3, "Title field should be at least 3 characters !"),
+      email: z.email("Enter a valid email address !"),
+      department: z.string("Select a valid department !"),
+      role: z.string("Select a valid role !"),
+      status: z.string("Select a valid status")
+});
 
 export const RoleFormSchema = z.object({
       name: z.string("The name field should be at least 3 characters !").min(3, "The name should be at least 3 characters !"),
@@ -133,4 +141,55 @@ export const SubmittNewDatabaseFormSchema = z.object({
       fromYear: z.string("Select a valid date"),
       toMonth: z.string("Select a valid date"),
       toYear: z.string("Select a valid date"),
+});
+
+export const ProjectFormSchema = z.object({
+  projectCode: z.string().min(1, "Project code is required!"),
+  projectTitle: z.string().min(1, "Project title is required!"),
+  projectGoal: z.string().min(1, "Project goal is required!"),
+  projectDonor: z.string().min(1, "Project donor is required!"),
+  startDate: z.string().min(1, "Start date is required!"),
+  endDate: z.string().min(1, "End date is required!"),
+  status: z.string().min(1, "Select a valid status!"),
+  projectManager: z.string().min(1, "Project manager is required!"),
+  provinces: z.array(z.string()).min(1, { message: "Select at least one valid province!" }),
+  thematicSector: z.array(z.string()).min(1, { message: "Select at least one thematic sector!" }),
+  reportingPeriod: z.string().min(1, "Reporting period is required!"),
+  reportingDate: z.string().min(1, "Reporting date is required!"),
+  aprStatus: z.string().min(1, "Select a valid APR status!"),
+  description: z.string().min(1, "Description is required!"),
+});
+
+export const OutcomeFormSchema = z.object({
+  outcome: z.string().min(1, "Outcome is requried !"),
+  outcomeRef: z.string().min(1, "Outcome referance is required!"),
+});
+
+export const OutputFormSchema = z.object({
+  output: z.string().min(1, "Output is requried !"),
+  outputRef: z.string().min(1, "Output referance is required!"),
+});
+
+export const IndicatorFormSchema = z.object({
+  id: z.number().nullable(),
+  outputId: z.number().nullable(),
+  indicator: z.string().min(1, "Indicator name is required!"),
+  indicatorRef: z.string().min(1, "Indicator reference is required!"),
+  target: z.string().min(0, "Target must be a non-negative number!"),
+  status: z.enum(["notStarted", "inProgress", "achived", "notAchived", "partiallyAchived"]),
+  provinces: z.array(z.object()).min(1, "Select at least one valid province!"),
+  dessaggregationType: z.string().min(1, "Dessaggregation type is required!"),
+  description: z.string().min(1, "Description is required!"),
+  database: z.string().min(1, "Database field is required!"),
+  type: z.string().nullable(),
+  subIndicator: z.object(
+      {
+            id: z.string().nullable(),
+            indicatorRef: z.string("Indicator referance is required !"),
+            name: z.string("Sub indicator name is required !"),
+            target: z.string("Sub indicator target is required !"),
+            dessaggregationType: z.enum(["session", "indivudial"]),
+            provinces: z.object()
+      }
+  ).nullable(),
 });

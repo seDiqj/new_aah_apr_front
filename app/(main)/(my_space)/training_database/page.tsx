@@ -44,8 +44,6 @@ const TrainingDatabasePage = () => {
       openTrainingProfilePage(true, idFeildForShowStateSetter);
   }, [idFeildForShowStateSetter]);
 
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
   return (
     <div className="w-full h-full p-2">
       <Navbar14 />
@@ -85,7 +83,6 @@ const TrainingDatabasePage = () => {
         }
         filterUrl="/filter/training_database/beneficiaries"
         filtersList={["projectCode", "indicator", "province", "age", "gender"]}
-        loadingStateSetter={setIsLoading}
       ></DataTableDemo>
 
       {reqForBeneficiaryCreationForm && (
@@ -114,8 +111,6 @@ const TrainingDatabasePage = () => {
           ids={Object.keys(selectedRowsIds)}
         ></TrainingSelectorDialog>
       )}
-
-      {isLoading && <Preloader reqForLoading={isLoading} />}
     </div>
   );
 };

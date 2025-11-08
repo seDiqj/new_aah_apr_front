@@ -10,6 +10,8 @@ import { submittedAndFirstApprovedDatabasesTableColumn } from "@/definitions/Dat
 import { Button } from "@/components/ui/button";
 import { useParentContext } from "@/contexts/ParentContext";
 import { FileChartColumn } from "lucide-react";
+import { ClipboardCheck } from "lucide-react";
+
 
 const SubmittedDatabasesPage = () => {
   const {
@@ -68,7 +70,6 @@ const SubmittedDatabasesPage = () => {
             >
               <FileChartColumn />
             </Button>
-            
           </div>
         }
         filterUrl="/filter/approved_databases"

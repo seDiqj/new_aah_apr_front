@@ -213,7 +213,7 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
 
   useEffect(() => {
     axiosInstance
-      .get("/global/projects")
+      .get("/projects/p/psychoeducation_database")
       .then((res: any) => {
         setProjects(Object.values(res.data.data));
       })

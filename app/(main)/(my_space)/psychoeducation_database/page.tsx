@@ -34,8 +34,6 @@ const PsychoeducationDatabasePage = () => {
   const [reqForPsychoeducationShowForm, setReqForPsychoeducationShowForm] =
     useState<boolean>(false);
 
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
   return (
     <>
       <div className="w-full h-full p-2">
@@ -73,7 +71,6 @@ const PsychoeducationDatabasePage = () => {
             "awarenessTopic",
             "awarenessDate"
           ]}
-          loadingStateSetter={setIsLoading}
         ></DataTableDemo>
 
         {reqForPsychoeducationCreationForm && (
@@ -99,8 +96,6 @@ const PsychoeducationDatabasePage = () => {
             psychoeducationId={idFeildForShowStateSetter as unknown as string}
           ></CreatePsychoeducation>
         )}
-
-        {isLoading && <Preloader reqForLoading={isLoading} />}
       </div>
     </>
   );

@@ -7,7 +7,7 @@ import SubHeader from "@/components/global/SubHeader";
 import { Button } from "@/components/ui/button";
 import CreateCD from "@/components/ui/shadcn-io/CreateCD";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
-import { mainDatabaseAndKitDatabaseBeneficiaryColumns } from "@/definitions/DataTableColumnsDefinitions";
+import { communityDialoguesTableColumns } from "@/definitions/DataTableColumnsDefinitions";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -72,7 +72,7 @@ const CommunityDialogDatabasePage = () => {
           }
         </SubHeader>
         <DataTableDemo
-          columns={mainDatabaseAndKitDatabaseBeneficiaryColumns}
+          columns={communityDialoguesTableColumns}
           indexUrl="/community_dialogue_db/community_dialogues"
           deleteUrl="community_dialogue_db/delete_cds"
           searchableColumn="name"

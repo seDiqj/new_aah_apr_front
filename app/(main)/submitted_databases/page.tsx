@@ -47,7 +47,7 @@ const SubmittedDatabasesPage = () => {
       .post(`/db_management/change_db_status/${idFeildForEditStateSetter}`, {
         newStatus: "firstRejected",
       })
-      .then((response: any) => reqForToastAndSetMessage(response.data.data))
+      .then((response: any) => reqForToastAndSetMessage(response.data.message))
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
       );

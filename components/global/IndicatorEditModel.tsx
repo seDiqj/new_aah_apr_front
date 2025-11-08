@@ -7,6 +7,7 @@ import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
 import { Separator } from "../ui/separator";
 import calculateEachIndicatorProvinceTargetAccordingTONumberOFCouncilorCount from "@/lib/IndicatorProvincesTargetCalculator";
+import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 
 
 interface ComponentProps {
@@ -45,14 +46,14 @@ export const EditIndicatorModal: React.FC<ComponentProps> = ({
     const [local, setLocal] = useState<Indicator>(defaultIndicatorState());
 
     useEffect(() => {
-    if (indicatorData) {
-        setLocal({
-        ...defaultIndicatorState(),
-        ...indicatorData,
-        });
-    } else {
-        setLocal(defaultIndicatorState());
-    }
+        if (indicatorData) {
+            setLocal({
+            ...defaultIndicatorState(),
+            ...indicatorData,
+            });
+        } else {
+            setLocal(defaultIndicatorState());
+        }
     }, [indicatorData, isOpen]);
 
     const handleChange = (e: any) => {
@@ -95,18 +96,14 @@ export const EditIndicatorModal: React.FC<ComponentProps> = ({
     };
 
     const handleSave = () => {
-    if (!local.indicator.trim() || !local.indicatorRef.trim()) {
-        // minimal validation - you can replace with toast from parent
-        alert("Indicator name and reference are required.");
-        return;
-    }
-    onSave(local);
-    onClose();
+        if (!local.indicator.trim() || !local.indicatorRef.trim()) {
+            // minimal validation - you can replace with toast from parent
+            alert("Indicator name and reference are required.");
+            return;
+        }
+        onSave(local);
+        onClose();
     };
-
-    useEffect(() => {
-    console.log("local changed", local);
-    }, [local]);
 
     const hundleIndicatorFormChange = (e: any) => {
     const { province, name, value } = e.target;
@@ -265,43 +262,97 @@ export const EditIndicatorModal: React.FC<ComponentProps> = ({
                 disabled={mode == "show"}
                 />
 
-                {/* Type if the database is main database (backend helper) */}
-                {(local.database == "main_database") && (
-                <div className="flex flex-col gap-1 col-span-full">
-                    <Label>Type</Label>
-                    <SingleSelect
-                    options={[
-                        {
-                        value: "adult_psychosocial_support",
-                        label: "Adult Psychosocial Support",
-                        },
-                        {
-                        value: "child_psychosocial_support",
-                        label: "Child Psychosocial Support",
-                        },
-                        {
-                        value: "parenting_skills",
-                        label: "Parenting Skills",
-                        },
-                        {
-                        value: "child_care_practices",
-                        label: "Child Care Practices",
-                        },
-                    ].filter((opt) => !indicators.find((indicator) => (indicator.database == "main_database" && indicator.type == opt.value 
-                        && indicator.id !== local.id
-                    )))}
-                    value={local.type as unknown as string}
-                    onValueChange={(value: string) =>
-                        setLocal((prev) => ({
-                        ...prev,
-                        type: value,
-                        }))
-                    }
-                    disabled={mode == "show"}
-                    />
-                </div>
+                {/* Type if the database is main database and dessaggregation type is not individual (backend helper) */}
+                {(local.database == "main_database" && local.dessaggregationType != "indevidual") && (
+                    <div className="flex flex-col gap-1 col-span-full">
+                        <Label>Type</Label>
+                        <SingleSelect
+                        options={[
+                            {
+                            value: "adult_psychosocial_support",
+                            label: "Adult Psychosocial Support",
+                            },
+                            {
+                            value: "child_psychosocial_support",
+                            label: "Child Psychosocial Support",
+                            },
+                            {
+                            value: "parenting_skills",
+                            label: "Parenting Skills",
+                            },
+                            {
+                            value: "child_care_practices",
+                            label: "Child Care Practices",
+                            },
+                        ].filter((opt) => !indicators.find((indicator) => (indicator.database == "main_database" && indicator.type == opt.value 
+                            && indicator.id !== local.id
+                        )))}
+                        value={local.type as unknown as string}
+                        onValueChange={(value: string) =>
+                            setLocal((prev) => ({
+                            ...prev,
+                            type: value,
+                            }))
+                        }
+                        disabled={mode == "show"}
+                        />
+                    </div>
                 )}
             </div>
+            </div>
+
+            {/* dessaggregation type */}
+            <div className="flex flex-col gap-1 col-span-full">
+                <Label htmlFor={`dessaggregationType`}>
+                    Dessagreggation Type
+                </Label>
+                <RadioGroup
+                    name="dessaggregationType"
+                    value={local.dessaggregationType}
+                    onValueChange={(value: string) => {
+                    const e = {
+                        target: {
+                        name: "dessaggregationType",
+                        value: value,
+                        },
+                    };
+                    hundleIndicatorFormChange(e);
+                    }}
+                    className="flex gap-6"
+                >
+                    {(local.database == "main_database") && 
+                    <div className="flex items-center gap-2">
+                    <RadioGroupItem
+                        value="session"
+                        id="session"
+                        disabled={mode == "show"}
+                    />
+                    <Label htmlFor={'session'}>Session</Label>
+                    </div>}
+                    
+                    {local.database != "enact_database" && (
+                    <div className="flex items-center gap-2">
+                    <RadioGroupItem
+                        value="indevidual"
+                        id="indevidual"
+                        disabled={mode == "show"}
+                    />
+                    <Label htmlFor={'individual'}>
+                        Indevidual
+                    </Label>
+                    </div>
+                    )}  
+                    {local.database == "enact_database" && (
+                    <div className="flex items-center gap-2">
+                    <RadioGroupItem
+                        value="enact"
+                        id={'enact'}
+                        disabled={mode == "show"}
+                    />
+                    <Label htmlFor={'enact'}>Enact</Label>
+                    </div>
+                    )}
+                </RadioGroup>
             </div>
 
             {local.provinces && (

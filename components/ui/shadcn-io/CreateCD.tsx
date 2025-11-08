@@ -54,11 +54,9 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
+  const [groups, setGroups] = useState<{ id: number | null; name: string }[]>([]);
 
-  const [groups, setGroups] = useState<{ id?: number; name: string }[]>([]);
-  const [sessions, setSessions] = useState<
-    { type: "initial" | "followUp"; topic: string; date: string }[]
-  >([{ type: "initial", topic: "", date: "" }]);
+  const [sessions, setSessions] = useState<{ id: number | null, type: "initial" | "followUp"; topic: string; date: string }[]>([{ id: null, type: "initial", topic: "", date: "" }]);
   const [remark, setRemark] = useState<string>("");
 
   const [projects, setProjects] = useState<
@@ -94,8 +92,9 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
           setFormData(data.programInformation);
           setGroups(data.groups?.map((g: any) => ({ ...g })) ?? []);
           setSessions(
-            data.sessions ?? [{ type: "initial", topic: "", date: "" }]
+            data.sessions ?? [{ id: null, type: "initial", topic: "", date: "" }]
           );
+          console.log(data.sessions);
           setRemark(data.remark ?? "");
         })
         .catch((err: any) =>
@@ -188,9 +187,9 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
     }
   };
 
-  const addGroup = () => setGroups([...groups, { name: "" }]);
+  const addGroup = () => setGroups([...groups, { id: null, name: "" }]);
   const addSession = () =>
-    setSessions([...sessions, { type: "followUp", topic: "", date: "" }]);
+    setSessions([...sessions, { id: null, type: "followUp", topic: "", date: "" }]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

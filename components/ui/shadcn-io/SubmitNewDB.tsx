@@ -100,6 +100,21 @@ const SubmitNewDB: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
     name: string;
   } | null>(null);
 
+  const [managers, setManagers] = useState<{
+    id: string;
+    name: string;
+  }[]>([]);
+
+  const [selectedManager, setSelectedManager] = useState<{
+    id: string | null;
+    name: string | null;
+  }>(
+    {
+      id: null,
+      name: null
+    }
+  )
+
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
@@ -125,6 +140,12 @@ const SubmitNewDB: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
           reqForToastAndSetMessage(error.response.data.message)
         );
   }, [selectedProject]);
+
+  useEffect(() => {
+    axiosInstance.get("/global/managers")
+    .then((response: any) => setManagers(response.data.data))
+    .catch((error: any) => reqForToastAndSetMessage(error.response.data.message))
+  }, []);
 
   const handleSubmit = () => {
 
@@ -157,6 +178,7 @@ const SubmitNewDB: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
         project_id: selectedProject?.id,
         database_id: selectedDatabase?.id,
         province_id: selectedProvince?.id,
+        manager_id: selectedManager?.id,
         fromDate: `${fromYear}-${fromMonth}`,
         toDate: `${toYear}-${toMonth}`,
       })
@@ -247,6 +269,30 @@ const SubmitNewDB: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
               {provinces.map((p, i) => (
                 <SelectItem key={i} value={p.id}>
                   {p.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Manager */}
+          <Select
+            onValueChange={(value: string) =>
+              setSelectedManager(
+                managers.find((manager) => manager.id == value) ?? {
+                  id: "",
+                  name: "",
+                }
+              )
+            }
+            value={selectedManager?.id ?? ""}
+          >
+            <SelectTrigger className="h-14 w-full text-lg">
+              <SelectValue placeholder="Select Manager" />
+            </SelectTrigger>
+            <SelectContent>
+              {managers.map((m, i) => (
+                <SelectItem key={i} value={m.id}>
+                  {m.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -358,21 +404,6 @@ const SubmitNewDB: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
               </div>
             </div>
           </div>
-          {/* -------------------------------------- */}
-
-          {/* Manager */}
-          {/* <Select onValueChange={setManager} value={manager}>
-            <SelectTrigger className="h-14 w-full text-lg">
-              <SelectValue placeholder="Select Manager" />
-            </SelectTrigger>
-            <SelectContent>
-              {managers.map((m) => (
-                <SelectItem key={m} value={m}>
-                  {m}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select> */}
 
           {/* Submit button */}
           <div className="flex flex-row items-center justify-end w-full px-2">

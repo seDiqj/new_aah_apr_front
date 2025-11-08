@@ -12,26 +12,99 @@ import {
   TableRow,
   TableCell,
 } from "@/components/ui/table";
+import { useProjectContext } from "@/app/(main)/projects/create_new_project/page";
+import { Dessaggregation as DessaggregationType } from "@/app/(main)/projects/types/Types";
+import { Outcome as OutcomeType } from "@/app/(main)/projects/types/Types";
+import { Output as OutputType } from "@/app/(main)/projects/types/Types";
+import { Indicator as IndicatorType } from "@/app/(main)/projects/types/Types";
+import { useProjectEditContext } from "@/app/(main)/projects/edit_project/[id]/page";
+import { useProjectShowContext } from "@/app/(main)/projects/project_show/[id]/page";
 
-type Disaggregation = { name: string; target: number; province: string };
-type Indicator = {
+type Output = { name: string; indicators: Indicator_[] };
+
+type Outcome = { name: string; outputs: Output[] };
+
+type Disaggregation = { name: string; target: number };
+
+
+type Indicator_ = {
   code: string;
   name: string;
-  target: string;
-  disaggregation: Disaggregation[];
-  isSub?: boolean;
+  target: number;
+  isSub: boolean;
+  disaggregation: DessaggregationType[];
 };
-type Output = { name: string; indicators: Indicator[] };
-type Outcome = { name: string; outputs: Output[] };
+
 export type AprData = { impact: string; outcomes: Outcome[] };
 
-export default function MonitoringTablePage({
-  data,
-  provincesList,
-}: {
-  data: AprData;
-  provincesList: string[];
-}) {
+interface ComponentProps {
+  mode: "create" | "edit";
+  readonly?: boolean;
+}
+
+const MonitoringTablePage: React.FC<ComponentProps> = ({mode, readonly}) => {
+
+  const {outcomes, projectGoal, outputs, indicators, dessaggregations, projectProvinces}: {
+    outcomes: OutcomeType[],
+    outputs: OutputType[],
+    indicators: IndicatorType[],
+    dessaggregations: DessaggregationType[],
+    projectGoal: string,
+    projectProvinces: string[]
+  } = mode == "create" ? useProjectContext() : readonly ? useProjectShowContext() : useProjectEditContext();
+
+  // Data for creating the preview of the final apr in apr preview TabContent.
+  const finalDataForAprPreview: AprData = {
+    impact: projectGoal,
+    outcomes: outcomes.map((outcome) => ({
+      name: outcome.outcome,
+      outputs: outputs
+        .filter((output) => output.outcomeRef === outcome.outcomeRef)
+        .map((output) => ({
+          name: output.output,
+          indicators: indicators
+            .filter((indicator) => indicator.outputRef === output.outputRef)
+            .flatMap((indicator) => {
+              const main = {
+                code: indicator.indicatorRef,
+                name: indicator.indicator,
+                target: indicator.target,
+                disaggregation: dessaggregations
+                  .filter((d) => d.indicatorRef === indicator.indicatorRef)
+                  .map((d) => ({
+                    name: `${d.dessaggration}     (${d.province})`,
+                    target: d.target,
+                    province: d.province,
+                  })),
+              };
+
+              let sub = null;
+
+              if (indicator.subIndicator != null)
+                sub = {
+                  code: indicator.indicatorRef,
+                  name: indicator.subIndicator.name,
+                  target: indicator.subIndicator.target,
+                  isSub: true,
+                  disaggregation: dessaggregations
+                    .filter(
+                      (d) => d.indicatorRef === `sub-${indicator.indicatorRef}`
+                    )
+                    .map((d) => ({
+                      name: `${d.dessaggration}     (${d.province})`,
+                      target: d.target,
+                      province: d.province,
+                    })),
+                };
+
+              if (sub) return [main, sub];
+
+              return [main];
+            }),
+        })),
+    })),
+  };
+
   const [selectedProvince, setSelectedProvince] = useState<string>("Master");
   const [isFullscreen, setIsFullscreen] = useState(false);
   const sheetRef = useRef<HTMLDivElement>(null);
@@ -56,7 +129,7 @@ export default function MonitoringTablePage({
     }
   };
 
-  const filterDisaggregation = (dis: Disaggregation[]) =>
+  const filterDisaggregation = (dis: DessaggregationType[]) =>
     dis.filter(
       (d) =>
         selectedProvince === "Master" ||
@@ -64,7 +137,7 @@ export default function MonitoringTablePage({
           selectedProvince.trim().toLowerCase()
     );
 
-  const rowsPerIndicator = (ind: Indicator) =>
+  const rowsPerIndicator = (ind: Indicator_) =>
     1 + filterDisaggregation(ind.disaggregation).length;
 
   const rowsPerOutput = (out: Output) =>
@@ -73,11 +146,11 @@ export default function MonitoringTablePage({
   const rowsPerOutcome = (oc: Outcome) =>
     oc.outputs.reduce((s, out) => s + rowsPerOutput(out), 0);
 
-  const totalRows = data.outcomes.reduce((s, oc) => s + rowsPerOutcome(oc), 0);
+  const totalRows = finalDataForAprPreview.outcomes.reduce((s, oc) => s + rowsPerOutcome(oc), 0);
 
   const rows: React.ReactNode[] = [];
 
-  data.outcomes.forEach((outcome, oIndex) => {
+  finalDataForAprPreview.outcomes.forEach((outcome, oIndex) => {
     const outcomeRowSpan = rowsPerOutcome(outcome);
     outcome.outputs.forEach((output, opIndex) => {
       const outputRowSpan = rowsPerOutput(output);
@@ -100,7 +173,7 @@ export default function MonitoringTablePage({
                   rowSpan={totalRows}
                   className="text-sm font-semibold whitespace-normal break-words border-r border-slate-300 align-middle text-center py-2 px-2"
                 >
-                  {data.impact}
+                  {finalDataForAprPreview.impact}
                 </TableCell>
               )}
 
@@ -181,7 +254,7 @@ export default function MonitoringTablePage({
               </div>
 
               {/* Provinces from props */}
-              {provincesList.map((province) => (
+              {projectProvinces.map((province) => (
                 <div key={province} className="flex items-center space-x-2">
                   <Checkbox
                     checked={selectedProvince === province}
@@ -222,3 +295,6 @@ export default function MonitoringTablePage({
     </div>
   );
 }
+
+
+export default MonitoringTablePage;

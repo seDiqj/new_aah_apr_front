@@ -3,18 +3,14 @@
 import BreadcrumbWithCustomSeparator from "@/components/global/BreadCrumb";
 import DataTableDemo from "@/components/global/MulitSelectTable";
 import SubHeader from "@/components/global/SubHeader";
-import MainDatabaseBeneficiaryForm from "@/components/global/MainDatabaseBeneficiaryCreationForm";
 import { Button } from "@/components/ui/button";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
-import { useParentContext } from "@/contexts/ParentContext";
 import { mainDatabaseAndKitDatabaseBeneficiaryColumns } from "@/definitions/DataTableColumnsDefinitions";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import KitDatabaseBeneficiaryForm from "@/components/global/KitDatabaseBeneficiaryForm";
 import KitDatabaseBeneficiaryUpdateForm from "@/components/global/KitDatabaseBeneficiaryUpdateForm";
 import { Can } from "@/components/Can";
-import Preloader from "@/components/global/Preloader";
-import MainDatabaseBeneficiaryUpdateForm from "@/components/global/MainDatabaseBeneficiaryUpdateForm";
 import { withPermission } from "@/lib/withPermission";
 
 const MainDatabasePage = () => {
@@ -42,8 +38,6 @@ const MainDatabasePage = () => {
     if (idFeildForShowStateSetter)
       openBeneficiaryProfile(true, idFeildForShowStateSetter);
   }, [idFeildForShowStateSetter]);
-
-  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   return (
     <>
@@ -87,7 +81,6 @@ const MainDatabasePage = () => {
           filtersList={["projectCode", "indicator", "focalPoint", "province", "siteCode", "healthFacilitator", "dateOfRegistration",
             "age", "maritalStatus", "householdStatus", "baselineDate", "endlineDate"
           ]}
-          loadingStateSetter={setIsLoading}
         ></DataTableDemo>
 
         {/* Create new beneficiary form */}
@@ -107,7 +100,6 @@ const MainDatabasePage = () => {
           ></KitDatabaseBeneficiaryUpdateForm>
         )}
 
-        {isLoading && <Preloader reqForLoading={isLoading} />}
       </div>
     </>
   );

@@ -30,78 +30,58 @@ type Outcome = { name: string; outputs: Output[] };
 
 export default function MonitoringTablePage() {
   const exportToExcel = (data: any) => {
-    const wb = XLSX.utils.book_new();
+  const wb = XLSX.utils.book_new();
+  const ws_data: any[][] = [];
+  const merges: any[] = [];
 
-    // تبدیل outcomes
-    const rows: any[] = [];
+  let rowIndex = 1; // چون ردیف 0 عنوان است
 
-    data.outcomes.forEach((outcome: any) => {
-      outcome.outputs.forEach((output: any) => {
-        output.indicators.forEach((indicator: any) => {
-          const indicatorTotal = indicator.disaggregation.reduce(
-            (a: number, b: any) => a + b.target,
-            0
-          );
+  data.outcomes.forEach((outcome: any, oIdx: number) => {
+    outcome.outputs.forEach((output: any, opIdx: number) => {
+      output.indicators.forEach((indicator: any, iIdx: number) => {
+        ws_data.push([
+          oIdx === 0 && opIdx === 0 && iIdx === 0 ? data.impact : "", // Impact
+          opIdx === 0 && iIdx === 0 ? outcome.name : "", // Outcome
+          iIdx === 0 ? output.name : "", // Output
+          indicator.code + " - " + indicator.name, // Indicator
+        ]);
 
-          const totalAchievement = indicator.disaggregation.reduce(
-            (a: number, d: any) =>
-              a + d.months.reduce((x: number, y: number) => x + y, 0),
-            0
-          );
-
-          const percentAchieved = indicatorTotal
-            ? ((totalAchievement / indicatorTotal) * 100).toFixed(2)
-            : "0";
-
-          // یک ردیف اصلی برای indicator
-          rows.push([
-            outcome.name,
-            output.name,
-            indicator.code,
-            indicator.name,
-            indicatorTotal,
-            totalAchievement,
-            percentAchieved + "%",
-          ]);
-
-          // ردیف‌های disaggregation
-          indicator.disaggregation.forEach((d: any) => {
-            rows.push([
-              "",
-              "",
-              "",
-              d.name,
-              d.target,
-              d.months.reduce((a: number, b: number) => a + b, 0),
-              (
-                (d.months.reduce((a: number, b: number) => a + b, 0) /
-                  d.target) *
-                100
-              ).toFixed(2) + "%",
-            ]);
+        // Mergeها
+        if (oIdx === 0 && opIdx === 0 && iIdx === 0) {
+          merges.push({
+            s: { r: rowIndex, c: 0 },
+            e: { r: totalRows - 1, c: 0 },
           });
-        });
+        }
+
+        // Outcome merge
+        if (opIdx === 0 && iIdx === 0) {
+          merges.push({
+            s: { r: rowIndex, c: 1 },
+            e: { r: rowIndex + rowsPerOutcome(outcome) - 1, c: 1 },
+          });
+        }
+
+        // Output merge
+        if (iIdx === 0) {
+          merges.push({
+            s: { r: rowIndex, c: 2 },
+            e: { r: rowIndex + rowsPerOutput(output) - 1, c: 2 },
+          });
+        }
+
+        rowIndex++;
       });
     });
+  });
 
-    // ایجاد sheet
-    const ws = XLSX.utils.aoa_to_sheet([
-      [
-        "Outcome",
-        "Output",
-        "Indicator Code",
-        "Indicator Name",
-        "Target",
-        "Total Achievement",
-        "% Achieved",
-      ],
-      ...rows,
-    ]);
+  const ws = XLSX.utils.aoa_to_sheet([["Impact","Outcome","Output","Indicator"], ...ws_data]);
+  ws["!merges"] = merges;
 
-    XLSX.utils.book_append_sheet(wb, ws, "Monitoring");
+  XLSX.utils.book_append_sheet(wb, ws, "Monitoring");
+  XLSX.writeFile(wb, "Monitoring.xlsx");
+};
 
-    XLSX.writeFile(wb, "Monitoring.xlsx");
-  };
 
   const { id } = useParams<{
     id: string;

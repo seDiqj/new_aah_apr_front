@@ -77,8 +77,6 @@ interface ComponentProps {
   editBtnPermission?: string;
 
   viewPermission?: string;
-
-  loadingStateSetter?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const DataTableDemo: React.FC<ComponentProps> = ({
@@ -97,10 +95,8 @@ const DataTableDemo: React.FC<ComponentProps> = ({
   deleteBtnPermission,
   editBtnPermission,
   viewPermission,
-  loadingStateSetter,
-
 }) => {
-  const { reqForToastAndSetMessage, axiosInstance, reloadFlag, reqForConfirmationModelFunc } = useParentContext();
+  const { reqForToastAndSetMessage, axiosInstance, reloadFlag, reqForConfirmationModelFunc, setGloabalLoading } = useParentContext();
 
   const [loading, setLoading] = React.useState(true);
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -137,11 +133,11 @@ const DataTableDemo: React.FC<ComponentProps> = ({
   // Fetch table data
   const fetchTableData = () => {
     setLoading(true);
-    loadingStateSetter?.(true);
+    setGloabalLoading(true)
     axiosInstance
       .get(indexUrl)
-      .then((res: any) => {
-        setData(res.data.data);
+      .then((response: any) => {
+        setData(response.data.data);
       })
       .catch((err: any) => {
         reqForToastAndSetMessage(
@@ -150,7 +146,7 @@ const DataTableDemo: React.FC<ComponentProps> = ({
 
         if (err.response.data.data) setData(err.response.data.data)
       })
-      .finally(() => {setLoading(false); loadingStateSetter?.(false);});
+      .finally(() => {setLoading(false); setGloabalLoading(false);});
   };
 
   // Delete selected rows

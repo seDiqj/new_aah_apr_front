@@ -31,8 +31,6 @@ const MainDatabasePage = () => {
       openBeneficiaryProfile(true, idFeildForShowStateSetter);
   }, [idFeildForShowStateSetter]);
 
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
   return (
     <>
       <div className="w-full h-full p-2">
@@ -49,10 +47,7 @@ const MainDatabasePage = () => {
           idFeildForShowStateSetter={setIdFeildForShowStateSetter}
           filterUrl="/filter/refferal_database/beneficiaries"
           filtersList={["projectCode", "province", "age", "gender", "dateOfRegistration"]}
-          loadingStateSetter={setIsLoading}
         ></DataTableDemo>
-
-        {isLoading && <Preloader reqForLoading={isLoading} />}
       </div>
     </>
   );

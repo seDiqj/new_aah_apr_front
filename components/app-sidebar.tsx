@@ -56,11 +56,11 @@ import {
 } from "./ui/collapsible";
 import { useEffect, useState } from "react";
 import { useParentContext } from "@/contexts/ParentContext";
-import { set } from "date-fns";
+import { useRouter } from "next/navigation";
 
 const AppSidebar = () => {
 
-  const { myProfileDetails, setReqForProfile } = useParentContext();
+  const { myProfileDetails, setReqForProfile, reqForConfirmationModelFunc, axiosInstance } = useParentContext();
 
   const items = [
     {
@@ -138,6 +138,14 @@ const AppSidebar = () => {
       ],
     },
   ];
+
+  const router = useRouter();
+
+  const handleSignout = () => {
+    axiosInstance.post("/logout");
+    localStorage.removeItem("access_token");
+    router.push("/login");
+  }
 
   const [mounted, setMounted] = useState(false);
 
@@ -245,7 +253,11 @@ const AppSidebar = () => {
                   <DropdownMenuItem onClick={() => {setReqForProfile(true); console.log(324)}}>
                     <User ></User> Profile
                   </DropdownMenuItem>
-                  <DropdownMenuItem variant="destructive">
+                  <DropdownMenuItem variant="destructive" onClick={() => reqForConfirmationModelFunc(
+                    "Are you compleatly sure ?",
+                    "This action will sign you out from system !",
+                    handleSignout
+                  )}>
                     <LogOut></LogOut> Sign Out
                   </DropdownMenuItem>
                 </DropdownMenuContent>

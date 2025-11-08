@@ -82,9 +82,9 @@ const MainDatabasePage = () => {
             </TabsList>
 
             <TabsContent value="assessmentDetails" className="h-full">
-              <Card className="shadow-sm border border-border w-full bg-background">
+              <Card className="min-h-[400px] shadow-sm border border-border w-full">
                 <CardHeader>
-                  <CardTitle className="text-xl font-semibold text-foreground">
+                  <CardTitle className="text-xl font-semibold">
                     Assessment Information
                   </CardTitle>
                 </CardHeader>
@@ -110,7 +110,7 @@ const MainDatabasePage = () => {
               className="flex flex-col items-start justify-around overflow-auto"
               value={"assessments"}
             >
-              <Card className="shadow-sm border border-border max-h-full w-full bg-background overflow-y-auto">
+              <Card className="min-h-[400px] shadow-sm border border-border max-h-full w-full overflow-y-auto">
                 <CardContent>
                   {assessmentsData?.map((assessment, i) => {
                     return (

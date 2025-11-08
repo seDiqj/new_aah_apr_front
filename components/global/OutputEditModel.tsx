@@ -50,7 +50,7 @@ return (
 
         <div className="grid gap-4">
         <div className="flex flex-col gap-1">
-            <Label htmlFor="edit-outcome">Outcome</Label>
+            <Label htmlFor="edit-outcome">Output</Label>
             <Input
             id="edit-outcome"
             value={localOutput}
@@ -60,7 +60,7 @@ return (
         </div>
 
         <div className="flex flex-col gap-1">
-            <Label htmlFor="edit-outcome-ref">Outcome Reference</Label>
+            <Label htmlFor="edit-outcome-ref">Output Reference</Label>
             <Input
             id="edit-outcome-ref"
             value={localOutputRef}

@@ -11,6 +11,8 @@ import { toast } from "sonner";
 import ConfirmationAlertDialogue from "../global/ConfirmationDialog";
 import ProfileModal from "../global/UserFormTest";
 import { Folder, Clock, CheckCircle, XCircle } from "lucide-react";
+import useEcho from "@/hooks/echo";
+import Preloader from "../global/Preloader";
 
 
 interface ComponentProps {
@@ -33,7 +35,11 @@ const Parent: React.FC<ComponentProps> = ({ children }) => {
       action: action,
     });
 
+  const [notifications, setNotifications] = useState([]);
+
   const [reqForProfile, setReqForProfile] = useState<boolean>(false);
+
+  const [globalLoading, setGloabalLoading] = useState<boolean>(false);
 
   const [reloadFlag, setReloadFlag] = useState<number>(0);
 
@@ -50,6 +56,13 @@ const Parent: React.FC<ComponentProps> = ({ children }) => {
       reqForToastAndSetMessage(error.response?.data?.message || "Error fetching profile details");
     });
   }, []);
+
+  useEffect(() => {
+    if (!myProfileDetails) return
+    axiosInstance.get(`/notification/my_notifications/${myProfileDetails.id}`)
+    .then((response: any) => setNotifications(response.data.data))
+    .catch((error: any) => reqForToastAndSetMessage(error.response.data.message));
+  }, [myProfileDetails]);
 
   const [aprsState, setAprsState] = useState<{
     submitted: number,
@@ -144,6 +157,8 @@ const Parent: React.FC<ComponentProps> = ({ children }) => {
     .catch((error: any) => reqForToastAndSetMessage(error.response.data.message))
   }
 
+  useEffect(() => console.log(globalLoading), [globalLoading]);
+
   return (
     <ParentContext.Provider
       value={{
@@ -155,16 +170,19 @@ const Parent: React.FC<ComponentProps> = ({ children }) => {
         setReqForProfile,
         aprStats,
         changeBeneficairyAprIncludedStatus,
-        reqForConfirmationModelFunc
+        reqForConfirmationModelFunc,
+        notifications,
+        setNotifications,
+        setGloabalLoading
       }}
     >
       <div className="w-full h-full">{children}</div>
 
-      
-
       {reqForProfile && (
         <ProfileModal open={reqForProfile} onOpenChange={setReqForProfile} userId={myProfileDetails?.id as unknown as number} mode="show"></ProfileModal>
       )}
+
+      {globalLoading && <Preloader reqForLoading={globalLoading} />}
 
       <ConfirmationAlertDialogue
         open={reqForConfirmationModel}

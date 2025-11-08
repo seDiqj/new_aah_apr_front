@@ -928,3 +928,68 @@ export const communityDialoguesSessionTableColumns: ColumnDef<any>[] = [
     cell: ({ row }) => <div>{row.getValue("date")}</div>,
   },
 ]
+
+export const communityDialoguesTableColumns: ColumnDef<any>[] = [
+  {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    accessorKey: "projectCode",
+    header: "Project Code",
+    cell: ({ row }) => <div>{row.getValue("projectCode")}</div>,
+  },
+  {
+    accessorKey: "focalPoint",
+    header: "Focal Point",
+    cell: ({ row }) => <div>{row.getValue("focalPoint")}</div>,
+  },
+  {
+    accessorKey: "province",
+    header: "Province",
+    cell: ({ row }) => <div>{row.getValue("province")}</div>,
+  },
+  {
+    accessorKey: "district",
+    header: "District",
+    cell: ({ row }) => <div>{row.getValue("district")}</div>,
+  },
+  {
+    accessorKey: "village",
+    header: "Village",
+    cell: ({ row }) => <div>{row.getValue("village")}</div>,
+  },
+  {
+    accessorKey: "numOfSessions",
+    header: "Number Of Sessions",
+    cell: ({ row }) => <div>{row.getValue("numOfSessions")}</div>,
+  },
+  {
+    accessorKey: "numOfGroups",
+    header: "Number Of Groups",
+    cell: ({ row }) => <div>{row.getValue("numOfGroups")}</div>,
+  },
+  {
+    accessorKey: "indicator",
+    header: "Indicator",
+    cell: ({ row }) => <div>{row.getValue("indicator")}</div>,
+  },
+]

@@ -5,7 +5,7 @@ import PreAndPostTestForm from "@/components/global/PreAndPostTestForm";
 import SubHeader from "@/components/global/SubHeader";
 import TrainingSelectorDialog from "@/components/global/TrainingSelectorDialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { Switch } from "@/components/ui/switch";
@@ -13,13 +13,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useParentContext } from "@/contexts/ParentContext";
 import { createAxiosInstance } from "@/lib/axios";
 import {
-  ChapterForm,
   TrainingBenefeciaryForm,
   TrainingForm,
 } from "@/types/Types";
 import { Plus } from "lucide-react";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { InfoItem } from "../../../referral_database/beneficiary_profile/[id]/page";
 
 const TrainingBeneficiaryProfile = () => {
@@ -35,7 +34,7 @@ const TrainingBeneficiaryProfile = () => {
 
   const [beneficiaryInfo, setBeneficiaryInfo] =
     useState<TrainingBenefeciaryForm>({
-      clientName: "",
+      name: "",
       fatherHusbandName: "",
       gender: "male",
       age: 0,
@@ -94,13 +93,10 @@ const TrainingBeneficiaryProfile = () => {
           ]);
         });
       })
-      .catch((error: any) => {
-        reqForToastAndSetMessage(error.response.data.message);
-        console.log(error.response.data.message);
-      });
+      .catch((error: any) => 
+        reqForToastAndSetMessage(error.response.data.message)
+      );
   }, []);
-
-  useEffect(() => console.log(selfChaptersData), [selfChaptersData]);
 
   const handleTogglePrecenseOfBeneficiary = (chapterId: number) => {
     axiosInstance
@@ -155,7 +151,7 @@ const TrainingBeneficiaryProfile = () => {
             </div>
           </TabsList>
           <TabsContent value="beneficiaryInfo">
-            <Card className="max-h-[400px]">
+            <Card className="min-h-[400px] flex flex-col items-start justify-around felx-wrap">
               <CardContent className="h-full grid gap-4 max-h-[400px] overflow-auto">
                 <div className="grid grid-cols-2 gap-x-6 gap-y-4">
                   {beneficiaryInfo &&
@@ -175,7 +171,7 @@ const TrainingBeneficiaryProfile = () => {
           </TabsContent>
           {chaptersData.map((chapter, index) => (
             <TabsContent key={index} value={chapter.trainingName}>
-              <Card>
+              <Card className="min-h-[400px]">
                 <CardContent className="grid gap-6">
                   <Tabs defaultValue={chapter.trainingName}>
                     <TabsList>

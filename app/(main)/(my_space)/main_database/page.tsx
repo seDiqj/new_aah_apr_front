@@ -59,8 +59,6 @@ const MainDatabasePage = () => {
       openBeneficiaryProfile(true, idFeildForShowStateSetter);
   }, [idFeildForShowStateSetter]);
 
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
   return (
     <>
       <div className="w-full h-full p-2">
@@ -125,7 +123,6 @@ const MainDatabasePage = () => {
           filtersList={["projectCode", "indicator", "focalPoint", "province", "siteCode", "healthFacilitator", "dateOfRegistration",
             "age", "maritalStatus", "householdStatus", "baselineDate", "endlineDate"
           ]}
-          loadingStateSetter={setIsLoading}
         ></DataTableDemo>
         {/* Beneficiary creation form */}
         {reqForBeneficiaryCreationForm && (
@@ -143,7 +140,6 @@ const MainDatabasePage = () => {
           ></MainDatabaseBeneficiaryUpdateForm>
         )}
 
-        {isLoading && <Preloader reqForLoading={isLoading} />}
       </div>
     </>
   );

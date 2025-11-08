@@ -11,7 +11,6 @@ import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AssessmentForm from "@/components/global/CreateNewAssessmentForm";
 import { useRouter } from "next/navigation";
-import Preloader from "@/components/global/Preloader";
 
 // Will be used in version 2.
 const enactTabsList = [
@@ -51,10 +50,6 @@ const EnactDatabasePage = () => {
     if (idFeildForShowStateSetter)
       openAssessmentProfile(true, idFeildForShowStateSetter);
   }, [idFeildForShowStateSetter]);
-
-
-    const [isLoading, setIsLoading] = useState<boolean>(true);
-
 
   return (
     <>
@@ -109,7 +104,6 @@ const EnactDatabasePage = () => {
                 editModelOpenerStateSetter={setReqForAssessmentUpdateForm}
                 idFeildForShowStateSetter={setIdFeildForShowStateSetter}
                 showModelOpenerStateSetter={setReqForAssessmentShowForm}
-                loadingStateSetter={setIsLoading}
                 filterUrl="/filter/enact_database/enacts"
                 filtersList={["projectCode", "province", "indicator", "date"]}
               ></DataTableDemo>
@@ -131,9 +125,6 @@ const EnactDatabasePage = () => {
               projectId={idFeildForEditStateSetter as unknown as number}
             ></AssessmentForm>
           )}
-
-          {isLoading && <Preloader reqForLoading={isLoading} />}
-
         </div>
       </div>
     </>

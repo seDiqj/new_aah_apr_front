@@ -21,7 +21,7 @@ export default function BeneProfileTabs() {
     id: string;
   }>();
 
-  const { reqForToastAndSetMessage, axiosInstance, handleReload } = useParentContext();
+  const { reqForToastAndSetMessage, reqForConfirmationModelFunc, axiosInstance, handleReload } = useParentContext();
 
   let [reqForPermissionUpdateForm, setReqForPermissionUpdateForm] =
     useState<boolean>(false);
@@ -134,7 +134,11 @@ export default function BeneProfileTabs() {
                 selectedRowsIdsStateSetter={setSelectedRows}
                 injectedElement={
                   <div className="flex flex-row items-center justify-end gap-2">
-                    <Button onClick={togglePresence} variant={"outline"} title="Toggle precence for selected sessions">
+                    <Button onClick={() => reqForConfirmationModelFunc(
+                      "Ary you compleatly sure ?",
+                      "This action will change the presence status of beneficiary for selected session !",
+                      togglePresence
+                    )} variant={"outline"} title="Toggle precence for selected sessions">
                       <ToggleRight 
                       />
                     </Button>

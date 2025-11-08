@@ -13,46 +13,29 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 
-export interface NotificationMenuProps {
-  notifications?: Array<{
-    id: string;
-    title: string;
-    message: string;
-    time: string;
-    unread?: boolean;
-  }>;
-  onNotificationClick?: (notificationId: string) => void;
+interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  unread?: boolean;
+  time: string;
+  type: "project" | "submittedDatabase" | "approvedDatabase" | "reviewdApr" | "approvedApr";
+  database_id?: string;
+  project_id?: string;
+  apr_id?: string;
 }
 
-const defaultNotifications = [
-  {
-    id: '1',
-    title: 'New message',
-    message: 'You have a new message from John',
-    time: '2 min ago',
-    unread: true,
-  },
-  {
-    id: '2',
-    title: 'Project updated',
-    message: 'The project was successfully updated',
-    time: '1 hour ago',
-    unread: true,
-  },
-  {
-    id: '3',
-    title: 'Task completed',
-    message: 'Your task has been marked as complete',
-    time: '3 hours ago',
-    unread: false,
-  },
-];
+
+export interface NotificationMenuProps {
+  notifications?: Array<Notification>;
+  onNotificationClick?: (notification: Notification) => void
+}
 
 export const NotificationMenu = React.forwardRef<
   HTMLButtonElement,
   NotificationMenuProps
->(({ notifications = defaultNotifications, onNotificationClick }, ref) => {
-  const unreadCount = notifications.filter(n => n.unread).length;
+>(({ notifications, onNotificationClick }, ref) => {
+  const unreadCount = notifications?.filter(n => n.unread).length ?? 0;
 
   return (
     <DropdownMenu>
@@ -78,13 +61,13 @@ export const NotificationMenu = React.forwardRef<
       <DropdownMenuContent align="end" className="w-80">
         <DropdownMenuLabel>Notifications</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {notifications.map((notification) => (
+        {notifications?.map((notification) => (
           <DropdownMenuItem
             key={notification.id}
             className="flex flex-col items-start p-3 cursor-pointer"
             onClick={() => {
               if (onNotificationClick) {
-                onNotificationClick(notification.id);
+                onNotificationClick(notification);
               }
             }}
           >

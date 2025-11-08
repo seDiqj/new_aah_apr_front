@@ -44,7 +44,7 @@ const TrainingFormDialog: React.FC<ComponentProps> = ({
 
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<TrainingForm>({
-    projectCode: "",
+    project_id: "",
     province: "",
     district: "",
     trainingLocation: "",
@@ -74,7 +74,7 @@ const TrainingFormDialog: React.FC<ComponentProps> = ({
         .then((response: any) => {
           const data = response.data.data;
           setFormData({
-            projectCode: data.projectCode || "",
+            project_id: data.project_id || "",
             province: data.province || "",
             district: data.district || "",
             trainingLocation: data.trainingLocation || "",
@@ -154,8 +154,18 @@ const TrainingFormDialog: React.FC<ComponentProps> = ({
 
   const [districts, setDistricts] = useState<{ name: string }[]>([]);
   const [provinces, setProvinces] = useState<{ name: string }[]>([]);
-  const [projects, setProjects] = useState<{ projectCode: string }[]>([]);
+  const [projects, setProjects] = useState<
+      { id: string; projectCode: string }[]
+    >([]);
   const [indicators, setIndicators] = useState<{ indicator: string }[]>([]);
+
+  useEffect(() => {
+    axiosInstance.get("/projects/p/training_database")
+    .then((res: any) => {
+      setProjects(Object.values(res.data.data));
+    })
+    .catch((error: any) => reqForToastAndSetMessage(error.response.data.message));
+  }, []);
 
   useEffect(() => {
     axiosInstance.get("/global/districts").then((res: any) => {
@@ -164,9 +174,7 @@ const TrainingFormDialog: React.FC<ComponentProps> = ({
     axiosInstance.get("/global/provinces").then((res: any) => {
       setProvinces(Object.values(res.data.data));
     });
-    axiosInstance.get("/global/projects").then((res: any) => {
-      setProjects(Object.values(res.data.data));
-    });
+    
     axiosInstance
       .get("/global/indicators/training_database")
       .then((res: any) => setIndicators(Object.values(res.data.data)));
@@ -206,12 +214,12 @@ const TrainingFormDialog: React.FC<ComponentProps> = ({
             <SingleSelect
               disabled={isReadOnly}
               options={projects.map((p) => ({
-                value: p.projectCode,
+                value: p.id,
                 label: p.projectCode.toUpperCase(),
               }))}
-              value={formData.projectCode}
+              value={projects.find((project) => project.id == formData.project_id)?.projectCode ?? ""}
               onValueChange={(value: string) =>
-                handleChange({ target: { name: "projectCode", value } })
+                handleChange({ target: { name: "project_id", value } })
               }
             />
           </div>

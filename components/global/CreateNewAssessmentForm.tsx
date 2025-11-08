@@ -41,9 +41,6 @@ const AssessmentForm: React.FC<ComponentProps> = ({
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
-  useEffect(() => console.log(formErrors), [formErrors])
-
-
   const handleFormChange = (e: any) => {
     const name: string = e.target.name;
     const value: string = e.target.value;
@@ -120,7 +117,7 @@ const AssessmentForm: React.FC<ComponentProps> = ({
 
   useEffect(() => {
     axiosInstance
-      .get("/global/projects")
+      .get("/projects/p/enact_database")
       .then((response: any) => setProjects(response.data.data))
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
@@ -144,8 +141,6 @@ const AssessmentForm: React.FC<ComponentProps> = ({
         reqForToastAndSetMessage(error.response.data.message);
       });
   }, [formData.project_id]);
-
-  useEffect(() => console.log(formData), [formData]);
 
   const readOnly = mode === "show";
 

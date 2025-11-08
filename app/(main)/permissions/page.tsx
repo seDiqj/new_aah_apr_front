@@ -25,6 +25,7 @@ const PermissionsPage = () => {
             "group_name"
           ]}
         ></DataTableDemo>
+        
       </div>
     </>
   );
