@@ -27,7 +27,6 @@ const AprLogsSubPage: React.FC<ComponentProps> = ({mode, readOnly}) => {
         action: string;
         userName: string;
         projectCode: string;
-        result: string;
         date: string;
         comment: string;
         }[]
@@ -56,7 +55,6 @@ const AprLogsSubPage: React.FC<ComponentProps> = ({mode, readOnly}) => {
                         <TableRow>
                           <TableHead className="w-[150px]">Action</TableHead>
                           <TableHead className="w-[120px]">Doer</TableHead>
-                          <TableHead className="w-[120px]">Result</TableHead>
                           <TableHead className="w-[250px]">Comment</TableHead>
                           <TableHead className="w-[120px]">Date</TableHead>
                         </TableRow>
@@ -66,7 +64,6 @@ const AprLogsSubPage: React.FC<ComponentProps> = ({mode, readOnly}) => {
                           <TableRow key={index}>
                             <TableCell>{item.action}</TableCell>
                             <TableCell>{item.userName}</TableCell>
-                            <TableCell>{item.result}</TableCell>
                             <TableCell>
                               <button
                                 onClick={() => {

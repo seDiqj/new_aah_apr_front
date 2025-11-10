@@ -6,7 +6,7 @@ import SubHeader from "@/components/global/SubHeader";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { withPermission } from "@/lib/withPermission";
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext, useEffect } from "react";
 import { useState } from "react";
 import OutcomeForm from "../Components/OutcomeForm";
 import OutputForm from "../Components/OutputForm";
@@ -64,6 +64,9 @@ const NewProjectPage = () => {
   const [projectProvinces, setProjectProvinces] = useState<string[]>(["kabul"]);
   const [projectGoal, setProjectGoal] = useState<string>('');
   const [currentTab, setCurrentTab] = useState<string>("project");
+
+
+  useEffect(() => console.log(formData), [formData])
 
   return (
     <>
