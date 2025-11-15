@@ -11,65 +11,41 @@ import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useParentContext } from "@/contexts/ParentContext";
-import { createAxiosInstance } from "@/lib/axios";
 import {
+  Chapters,
+  SelfChapters,
   TrainingBenefeciaryForm,
   TrainingForm,
 } from "@/types/Types";
 import { Plus } from "lucide-react";
 import { useParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import { InfoItem } from "../../../referral_database/beneficiary_profile/[id]/page";
+import { useEffect, useState } from "react";
+import { TrainingBeneficiaryDefault } from "@/lib/FormsDefaultValues";
+import { BeneficiaryPresenceTogglerButtonMessage } from "@/lib/ConfirmationModelsTexts";
+import { IsIdFeild } from "@/lib/Constants";
 
 const TrainingBeneficiaryProfile = () => {
   const { id } = useParams<{
     id: string;
   }>();
 
-  const { reqForToastAndSetMessage } = useParentContext();
+  const {
+    reqForToastAndSetMessage,
+    axiosInstance,
+    reqForConfirmationModelFunc,
+  } = useParentContext();
 
-  const [reqForTrainingSelector, setReqForTrainingSelector] = useState<boolean>(false);
-
-  const axiosInstance = createAxiosInstance();
+  const [reqForTrainingSelector, setReqForTrainingSelector] =
+    useState<boolean>(false);
 
   const [beneficiaryInfo, setBeneficiaryInfo] =
-    useState<TrainingBenefeciaryForm>({
-      name: "",
-      fatherHusbandName: "",
-      gender: "male",
-      age: 0,
-      phone: "",
-      email: "",
-      participantOrganization: "",
-      jobTitle: "",
-      dateOfRegistration: ""
-    });
+    useState<TrainingBenefeciaryForm>(TrainingBeneficiaryDefault());
 
   const [trainingsData, setTrainingsData] = useState<TrainingForm[]>([]);
 
-  const [chaptersData, setChaptersData] = useState<
-    {
-      trainingName: string;
-      chapters: {
-        id: number;
-        topic: string;
-        facilitatorName: string;
-        facilitatorJobTitle: string;
-        startDate: string;
-        endDate: string;
-      }[];
-    }[]
-  >([]);
+  const [chaptersData, setChaptersData] = useState<Chapters>([]);
 
-  const [selfChaptersData, setSelfChaptersData] = useState<
-    {
-      id: number;
-      isPresent: boolean;
-      preTestScore: number;
-      postTestScore: number;
-      remark: string;
-    }[]
-  >([]);
+  const [selfChaptersData, setSelfChaptersData] = useState<SelfChapters>([]);
 
   useEffect(() => {
     axiosInstance
@@ -93,7 +69,7 @@ const TrainingBeneficiaryProfile = () => {
           ]);
         });
       })
-      .catch((error: any) => 
+      .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
       );
   }, []);
@@ -145,27 +121,20 @@ const TrainingBeneficiaryProfile = () => {
               ))}
             </div>
             <div>
-              <Button className="rounded-2xl" onClick={() => setReqForTrainingSelector(!reqForTrainingSelector)}>
+              <Button
+                className="rounded-2xl"
+                onClick={() =>
+                  setReqForTrainingSelector(!reqForTrainingSelector)
+                }
+              >
                 <Plus></Plus>
               </Button>
             </div>
           </TabsList>
           <TabsContent value="beneficiaryInfo">
-            <Card className="min-h-[400px] flex flex-col items-start justify-around felx-wrap">
+            <Card className="min-h-[400px]">
               <CardContent className="h-full grid gap-4 max-h-[400px] overflow-auto">
-                <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-                  {beneficiaryInfo &&
-                    Object.entries(beneficiaryInfo).map((entry, i) => {
-                      if (entry[0] == "id") return;
-                      return (
-                        <InfoItem
-                          key={i}
-                          label={entry[0].toUpperCase()}
-                          value={entry[1].toString()}
-                        />
-                      );
-                    })}
-                </div>
+                <div>{structuredInfo(beneficiaryInfo)}</div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -211,7 +180,10 @@ const TrainingBeneficiaryProfile = () => {
                             <Switch
                               id="airplane-mode"
                               onCheckedChange={(checked: boolean) =>
-                                handleTogglePrecenseOfBeneficiary(ch.id)
+                                reqForConfirmationModelFunc(
+                                  BeneficiaryPresenceTogglerButtonMessage,
+                                  () => handleTogglePrecenseOfBeneficiary(ch.id)
+                                )
                               }
                               defaultChecked={
                                 selfChaptersData.map((selfChapterData) => {
@@ -266,15 +238,50 @@ const TrainingBeneficiaryProfile = () => {
             ></PreAndPostTestForm>
           )}
 
-          {reqForTrainingSelector && (
-            <TrainingSelectorDialog
-              open={reqForTrainingSelector}
-              onOpenChange={setReqForTrainingSelector}
-              ids={[id]}
-            ></TrainingSelectorDialog>
-          )}
-          
+        {reqForTrainingSelector && (
+          <TrainingSelectorDialog
+            open={reqForTrainingSelector}
+            onOpenChange={setReqForTrainingSelector}
+            ids={[id]}
+          ></TrainingSelectorDialog>
+        )}
       </div>
+    </>
+  );
+};
+
+const structuredInfo = (info: any) => {
+  return (
+    <>
+      {info ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {Object.entries(info).map(([key, value], index) => {
+            if (IsIdFeild(key)) return;
+            return (
+              <div
+                key={index}
+                className="flex flex-col rounded-xl border p-3 transition-all hover:shadow-sm"
+              >
+                <span className="text-xs font-medium uppercase opacity-70 tracking-wide">
+                  {key.replace(/([A-Z])/g, " $1")}
+                </span>
+                <span className="text-sm font-semibold truncate">
+                  {value?.toString() || "-"}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div
+              key={i}
+              className="h-[56px] w-full rounded-xl animate-pulse bg-muted/30"
+            />
+          ))}
+        </div>
+      )}
     </>
   );
 };

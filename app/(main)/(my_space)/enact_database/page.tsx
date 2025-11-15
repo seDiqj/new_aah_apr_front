@@ -7,10 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { enactTableColumn } from "@/definitions/DataTableColumnsDefinitions";
 import { useEffect, useState } from "react";
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AssessmentForm from "@/components/global/CreateNewAssessmentForm";
 import { useRouter } from "next/navigation";
+import { AssessmentsFiltersList, AssessmentsFilterUrl } from "@/lib/FiltersList";
 
 // Will be used in version 2.
 const enactTabsList = [
@@ -104,8 +104,8 @@ const EnactDatabasePage = () => {
                 editModelOpenerStateSetter={setReqForAssessmentUpdateForm}
                 idFeildForShowStateSetter={setIdFeildForShowStateSetter}
                 showModelOpenerStateSetter={setReqForAssessmentShowForm}
-                filterUrl="/filter/enact_database/enacts"
-                filtersList={["projectCode", "province", "indicator", "date"]}
+                filterUrl={AssessmentsFilterUrl}
+                filtersList={AssessmentsFiltersList}
               ></DataTableDemo>
             </TabsContent>
           </Tabs>

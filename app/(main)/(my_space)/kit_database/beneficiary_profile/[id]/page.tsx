@@ -12,20 +12,23 @@ import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useParentContext } from "@/contexts/ParentContext";
 import { beneficiaryKitListColumns } from "@/definitions/DataTableColumnsDefinitions";
+import { KitDatabaseBeneficiaryProfileInterface } from "@/interfaces/Interfaces";
 import { createAxiosInstance } from "@/lib/axios";
+import { IsANullValue, IsIdFeild } from "@/lib/Constants";
+import {
+  KitDatabaseBeneficiaryKitsTableFiltersList,
+  KitDatabaseBeneficiaryKitsTableFilterUrl,
+} from "@/lib/FiltersList";
 import { withPermission } from "@/lib/withPermission";
-import { MainDatabaseProgram } from "@/types/Types";
+import {
+  KitDatabaseBeneficiaryProfileInfoType,
+  MainDatabaseProgram,
+} from "@/types/Types";
 import { use, useEffect, useState } from "react";
 
-interface ComponentProps {
-  params: Promise<{
-    id: string;
-  }>;
-}
-
-const KitDbBeneficiaryProfilePage: React.FC<ComponentProps> = (
-  params: ComponentProps
-) => {
+const KitDbBeneficiaryProfilePage: React.FC<
+  KitDatabaseBeneficiaryProfileInterface
+> = (params: KitDatabaseBeneficiaryProfileInterface) => {
   const { id } = use(params.params);
 
   const axiosInstance = createAxiosInstance();
@@ -42,22 +45,8 @@ const KitDbBeneficiaryProfilePage: React.FC<ComponentProps> = (
   const [reqForKitCreationForm, setReqForKitCreationForm] =
     useState<boolean>(false);
 
-  const [beneficiaryInfo, setBeneficiaryInfo] = useState<{
-    dateOfRegistration: string;
-    code: string;
-    name: string;
-    fatherHusbandName: string;
-    gender: string;
-    age: number;
-    maritalStatus: string;
-    childCode: string;
-    ageOfChild: number;
-    phone: string;
-    houseHoldStatus: string;
-    literacyLevel: string;
-    disablilityType: string;
-    referredForProtection: boolean;
-  }>();
+  const [beneficiaryInfo, setBeneficiaryInfo] =
+    useState<KitDatabaseBeneficiaryProfileInfoType>();
 
   const [programInfo, setProgramInfo] = useState<MainDatabaseProgram[]>();
 
@@ -66,7 +55,7 @@ const KitDbBeneficiaryProfilePage: React.FC<ComponentProps> = (
     axiosInstance
       .get(`/kit_db/beneficiary/${id}`)
       .then((response: any) => {
-        const {programs, ...benefciaryDetails} = response.data.data
+        const { programs, ...benefciaryDetails } = response.data.data;
         if (response.data.status) setBeneficiaryInfo(benefciaryDetails);
       })
       .catch((error: any) =>
@@ -118,47 +107,80 @@ const KitDbBeneficiaryProfilePage: React.FC<ComponentProps> = (
             {/* Beneficiary Info */}
             <TabsContent value="beneficiaryInfo" className="h-full">
               <Card className="h-full flex flex-col">
-                <CardContent>
+                <CardContent className="overflow-auto">
                   <div className="flex flex-col gap-2 items-start justify-around w-full">
                     {/* Beneficiary information */}
                     <div className="flex flex-col gap-2 w-full">
                       <Label>Beneficiary Information</Label>
-                      <div className="flex flex-col w-full max-h-[160px] border-2 border-green-100 rounded-2xl p-4 overflow-y-auto">
-                        {beneficiaryInfo &&
-                          Object.entries(beneficiaryInfo).map(
-                            ([key, value], index) => {
-                              if (key == "id" || value == null) return
-
-                              return (
+                      <div className="">
+                        {beneficiaryInfo ? (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {Object.entries(beneficiaryInfo).map(
+                              ([key, value], index) => {
+                                if (IsIdFeild(key) || IsANullValue(value))
+                                  return;
+                                return (
+                                  <div
+                                    key={index}
+                                    className="flex flex-col rounded-xl border p-3 transition-all hover:shadow-sm"
+                                  >
+                                    <span className="text-xs font-medium uppercase opacity-70 tracking-wide">
+                                      {key.replace(/([A-Z])/g, " $1")}
+                                    </span>
+                                    <span className="text-sm font-semibold truncate">
+                                      {value?.toString() || "-"}
+                                    </span>
+                                  </div>
+                                );
+                              }
+                            )}
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {Array.from({ length: 10 }).map((_, i) => (
                               <div
-                                key={index}
-                                className="flex flex-row items-center justify-between gap-6 w-full"
-                              >
-                                <span>{key}</span>
-                                <span>{value}</span>
-                              </div>
-                            )
-                            }
-                          )}
+                                key={i}
+                                className="h-[56px] w-full rounded-xl animate-pulse bg-muted/30"
+                              />
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="flex flex-col gap-2 w-full">
                       <Label>Program Information</Label>
-                      <div className="flex flex-col w-full max-h-[160px] border-2 border-green-100 rounded-2xl p-4 overflow-y-auto">
-                        {programInfo &&
-                          programInfo.map((programInfo) =>
-                            Object.entries(programInfo).map(
-                              ([key, value], index) => (
-                                <div
-                                  key={index}
-                                  className="flex flex-row items-center justify-between gap-6 w-full"
-                                >
-                                  <span>{key}</span>
-                                  <span>{value}</span>
-                                </div>
-                              )
-                            )
-                          )}
+                      <div className="">
+                        {programInfo ? (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {programInfo.map((programInfo) => Object.entries(programInfo).map(
+                              ([key, value], index) => {
+                                if (IsIdFeild(key)) return;
+                                return (
+                                  <div
+                                    key={index}
+                                    className="flex flex-col rounded-xl border p-3 transition-all hover:shadow-sm"
+                                  >
+                                    <span className="text-xs font-medium uppercase opacity-70 tracking-wide">
+                                      {key.replace(/([A-Z])/g, " $1")}
+                                    </span>
+                                    <span className="text-sm font-semibold truncate">
+                                      {value?.toString() || "-"}
+                                    </span>
+                                  </div>
+                                );
+                              }
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {Array.from({ length: 10 }).map((_, i) => (
+                              <div
+                                key={i}
+                                className="h-[56px] w-full rounded-xl animate-pulse bg-muted/30"
+                              />
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -178,12 +200,8 @@ const KitDbBeneficiaryProfilePage: React.FC<ComponentProps> = (
                   idFeildForEditStateSetter={setIdFeildForEditStateSetter}
                   idFeildForShowStateSetter={setIdFeildForShowStateSetter}
                   showModelOpenerStateSetter={() => {}}
-                  filterUrl=""
-                  filtersList={[
-                    "kit",
-                    "distributionDate",
-                    "isReceived"
-                  ]}
+                  filterUrl={KitDatabaseBeneficiaryKitsTableFilterUrl}
+                  filtersList={KitDatabaseBeneficiaryKitsTableFiltersList}
                 ></DataTableDemo>
                 <CardFooter className="flex flex-row w-full gap-2 items-center justify-end"></CardFooter>
               </Card>

@@ -17,36 +17,20 @@ import { useParentContext } from "@/contexts/ParentContext";
 import { CommunityDialogBeneficiaryForm } from "@/types/Types";
 import { withPermission } from "@/lib/withPermission";
 import { CdDatabaseBenefciaryFormSchema } from "@/schemas/FormsSchema";
+import { CommunityDialogueBeneficiaryDefault } from "@/lib/FormsDefaultValues";
+import { CdDatabaseBeneficiaryCreationMessage } from "@/lib/ConfirmationModelsTexts";
+import { CdDatabaseBeneficiaryCreationFormInterface } from "@/interfaces/Interfaces";
 
-
-interface DatabaseSummaryProps {
-  open: boolean;
-  onOpenChange: (value: boolean) => void;
-}
-
-const BeneficiaryCreateCD: React.FC<DatabaseSummaryProps> = ({
+const BeneficiaryCreateCD: React.FC<CdDatabaseBeneficiaryCreationFormInterface> = ({
   open,
   onOpenChange,
 }) => {
   const { reqForToastAndSetMessage, axiosInstance, handleReload, reqForConfirmationModelFunc } = useParentContext();
 
-  const [formData, setFormData] = useState<CommunityDialogBeneficiaryForm>({
-    name: "",
-    fatherHusbandName: "",
-    age: 0,
-    maritalStatus: "",
-    gender: "",
-    phone: "",
-    nationalId: "",
-    jobTitle: "",
-    incentiveReceived: false,
-    incentiveAmount: "",
-    dateOfRegistration: "",
-  });
+  const [formData, setFormData] = useState<CommunityDialogBeneficiaryForm>(CommunityDialogueBeneficiaryDefault());
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   
-
   const handleFormChange = (e: any) => {
     const { name, value } = e.target;
 
@@ -285,8 +269,7 @@ const BeneficiaryCreateCD: React.FC<DatabaseSummaryProps> = ({
 
         {/* Submit Button */}
         <Button className="w-full mt-6" onClick={() => reqForConfirmationModelFunc(
-          "Are you compleatly sure ?",
-          "",
+          CdDatabaseBeneficiaryCreationMessage,
           () => handleSubmit()
         )}>
           Submit

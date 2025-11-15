@@ -12,79 +12,32 @@ import { useParentContext } from "@/contexts/ParentContext";
 import { useProjectContext } from "../create_new_project/page";
 import { useProjectEditContext } from "../edit_project/[id]/page";
 import { useProjectShowContext } from "../project_show/[id]/page";
+import { IsEnteredStatusCallingToBeApproveAtLevelAboveTheAllowedLevel, IsEnteredStatusCallsToRejectAtTheLevelAboveTheCurrentLimit, IsEnteredStatusLocaltedAtTheLowerLevelThenTheCurrentStatus, IsValidAprStatus } from "@/lib/Constants";
 
 interface ComponentProps {
-  mode: "create" | "edit";
-  readOnly?: boolean;
+  mode: "create" | "edit" | "show";
 }
 
-const AprFinalizationSubPage: React.FC<ComponentProps> = ({mode, readOnly}) => {
+const AprFinalizationSubPage: React.FC<ComponentProps> = ({mode}) => {
 
     const {reqForToastAndSetMessage, axiosInstance} = useParentContext();
-    const {projectId, actionLogs, setActionLogs, projectAprStatus, setProjectAprStatus} = mode == "create" ? useProjectContext() : readOnly ? useProjectShowContext() : useProjectEditContext();
+    const {projectId, actionLogs, setActionLogs, projectAprStatus, setProjectAprStatus} = mode == "create" ? useProjectContext() : mode == "show" ? useProjectShowContext() : useProjectEditContext();
 
     const [comment, setComment] = useState<string>("");
 
     const changeProjectAprStatus = (status: string) => {
-        if (!projectAprStatusList.includes(status)) {
+        if (!IsValidAprStatus(status)) {
 
           reqForToastAndSetMessage("Wronge status !");
           return;
 
-        } else if (
-          
-          (() => {
-            const projectCurrentStatusValue: undefined | number = aprFinalizationSteps.find((step) => step.acceptStatusValue == projectAprStatus || step.rejectStatusValue == projectAprStatus)?.stepValue;
-
-            const inputAcceptStatusValue: undefined | number = aprFinalizationSteps.find((step) => step.acceptStatusValue == status)?.stepValue;
-
-            return projectCurrentStatusValue && inputAcceptStatusValue && projectCurrentStatusValue > inputAcceptStatusValue!;
-            
-          })()
-        
-        ) {
+        } else if (IsEnteredStatusLocaltedAtTheLowerLevelThenTheCurrentStatus(projectAprStatus, status)) {
             reqForToastAndSetMessage(`You can not set the project status to ${status} while its ${projectAprStatus} ! 
             Note: if you wanna to change the apr status of project to ${status} please before that reject it at the top level stages and then try agein.`); return
-          } else if (
-
-            (() => {
-
-              const projectCurrentStatusValue: undefined | number = aprFinalizationSteps.find((step) => step.acceptStatusValue == projectAprStatus || step.rejectStatusValue == projectAprStatus)?.stepValue;
-
-              const inputRejectStatusValue: undefined | number = aprFinalizationSteps.find((step) => step.rejectStatusValue == status)?.stepValue;
-
-              return projectCurrentStatusValue && inputRejectStatusValue && projectCurrentStatusValue < inputRejectStatusValue!;
-
-            })()
-
-          ) {
-
+          } else if (IsEnteredStatusCallsToRejectAtTheLevelAboveTheCurrentLimit(projectAprStatus, status)) {
             reqForToastAndSetMessage(`You can not reject a project at the ${status} stage while its on ${projectAprStatus} stage !`);
             return;
-
-          } else if (
-
-            (() => {
-
-              let isRejected: boolean = false;
-
-              const projectCurrentStatusValue: undefined | number = aprFinalizationSteps.find((step) => {
-                if (step.acceptStatusValue == projectAprStatus) 
-                  return true;
-                else if (step.rejectStatusValue == projectAprStatus) {
-                  isRejected = true;
-                  return true
-                }
-                return false
-              })?.stepValue;
-
-              const inputRejectStatusValue: undefined | number = aprFinalizationSteps.find((step) => step.rejectStatusValue == status || step.acceptStatusValue == status)?.stepValue;
-
-              return projectCurrentStatusValue && inputRejectStatusValue && ((projectCurrentStatusValue - inputRejectStatusValue) * -1) >= (isRejected ? 1 : 2);
-
-            })()
-
-          ) {
+          } else if (IsEnteredStatusCallingToBeApproveAtLevelAboveTheAllowedLevel(projectAprStatus, status)) {
 
             reqForToastAndSetMessage(`You can not change the apr status of a project to ${status} while not yet accepted at the previos levels !`)
             return;
@@ -104,12 +57,14 @@ const AprFinalizationSubPage: React.FC<ComponentProps> = ({mode, readOnly}) => {
           );
     };
 
-      useEffect(() => {
-        if (actionLogs.length >= 1) return;
-        axiosInstance.get(`/projects/get_project_finalizers_details/${projectId}`)
-        .then((response: any) => setActionLogs(response.data.data))
-        .catch((error: any) => reqForToastAndSetMessage(error.response.data.message))
-        }, [])
+    useEffect(() => {
+      if (actionLogs.length >= 1) return;
+      axiosInstance.get(`/projects/get_project_finalizers_details/${projectId}`)
+      .then((response: any) => setActionLogs(response.data.data))
+      .catch((error: any) => reqForToastAndSetMessage(error.response.data.message))
+    }, []);
+
+    const readOnly: boolean = mode == "show";
 
     return (
         <>

@@ -27,42 +27,41 @@ export type Output =
 {
     id: string | null;
     outcomeId: string | null;
-    outcomeRef: string;
     output: string;
     outputRef: string;
 }
 
-export type Indicator = {
-  id: string | null;
-  outputId: string | null;
-  outputRef: string;
-  indicator: string;
-  indicatorRef: string;
-  target: number;
-  status: string;
-  database: string;
-  type: string | null;
-  provinces: {
-    province: string;
-    target: number;
-    councilorCount: number;
-  }[];
-  dessaggregationType: "session" | "indevidual" | "enact";
-  description: string;
-  subIndicator: {
+  export type Indicator = {
     id: string | null;
+    outputId: string | null;
+    outputRef: string;
+    indicator: string;
     indicatorRef: string;
-    name: string;
     target: number;
-    dessaggregationType: string;
-    type: null | string;
+    status: string;
+    database: string;
+    type: string | null;
     provinces: {
       province: string;
       target: number;
       councilorCount: number;
     }[];
-  } | null;
-};
+    dessaggregationType: "session" | "indevidual" | "enact";
+    description: string;
+    subIndicator: {
+      id: string | null;
+      indicatorRef: string;
+      name: string;
+      target: number;
+      dessaggregationType: "session" | "indevidual";
+      type: null | string;
+      provinces: {
+        province: string;
+        target: number;
+        councilorCount: number;
+      }[];
+    } | null;
+  };
 
 export type Dessaggregation = {
     indicatorId: string | null;

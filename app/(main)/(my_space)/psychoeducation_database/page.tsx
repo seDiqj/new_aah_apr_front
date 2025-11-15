@@ -3,13 +3,13 @@
 import BreadcrumbWithCustomSeparator from "@/components/global/BreadCrumb";
 import CreatePsychoeducation from "@/components/global/CreatePsychoeducation";
 import DataTableDemo from "@/components/global/MulitSelectTable";
-import Preloader from "@/components/global/Preloader";
 import SubHeader from "@/components/global/SubHeader";
 import { Button } from "@/components/ui/button";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import {
   psychoeducationTableListColumn,
 } from "@/definitions/DataTableColumnsDefinitions";
+import { PsychoeducationFilterUrl, PsychoeducationsFiltersList } from "@/lib/FiltersList";
 import { useState } from "react";
 
 const PsychoeducationDatabasePage = () => {
@@ -65,12 +65,8 @@ const PsychoeducationDatabasePage = () => {
           showModelOpenerStateSetter={setReqForPsychoeducationShowForm}
           editBtnPermission="Psychoeducation.edit"
           deleteBtnPermission="Psychoeducation.delete"
-          filterUrl="filter/psychoeducation_db/psychoeducations"
-          filtersList={[
-            "indicator",
-            "awarenessTopic",
-            "awarenessDate"
-          ]}
+          filterUrl={PsychoeducationFilterUrl}
+          filtersList={PsychoeducationsFiltersList}
         ></DataTableDemo>
 
         {reqForPsychoeducationCreationForm && (

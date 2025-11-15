@@ -27,53 +27,24 @@ import {
 } from "@/components/ui/table";
 import { Checkbox } from "../ui/checkbox";
 import { withPermission } from "@/lib/withPermission";
+import { CommunityDialogues, SelectedCommunityDialoguesGroups } from "@/types/Types";
+import { CommunityDialogueSelectorSubmitMessage } from "@/lib/ConfirmationModelsTexts";
+import { CommunityDialogueSelectorInterface } from "@/interfaces/Interfaces";
 
-interface ComponentProps {
-  open: boolean;
-  onOpenChange: (value: boolean) => void;
-  ids: string[];
-}
 
-const CommunityDialogueSelector: React.FC<ComponentProps> = ({
+const CommunityDialogueSelector: React.FC<CommunityDialogueSelectorInterface> = ({
   open,
   onOpenChange,
   ids,
 }) => {
   const { reqForToastAndSetMessage, axiosInstance, reqForConfirmationModelFunc } = useParentContext();
 
-  const [communityDialogues, setCommunityDialogues] = useState<
-    {
-      id: string;
-      program: {
-        projectCode: string;
-        focalPoint: string;
-        province: string;
-        district: string;
-        village: string;
-        location: string;
-        indicator: string;
-      };
-      groups: {
-        id: string;
-        name: string;
-      }[];
-    }[]
-  >([]);
+  const [communityDialogues, setCommunityDialogues] = useState<CommunityDialogues>([]);
 
-  const [selectedCommunityDialoguesGroup, setSelectedCommunityDialoguesGroup] =
-    useState<
-      {
-        communityDialogueId: string;
-        group: {
-          name: string;
-          id: string;
-        };
-      }[]
-    >([]);
+  const [selectedCommunityDialoguesGroup, setSelectedCommunityDialoguesGroup] = useState<SelectedCommunityDialoguesGroups>([]);
 
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [hoveredRowTopRectPosision, setHoveredRowTopRectPosision] =
-    useState<number>(0);
+  const [hoveredRowTopRectPosision, setHoveredRowTopRectPosision] = useState<number>(0);
   const [hoveredCd, setHoveredCd] = useState<any>();
   const dialogContentRef = useRef<HTMLDivElement>(null);
   const [areWeInSubDropDown, setAreWeInSubDropDown] = useState<boolean>(false);
@@ -195,8 +166,7 @@ const CommunityDialogueSelector: React.FC<ComponentProps> = ({
         </DropdownMenu>
 
         <Button onClick={() => reqForConfirmationModelFunc(
-          "Are you compleatly sure ?",
-          "",
+          CommunityDialogueSelectorSubmitMessage,
           () => handleSubmit()
         )} className="w-full mt-6">
           Submit

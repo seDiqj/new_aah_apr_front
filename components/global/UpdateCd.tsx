@@ -15,33 +15,19 @@ import {
 import { useParentContext } from "@/contexts/ParentContext";
 import { SingleSelect } from "@/components/single-select";
 import { CommunityDialogBeneficiaryForm } from "@/types/Types";
+import { CommunityDialogueUpdateInterface } from "@/interfaces/Interfaces";
+import { CommunityDialogueBeneficiaryDefault } from "@/lib/FormsDefaultValues";
+import { GenderOptions, incentiveReceivedOptions, MaritalStatusOptions } from "@/lib/SingleAndMultiSelectOptionsList";
+import { CdDatabaseBenefciaryEditionMessage } from "@/lib/ConfirmationModelsTexts";
 
-interface DatabaseSummaryProps {
-  open: boolean;
-  onOpenChange: (value: boolean) => void;
-  beneficiaryId: number;
-}
-
-const CommunityDialogueUpdateCD: React.FC<DatabaseSummaryProps> = ({
+const CommunityDialogueUpdateCD: React.FC<CommunityDialogueUpdateInterface> = ({
   open,
   onOpenChange,
   beneficiaryId,
 }) => {
-  const { axiosInstance, reqForToastAndSetMessage } = useParentContext();
+  const { axiosInstance, reqForToastAndSetMessage, reqForConfirmationModelFunc } = useParentContext();
 
-  const [formData, setFormData] = useState<CommunityDialogBeneficiaryForm>({
-    name: "",
-    fatherHusbandName: "",
-    age: 0,
-    maritalStatus: "",
-    gender: "",
-    phone: "",
-    nationalId: "",
-    jobTitle: "",
-    incentiveReceived: false,
-    incentiveAmount: "",
-    dateOfRegistration: ""
-  });
+  const [formData, setFormData] = useState<CommunityDialogBeneficiaryForm>(CommunityDialogueBeneficiaryDefault());
 
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -157,14 +143,7 @@ const CommunityDialogueUpdateCD: React.FC<DatabaseSummaryProps> = ({
             <div>
               <Label htmlFor="maritalStatus">Marital Status</Label>
               <SingleSelect
-                options={[
-                  { value: "single", label: "Single" },
-                  { value: "married", label: "Married" },
-                  { value: "divorced", label: "Divorced" },
-                  { value: "widowed", label: "Widowed" },
-                  { value: "widower", label: "Widower" },
-                  { value: "separated", label: "Separated" },
-                ]}
+                options={MaritalStatusOptions}
                 value={formData.maritalStatus}
                 onValueChange={(value: string) =>
                   handleFormChange({
@@ -177,11 +156,7 @@ const CommunityDialogueUpdateCD: React.FC<DatabaseSummaryProps> = ({
             <div>
               <Label htmlFor="gender">Gender</Label>
               <SingleSelect
-                options={[
-                  { value: "male", label: "Male" },
-                  { value: "female", label: "Female" },
-                  { value: "other", label: "Other" },
-                ]}
+                options={GenderOptions}
                 value={formData.gender}
                 onValueChange={(value: string) =>
                   handleFormChange({
@@ -231,10 +206,7 @@ const CommunityDialogueUpdateCD: React.FC<DatabaseSummaryProps> = ({
             <div>
               <Label htmlFor="incentiveReceived">Incentive Received</Label>
               <SingleSelect
-                options={[
-                  { value: "true", label: "Yes" },
-                  { value: "false", label: "No" },
-                ]}
+                options={incentiveReceivedOptions}
                 value={formData.incentiveReceived.toString()}
                 onValueChange={(value: string) =>
                   handleFormChange({
@@ -262,7 +234,10 @@ const CommunityDialogueUpdateCD: React.FC<DatabaseSummaryProps> = ({
         )}
 
         {!loading && (
-          <Button className="w-full mt-6" onClick={handleSubmit}>
+          <Button className="w-full mt-6" onClick={() => reqForConfirmationModelFunc(
+            CdDatabaseBenefciaryEditionMessage,
+            handleSubmit
+          )}>
             Update
           </Button>
         )}

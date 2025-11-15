@@ -11,6 +11,8 @@ import { submittedAndFirstApprovedDatabasesTableColumn } from "@/definitions/Dat
 import { Button } from "@/components/ui/button";
 import { useParentContext } from "@/contexts/ParentContext";
 import { Check, XCircle } from "lucide-react";
+import { SubmittedDatabasesFiltersList, SubmittedDatabasesFilterUrl } from "@/lib/FiltersList";
+import { ApproveDatabaseMessage, RejectDatabaseMessage } from "@/lib/ConfirmationModelsTexts";
 
 const SubmittedDatabasesPage = () => {
   const {
@@ -87,8 +89,7 @@ const SubmittedDatabasesPage = () => {
               variant={"outline"}
               onClick={() =>
                 reqForConfirmationModelFunc(
-                  "Are you compleatly sure ?",
-                  "",
+                  ApproveDatabaseMessage,
                   approveDatabase
                 )
               }
@@ -101,8 +102,7 @@ const SubmittedDatabasesPage = () => {
               variant={"outline"}
               onClick={() =>
               reqForConfirmationModelFunc(
-                "Are you compleatly sure ?",
-                "",
+                RejectDatabaseMessage,
                 rejectDatabase
               )
               }
@@ -111,8 +111,8 @@ const SubmittedDatabasesPage = () => {
             </Button>
           </div>
         }
-        filterUrl="/filter/submitted_databases"
-        filtersList={["projectCode", "province", "database", "fromDate", "toDate"]}
+        filterUrl={SubmittedDatabasesFilterUrl}
+        filtersList={SubmittedDatabasesFiltersList}
       ></DataTableDemo>
 
       {openSubmitNewDatabase && (

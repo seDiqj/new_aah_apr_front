@@ -18,26 +18,18 @@ import { isp3s } from "../utils/OptionLists";
 import AprLogsSubPage from "../Components/AprLogsSubPage";
 import IndicatorForm from "../Components/IndicatorForm";
 import Isp3SubPage from "../Components/Isp3SubPage";
+import { Button } from "@/components/ui/button";
+import IndicatorModel from "@/components/global/IndicatorEditModel";
+import { useParentContext } from "@/contexts/ParentContext";
+import OutcomeModel from "@/components/global/OutcomeEditModel";
+import OutputModel from "@/components/global/OutputEditModel";
+import { Isp3Default, ProjectDefault } from "@/lib/FormsDefaultValues";
 
 const NewProjectPage = () => {
 
-  const [formData, setFormData] = useState<Project>({
-    id: null,
-    projectCode: "",
-    projectTitle: "",
-    projectGoal: "",
-    projectDonor: "",
-    startDate: "",
-    endDate: "",
-    status: "planed",
-    projectManager: "",
-    provinces: ["kabul"],
-    thematicSector: ["mhpss"],
-    reportingPeriod: "",
-    reportingDate: "",
-    aprStatus: "NotCreatedYet",
-    description: "",
-  });
+  const {reqForToastAndSetMessage} = useParentContext();
+
+  const [formData, setFormData] = useState<Project>(ProjectDefault());
 
   const [outcomes, setOutcomes] = useState<Outcome[]>([]);
 
@@ -47,14 +39,7 @@ const NewProjectPage = () => {
 
   const [dessaggregations, setDessaggregations] = useState<Dessaggregation[]>([]);
 
-  const [isp3, setIsp3] = useState<
-      Isp3[]
-  >([
-      ...isp3s.map((i) => ({
-      name: i,
-      indicators: [],
-      })),
-  ]);
+  const [isp3, setIsp3] = useState<Isp3[]>(Isp3Default());
 
   const [projectAprStatus, setProjectAprStatus] = useState<string>("notCreatedYet");
 
@@ -65,8 +50,9 @@ const NewProjectPage = () => {
   const [projectGoal, setProjectGoal] = useState<string>('');
   const [currentTab, setCurrentTab] = useState<string>("project");
 
-
-  useEffect(() => console.log(formData), [formData])
+  const [reqForOutcomeForm, setReqForOutcomeForm] = useState(false);
+  const [reqForOutputForm, setReqForOutputForm] = useState(false);
+  const [reqForIndicatorForm, setReqForIndicatorForm] = useState(false);
 
   return (
     <>
@@ -100,7 +86,33 @@ const NewProjectPage = () => {
         <div className="flex flex-row items-center justify-start my-2">
           <BreadcrumbWithCustomSeparator></BreadcrumbWithCustomSeparator>
         </div>
-        <SubHeader pageTitle={"Create New Project"}></SubHeader>
+        <SubHeader pageTitle={"Create New Project"}>
+          <div className="flex flex-row items-center justify-end gap-2">
+            {(currentTab == "outcome" || currentTab == "output" || currentTab == "indicator") && 
+              (<Button
+                onClick={() => {
+                  switch (currentTab) {
+                    case "outcome":
+                      setReqForOutcomeForm(true);
+                      break;
+                    case "output":
+                      setReqForOutputForm(true);
+                      break;
+                    case "indicator":
+                      if (outputs.length == 0) {
+                        reqForToastAndSetMessage("Please add at least one ouptut !");
+                        return;
+                      }
+                      setReqForIndicatorForm(true);
+                      break;
+                  }
+                }}>
+                {currentTab == "outcome" ? "New Outcome" : currentTab == "output" ? "New Output" : "New Indicator"}
+              </Button>)
+            }
+            
+          </div>
+        </SubHeader>
         <div className="flex flex-1 h-[440px] w-full flex-col gap-6">
           <Tabs
             defaultValue="project"
@@ -166,6 +178,31 @@ const NewProjectPage = () => {
             </TabsContent>
           </Tabs>
         </div>
+
+
+        {reqForIndicatorForm && (
+            <IndicatorModel
+                isOpen={reqForIndicatorForm}
+                onClose={() => setReqForIndicatorForm(false)}
+                mode="create"
+                pageIdentifier="create"
+            />
+        )}
+
+        {reqForOutcomeForm && (
+          <OutcomeModel
+            isOpen={reqForOutcomeForm}
+            onOpenChange={setReqForOutcomeForm}
+            mode="create"
+            pageIdentifier="create"
+            >
+           </OutcomeModel>
+        )}
+
+        {reqForOutputForm && (
+          <OutputModel isOpen={reqForOutputForm} onOpenChange={setReqForOutputForm} mode={"create"} pageIdentifier={"create"}></OutputModel>
+        )}
+        
       </div>
       </ComponentContext.Provider>
     </>

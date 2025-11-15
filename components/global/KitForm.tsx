@@ -11,17 +11,14 @@ import { KitFormType } from "@/types/Types";
 import { MultiSelect } from "../multi-select";
 import { useParams } from "next/navigation";
 import { withPermission } from "@/lib/withPermission";
+import { KitDefault } from "@/lib/FormsDefaultValues";
+import { KitCreationMessage, KitEditionMessage } from "@/lib/ConfirmationModelsTexts";
+import { KitRecievedOptions } from "@/lib/SingleAndMultiSelectOptionsList";
+import { KitFormInterface } from "@/interfaces/Interfaces";
 
-interface ComponentProps {
-  open: boolean;
-  onOpenChange: (value: boolean) => void;
-  mode: "create" | "edit" | "show";
-  kitId?: number;
-}
+let mode = ""
 
-let mode: string = "";
-
-const KitForm: React.FC<ComponentProps> = ({
+const KitForm: React.FC<KitFormInterface> = ({
   open,
   onOpenChange,
   mode,
@@ -30,14 +27,10 @@ const KitForm: React.FC<ComponentProps> = ({
   mode = mode;
 
   const { id } = useParams();
-  const { reqForToastAndSetMessage, axiosInstance, handleReload } = useParentContext();
 
-  const [formData, setFormData] = useState<KitFormType>({
-    kits: [],
-    distributionDate: "",
-    remark: "",
-    isReceived: false,
-  });
+  const { reqForToastAndSetMessage, axiosInstance, handleReload, reqForConfirmationModelFunc } = useParentContext();
+
+  const [formData, setFormData] = useState<KitFormType>(KitDefault());
 
   const handleFormChange = (e: any) => {
     const name: string = e.target.name;
@@ -79,11 +72,7 @@ const KitForm: React.FC<ComponentProps> = ({
     }
   };
 
-  const [kits, setKits] = useState<
-    {
-      name: string;
-    }[]
-  >();
+  const [kits, setKits] = useState<{name: string;}[]>();
 
   useEffect(() => {
     if ((mode === "edit" || mode === "show") && kitId && open) {
@@ -167,10 +156,7 @@ const KitForm: React.FC<ComponentProps> = ({
           <div className="flex flex-col gap-2">
             <Label>Is Received</Label>
             <SingleSelect
-              options={[
-                { value: "true", label: "Yes" },
-                { value: "false", label: "No" },
-              ]}
+              options={KitRecievedOptions}
               value={formData.isReceived ? "true" : "false"}
               onValueChange={(value: string) =>
                 handleFormChange({
@@ -187,7 +173,10 @@ const KitForm: React.FC<ComponentProps> = ({
           {/* Submit */}
           {mode !== "show" && (
             <div className="flex justify-end col-span-2">
-              <Button onClick={handleSubmit}>
+              <Button onClick={() => reqForConfirmationModelFunc(
+                (mode == "create" ? KitCreationMessage : KitEditionMessage),
+                handleSubmit
+              )}>
                 {mode === "create" ? "Submit" : "Update"}
               </Button>
             </div>

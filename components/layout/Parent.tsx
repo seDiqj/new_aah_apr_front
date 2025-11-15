@@ -13,6 +13,7 @@ import ProfileModal from "../global/UserFormTest";
 import { Folder, Clock, CheckCircle, XCircle } from "lucide-react";
 import useEcho from "@/hooks/echo";
 import Preloader from "../global/Preloader";
+import { GeneralMessage } from "@/lib/ConfirmationModelsTexts";
 
 
 interface ComponentProps {
@@ -122,13 +123,12 @@ const Parent: React.FC<ComponentProps> = ({ children }) => {
   const [reqForConfirmationModel, setReqForConfirmationModel] = useState(false);
 
   const [dialogConfig, setDialogConfig] = useState({
-    mainText: "",
     details: "",
     onContinue: () => {},
   });
   
-  const reqForConfirmationModelFunc = (mainText: string, details: string, onContinue: () => void) => {
-    setDialogConfig({ mainText, details, onContinue });
+  const reqForConfirmationModelFunc = (details: string, onContinue: () => void) => {
+    setDialogConfig({ details, onContinue });
     setReqForConfirmationModel(true);
   };
 
@@ -185,14 +185,13 @@ const Parent: React.FC<ComponentProps> = ({ children }) => {
       {globalLoading && <Preloader reqForLoading={globalLoading} />}
 
       <ConfirmationAlertDialogue
-        open={reqForConfirmationModel}
-        onOpenChange={setReqForConfirmationModel}
-        mainText={dialogConfig.mainText}
-        details={dialogConfig.details}
-        onContinue={() => {
-          dialogConfig.onContinue();
-          setReqForConfirmationModel(false);
-        }}
+          open={reqForConfirmationModel}
+          onOpenChange={setReqForConfirmationModel}
+          details={dialogConfig.details}
+          onContinue={() => {
+            dialogConfig.onContinue();
+            setReqForConfirmationModel(false);
+          }}
       />
       
     </ParentContext.Provider>

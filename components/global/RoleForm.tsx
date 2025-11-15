@@ -23,18 +23,13 @@ import {
 } from "../ui/select";
 import { Separator } from "../ui/separator";
 import { Checkbox } from "../ui/checkbox";
-import { createAxiosInstance } from "@/lib/axios";
 import { useParentContext } from "@/contexts/ParentContext";
 import { withPermission } from "@/lib/withPermission";
 import { Skeleton } from "../ui/skeleton";
 import { RoleFormSchema } from "@/schemas/FormsSchema";
+import { RoleInterface } from "@/interfaces/Interfaces";
+import { RoleCreationMessage, RoleEditionMessage } from "@/lib/ConfirmationModelsTexts";
 
-interface ComponentProps {
-  open: boolean;
-  openStateSetter: (value: boolean) => void;
-  mode: "create" | "edit" | "show";
-  idFeildForEditStateSetter?: number | null;
-}
 
 type Permission = {
   id: number;
@@ -48,7 +43,7 @@ type PermissionsGrouped = {
 
 let mode: string = "";
 
-const RoleForm: React.FC<ComponentProps> = ({
+const RoleForm: React.FC<RoleInterface> = ({
   open,
   openStateSetter,
   mode,
@@ -60,12 +55,9 @@ const RoleForm: React.FC<ComponentProps> = ({
 
   const [name, setName] = useState<string>("");
   const [status, setStatus] = useState<string>("active");
-  const [permissions, setPermissions] = useState<PermissionsGrouped | null>(
-    null
-  );
+  const [permissions, setPermissions] = useState<PermissionsGrouped | null>(null);
   const [rolePermissions, setRolePermissions] = useState<number[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
@@ -304,8 +296,7 @@ const RoleForm: React.FC<ComponentProps> = ({
               <Button variant="outline">Cancel</Button>
             </DialogClose>
             <Button type="button" onClick={() => reqForConfirmationModelFunc(
-              "Are you compleatly sure ?",
-              "",
+              (mode == "create" ? RoleCreationMessage : RoleEditionMessage),
               () => onSubmit()
             )}>
               {mode === "create" ? "Create" : "Update"}

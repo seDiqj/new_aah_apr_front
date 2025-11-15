@@ -13,14 +13,9 @@ import { permissionColumns } from "@/definitions/DataTableColumnsDefinitions";
 import { useEffect, useState } from "react";
 import { useParentContext } from "@/contexts/ParentContext";
 import { useRouter } from "next/navigation";
+import { SubmitSummaryInterface } from "@/interfaces/Interfaces";
 
-interface ComponentProps {
-  open: boolean;
-  onOpenChange: (value: boolean) => void;
-  databaseId: string | null;
-}
-
-const SubmitSummary: React.FC<ComponentProps> = ({
+const SubmitSummary: React.FC<SubmitSummaryInterface> = ({
   open,
   onOpenChange,
   databaseId,

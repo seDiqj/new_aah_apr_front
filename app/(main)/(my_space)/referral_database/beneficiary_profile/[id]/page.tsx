@@ -15,8 +15,9 @@ import ReferralForm from "@/components/global/ReferralForm";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import BreadcrumbWithCustomSeparator from "@/components/global/BreadCrumb";
 import SubHeader from "@/components/global/SubHeader";
+import { IsANullValue, IsIdFeild } from "@/lib/Constants";
 
-export default function BeneProfileTabs() {
+const BeneProfileTabs = () => {
   const { id } = useParams<{
     id: string;
   }>();
@@ -123,19 +124,7 @@ export default function BeneProfileTabs() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-                    {beneficiaryInfo &&
-                      Object.entries(beneficiaryInfo).map((entry, i) => {
-                        if (entry[0] == "id") return;
-                        return (
-                          <InfoItem
-                            key={i}
-                            label={entry[0].toUpperCase()}
-                            value={entry[1].toString()}
-                          />
-                        );
-                      })}
-                  </div>
+                    {structuredInfo(beneficiaryInfo)}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -167,3 +156,44 @@ export function InfoItem({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+
+const structuredInfo = (info: any) => {
+  return (
+    <>
+      {info ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {Object.entries(info).map(([key, value], index) => {
+            if (IsIdFeild(key) || IsANullValue(value)) return;
+            return (
+              <div
+                key={index}
+                className="flex flex-col rounded-xl border p-3 transition-all hover:shadow-sm"
+              >
+                <span className="text-xs font-medium uppercase opacity-70 tracking-wide">
+                  {key.replace(/([A-Z])/g, " $1")}
+                </span>
+                <span className="text-sm font-semibold truncate">
+                  {value?.toString() || "-"}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div
+              key={i}
+              className="h-[56px] w-full rounded-xl animate-pulse bg-muted/30"
+            />
+          ))}
+        </div>
+      )}
+    </>
+  );
+};
+
+
+
+export default BeneProfileTabs;

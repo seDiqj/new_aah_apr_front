@@ -14,7 +14,6 @@ import {
 import { SingleSelect } from "../single-select";
 import { Checkbox } from "../ui/checkbox";
 import { useParentContext } from "@/contexts/ParentContext";
-import { createAxiosInstance } from "@/lib/axios";
 import {
   Accordion,
   AccordionItem,
@@ -22,16 +21,13 @@ import {
   AccordionContent,
 } from "@/components/ui/accordion";
 import { ChapterForm, TrainingForm } from "@/types/Types";
+import { ChapterDefault, TrainingDefault } from "@/lib/FormsDefaultValues";
+import { TrainingCreationMessage, TrainingEditionMessage } from "@/lib/ConfirmationModelsTexts";
+import { TrainingFormInterface } from "@/interfaces/Interfaces";
+import { IsShowMode } from "@/lib/Constants";
 
-interface ComponentProps {
-  open: boolean;
-  onOpenChange: (value: boolean) => void;
-  title: string;
-  mode: "create" | "edit" | "show";
-  id?: number;
-}
 
-const TrainingFormDialog: React.FC<ComponentProps> = ({
+const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
   open,
   onOpenChange,
   title,
@@ -40,60 +36,23 @@ const TrainingFormDialog: React.FC<ComponentProps> = ({
 }) => {
   const { reqForToastAndSetMessage, axiosInstance, handleReload, reqForConfirmationModelFunc } = useParentContext();
 
-  const isReadOnly = mode === "show";
+  const isReadOnly = IsShowMode(mode);
 
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState<TrainingForm>({
-    project_id: "",
-    province: "",
-    district: "",
-    trainingLocation: "",
-    name: "",
-    participantCatagory: "",
-    aprIncluded: true,
-    trainingModality: "",
-    startDate: "",
-    endDate: "",
-    indicator: "",
-  });
-  const [chapters, setChapters] = useState<ChapterForm[]>([]);
-  const [chapter, setChapter] = useState<ChapterForm>({
-    topic: "",
-    facilitatorName: "",
-    facilitatorJobTitle: "",
-    startDate: "",
-    endDate: "",
-  });
 
-  useEffect(() => {
-    if ((mode === "edit" || mode === "show") && id) {
-      setLoading(true);
-  
-      axiosInstance
-        .get(`/training_db/training/${id}`)
-        .then((response: any) => {
-          const data = response.data.data;
-          setFormData({
-            project_id: data.project_id || "",
-            province: data.province || "",
-            district: data.district || "",
-            trainingLocation: data.trainingLocation || "",
-            name: data.name || "",
-            participantCatagory: data.participantCatagory || "",
-            aprIncluded: data.aprIncluded ?? true,
-            trainingModality: data.trainingModality || "",
-            startDate: data.startDate || "",
-            endDate: data.endDate || "",
-            indicator: data.indicator || "",
-          });
-          setChapters(data.chapters || []);
-        })
-        .catch((error: any) => {
-          reqForToastAndSetMessage(error.response?.data?.message || "Error loading data");
-        })
-        .finally(() => setLoading(false));
-    }
-  }, [mode, id]);
+  const [formData, setFormData] = useState<TrainingForm>(TrainingDefault());
+
+  const [chapters, setChapters] = useState<ChapterForm[]>([]);
+
+  const [chapter, setChapter] = useState<ChapterForm>(ChapterDefault());
+
+  const [districts, setDistricts] = useState<{ id: string; name: string }[]>([]);
+
+  const [provinces, setProvinces] = useState<{ id: string; name: string }[]>([]);
+
+  const [projects, setProjects] = useState<{ id: string; projectCode: string }[]>([]);
+
+  const [indicators, setIndicators] = useState<{ id: string; indicator: string }[]>([]);
 
   const handleChange = (
     e:
@@ -112,13 +71,7 @@ const TrainingFormDialog: React.FC<ComponentProps> = ({
   const handleAddChapter = () => {
     if (!chapter.topic) return;
     setChapters((prev) => [...prev, chapter]);
-    setChapter({
-      topic: "",
-      facilitatorName: "",
-      facilitatorJobTitle: "",
-      startDate: "",
-      endDate: "",
-    });
+    setChapter(ChapterDefault());
   };
 
   const handleDeleteChapter = (index: number) => {
@@ -152,12 +105,35 @@ const TrainingFormDialog: React.FC<ComponentProps> = ({
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const [districts, setDistricts] = useState<{ name: string }[]>([]);
-  const [provinces, setProvinces] = useState<{ name: string }[]>([]);
-  const [projects, setProjects] = useState<
-      { id: string; projectCode: string }[]
-    >([]);
-  const [indicators, setIndicators] = useState<{ indicator: string }[]>([]);
+  useEffect(() => {
+    if ((mode === "edit" || mode === "show") && id) {
+      setLoading(true);
+  
+      axiosInstance
+        .get(`/training_db/training/${id}`)
+        .then((response: any) => {
+          const data = response.data.data;
+          setFormData({
+            project_id: data.project_id || "",
+            province_id: data.province || "",
+            district_id: data.district || "",
+            trainingLocation: data.trainingLocation || "",
+            name: data.name || "",
+            participantCatagory: data.participantCatagory || "",
+            aprIncluded: data.aprIncluded ?? true,
+            trainingModality: data.trainingModality || "",
+            startDate: data.startDate || "",
+            endDate: data.endDate || "",
+            indicator_id: data.indicator || "",
+          });
+          setChapters(data.chapters || []);
+        })
+        .catch((error: any) => {
+          reqForToastAndSetMessage(error.response?.data?.message || "Error loading data");
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [mode, id]);
 
   useEffect(() => {
     axiosInstance.get("/projects/p/training_database")
@@ -174,7 +150,6 @@ const TrainingFormDialog: React.FC<ComponentProps> = ({
     axiosInstance.get("/global/provinces").then((res: any) => {
       setProvinces(Object.values(res.data.data));
     });
-    
     axiosInstance
       .get("/global/indicators/training_database")
       .then((res: any) => setIndicators(Object.values(res.data.data)));
@@ -201,7 +176,6 @@ const TrainingFormDialog: React.FC<ComponentProps> = ({
         </DialogHeader>
 
         <form
-          onSubmit={handleSubmit}
           className="grid grid-cols-1 md:grid-cols-2 gap-4"
         >
           <h2 className="col-span-2 text-center font-bold mb-4">
@@ -217,7 +191,7 @@ const TrainingFormDialog: React.FC<ComponentProps> = ({
                 value: p.id,
                 label: p.projectCode.toUpperCase(),
               }))}
-              value={projects.find((project) => project.id == formData.project_id)?.projectCode ?? ""}
+              value={formData.project_id ?? "Unknown value"}
               onValueChange={(value: string) =>
                 handleChange({ target: { name: "project_id", value } })
               }
@@ -230,10 +204,10 @@ const TrainingFormDialog: React.FC<ComponentProps> = ({
             <SingleSelect
               disabled={isReadOnly}
               options={indicators.map((i) => ({
-                value: i.indicator,
+                value: i.id,
                 label: i.indicator.toUpperCase(),
               }))}
-              value={formData.indicator}
+              value={formData.indicator_id}
               onValueChange={(value: string) =>
                 handleChange({ target: { name: "indicator", value } })
               }
@@ -246,10 +220,10 @@ const TrainingFormDialog: React.FC<ComponentProps> = ({
             <SingleSelect
               disabled={isReadOnly}
               options={provinces.map((p) => ({
-                value: p.name,
+                value: p.id,
                 label: p.name.toUpperCase(),
               }))}
-              value={formData.province}
+              value={formData.province_id}
               onValueChange={(value: string) =>
                 handleChange({ target: { name: "province", value } })
               }
@@ -262,10 +236,10 @@ const TrainingFormDialog: React.FC<ComponentProps> = ({
             <SingleSelect
               disabled={isReadOnly}
               options={districts.map((d) => ({
-                value: d.name,
+                value: d.id,
                 label: d.name.toUpperCase(),
               }))}
-              value={formData.district}
+              value={formData.district_id}
               onValueChange={(value: string) =>
                 handleChange({ target: { name: "district", value } })
               }
@@ -428,7 +402,7 @@ const TrainingFormDialog: React.FC<ComponentProps> = ({
                     onChange={handleChapterChange}
                   />
                 </div>
-                <Button onClick={handleAddChapter} className="mt-4">
+                <Button type="button" onClick={handleAddChapter} className="mt-4">
                   Add Chapter
                 </Button>
               </>
@@ -475,12 +449,11 @@ const TrainingFormDialog: React.FC<ComponentProps> = ({
           {/* --- Buttons --- */}
           <div className="col-span-2 mt-6">
             {mode !== "show" ? (
-              <Button className="w-full" onClick={(e) => reqForConfirmationModelFunc(
-                "Are you compleatly sure ?",
-                "",
+              <Button type="button" className="w-full" onClick={(e) => reqForConfirmationModelFunc(
+                (mode == "create" ? TrainingCreationMessage : TrainingEditionMessage),
                 () => handleSubmit(e)
               )}>
-                {mode === "edit" ? "Update" : "Submit All"}
+                {mode === "edit" ? "Update" : "Submit"}
               </Button>
             ) : (
               <Button

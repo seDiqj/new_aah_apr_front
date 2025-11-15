@@ -15,57 +15,20 @@ import { useEffect, useState } from "react";
 import { useParentContext } from "@/contexts/ParentContext";
 import { withPermission } from "@/lib/withPermission";
 import { Skeleton } from "../ui/skeleton";
+import { MainDatabaseBeneficiaryUpdateType } from "@/types/Types";
+import { MainDatabaseBeneficiaryUpdateDefault } from "@/lib/FormsDefaultValues";
+import { DisabilityTypeOptions, GenderOptions, HousholdStatusOptions, MaritalStatusOptions, ReferredForProtectionOptions } from "@/lib/SingleAndMultiSelectOptionsList";
+import { MainDatabaseBeneficiaryEditionMessage } from "@/lib/ConfirmationModelsTexts";
 
-type BeneficiaryForm = {
-  id: string;
-  dateOfRegistration: string;
-  code: string;
-  name: string;
-  fatherHusbandName: string;
-  gender: string;
-  age: number;
-  maritalStatus: string;
-  childCode: string;
-  ageOfChild: number;
-  phone: string;
-  householdStatus: string;
-  literacyLevel: string;
-  disabilityType: string;
-  referredForProtection: boolean;
-};
-
-interface UpdateFormProps {
-  open: boolean;
-  onOpenChange: (value: boolean) => void;
-  beneficiaryId: string;
-}
-
-const MainDatabaseBeneficiaryUpdateForm: React.FC<UpdateFormProps> = ({
+const MainDatabaseBeneficiaryUpdateForm: React.FC<MainDatabaseBeneficiaryUpdate> = ({
   open,
   onOpenChange,
   beneficiaryId,
 }) => {
-  const { reqForToastAndSetMessage, axiosInstance, handleReload } = useParentContext();
+  const { reqForToastAndSetMessage, axiosInstance, handleReload, reqForConfirmationModelFunc } = useParentContext();
 
-  const [formData, setFormData] = useState<BeneficiaryForm>({
-    id: "",
-    dateOfRegistration: "",
-    code: "",
-    name: "",
-    fatherHusbandName: "",
-    gender: "",
-    age: 0,
-    maritalStatus: "",
-    childCode: "",
-    ageOfChild: 0,
-    phone: "",
-    householdStatus: "",
-    literacyLevel: "",
-    disabilityType: "",
-    referredForProtection: false,
-  });
+  const [formData, setFormData] = useState<MainDatabaseBeneficiaryUpdateType>(MainDatabaseBeneficiaryUpdateDefault());
   const [program, setProgram] = useState<string>("");
-
   const [programs, setPrograms] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -263,11 +226,7 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<UpdateFormProps> = ({
                 <div className="flex flex-col gap-4">
                   <Label htmlFor="gender">Gender</Label>
                   <SingleSelect
-                    options={[
-                      { value: "male", label: "Male" },
-                      { value: "female", label: "Female" },
-                      { value: "other", label: "Other" },
-                    ]}
+                    options={GenderOptions}
                     value={formData.gender}
                     onValueChange={(value: string) =>
                       handleFormChange({
@@ -336,14 +295,7 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<UpdateFormProps> = ({
                 <div className="flex flex-col gap-4">
                   <Label htmlFor="maritalStatus">Marital Status</Label>
                   <SingleSelect
-                    options={[
-                      { value: "single", label: "Single" },
-                      { value: "married", label: "Married" },
-                      { value: "divorced", label: "Divorced" },
-                      { value: "widowed", label: "Widowed" },
-                      { value: "widower", label: "Widower" },
-                      { value: "separated", label: "Separated" },
-                    ]}
+                    options={MaritalStatusOptions}
                     value={formData.maritalStatus}
                     onValueChange={(value: string) =>
                       handleFormChange({
@@ -359,13 +311,7 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<UpdateFormProps> = ({
                     HouseHold Status of BNF
                   </Label>
                   <SingleSelect
-                    options={[
-                      { value: "idp_drought", label: "IDP (Drought)" },
-                      { value: "idp_conflict", label: "IDP (Conflict)" },
-                      { value: "returnee", label: "Returnee" },
-                      { value: "host_community", label: "Host Community" },
-                      { value: "refugee", label: "Refugee" },
-                    ]}
+                    options={HousholdStatusOptions}
                     value={formData.householdStatus}
                     onValueChange={(value: string) =>
                       handleFormChange({
@@ -392,16 +338,7 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<UpdateFormProps> = ({
                 <div className="flex flex-col gap-4">
                   <Label htmlFor="disabilityType">Disability Type</Label>
                   <SingleSelect
-                    options={[
-                      {
-                        value: "person_with_disability",
-                        label: "With Disability",
-                      },
-                      {
-                        value: "person_without_disability",
-                        label: "Without Disability",
-                      },
-                    ]}
+                    options={DisabilityTypeOptions}
                     value={formData.disabilityType}
                     onValueChange={(value: string) =>
                       handleFormChange({
@@ -417,10 +354,7 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<UpdateFormProps> = ({
                     Referred For Protection
                   </Label>
                   <SingleSelect
-                    options={[
-                      { label: "Yes", value: "true" },
-                      { label: "No", value: "false" },
-                    ]}
+                    options={ReferredForProtectionOptions}
                     value={formData.referredForProtection ? "true" : "false"}
                     onValueChange={(value: string) =>
                       handleFormChange({
@@ -438,7 +372,10 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<UpdateFormProps> = ({
         )}
 
         {/* Submit */}
-        <Button className="w-full mt-6" onClick={handleSubmit}>
+        <Button className="w-full mt-6" onClick={() => reqForConfirmationModelFunc(
+          MainDatabaseBeneficiaryEditionMessage,
+          handleSubmit
+        )}>
           {loading ? "Loading ..." : "Update"}
         </Button>
       </DialogContent>

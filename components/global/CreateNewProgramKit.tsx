@@ -7,10 +7,16 @@ import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { useEffect, useState } from "react";
-import { MainDatabaseProgram } from "@/types/Types";
+import { KitDatabaseProgram, MainDatabaseProgram } from "@/types/Types";
 import { withPermission } from "@/lib/withPermission";
 import { z } from "zod";
-
+import { KitDatabaseProgramDefault } from "@/lib/FormsDefaultValues";
+import { KitDatabaseProgramFormSchema } from "@/schemas/FormsSchema";
+import {
+  KitDatabaseProgramCreationMessage,
+  KitDatabaseProgramEditionMessage,
+} from "@/lib/ConfirmationModelsTexts";
+import { IsCreateMode, IsEditMode, IsShowMode } from "@/lib/Constants";
 
 interface ComponentProps {
   open: boolean;
@@ -19,7 +25,7 @@ interface ComponentProps {
   programId?: number;
 
   // Only for creation mode, temp
-  createdProgramStateSetter?: any
+  createdProgramStateSetter?: any;
 
   // temp
   programsListStateSetter?: any;
@@ -31,31 +37,18 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
   mode,
   programId,
   createdProgramStateSetter,
-  programsListStateSetter
+  programsListStateSetter,
 }) => {
-  const { reqForToastAndSetMessage, axiosInstance, handleReload, reqForConfirmationModelFunc } = useParentContext();
+  const {
+    reqForToastAndSetMessage,
+    axiosInstance,
+    handleReload,
+    reqForConfirmationModelFunc,
+  } = useParentContext();
 
-  const programSchema = z.object({
-    projectCode: z.string().min(1, "Project code is required"),
-    focalPoint: z.string().min(3, "Focal point must be at least 3 characters or 3 digits"),
-    province: z.string().min(1, "Select a valid province"),
-    district: z.string().min(1, "Select a valid district"),
-    village: z.string().min(1, "Village name should be at least 2 characters"),
-    siteCode: z.string().min(1, "Site code should be at least 1 characters !"),
-    healthFacilityName: z.string().min(3, "Health facility name is required"),
-    interventionModality: z.string().min(1, "Intervention modality is required"),
-  });
-
-  const [formData, setFormData] = useState<MainDatabaseProgram>({
-    projectCode: "",
-    focalPoint: "",
-    province: "",
-    district: "",
-    village: "",
-    siteCode: "",
-    healthFacilityName: "",
-    interventionModality: "",
-  });
+  const [formData, setFormData] = useState<KitDatabaseProgram>(
+    KitDatabaseProgramDefault()
+  );
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
@@ -65,7 +58,7 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
       axiosInstance
         .get(`/global/program/${programId}`)
         .then((response: any) => {
-          console.log(response.data.data)
+          console.log(response.data.data);
           setFormData(response.data.data);
         })
         .catch((error: any) => {
@@ -87,80 +80,87 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
   const handleSubmit = (e: any) => {
     e.preventDefault();
 
-
-    const result = programSchema.safeParse(formData);
+    const result = KitDatabaseProgramFormSchema.safeParse(formData);
 
     if (!result.success) {
-    const errors: { [key: string]: string } = {};
-    result.error.issues.forEach((issue) => {
-      const field = issue.path[0];
-      if (field) errors[field as string] = issue.message;
-    });
+      const errors: { [key: string]: string } = {};
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0];
+        if (field) errors[field as string] = issue.message;
+      });
 
-    setFormErrors(errors);
-      reqForToastAndSetMessage("Please fix validation errors before submitting.");
+      setFormErrors(errors);
+      reqForToastAndSetMessage(
+        "Please fix validation errors before submitting."
+      );
       return;
     }
 
     setFormErrors({});
 
-
     if (mode === "create") {
       axiosInstance
         .post("/global/program/kit_database", formData)
-        .then((response: any) =>
-        {
+        .then((response: any) => {
           reqForToastAndSetMessage(response.data.message);
           if (createdProgramStateSetter)
             createdProgramStateSetter({
-            target: {
-              name: "program",
-              value: formData.focalPoint
-              }
-            })
+              target: {
+                name: "program",
+                value: formData.focalPoint,
+              },
+            });
 
           if (programsListStateSetter)
-            programsListStateSetter((prev: {focalPoint: number}[]) => [
+            programsListStateSetter((prev: { focalPoint: number }[]) => [
               ...prev,
               {
-                focalPoint: formData.focalPoint
-              }
-            ])
-            handleReload()
-        }
-        )
+                focalPoint: formData.focalPoint,
+              },
+            ]);
+          handleReload();
+        })
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)
         );
     } else if (mode === "edit" && programId) {
       axiosInstance
         .put(`/global/program/${programId}`, formData)
-        .then((response: any) =>
-        {
+        .then((response: any) => {
           reqForToastAndSetMessage(response.data.message);
-          handleReload()
-        }
-        )
+          handleReload();
+        })
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)
         );
     }
   };
 
-  const [districts, setDistricts] = useState<{ name: string }[]>([]);
-  const [provinces, setProvinces] = useState<{ name: string }[]>([]);
-  const [projects, setProjects] = useState<{ projectCode: string }[]>([]);
+  const [districts, setDistricts] = useState<{ id: string; name: string }[]>(
+    []
+  );
+  const [provinces, setProvinces] = useState<{ id: string; name: string }[]>(
+    []
+  );
+  const [projects, setProjects] = useState<
+    { id: string; projectCode: string }[]
+  >([]);
 
   useEffect(() => {
     axiosInstance
       .get("/global/districts")
       .then((res: any) => setDistricts(Object.values(res.data.data)));
     axiosInstance
-      .get("/global/provinces")
+      .get(`/global/project/provinces/${formData.project_id}`)
       .then((res: any) => setProvinces(Object.values(res.data.data)));
     axiosInstance
       .get("/projects/p/kit_database")
-      .then((res: any) => {setProjects(Object.values(res.data.data))}).catch((error: any) => reqForToastAndSetMessage(error.response.data.message));
+      .then((res: any) => {
+        setProjects(Object.values(res.data.data));
+      })
+      .catch((error: any) =>
+        reqForToastAndSetMessage(error.response.data.message)
+      );
   }, []);
 
   const readOnly = mode === "show";
@@ -169,9 +169,9 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex flex-col h-[80%] w-[70%]">
         <DialogTitle>
-          {mode === "create" && "Create New Program"}
-          {mode === "edit" && "Edit Program"}
-          {mode === "show" && "Program Details"}
+          {IsCreateMode(mode) && "Create New Program"}
+          {IsEditMode(mode) && "Edit Program"}
+          {IsShowMode(mode) && "Program Details"}
         </DialogTitle>
         <form className="space-y-4 grid grid-cols-2 gap-4">
           {/* Project code */}
@@ -179,13 +179,13 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
             <Label>Project Code</Label>
             <SingleSelect
               options={projects.map((p) => ({
-                value: p.projectCode,
+                value: p.id,
                 label: p.projectCode,
               }))}
-              value={formData.projectCode}
+              value={formData.project_id}
               onValueChange={(value: string) =>
                 handleFormChange({
-                  target: { name: "projectCode", value },
+                  target: { name: "project_id", value },
                 })
               }
               disabled={readOnly}
@@ -200,7 +200,9 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
               value={formData.focalPoint}
               onChange={handleFormChange}
               disabled={readOnly}
-              className={`border p-2 rounded ${formErrors.focalPoint ? "!border-red-500" : ""}`}
+              className={`border p-2 rounded ${
+                formErrors.focalPoint ? "!border-red-500" : ""
+              }`}
               title={formErrors.focalPoint}
             />
           </div>
@@ -209,17 +211,17 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
             <Label>Province</Label>
             <SingleSelect
               options={provinces.map((p) => ({
-                value: p.name,
+                value: p.id,
                 label: p.name.toUpperCase(),
               }))}
-              value={formData.province}
+              value={formData.province_id}
               onValueChange={(value: string) =>
                 handleFormChange({
-                  target: { name: "province", value },
+                  target: { name: "province_id", value },
                 })
               }
               disabled={readOnly}
-              error={formErrors.province}
+              error={formErrors.province_id}
             />
           </div>
           {/* District */}
@@ -227,17 +229,17 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
             <Label>District</Label>
             <SingleSelect
               options={districts.map((d) => ({
-                value: d.name,
+                value: d.id,
                 label: d.name.toUpperCase(),
               }))}
-              value={formData.district}
+              value={formData.district_id}
               onValueChange={(value: string) =>
                 handleFormChange({
-                  target: { name: "district", value },
+                  target: { name: "district_id", value },
                 })
               }
               disabled={readOnly}
-              error={formErrors.district}
+              error={formErrors.district_id}
             />
           </div>
           {/* Village */}
@@ -248,7 +250,9 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
               value={formData.village}
               onChange={handleFormChange}
               disabled={readOnly}
-              className={`border p-2 rounded ${formErrors.village ? "!border-red-500" : ""}`}
+              className={`border p-2 rounded ${
+                formErrors.village ? "!border-red-500" : ""
+              }`}
               title={formErrors.village}
             />
           </div>
@@ -260,7 +264,9 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
               value={formData.siteCode}
               onChange={handleFormChange}
               disabled={readOnly}
-              className={`border p-2 rounded ${formErrors.siteCode ? "!border-red-500" : ""}`}
+              className={`border p-2 rounded ${
+                formErrors.siteCode ? "!border-red-500" : ""
+              }`}
               title={formErrors.siteCode}
             />
           </div>
@@ -272,7 +278,9 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
               value={formData.healthFacilityName}
               onChange={handleFormChange}
               disabled={readOnly}
-              className={`border p-2 rounded ${formErrors.healthFacilityName ? "!border-red-500" : ""}`}
+              className={`border p-2 rounded ${
+                formErrors.healthFacilityName ? "!border-red-500" : ""
+              }`}
               title={formErrors.healthFacilityName}
             />
           </div>
@@ -284,18 +292,26 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
               value={formData.interventionModality}
               onChange={handleFormChange}
               disabled={readOnly}
-              className={`border p-2 rounded ${formErrors.interventionModality ? "!border-red-500" : ""}`}
+              className={`border p-2 rounded ${
+                formErrors.interventionModality ? "!border-red-500" : ""
+              }`}
               title={formErrors.interventionModality}
             />
           </div>
           {/* Submit */}
           {mode !== "show" && (
             <div className="flex justify-end col-span-2">
-              <Button onClick={() => reqForConfirmationModelFunc(
-                "Are you compleatly sure ?",
-                "",
-                handleSubmit
-              )}>
+              <Button
+                type="button"
+                onClick={(e) =>
+                  reqForConfirmationModelFunc(
+                    mode == "create"
+                      ? KitDatabaseProgramCreationMessage
+                      : KitDatabaseProgramEditionMessage,
+                    () => handleSubmit(e)
+                  )
+                }
+              >
                 {mode === "create" ? "Submit" : "Update"}
               </Button>
             </div>

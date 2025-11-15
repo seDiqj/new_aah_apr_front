@@ -7,6 +7,7 @@ import SubHeader from "@/components/global/SubHeader";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { useParentContext } from "@/contexts/ParentContext";
 import { mainDatabaseAndKitDatabaseBeneficiaryColumns } from "@/definitions/DataTableColumnsDefinitions";
+import { ReferralsFiltersList, ReferralsFilterUrl } from "@/lib/FiltersList";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -45,8 +46,8 @@ const MainDatabasePage = () => {
           deleteUrl="/referral_db/delete_beneficiaries"
           searchableColumn="name"
           idFeildForShowStateSetter={setIdFeildForShowStateSetter}
-          filterUrl="/filter/refferal_database/beneficiaries"
-          filtersList={["projectCode", "province", "age", "gender", "dateOfRegistration"]}
+          filterUrl={ReferralsFilterUrl}
+          filtersList={ReferralsFiltersList}
         ></DataTableDemo>
       </div>
     </>

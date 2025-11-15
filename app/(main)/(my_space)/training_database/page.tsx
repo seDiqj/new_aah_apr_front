@@ -3,13 +3,12 @@
 import BreadcrumbWithCustomSeparator from "@/components/global/BreadCrumb";
 import CreateNewBeneficiaryTraining from "@/components/global/CreateNewBeneficiaryTraining";
 import DataTableDemo from "@/components/global/MulitSelectTable";
-import Preloader from "@/components/global/Preloader";
 import SubHeader from "@/components/global/SubHeader";
 import TrainingSelectorDialog from "@/components/global/TrainingSelectorDialog";
 import { Button } from "@/components/ui/button";
-
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { trainingDatabaseBeneificiaryListColumn } from "@/definitions/DataTableColumnsDefinitions";
+import { TrainingDatabaseBeneficiaryFiltersList, TrainingDatabaseBeneficiaryFilterUrl } from "@/lib/FiltersList";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -81,8 +80,8 @@ const TrainingDatabasePage = () => {
             </Button>
           </div>
         }
-        filterUrl="/filter/training_database/beneficiaries"
-        filtersList={["projectCode", "indicator", "province", "age", "gender"]}
+        filterUrl={TrainingDatabaseBeneficiaryFilterUrl}
+        filtersList={TrainingDatabaseBeneficiaryFiltersList}
       ></DataTableDemo>
 
       {reqForBeneficiaryCreationForm && (

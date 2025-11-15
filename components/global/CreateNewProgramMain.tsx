@@ -9,23 +9,12 @@ import { Label } from "../ui/label";
 import { useEffect, useState } from "react";
 import { MainDatabaseProgram } from "@/types/Types";
 import { withPermission } from "@/lib/withPermission";
-import { z } from "zod";
+import { MainDatabaseProgramFormSchema } from "@/schemas/FormsSchema";
+import { MainDatabaseProgramDefault } from "@/lib/FormsDefaultValues";
+import { MainDatabaseProgramCreationMessage, MainDatabaseProgramEditionMessage } from "@/lib/ConfirmationModelsTexts";
+import { MainDatabaseProgramFormInterface } from "@/interfaces/Interfaces";
 
-
-interface ComponentProps {
-  open: boolean;
-  onOpenChange: (value: boolean) => void;
-  mode: "create" | "edit" | "show";
-  programId?: number;
-
-  // Only for creation mode, temp
-  createdProgramStateSetter?: any
-
-  // temp
-  programsListStateSetter?: any;
-}
-
-const ProgramMainForm: React.FC<ComponentProps> = ({
+const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
   open,
   onOpenChange,
   mode,
@@ -35,27 +24,7 @@ const ProgramMainForm: React.FC<ComponentProps> = ({
 }) => {
   const { reqForToastAndSetMessage, axiosInstance, handleReload, reqForConfirmationModelFunc } = useParentContext();
 
-  const programSchema = z.object({
-    projectCode: z.string().min(1, "Project code is required"),
-    focalPoint: z.string().min(3, "Focal point must be at least 3 characters or 3 digits"),
-    province: z.string().min(1, "Select a valid province"),
-    district: z.string().min(1, "Select a valid district"),
-    village: z.string().min(1, "Village name should be at least 2 characters"),
-    siteCode: z.string().min(1, "Site code should be at least 1 characters !"),
-    healthFacilityName: z.string().min(3, "Health facility name is required"),
-    interventionModality: z.string().min(1, "Intervention modality is required"),
-  });
-
-  const [formData, setFormData] = useState<MainDatabaseProgram>({
-    projectCode: "",
-    focalPoint: "",
-    province: "kabul",
-    district: "District 1",
-    village: "",
-    siteCode: "",
-    healthFacilityName: "",
-    interventionModality: "",
-  });
+  const [formData, setFormData] = useState<MainDatabaseProgram>(MainDatabaseProgramDefault());
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
@@ -84,11 +53,8 @@ const ProgramMainForm: React.FC<ComponentProps> = ({
     }));
   };
 
-  const handleSubmit = (e: any) => {
-    e.preventDefault();
-
-
-    const result = programSchema.safeParse(formData);
+  const handleSubmit = () => {
+    const result = MainDatabaseProgramFormSchema.safeParse(formData);
 
     if (!result.success) {
     const errors: { [key: string]: string } = {};
@@ -292,10 +258,9 @@ const ProgramMainForm: React.FC<ComponentProps> = ({
           {/* Submit */}
           {mode !== "show" && (
             <div className="flex justify-end col-span-2">
-              <Button onClick={() => reqForConfirmationModelFunc(
-                "Are you compoleatly sure ?",
-                "",
-                () => {handleSubmit}
+              <Button type="button" onClick={() => reqForConfirmationModelFunc(
+                (mode == "create" ? MainDatabaseProgramCreationMessage : MainDatabaseProgramEditionMessage),
+                () => {handleSubmit()}
               )}>
                 {mode === "create" ? "Submit" : "Update"}
               </Button>

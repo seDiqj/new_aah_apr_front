@@ -16,26 +16,12 @@ import { PlusCircle } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useParentContext } from "@/contexts/ParentContext";
 import { useParams } from "next/navigation";
+import { Evaluation } from "@/types/Types";
+import { TrainingEvaluationInterface } from "@/interfaces/Interfaces";
+import { EvaluationOptions } from "@/lib/SingleAndMultiSelectOptionsList";
+import { TrainingEvaluationSubmitMessage } from "@/lib/ConfirmationModelsTexts";
 
-type Evaluation = {
-  participant: number;
-  selected: string;
-};
-
-interface ComponentProps {
-  previosTrainingEvaluations?: {
-    evaluations: {
-      informative: number;
-      usefulness: number;
-      understanding: number;
-      relevance: number;
-      applicability: number;
-    };
-    remark: string;
-  } | null;
-}
-
-const TrainingEvaluationForm: React.FC<ComponentProps> = ({
+const TrainingEvaluationForm: React.FC<TrainingEvaluationInterface> = ({
   previosTrainingEvaluations,
 }) => {
   const { id } = useParams<{
@@ -44,10 +30,9 @@ const TrainingEvaluationForm: React.FC<ComponentProps> = ({
 
   const { reqForToastAndSetMessage, axiosInstance, reqForConfirmationModelFunc } = useParentContext();
 
-  const [evaluations, setEvaluations] = useState<Evaluation[]>([
-    { participant: 1, selected: "" },
-  ]);
-  const [remark, setRemark] = useState("");
+  const [evaluations, setEvaluations] = useState<Evaluation[]>([{ participant: 1, selected: "" },]);
+
+  const [remark, setRemark] = useState<string>("");
 
   const handleSelect = (index: number, value: string) => {
     setEvaluations((prev) =>
@@ -148,19 +133,13 @@ const TrainingEvaluationForm: React.FC<ComponentProps> = ({
                     value={evalItem.selected}
                     onValueChange={(value) => handleSelect(index, value)}
                   >
-                    {[
-                      "informative",
-                      "usefulness",
-                      "understanding",
-                      "relevance",
-                      "applicability",
-                    ].map((field) => (
+                    {EvaluationOptions.map((field) => (
                       <TableCell key={field} className="text-center">
                         <div className="flex justify-center items-center h-full">
                           <RadioGroupItem
                             value={field}
                             id={`${field}-${index}`}
-                            className="h-4 w-4" // کوچکتر بودن رادیوها
+                            className="h-4 w-4"
                           />
                         </div>
                       </TableCell>
@@ -217,8 +196,7 @@ const TrainingEvaluationForm: React.FC<ComponentProps> = ({
           <Button
             className="bg-blue-600 hover:bg-blue-700"
             onClick={() => reqForConfirmationModelFunc(
-              "Are you compleatly sure ?",
-              "",
+              TrainingEvaluationSubmitMessage,
               handleSubmit
             )}
           >

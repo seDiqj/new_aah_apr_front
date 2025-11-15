@@ -9,28 +9,20 @@ import { useEffect, useState } from "react";
 import { useProjectEditContext } from "../edit_project/[id]/page";
 import { useProjectShowContext } from "../project_show/[id]/page";
 import { useProjectContext } from "../create_new_project/page";
+import { Logs } from "@/types/Types";
 
 interface ComponentProps {
-  mode: "create" | "edit";
-  readOnly?: boolean
+  mode: "create" | "edit" | "show";
 }
 
-const AprLogsSubPage: React.FC<ComponentProps> = ({mode, readOnly}) => {
+const AprLogsSubPage: React.FC<ComponentProps> = ({mode}) => {
 
     const {axiosInstance, reqForToastAndSetMessage} = useParentContext();
-    const {projectId} = mode == "create" ? useProjectContext() : readOnly ? useProjectShowContext() : useProjectEditContext() ;
-    const [selectedComment, setSelectedComment] = useState("");
-    const [open, setOpen] = useState(false);
+    const {projectId} = mode == "create" ? useProjectContext() : mode == "show" ? useProjectShowContext() : useProjectEditContext();
+    const [selectedComment, setSelectedComment] = useState<string>("");
+    const [open, setOpen] = useState<boolean>(false);
 
-    const [logs, setLogs] = useState<
-        {
-        action: string;
-        userName: string;
-        projectCode: string;
-        date: string;
-        comment: string;
-        }[]
-    >([]);
+    const [logs, setLogs] = useState<Logs>([]);
 
     useEffect(() => {
         axiosInstance
@@ -40,6 +32,8 @@ const AprLogsSubPage: React.FC<ComponentProps> = ({mode, readOnly}) => {
                 reqForToastAndSetMessage(error.response.data.message)
             );
     }, []);
+
+    const readOnly: boolean = mode == "show";
 
     return (
         <>

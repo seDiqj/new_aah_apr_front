@@ -16,65 +16,25 @@ import { useParentContext } from "@/contexts/ParentContext";
 import { MultiSelect } from "../multi-select";
 import { withPermission } from "@/lib/withPermission";
 import CreateNewProgramKit from "./CreateNewProgramKit";
-import { z } from "zod";
 import { KitDatabaseBeneficiaryFormSchema } from "@/schemas/FormsSchema";
+import { KitDatabaseBeneficiaryFormType } from "@/types/Types";
+import { KitDatabaseBeneficiaryDefault } from "@/lib/FormsDefaultValues";
+import { KitDatabaseBeneficiaryCreationMessage } from "@/lib/ConfirmationModelsTexts";
+import { KitDatabaseBeneficiaryFormInterface } from "@/interfaces/Interfaces";
+import { DisabilityTypeOptions, GenderOptions, HousholdStatusOptions, MaritalStatusOptions, ReferredForProtectionOptions } from "@/lib/SingleAndMultiSelectOptionsList";
 
-
-type BeneficiaryForm = {
-  program: string;
-  indicators: string[];
-  dateOfRegistration: string;
-  code: string;
-  name: string;
-  fatherHusbandName: string;
-  gender: string;
-  age: number;
-  maritalStatus: string;
-  childCode: string;
-  ageOfChild: number;
-  phone: string;
-  houseHoldStatus: string;
-  literacyLevel: string;
-  disablilityType: string;
-  referredForProtection: boolean;
-};
-
-interface DatabaseSummaryProps {
-  open: boolean;
-  onOpenChange: (value: boolean) => void;
-  title: string;
-}
-
-const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
+const KitDatabaseBeneficiaryForm: React.FC<KitDatabaseBeneficiaryFormInterface> = ({
   open,
   onOpenChange,
   title,
 }) => {
   const { reqForToastAndSetMessage, axiosInstance, handleReload, reqForConfirmationModelFunc } = useParentContext();
 
-  
-
-  const [formData, setFormData] = useState<BeneficiaryForm>({
-    program: "",
-    indicators: [],
-    dateOfRegistration: "",
-    code: "",
-    name: "",
-    fatherHusbandName: "",
-    gender: "",
-    age: 0,
-    maritalStatus: "",
-    childCode: "",
-    ageOfChild: 0,
-    phone: "",
-    houseHoldStatus: "",
-    literacyLevel: "",
-    disablilityType: "",
-    referredForProtection: false,
-  });
+  const [formData, setFormData] = useState<KitDatabaseBeneficiaryFormType>(KitDatabaseBeneficiaryDefault());
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
+  const [reqForCreateNewProgram, setReqForCreateNewProgram] = useState<boolean>(false);
 
   const handleFormChange = (e: any) => {
     const name: string = e.target.name;
@@ -118,17 +78,9 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
       );
   };
 
-  const [programs, setPrograms] = useState<
-    {
-      focalPoint: number;
-    }[]
-  >([]);
+  const [programs, setPrograms] = useState<{ focalPoint: number;}[]>([]);
 
-  const [indicators, setIndicators] = useState<
-    {
-      indicator: string;
-    }[]
-  >([]);
+  const [indicators, setIndicators] = useState<{ indicator: string;}[]>([]);
 
   useEffect(() => {
     // Fetching kit database programs
@@ -151,7 +103,6 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
       );
   }, [open]);
 
-  const [reqForCreateNewProgram, setReqForCreateNewProgram] = useState<boolean>(false);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -298,11 +249,7 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
               <div className="flex flex-col gap-4">
                 <Label htmlFor="gender">Gender</Label>
                 <SingleSelect
-                  options={[
-                    { value: "male", label: "Male" },
-                    { value: "female", label: "Female" },
-                    { value: "other", label: "Other" },
-                  ]}
+                  options={GenderOptions}
                   value={formData.gender}
                   onValueChange={(value: string) => {
                     handleFormChange({
@@ -345,15 +292,15 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
 
               {/* Age Of Child OF BNF */}
               <div className="flex flex-col gap-4">
-                <Label htmlFor="ageOfChild">Age Of Child OF BNF</Label>
+                <Label htmlFor="childAge">Age Of Child OF BNF</Label>
                 <Input
-                  id="ageOfChild"
-                  name="ageOfChild"
+                  id="childAge"
+                  name="childAge"
                   type="number"
                   placeholder="Age Of Child ..."
-                  className={`border rounded-xl p-2 rounded ${formErrors.ageOfChild ? "!border-red-500" : ""} w-full`}
+                  className={`border rounded-xl p-2 rounded ${formErrors.childAge ? "!border-red-500" : ""} w-full`}
                   onChange={handleFormChange}
-                  title={formErrors.ageOfChild}
+                  title={formErrors.childAge}
                 />
               </div>
 
@@ -373,16 +320,9 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
 
               {/* Marital status */}
               <div className="flex flex-col gap-4">
-                <Label htmlFor="houseHoldStatus">Marital Status of BNF</Label>
+                <Label htmlFor="maritalStatus">Marital Status of BNF</Label>
                 <SingleSelect
-                  options={[
-                    { value: "single", label: "Single" },
-                    { value: "married", label: "Married" },
-                    { value: "divorced", label: "Divorced" },
-                    { value: "widowed", label: "Widowed" },
-                    { value: "widower", label: "Widower" },
-                    { value: "separated", label: "Separated" },
-                  ]}
+                  options={MaritalStatusOptions}
                   value={formData.maritalStatus}
                   onValueChange={(value: string) =>
                     handleFormChange({
@@ -398,25 +338,19 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
 
               {/* HouseHold Status of BNF */}
               <div className="flex flex-col gap-4">
-                <Label htmlFor="houseHoldStatus">HouseHold Status of BNF</Label>
+                <Label htmlFor="householdStatus">HouseHold Status of BNF</Label>
                 <SingleSelect
-                  options={[
-                    { value: "idp_drought", label: "IDP (IDP Drought)" },
-                    { value: "idp_conflict", label: "IDP (IDP Conflict)" },
-                    { value: "returnee", label: "Returnee" },
-                    { value: "host_community", label: "Host Community" },
-                    { value: "refugee", label: "Refugee" },
-                  ]}
-                  value={formData.houseHoldStatus}
+                  options={HousholdStatusOptions}
+                  value={formData.householdStatus}
                   onValueChange={(value: string) =>
                     handleFormChange({
                       target: {
-                        name: "houseHoldStatus",
+                        name: "householdStatus",
                         value: value,
                       },
                     })
                   }
-                  error={formErrors.houseHoldStatus}
+                  error={formErrors.householdStatus}
                 />
               </div>
 
@@ -437,21 +371,12 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
               <div className="flex flex-col gap-4">
                 <Label htmlFor="disablilityType">Disablility Type</Label>
                 <SingleSelect
-                  options={[
-                    {
-                      value: "person_with_disability",
-                      label: "Person With Disablility",
-                    },
-                    {
-                      value: "person_without_disability",
-                      label: "Person Without Disablility",
-                    },
-                  ]}
-                  value={formData.disablilityType}
+                  options={DisabilityTypeOptions}
+                  value={formData.disabilityType}
                   onValueChange={(value: string) =>
                     handleFormChange({
                       target: {
-                        name: "disablilityType",
+                        name: "disabilityType",
                         value: value,
                       },
                     })
@@ -466,10 +391,7 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
                   Referred For Protection
                 </Label>
                 <SingleSelect
-                  options={[
-                    { label: "Yes", value: "true" },
-                    { label: "No", value: "false" },
-                  ]}
+                  options={ReferredForProtectionOptions}
                   value={formData.referredForProtection ? "true" : "false"}
                   onValueChange={(value: string) =>
                     handleFormChange({
@@ -500,8 +422,7 @@ const KitDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
 
         {/* Submit Button */}
         <Button className="w-full mt-6" onClick={(e) => reqForConfirmationModelFunc(
-          "Are you compleatly sure ?",
-          "",
+          KitDatabaseBeneficiaryCreationMessage,
           () => handleSubmit(e)
         )}>Submit</Button>
       </DialogContent>

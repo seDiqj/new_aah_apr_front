@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { useState, useEffect } from "react";
-
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -15,15 +14,9 @@ import {
 import { SingleSelect } from "@/components/single-select";
 import { useParentContext } from "@/contexts/ParentContext";
 import { CdFormSchema } from "@/schemas/FormsSchema";
-
-type CommunityDialogueForm = {
-  project_id: string;
-  focalPoint: string;
-  province_id: string;
-  district_id: string;
-  village: string;
-  indicator_id: string;
-};
+import { CommunityDialogueFormType } from "@/types/Types";
+import { CommunityDialogueFormDefault } from "@/lib/FormsDefaultValues";
+import { CommunityDialogueCreationMessage, CommunityDialogueEditionMessage } from "@/lib/ConfirmationModelsTexts";
 
 interface ComponentProps {
   open: boolean;
@@ -43,14 +36,7 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
 }) => {
   const { reqForToastAndSetMessage, axiosInstance, handleReload, reqForConfirmationModelFunc } = useParentContext();
 
-  const [formData, setFormData] = useState<CommunityDialogueForm>({
-    project_id: "",
-    focalPoint: "",
-    province_id: "",
-    district_id: "",
-    village: "",
-    indicator_id: "",
-  });
+  const [formData, setFormData] = useState<CommunityDialogueFormType>(CommunityDialogueFormDefault());
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
@@ -447,22 +433,12 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
 
         {/* Submit / Update / Close Button */}
         <div className="mt-6">
-          {mode === "create" && (
+          {mode != "show" && (
             <Button className="w-full" onClick={() => reqForConfirmationModelFunc(
-              "Are you compleatly sure ?",
-              "",
+              (mode == "create" ? CommunityDialogueCreationMessage : CommunityDialogueEditionMessage),
               () => handleSubmit()
             )}>
-              Submit
-            </Button>
-          )}
-          {mode === "update" && (
-            <Button className="w-full" onClick={() => reqForConfirmationModelFunc(
-              "Are you compleatly sure ?",
-              "",
-              () => handleSubmit()
-            )}>
-              Update
+              {mode == "create" ? "Submit" : "Update"}
             </Button>
           )}
           {mode === "show" && (

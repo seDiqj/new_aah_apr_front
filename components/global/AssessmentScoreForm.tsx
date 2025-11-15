@@ -6,25 +6,20 @@ import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { useEffect, useState, useMemo } from "react";
-import { createAxiosInstance } from "@/lib/axios";
 import { useParams } from "next/navigation";
+import { EnactResetButtonMessage, EnactSubmitButtonMessage } from "@/lib/ConfirmationModelsTexts";
+import { AssessmentScoreFormInterface } from "@/interfaces/Interfaces";
+import { Assessments } from "@/types/Types";
+import { IsCreateMode, IsEditMode, IsShowMode } from "@/lib/Constants";
 
-interface ComponentProps {
-  open: boolean;
-  onOpenChange: (value: boolean) => void;
-  mode: "create" | "edit" | "show";
-  projectId?: number;
-}
-
-const AssessmentForm: React.FC<ComponentProps> = ({
+const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
   open,
   onOpenChange,
   mode,
   projectId,
 }) => {
   const { id } = useParams<{ id: string }>();
-  const { reqForToastAndSetMessage } = useParentContext();
-  const axiosInstance = createAxiosInstance();
+  const { reqForToastAndSetMessage, axiosInstance, reqForConfirmationModelFunc, handleReload } = useParentContext();
 
   const [formData, setFormData] = useState<Record<string, number>>(
     Array.from({ length: 15 }, (_, i) => i + 1).reduce(
@@ -34,9 +29,7 @@ const AssessmentForm: React.FC<ComponentProps> = ({
   );
 
   const [assessmentDate, setAssessmentData] = useState<string>("");
-  const [assessmentsList, setAssessmentsList] = useState<
-    Record<string, { id: string; group: string; description: string }[]>
-  >({});
+  const [assessmentsList, setAssessmentsList] = useState<Assessments>({});
 
   useEffect(() => {
     axiosInstance
@@ -63,7 +56,7 @@ const AssessmentForm: React.FC<ComponentProps> = ({
   const handleSubmit = (e: any) => {
     e.preventDefault();
     const request =
-      mode === "create"
+      IsCreateMode(mode)
         ? axiosInstance.post("/enact_database/assess_assessment", {
             enactId: id,
             scores: formData,
@@ -72,13 +65,16 @@ const AssessmentForm: React.FC<ComponentProps> = ({
         : axiosInstance.put(`/enact_database/${projectId}`, formData);
 
     request
-      .then((res: any) => reqForToastAndSetMessage(res.data.message))
+      .then((res: any) => {
+        reqForToastAndSetMessage(res.data.message);
+        handleReload();
+      })
       .catch((err: any) =>
         reqForToastAndSetMessage(err.response?.data?.message || "Error")
       );
   };
 
-  const readOnly = mode === "show";
+  const readOnly = IsShowMode(mode);
 
   const totalScore = useMemo(
     () => Object.values(formData).reduce((acc, val) => acc + val, 0),
@@ -100,9 +96,9 @@ const AssessmentForm: React.FC<ComponentProps> = ({
         }}
       >
         <DialogTitle className="text-3xl font-extrabold mb-6">
-          {mode === "create"
+          {IsCreateMode(mode)
             ? "Create New Assessment"
-            : mode === "edit"
+            : IsEditMode(mode)
             ? "Edit Assessment"
             : "Assessment Details"}
         </DialogTitle>
@@ -164,15 +160,22 @@ const AssessmentForm: React.FC<ComponentProps> = ({
               <Button
                 type="button"
                 className="px-6 py-2 bg-gray-400 hover:bg-gray-500 rounded-xl shadow-md"
-                onClick={handleReset}
+                onClick={() => reqForConfirmationModelFunc(
+                  EnactResetButtonMessage,
+                  handleReset
+                )}
               >
                 Reset
               </Button>
               <Button
-                type="submit"
+                type="button"
                 className="px-8 py-3 bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg"
+                onClick={(e) => reqForConfirmationModelFunc(
+                  EnactSubmitButtonMessage,
+                  () => handleSubmit(e)
+                )}
               >
-                {mode === "create" ? "Save" : "Update"}
+                {IsCreateMode(mode) ? "Save" : "Update"}
               </Button>
             </div>
           )}

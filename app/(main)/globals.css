@@ -223,3 +223,24 @@ input:focus {
   outline: none;
   box-shadow: 0 0 0 3px rgba(0, 95, 182, 0.2);
 }
+
+/* تنظیم کلی برای تمام input type=date */
+input[type="date"] {
+  direction: ltr;            /* تاریخ از چپ به راست نمایش داده شود */
+  text-align: left;          /* متن تاریخ در سمت چپ باشد */
+  padding-right: 30px;       /* فضا برای آیکون سمت راست */
+  position: relative;
+}
+
+/* آیکون را به سمت راست منتقل کن */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  position: absolute;
+  right: 5px;                /* فاصله از سمت راست */
+  left: auto;                /* حذف چسبیدن به سمت چپ */
+  cursor: pointer;
+}
+
+/* در فایرفاکس (تاثیر محدود دارد) */
+input[type="date"]::-moz-focus-inner {
+  padding: 0;
+}

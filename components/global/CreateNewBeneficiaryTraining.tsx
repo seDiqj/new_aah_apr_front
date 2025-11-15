@@ -15,16 +15,12 @@ import { useEffect, useState } from "react";
 import { useParentContext } from "@/contexts/ParentContext";
 import { TrainingBenefeciaryForm } from "@/types/Types";
 import { TrainingDatabaseBenefeciaryForm } from "@/schemas/FormsSchema";
+import { TrainingBeneficiaryDefault } from "@/lib/FormsDefaultValues";
+import { TrainingBeneficiaryCreationMessage } from "@/lib/ConfirmationModelsTexts";
+import { TrainingBeneficiaryFormInterface } from "@/interfaces/Interfaces";
+import { GenderOptions } from "@/lib/SingleAndMultiSelectOptionsList";
 
-interface TrainingBeneficiaryFormProps {
-  open: boolean;
-  onOpenChange: (value: boolean) => void;
-  title: string;
-  mode: "create" | "edit";
-  editId?: number | string;
-}
-
-const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormProps> = ({
+const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormInterface> = ({
   open,
   onOpenChange,
   title,
@@ -35,20 +31,9 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormProps> = ({
 
   const [loading, setLoading] = useState<boolean>(false);
 
-  const [formData, setFormData] = useState<TrainingBenefeciaryForm>({
-    name: "",
-    fatherHusbandName: "",
-    gender: "male",
-    age: 0,
-    phone: "",
-    email: "",
-    participantOrganization: "",
-    jobTitle: "",
-    dateOfRegistration: "",
-  });
+  const [formData, setFormData] = useState<TrainingBenefeciaryForm>(TrainingBeneficiaryDefault());
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
-
 
   useEffect(() => {
     if (mode === "edit" && editId) {
@@ -173,11 +158,7 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormProps> = ({
               <div className="flex flex-col gap-2">
                 <Label htmlFor="gender">Gender</Label>
                 <SingleSelect
-                  options={[
-                    { value: "male", label: "Male" },
-                    { value: "female", label: "Female" },
-                    { value: "other", label: "Other" },
-                  ]}
+                  options={GenderOptions}
                   value={formData.gender}
                   onValueChange={(value: string) =>
                     setFormData((prev) => ({ ...prev, gender: value }))
@@ -281,8 +262,7 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormProps> = ({
             disabled={loading}
             className="w-full mt-6"
             onClick={(e) => reqForConfirmationModelFunc(
-              "Are you compleatly sure ?",
-              "",
+              TrainingBeneficiaryCreationMessage,
               () => handleSubmit(e)
             )}
           >

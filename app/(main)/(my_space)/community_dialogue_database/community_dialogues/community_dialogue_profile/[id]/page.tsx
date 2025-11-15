@@ -15,16 +15,20 @@ import {
 import BreadcrumbWithCustomSeparator from "@/components/global/BreadCrumb";
 import SessionForm from "@/components/global/CommunityDialogueSessionForm";
 import { Button } from "@/components/ui/button";
-import { InfoItem } from "@/app/(main)/(my_space)/referral_database/beneficiary_profile/[id]/page";
 import { Can } from "@/components/Can";
 import { withPermission } from "@/lib/withPermission";
+import { IsIdFeild } from "@/lib/Constants";
 
 const CommunityDialogueProfilePage = () => {
   const { id } = useParams<{
     id: string;
   }>();
 
-  const { reqForToastAndSetMessage, axiosInstance, reqForConfirmationModelFunc } = useParentContext();
+  const {
+    reqForToastAndSetMessage,
+    axiosInstance,
+    reqForConfirmationModelFunc,
+  } = useParentContext();
 
   let [idFeildForEditStateSetter, setIdFeildForEditStateSetter] = useState<
     number | null
@@ -36,7 +40,7 @@ const CommunityDialogueProfilePage = () => {
 
   const [reqForSessionCreationForm, setReqForSessionCreationForm] =
     useState<boolean>(false);
-    
+
   const [reqForSessionEditionForm, setReqForSessionEditionForm] =
     useState<boolean>(false);
 
@@ -91,14 +95,14 @@ const CommunityDialogueProfilePage = () => {
           {selectedTab == "cdSessions" && (
             <Can permission="Dialogue.create">
               <div>
-              <Button
-                onClick={() =>
-                  setReqForSessionCreationForm(!reqForSessionCreationForm)
-                }
-              >
-                Add New Session
-              </Button>
-            </div>
+                <Button
+                  onClick={() =>
+                    setReqForSessionCreationForm(!reqForSessionCreationForm)
+                  }
+                >
+                  Add New Session
+                </Button>
+              </div>
             </Can>
           )}
         </SubHeader>
@@ -133,20 +137,38 @@ const CommunityDialogueProfilePage = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-                    {communityDialogue &&
-                      Object.entries(communityDialogue.program).map(
-                        (entry, i) => {
-                          if (entry[0] == "id") return;
-                          return (
-                            <InfoItem
-                              key={i}
-                              label={entry[0].toUpperCase()}
-                              value={entry[1].toString()}
-                            />
-                          );
-                        }
-                      )}
+                  <div >
+                    {communityDialogue ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {Object.entries(communityDialogue.program).map(
+                          ([key, value], index) => {
+                            if (IsIdFeild(key)) return;
+                            return (
+                              <div
+                                key={index}
+                                className="flex flex-col rounded-xl border p-3 transition-all hover:shadow-sm"
+                              >
+                                <span className="text-xs font-medium uppercase opacity-70 tracking-wide">
+                                  {key.replace(/([A-Z])/g, " $1")}
+                                </span>
+                                <span className="text-sm font-semibold truncate">
+                                  {value?.toString() || "-"}
+                                </span>
+                              </div>
+                            );
+                          }
+                        )}
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {Array.from({ length: 10 }).map((_, i) => (
+                          <div
+                            key={i}
+                            className="h-[56px] w-full rounded-xl animate-pulse bg-muted/30"
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>

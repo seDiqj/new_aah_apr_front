@@ -8,11 +8,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { GeneralMessage } from "@/lib/ConfirmationModelsTexts";
 
 interface ComponentProps {
   open: boolean;
   onOpenChange: (value: boolean) => void;
-  mainText: string;
   details: string;
   onContinue: any;
 }
@@ -20,7 +20,6 @@ interface ComponentProps {
 const ConfirmationAlertDialogue: React.FC<ComponentProps> = ({
   open,
   onOpenChange,
-  mainText,
   details,
   onContinue,
 }) => {
@@ -28,7 +27,7 @@ const ConfirmationAlertDialogue: React.FC<ComponentProps> = ({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{mainText}</AlertDialogTitle>
+          <AlertDialogTitle>{GeneralMessage}</AlertDialogTitle>
           <AlertDialogDescription>{details}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

@@ -8,38 +8,44 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { useEffect, useState } from "react";
 import { AssessmentFormType } from "@/types/Types";
-import { createAxiosInstance } from "@/lib/axios";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { AssessmentFormSchema } from "@/schemas/FormsSchema";
+import { AssessmentDefault } from "@/lib/FormsDefaultValues";
+import { AssessmentSubmitButtonMessage } from "@/lib/ConfirmationModelsTexts";
+import { AssessmentFormInterface } from "@/interfaces/Interfaces";
+import { IsCreateMode, IsEditMode, IsShowMode } from "@/lib/Constants";
+import { AssessmentTypeOptions } from "@/lib/SingleAndMultiSelectOptionsList";
 
-interface ComponentProps {
-  open: boolean;
-  onOpenChange: (value: boolean) => void;
-  mode: "create" | "edit" | "show";
-  projectId?: number;
-}
-
-const AssessmentForm: React.FC<ComponentProps> = ({
+const AssessmentForm: React.FC<AssessmentFormInterface> = ({
   open,
   onOpenChange,
   mode,
   projectId,
 }) => {
-  const { reqForToastAndSetMessage } = useParentContext();
-  const axiosInstance = createAxiosInstance();
+  const {
+    reqForToastAndSetMessage,
+    axiosInstance,
+    reqForConfirmationModelFunc,
+    handleReload
+  } = useParentContext();
 
-  const [formData, setFormData] = useState<AssessmentFormType>({
-    project_id: "",
-    indicator_id: "",
-    province_id: "",
-    councilorName: "",
-    raterName: "",
-    type: "",
-    date: "",
-    aprIncluded: true,
-  });
+  const [formData, setFormData] = useState<AssessmentFormType>(
+    AssessmentDefault()
+  );
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+
+  const [indicators, setIndicators] = useState<
+    { id: string; indicatorRef: string }[]
+  >([]);
+
+  const [provinces, setProvinces] = useState<{ id: string; name: string }[]>(
+    []
+  );
+
+  const [projects, setProjects] = useState<
+    { id: string; projectCode: string }[]
+  >([]);
 
   const handleFormChange = (e: any) => {
     const name: string = e.target.name;
@@ -57,14 +63,16 @@ const AssessmentForm: React.FC<ComponentProps> = ({
     const result = AssessmentFormSchema.safeParse(formData);
 
     if (!result.success) {
-    const errors: { [key: string]: string } = {};
-    result.error.issues.forEach((issue) => {
-      const field = issue.path[0];
-      if (field) errors[field as string] = issue.message;
-    });
+      const errors: { [key: string]: string } = {};
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0];
+        if (field) errors[field as string] = issue.message;
+      });
 
-    setFormErrors(errors);
-      reqForToastAndSetMessage("Please fix validation errors before submitting.");
+      setFormErrors(errors);
+      reqForToastAndSetMessage(
+        "Please fix validation errors before submitting."
+      );
       return;
     }
 
@@ -74,7 +82,10 @@ const AssessmentForm: React.FC<ComponentProps> = ({
       axiosInstance
         .post("/enact_database/", formData)
         .then((response: any) =>
-          reqForToastAndSetMessage(response.data.message)
+        {
+          reqForToastAndSetMessage(response.data.message);
+          handleReload();
+        }
         )
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)
@@ -91,19 +102,9 @@ const AssessmentForm: React.FC<ComponentProps> = ({
     }
   };
 
-  const [indicators, setIndicators] = useState<
-    { id: string; indicatorRef: string }[]
-  >([]);
-  const [provinces, setProvinces] = useState<{ id: string; name: string }[]>(
-    []
-  );
-  const [projects, setProjects] = useState<
-    { id: string; projectCode: string }[]
-  >([]);
-
   // Fetch program data from backend in edit and show mode.
   useEffect(() => {
-    if ((mode === "edit" || mode === "show") && projectId && open) {
+    if ((IsEditMode(mode) || IsShowMode(mode)) && projectId && open) {
       axiosInstance
         .get(`/enact_database/${projectId}`)
         .then((response: any) => {
@@ -130,7 +131,6 @@ const AssessmentForm: React.FC<ComponentProps> = ({
       .get(`projects/indicators/enact_database/${formData.project_id}`)
       .then((response: any) => setIndicators(response.data.data))
       .catch((error: any) => {
-        console.log(error.response.data);
         reqForToastAndSetMessage(error.response.data.message);
       });
 
@@ -142,15 +142,15 @@ const AssessmentForm: React.FC<ComponentProps> = ({
       });
   }, [formData.project_id]);
 
-  const readOnly = mode === "show";
+  const readOnly = IsShowMode(mode);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex flex-col h-[80%] w-[70%]">
         <DialogTitle>
-          {mode === "create" && "Create New Assessment"}
-          {mode === "edit" && "Edit Assessment"}
-          {mode === "show" && "Assessment Details"}
+          {IsCreateMode(mode) && "Create New Assessment"}
+          {IsEditMode(mode) && "Edit Assessment"}
+          {IsShowMode(mode) && "Assessment Details"}
         </DialogTitle>
         <form className="space-y-4 grid grid-cols-2 gap-4">
           {/* Project code */}
@@ -240,7 +240,9 @@ const AssessmentForm: React.FC<ComponentProps> = ({
               value={formData.councilorName}
               onChange={handleFormChange}
               disabled={readOnly}
-              className={`border p-2 rounded ${formErrors.councilorName ? "!border-red-500" : ""}`}
+              className={`border p-2 rounded ${
+                formErrors.councilorName ? "!border-red-500" : ""
+              }`}
               title={formErrors.councilorName}
             />
           </div>
@@ -252,7 +254,9 @@ const AssessmentForm: React.FC<ComponentProps> = ({
               value={formData.raterName}
               onChange={handleFormChange}
               disabled={readOnly}
-              className={`border p-2 rounded ${formErrors.raterName ? "!border-red-500" : ""}`}
+              className={`border p-2 rounded ${
+                formErrors.raterName ? "!border-red-500" : ""
+              }`}
               title={formErrors.raterName}
             />
           </div>
@@ -261,10 +265,7 @@ const AssessmentForm: React.FC<ComponentProps> = ({
             <div className="flex flex-col gap-2">
               <Label>Type Of Assessment</Label>
               <SingleSelect
-                options={[
-                  { value: "type 1", label: "Type1" },
-                  { value: "type 2", label: "Type2" },
-                ]}
+                options={AssessmentTypeOptions}
                 value={formData.type}
                 onValueChange={(value: string) =>
                   handleFormChange({
@@ -288,7 +289,9 @@ const AssessmentForm: React.FC<ComponentProps> = ({
               value={formData.date}
               onChange={handleFormChange}
               disabled={readOnly}
-              className={`border p-2 rounded ${formErrors.date ? "!border-red-500" : ""}`}
+              className={`border p-2 rounded ${
+                formErrors.date ? "!border-red-500" : ""
+              }`}
               title={formErrors.date}
             />
           </div>
@@ -323,8 +326,16 @@ const AssessmentForm: React.FC<ComponentProps> = ({
           {/* Submit */}
           {mode !== "show" && (
             <div className="flex justify-end col-span-2">
-              <Button onClick={handleSubmit}>
-                {mode === "create" ? "Submit" : "Update"}
+              <Button
+                type="button"
+                onClick={(e) =>
+                  reqForConfirmationModelFunc(
+                    AssessmentSubmitButtonMessage,
+                    () => handleSubmit(e)
+                  )
+                }
+              >
+                {IsCreateMode(mode) ? "Submit" : "Update"}
               </Button>
             </div>
           )}

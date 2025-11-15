@@ -11,6 +11,7 @@ import { Can } from "@/components/Can";
 import { withPermission } from "@/lib/withPermission";
 import ProfileModal from "@/components/global/UserFormTest";
 import { useParentContext } from "@/contexts/ParentContext";
+import { UserFiltersList, UserFilterUrl } from "@/lib/FiltersList";
 
 const UsersPage = () => {
 
@@ -58,14 +59,8 @@ const UsersPage = () => {
           editModelOpenerStateSetter={setReqForUserUpdateForm}
           idFeildForShowStateSetter={setIdFeildForShowStateSetter}
           showModelOpenerStateSetter={setReqForUserShowForm}
-          filterUrl="/filter/users"
-          filtersList={[
-            "name",
-            "email",
-            "title",
-            "status",
-            "create_at",
-          ]}
+          filterUrl={UserFilterUrl}
+          filtersList={UserFiltersList}
         ></DataTableDemo>
       </div>
 
@@ -83,7 +78,7 @@ const UsersPage = () => {
           open={reqForUserUpdateForm}
           onOpenChange={setReqForUserUpdateForm}
           mode="edit"
-          userId={idFeildForEditStateSetter as unknown as number}
+          userId={Number(idFeildForEditStateSetter)}
           reloader={handleReload}
         />
       )}
@@ -92,7 +87,7 @@ const UsersPage = () => {
           open={reqForUserShowForm}
           onOpenChange={setReqForUserShowForm}
           mode="show"
-          userId={idFeildForShowStateSetter as unknown as number}
+          userId={Number(idFeildForShowStateSetter)}
         />
       )}
     </>

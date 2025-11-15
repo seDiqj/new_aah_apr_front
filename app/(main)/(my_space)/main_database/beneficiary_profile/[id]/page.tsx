@@ -20,8 +20,11 @@ import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useParentContext } from "@/contexts/ParentContext";
+import { BeneficiaryEvaluationSubmitButtonMessage, MealToolDeleteButtonMessage } from "@/lib/ConfirmationModelsTexts";
+import { BeneficiaryEvaluationDefault } from "@/lib/FormsDefaultValues";
+import { clientSatisfactionOptions } from "@/lib/SingleAndMultiSelectOptionsList";
 import { withPermission } from "@/lib/withPermission";
-import { MainDatabaseProgram } from "@/types/Types";
+import { BeneficiaryEvaluationType, MainDatabaseBeneficiaryProfileInfoType, MainDatabaseProgram } from "@/types/Types";
 import { use, useEffect, useState } from "react";
 
 interface ComponentProps {
@@ -37,46 +40,14 @@ const BeneficiaryProfilePage: React.FC<ComponentProps> = (
 
   const { reqForToastAndSetMessage, axiosInstance, reqForConfirmationModelFunc } = useParentContext();
 
-  const [beneficiaryInfo, setBeneficiaryInfo] = useState<{
-    dateOfRegistration: string;
-    code: string;
-    name: string;
-    fatherHusbandName: string;
-    gender: string;
-    age: number;
-    maritalStatus: string;
-    childCode: string;
-    ageOfChild: number;
-    phone: string;
-    houseHoldStatus: string;
-    literacyLevel: string;
-    disablilityType: string;
-    referredForProtection: boolean;
-  }>();
-
-  
-  const [evaluationForm, setEvaluationForm] = useState<{
-    date: string;
-    clientSessionEvaluation: string[];
-    otherClientSessionEvaluation: string;
-    clientSatisfaction: "veryBad" | "bad" | "neutral" | "good" | "veryGood";
-    satisfactionDate: string;
-    dischargeReason: string[];
-    otherDischargeReasone: string;
-    dischargeReasonDate: string;
-  }>({
-    date: "",
-    clientSessionEvaluation: [],
-    otherClientSessionEvaluation: "",
-    clientSatisfaction: "neutral",
-    satisfactionDate: "",
-    dischargeReason: [],
-    otherDischargeReasone: "",
-    dischargeReasonDate: "",
-  });
-
+  const [beneficiaryInfo, setBeneficiaryInfo] = useState<MainDatabaseBeneficiaryProfileInfoType>();
+  const [evaluationForm, setEvaluationForm] = useState<BeneficiaryEvaluationType>(BeneficiaryEvaluationDefault());
+  const [programInfo, setProgramInfo] = useState<MainDatabaseProgram[]>();
   const [mealTools, setMealTools] = useState<any[]>([]);
-
+  const [reqForMealToolForm, setReqForMealToolForm] = useState<boolean>(false);
+  const [reqForMealToolEditForm, setReqForMealToolEditForm] = useState<boolean>(false);
+  const [currentTab, setCurrentTab] = useState<string>("beneficiaryInfo");
+  
   const handleEvaluationFormChange = (e: any) => {
     const name: string = e.target.name;
     const value: string = e.target.value;
@@ -86,12 +57,8 @@ const BeneficiaryProfilePage: React.FC<ComponentProps> = (
       [name]: value,
     }));
   };
-
-  const [reqForMealToolForm, setReqForMealToolForm] = useState<boolean>(false);
   
-  const handleSubmitMealtoolForm = (e: any) => {
-    e.preventDefault();
-    if (mealTools.length == 0) return;
+  const handleSubmitMealtoolForm = (mealTools: any) => {
     axiosInstance
       .post(`/main_db/beneficiary/mealtools/${id}`, { mealtools: mealTools })
       .then((response: any) => reqForToastAndSetMessage(response.data.message))
@@ -127,11 +94,27 @@ const BeneficiaryProfilePage: React.FC<ComponentProps> = (
     else reqForToastAndSetMessage("Please fill all the fields !");
   };
 
-  const handleDelete = (index: number) => {
-    setMealTools(mealTools.filter((_: any, i: number) => i !== index));
+  const handleDeleteMealtool = (index: number, id: number | null) => {
+    if (!id) {
+      setMealTools(mealTools.filter((_: any, i: number) => i !== index));
+      return;
+    }
+      
+    axiosInstance.delete(`/main_db/beneficiary/mealtool/${id}`)
+    .then((response: any) => {
+      reqForToastAndSetMessage(response.data.message);
+      setMealTools(mealTools.filter((_: any, i: number) => i !== index));
+    })
+    .catch((error: any) => reqForToastAndSetMessage(error.response.data.message))
+
+
   };
 
-  const [programInfo, setProgramInfo] = useState<MainDatabaseProgram[]>();
+  const handleEditMealTool = (mealTool: any) => {
+    axiosInstance.put(`/main_db/beneficiary/mealtool/${mealTool.id}`, mealTool)
+    .then((response: any) => reqForToastAndSetMessage(response.data.message))
+    .catch((error: any) => reqForToastAndSetMessage(error.response.data.message))
+  }
 
   useEffect(() => {
     // Fitching Beneficiary info.
@@ -148,7 +131,6 @@ const BeneficiaryProfilePage: React.FC<ComponentProps> = (
     axiosInstance
       .get(`main_db/program/${id}`)
       .then((response: any) => {
-        console.log(response.data.data);
         if (response.data.status) setProgramInfo(response.data.data);
       })
       .catch((error: any) =>
@@ -180,8 +162,6 @@ const BeneficiaryProfilePage: React.FC<ComponentProps> = (
       });
   }, []);
 
-  const [currentTab, setCurrentTab] = useState<string>("beneficiaryInfo");
-
   return (
     <>
       <div className="flex flex-col w-full h-full p-2">
@@ -210,50 +190,81 @@ const BeneficiaryProfilePage: React.FC<ComponentProps> = (
 
             {/* Beneficiary Info */}
             <TabsContent value="beneficiaryInfo" className="h-full">
-              <Card className="h-full flex flex-col">
-                <CardContent>
-                  <div className="flex flex-col gap-2 items-start justify-around w-full">
-                    {/* Beneficiary information */}
-                    <div className="flex flex-col gap-2 w-full">
-                      <Label>Beneficiary Information</Label>
-                      <div className="flex flex-col w-full max-h-[160px] border-2 border-green-100 rounded-2xl p-4 overflow-y-auto">
-                        {beneficiaryInfo &&
-                          Object.entries(beneficiaryInfo).map(
-                            ([key, value], index) => (
-                              <div
-                                key={index}
-                                className="flex flex-row items-center justify-between gap-6 w-full"
-                              >
-                                <span>{key}</span>
-                                <span>{value}</span>
-                              </div>
-                            )
-                          )}
+              <Card className="h-full flex flex-col shadow-sm border rounded-2xl">
+                <CardContent className="p-6 space-y-8">
+                  {/* Beneficiary Information */}
+                  <section className="w-full space-y-4">
+                    <Label className="text-lg font-semibold tracking-tight">
+                      Beneficiary Information
+                    </Label>
+
+                    {beneficiaryInfo ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {Object.entries(beneficiaryInfo).map(([key, value], index) => (
+                          <div
+                            key={index}
+                            className="flex flex-col rounded-xl border p-3 transition-all hover:shadow-sm"
+                          >
+                            <span className="text-xs font-medium uppercase opacity-70 tracking-wide">
+                              {key.replace(/([A-Z])/g, " $1")}
+                            </span>
+                            <span className="text-sm font-semibold truncate">
+                              {value?.toString() || "-"}
+                            </span>
+                          </div>
+                        ))}
                       </div>
-                    </div>
-                    <div className="flex flex-col gap-2 w-full">
-                      <Label>Program Information</Label>
-                      <div className="flex flex-col w-full max-h-[160px] border-2 border-green-100 rounded-2xl p-4 overflow-y-auto">
-                        {programInfo &&
-                          programInfo.map((programInfo, index) =>
-                            Object.entries(programInfo).map(
-                              ([key, value], index) => (
-                                <div
-                                  key={index}
-                                  className="flex flex-row items-center justify-between gap-6 w-full"
-                                >
-                                  <span>{key}</span>
-                                  <span>{value}</span>
-                                </div>
-                              )
-                            )
-                          )}
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {Array.from({ length: 10 }).map((_, i) => (
+                          <div
+                            key={i}
+                            className="h-[56px] w-full rounded-xl animate-pulse bg-muted/30"
+                          />
+                        ))}
                       </div>
-                    </div>
-                  </div>
+                    )}
+                  </section>
+
+                  {/* Program Information */}
+                  <section className="w-full space-y-4">
+                    <Label className="text-lg font-semibold tracking-tight">
+                      Program Information
+                    </Label>
+
+                    {programInfo ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {programInfo.map((info, idx) =>
+                          Object.entries(info).map(([key, value], i) => (
+                            <div
+                              key={`${idx}-${i}`}
+                              className="flex flex-col rounded-xl border p-3 transition-all hover:shadow-sm"
+                            >
+                              <span className="text-xs font-medium uppercase opacity-70 tracking-wide">
+                                {key.replace(/([A-Z])/g, " $1")}
+                              </span>
+                              <span className="text-sm font-semibold truncate">
+                                {value?.toString() || "-"}
+                              </span>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {Array.from({ length: 8 }).map((_, i) => (
+                          <div
+                            key={i}
+                            className="h-[56px] w-full rounded-xl animate-pulse bg-muted/30"
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </section>
                 </CardContent>
               </Card>
             </TabsContent>
+
 
             {/* Activity */}
             <TabsContent value="activity" className="h-full">
@@ -319,10 +330,14 @@ const BeneficiaryProfilePage: React.FC<ComponentProps> = (
                           <div className="flex justify-end gap-2 p-2">
                             <Button
                               variant="destructive"
-                              onClick={() => handleDelete(index)}
+                              onClick={() => reqForConfirmationModelFunc(
+                                MealToolDeleteButtonMessage,
+                                () => {handleDeleteMealtool(index, tool.id)}
+                              )}
                             >
                               Delete
                             </Button>
+                            <Button onClick={() => setReqForMealToolEditForm(!reqForMealToolEditForm)}>Add MealTool</Button>
                           </div>
                         </AccordionContent>
                       </AccordionItem>
@@ -452,13 +467,7 @@ const BeneficiaryProfilePage: React.FC<ComponentProps> = (
                         }
                       >
                         <div className="flex items-center gap-6">
-                          {[
-                            { emoji: "😊", label: "veryGood" },
-                            { emoji: "🙂", label: "good" },
-                            { emoji: "😐", label: "neutral" },
-                            { emoji: "🙁", label: "bad" },
-                            { emoji: "😡", label: "veryBad" },
-                          ].map((option) => (
+                          {clientSatisfactionOptions.map((option) => (
                             <div
                               key={option.label}
                               className="flex flex-col items-center gap-1"
@@ -558,8 +567,7 @@ const BeneficiaryProfilePage: React.FC<ComponentProps> = (
 
                 <CardFooter className="flex flex-row items-center justify-end">
                   <Button onClick={(e) => reqForConfirmationModelFunc(
-                    "Are you compleatly sure ?",
-                    "This action can not be undone !",
+                    BeneficiaryEvaluationSubmitButtonMessage,
                     () => {handleSubmitEvaluationForm(e)}
                   )}>Save</Button>
                 </CardFooter>
@@ -570,6 +578,9 @@ const BeneficiaryProfilePage: React.FC<ComponentProps> = (
 
         {reqForMealToolForm && (
           <MealToolForm open={reqForMealToolForm} onOpenChange={setReqForMealToolForm} onSubmit={handleSubmitMealtoolForm} mealToolsStateSetter={setMealTools} mealToolsState={mealTools} mode={"create"}></MealToolForm>
+        )}
+        {reqForMealToolEditForm && (
+          <MealToolForm open={reqForMealToolEditForm} onOpenChange={setReqForMealToolEditForm} onSubmit={handleSubmitMealtoolForm} mealToolsStateSetter={setMealTools} mealToolsState={mealTools} mode={"create"}></MealToolForm>
         )}
         
       </div>

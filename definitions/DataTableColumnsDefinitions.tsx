@@ -89,7 +89,7 @@ export const userColumns: ColumnDef<User>[] = [
   {
     accessorKey: "updated_by",
     header: () => <div className="text-left">Updated By</div>,
-    cell: ({ row }) => row.getValue("updated_by"),
+    cell: ({ row }) => row.getValue("updated_by") ?? "Not updated yet !",
   },
   {
     accessorKey: "created_date",

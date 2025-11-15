@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import CreateCD from "@/components/ui/shadcn-io/CreateCD";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { communityDialoguesTableColumns } from "@/definitions/DataTableColumnsDefinitions";
+import { CommunityDialoguesFiltersList, CommunityDialoguesFilterUrl } from "@/lib/FiltersList";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -58,16 +59,16 @@ const CommunityDialogDatabasePage = () => {
           {
             <Can permission="Dialogue.create">
               <div className="flex flex-row items-center justify-around gap-2">
-            <Button
-              onClick={() =>
-                setReqForCommunityDialogueCreationForm(
-                  !reqForCommunityDialogueCreationForm
-                )
-              }
-            >
-              Create New Community Dialogue
-            </Button>
-          </div>
+                <Button
+                  onClick={() =>
+                    setReqForCommunityDialogueCreationForm(
+                      !reqForCommunityDialogueCreationForm
+                    )
+                  }
+                >
+                  Create New Community Dialogue
+                </Button>
+              </div>
             </Can>
           }
         </SubHeader>
@@ -82,8 +83,8 @@ const CommunityDialogDatabasePage = () => {
           showModelOpenerStateSetter={() => {}}
           editBtnPermission="Dialogue.edit"
           deleteBtnPermission="Dialogue.delete"
-          filterUrl="/filter/cd_database/cds"
-          filtersList={["projectCode", "focalPoint", "province", "indicator"]}
+          filterUrl={CommunityDialoguesFilterUrl}
+          filtersList={CommunityDialoguesFiltersList}
         ></DataTableDemo>
 
         {reqForCommunityDialogueCreationForm && (

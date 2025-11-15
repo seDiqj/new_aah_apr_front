@@ -4,7 +4,6 @@ import * as React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -15,99 +14,20 @@ import {
 import { SingleSelect } from "../single-select";
 import { useEffect, useState } from "react";
 import { useParentContext } from "@/contexts/ParentContext";
+import { PsychoeducationForm } from "@/types/Types";
+import { PsychoeducationDefault } from "@/lib/FormsDefaultValues";
+import { UpdatePsychoeducationInterface } from "@/interfaces/Interfaces";
+import { PsychoeducationEditionMessage } from "@/lib/ConfirmationModelsTexts";
 
-type PsychoeducationForm = {
-  programInformation: {
-    indicator_id: string;
-    project_id: string;
-    focalPoint: string;
-    province_id: string;
-    district_id: string;
-    village: string;
-    siteCode: string;
-    healthFacilityName: string;
-    interventionModality: string;
-  };
-  psychoeducationInformation: {
-    awarenessTopic: string;
-    awarenessDate: string;
-    ofMenHostCommunity: string;
-    ofMenIdp: string;
-    ofMenRefugee: string;
-    ofMenReturnee: string;
-    ofMenDisabilityType: string;
-    ofWomenHostCommunity: string;
-    ofWomenIdp: string;
-    ofWomenRefugee: string;
-    ofWomenReturnee: string;
-    ofWomenDisabilityType: string;
-    ofBoyHostCommunity: string;
-    ofBoyIdp: string;
-    ofBoyRefugee: string;
-    ofBoyReturnee: string;
-    ofBoyDisabilityType: string;
-    ofGirlHostCommunity: string;
-    ofGirlIdp: string;
-    ofGirlRefugee: string;
-    ofGirlReturnee: string;
-    ofGirlDisabilityType: string;
-    remark: string;
-  };
-};
-
-interface UpdatePsychoeducationProps {
-  open: boolean;
-  onOpenChange: (value: boolean) => void;
-  psychoId: string; // <-- ID آیتم برای آپدیت
-}
-
-const UpdatePsychoeducation: React.FC<UpdatePsychoeducationProps> = ({
+const UpdatePsychoeducation: React.FC<UpdatePsychoeducationInterface> = ({
   open,
   onOpenChange,
   psychoId,
 }) => {
-  const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
+  const { reqForToastAndSetMessage, axiosInstance, reqForConfirmationModelFunc } = useParentContext();
 
-  const [formData, setFormData] = useState<PsychoeducationForm>({
-    programInformation: {
-      indicator_id: "",
-      project_id: "",
-      focalPoint: "",
-      province_id: "",
-      district_id: "",
-      village: "",
-      siteCode: "",
-      healthFacilityName: "",
-      interventionModality: "",
-    },
-    psychoeducationInformation: {
-      awarenessTopic: "",
-      awarenessDate: "",
-      ofMenHostCommunity: "",
-      ofMenIdp: "",
-      ofMenRefugee: "",
-      ofMenReturnee: "",
-      ofMenDisabilityType: "",
-      ofWomenHostCommunity: "",
-      ofWomenIdp: "",
-      ofWomenRefugee: "",
-      ofWomenReturnee: "",
-      ofWomenDisabilityType: "",
-      ofBoyHostCommunity: "",
-      ofBoyIdp: "",
-      ofBoyRefugee: "",
-      ofBoyReturnee: "",
-      ofBoyDisabilityType: "",
-      ofGirlHostCommunity: "",
-      ofGirlIdp: "",
-      ofGirlRefugee: "",
-      ofGirlReturnee: "",
-      ofGirlDisabilityType: "",
-      remark: "",
-    },
-  });
+  const [formData, setFormData] = useState<PsychoeducationForm>(PsychoeducationDefault());
 
-  // 🔹 برای لود داده قبلی
   useEffect(() => {
     if (!open || !psychoId) return;
     axiosInstance
@@ -118,7 +38,6 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationProps> = ({
       );
   }, [open, psychoId]);
 
-  // 🔹 برای هندل تغییرات فرم
   const handleFormChange = (e: any, part: "program" | "psychoeducation") => {
     const { name, value } = e.target;
     part === "program"
@@ -138,7 +57,6 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationProps> = ({
         }));
   };
 
-  // 🔹 ارسال آپدیت
   const handleUpdate = () => {
     axiosInstance
       .put(`/psychoeducation_db/psychoeducation/${psychoId}`, formData)
@@ -156,7 +74,6 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationProps> = ({
   const [provinces, setProvinces] = useState<{ id: string; name: string }[]>([]);
   const [projects, setProjects] = useState<{ id: string; projectCode: string }[]>([]);
 
-  // 🔹 بارگذاری پروژه‌ها و غیره
   useEffect(() => {
     axiosInstance
       .get("/global/projects")
@@ -206,7 +123,6 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationProps> = ({
           <DialogTitle className="text-lg">Update Psychoeducation</DialogTitle>
         </DialogHeader>
 
-        {/* 🔹 بخش‌های فرم دقیقاً مشابه نسخه Create */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
           <div>
             <Label>Project Code</Label>
@@ -293,7 +209,6 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationProps> = ({
           </div>
         </div>
 
-        {/* بقیه فیلدها دقیقاً مشابه Create */}
         <div className="mt-4">
           <Label>Topic of Awareness</Label>
           <Input
@@ -313,8 +228,10 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationProps> = ({
           />
         </div>
 
-        {/* 🔹 دکمه Update */}
-        <Button className="w-full mt-6" onClick={handleUpdate}>
+        <Button className="w-full mt-6" onClick={() => reqForConfirmationModelFunc(
+          PsychoeducationEditionMessage,
+          handleUpdate
+        )}>
           Update
         </Button>
       </DialogContent>

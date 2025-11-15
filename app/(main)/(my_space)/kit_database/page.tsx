@@ -12,6 +12,7 @@ import KitDatabaseBeneficiaryForm from "@/components/global/KitDatabaseBeneficia
 import KitDatabaseBeneficiaryUpdateForm from "@/components/global/KitDatabaseBeneficiaryUpdateForm";
 import { Can } from "@/components/Can";
 import { withPermission } from "@/lib/withPermission";
+import { KitDatabaseBeneficiaryFiltersList, KitDatabaseBeneficiaryFiltersUrl } from "@/lib/FiltersList";
 
 const MainDatabasePage = () => {
   const router = useRouter();
@@ -77,10 +78,8 @@ const MainDatabasePage = () => {
           editModelOpenerStateSetter={setReqForBeneficiaryUpdateForm}
           idFeildForShowStateSetter={setIdFeildForShowStateSetter}
           showModelOpenerStateSetter={() => {}}
-          filterUrl="/filter/kit_database/beneficiaries"
-          filtersList={["projectCode", "indicator", "focalPoint", "province", "siteCode", "healthFacilitator", "dateOfRegistration",
-            "age", "maritalStatus", "householdStatus", "baselineDate", "endlineDate"
-          ]}
+          filterUrl={KitDatabaseBeneficiaryFiltersUrl}
+          filtersList={KitDatabaseBeneficiaryFiltersList}
         ></DataTableDemo>
 
         {/* Create new beneficiary form */}

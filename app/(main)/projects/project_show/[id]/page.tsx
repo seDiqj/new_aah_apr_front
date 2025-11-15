@@ -207,47 +207,47 @@ const ShowProjectPage = () => {
 
             {/* Project */}
             <TabsContent value="project" className="h-full">
-              <ProjectForm mode="edit" readOnly={true}></ProjectForm>
+              <ProjectForm mode="show"></ProjectForm>
             </TabsContent>
 
             {/* Outcome */}
             <TabsContent value="outcome" className="h-full">
-              <OutcomeForm mode="edit" readOnly={true}></OutcomeForm>
+              <OutcomeForm mode="show"></OutcomeForm>
             </TabsContent>
 
             {/* Output */}
             <TabsContent value="output" className="h-full">
-              <OutputForm mode="edit" readOnly={true}></OutputForm>
+              <OutputForm mode="show"></OutputForm>
             </TabsContent>
 
             {/* Indicator */}
             <TabsContent value="indicator" className="h-full">
-              <IndicatorForm mode="edit" readOnly={true}></IndicatorForm>
+              <IndicatorForm mode="show"></IndicatorForm>
             </TabsContent>
 
             {/* Dessaggregation */}
             <TabsContent value="dessaggregation" className="h-full">
-              <DessaggregationForm mode="edit" readOnly={true}></DessaggregationForm>
+              <DessaggregationForm mode="show"></DessaggregationForm>
             </TabsContent>
 
             {/* APR preview */}
             <TabsContent value="aprPreview" className="h-full">
-              <MonitoringTablePage mode="edit" readonly={true}></MonitoringTablePage>
+              <MonitoringTablePage mode="show"></MonitoringTablePage>
             </TabsContent>
 
             {/* ISP3 */}
             <TabsContent value="isp3" className="h-full">
-              <Isp3SubPage mode="edit" readOnly={true}></Isp3SubPage>
+              <Isp3SubPage mode="show"></Isp3SubPage>
             </TabsContent>
 
             {/* APR Finalization */}
             <TabsContent value="finalization" className="h-full">
-              <AprFinalizationSubPage mode="edit" readOnly={true}></AprFinalizationSubPage>
+              <AprFinalizationSubPage mode="show"></AprFinalizationSubPage>
             </TabsContent>
 
             {/* APR Logs */}
             <TabsContent value="logs" className="max-h-full overflow-y-hidden">
-              <AprLogsSubPage mode="edit" readOnly={true}></AprLogsSubPage>
+              <AprLogsSubPage mode="show"></AprLogsSubPage>
             </TabsContent>
           </Tabs>
         </div>

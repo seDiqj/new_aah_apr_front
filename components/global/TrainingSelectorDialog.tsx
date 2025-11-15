@@ -10,25 +10,17 @@ import { SingleSelect } from "@/components/single-select";
 import { Button } from "../ui/button";
 import { useEffect, useState } from "react";
 import { useParentContext } from "@/contexts/ParentContext";
+import { TrainingSelectorInterface } from "@/interfaces/Interfaces";
+import { TrainingSelectorMessage } from "@/lib/ConfirmationModelsTexts";
 
-interface ComponentProps {
-  open: boolean;
-  onOpenChange: (value: boolean) => void;
-  ids: {};
-}
-
-const TrainingSelectorDialog: React.FC<ComponentProps> = ({
+const TrainingSelectorDialog: React.FC<TrainingSelectorInterface> = ({
   open,
   onOpenChange,
   ids,
 }) => {
   const { reqForToastAndSetMessage, axiosInstance, reqForConfirmationModelFunc } = useParentContext();
 
-  const [trainings, setTrainings] = useState<
-    {
-      name: string;
-    }[]
-  >([]);
+  const [trainings, setTrainings] = useState<{name: string;}[]>([]);
 
   const [selectedTraining, setSelectedTraining] = useState<string>("");
 
@@ -84,8 +76,7 @@ const TrainingSelectorDialog: React.FC<ComponentProps> = ({
 
         {/* Submit Button */}
         <Button onClick={() => reqForConfirmationModelFunc(
-          "Are you compleatly sure ?",
-          "",
+          TrainingSelectorMessage,
           () => handleSubmit()
         )} className="w-full mt-6">
           Submit

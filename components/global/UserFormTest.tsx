@@ -13,25 +13,19 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
-import {  User, Shield, Check } from "lucide-react"
+import {  User } from "lucide-react"
 import Image from "next/image"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useParentContext } from "@/contexts/ParentContext"
 import { SingleSelect } from "../single-select"
-import { withPermission } from "@/lib/withPermission"
 import { UserCreateFormSchema, UserEditFormSchema } from "@/schemas/FormsSchema"
+import { UserInterface } from "@/interfaces/Interfaces"
+import { steps } from "@/lib/SingleAndMultiSelectOptionsList"
+import { UserCreationMessage, UserEditionMessage } from "@/lib/ConfirmationModelsTexts"
+import { IsCreateMode, IsEditMode, IsShowMode } from "@/lib/Constants"
 
-interface ComponentProps {
-  open: boolean
-  onOpenChange: (value: boolean) => void
-  mode?: "create" | "edit" | "show"
-  permission?: "";
-  userId?: number
-  reloader?: () => void
-}
-
-const ProfileModal: React.FC<ComponentProps> = ({
+const ProfileModal: React.FC<UserInterface> = ({
   open,
   onOpenChange,
   mode = "create",
@@ -43,12 +37,6 @@ const ProfileModal: React.FC<ComponentProps> = ({
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(true)
   const fileInputRef = useRef<HTMLInputElement>(null)
-
-  const steps = [
-    { id: 1, label: "Personal Info", icon: <User size={18} /> },
-    { id: 2, label: "Permissions", icon: <Shield size={18} /> },
-    { id: 3, label: "Summary", icon: <Check size={18} /> },
-  ]
 
   const [form, setForm] = useState({
     name: "",
@@ -190,8 +178,8 @@ const ProfileModal: React.FC<ComponentProps> = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
-        <Button variant={mode === "show" ? "outline" : "default"}>
-          {mode === "show" ? "View Profile" : "Open Profile Modal"}
+        <Button variant={IsShowMode(mode) ? "outline" : "default"}>
+          {IsShowMode(mode) ? "View Profile" : "Open Profile Modal"}
         </Button>
       </DialogTrigger>
 
@@ -209,7 +197,7 @@ const ProfileModal: React.FC<ComponentProps> = ({
         {/* Sidebar */}
         <div className="w-[22%] p-8 border-r border-gray-800">
           <h2 className="text-xl font-semibold mb-10">
-            {mode === "show" ? "View User" : mode === "edit" ? "Edit User" : "Create User"}
+            {IsShowMode(mode) ? "View User" : IsEditMode(mode) ? "Edit User" : "Create User"}
           </h2>
           <div className="space-y-8 sticky top-0">
             {steps.map((s) => (
@@ -304,9 +292,8 @@ const ProfileModal: React.FC<ComponentProps> = ({
                     {["name", "title", "email","password", "department", "status"].map((field) => 
                       {
 
-                        if (field === "password" && mode !== "create") {
+                        if (field === "password" && !IsCreateMode(mode)) 
                           return null;
-                        }
                       
                       return <div key={field}>
                         <Label>
@@ -415,8 +402,7 @@ const ProfileModal: React.FC<ComponentProps> = ({
                     <Button onClick={() => setStep(step + 1)}>Next</Button>
                   ) : (
                     <Button onClick={() => reqForConfirmationModelFunc(
-                      "Are you compleatly sure ?",
-                      "",
+                      (IsCreateMode(mode) ? UserCreationMessage : UserEditionMessage),
                       handleSubmit
                     )}>Save</Button>
                   )}

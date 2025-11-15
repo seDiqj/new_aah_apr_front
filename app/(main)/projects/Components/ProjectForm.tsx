@@ -16,14 +16,13 @@ import { useProjectEditContext } from "../edit_project/[id]/page";
 import { useProjectShowContext } from "../project_show/[id]/page";
 
 interface ComponentProps {
-  mode: "create" | "edit";
-  readOnly?: boolean;
+  mode: "create" | "edit" | "show";
 }
 
-const ProjectForm: React.FC<ComponentProps> = ({mode, readOnly}) => {
+const ProjectForm: React.FC<ComponentProps> = ({mode}) => {
 
     const {reqForToastAndSetMessage, axiosInstance} = useParentContext();
-    const {projectId, setCurrentTab, setProjectId, setProjectProvinces, formData, setFormData}: {projectId: number | null, setCurrentTab: (value: string) => void; setProjectId: React.Dispatch<React.SetStateAction<string>>; setProjectProvinces: React.Dispatch<React.SetStateAction<string[]>>, formData: Project, setFormData: React.Dispatch<React.SetStateAction<Project>>} = mode == "create" ?  useProjectContext() : readOnly ? useProjectShowContext() : useProjectEditContext();
+    const {projectId, setProjectId, setCurrentTab, setProjectProvinces, formData, setFormData}: {projectId: number | null, setCurrentTab: (value: string) => void; setProjectId: React.Dispatch<React.SetStateAction<string>>; setProjectProvinces: React.Dispatch<React.SetStateAction<string[]>>, formData: Project, setFormData: React.Dispatch<React.SetStateAction<Project>>} = mode == "create" ?  useProjectContext() : mode == "show" ? useProjectShowContext() : useProjectEditContext();
 
     const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
@@ -73,6 +72,8 @@ const ProjectForm: React.FC<ComponentProps> = ({mode, readOnly}) => {
         .then((response: any) => reqForToastAndSetMessage(response.data.message))
         .catch((error: any) => reqForToastAndSetMessage(error.response.data.message))
     };
+
+    const readOnly = mode == "show";
 
     return (
         <>

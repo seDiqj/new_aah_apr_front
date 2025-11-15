@@ -1,138 +1,381 @@
 import { useEffect, useState } from "react";
 import { SingleSelect } from "../single-select";
 import { Button } from "../ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
 import { Separator } from "../ui/separator";
 import calculateEachIndicatorProvinceTargetAccordingTONumberOFCouncilorCount from "@/lib/IndicatorProvincesTargetCalculator";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
+import { useParentContext } from "@/contexts/ParentContext";
+import { Plus } from "lucide-react";
+import { useProjectContext } from "@/app/(main)/projects/create_new_project/page";
+import { useProjectEditContext } from "@/app/(main)/projects/edit_project/[id]/page";
+import { useProjectShowContext } from "@/app/(main)/projects/project_show/[id]/page";
+import { Indicator, Output } from "@/app/(main)/projects/types/Types";
+import { MultiSelect } from "../multi-select";
+import { IndicatorDefault } from "@/lib/FormsDefaultValues";
+import {
+  IndicatorCreationMessage,
+  IndicatorEditionMessage,
+} from "@/lib/ConfirmationModelsTexts";
+import {
+  databases,
+  indicatorStatus,
+  indicatorTypes,
+} from "@/lib/SingleAndMultiSelectOptionsList";
+import { IndicatorModelInterface } from "@/interfaces/Interfaces";
+import {
+  HasSubIndicator,
+  IsCreateMode,
+  IsCurrentTypeOptionAvailable,
+  IsCurrentTypeOptionHasBeenTakenByOtherIndicators,
+  IsCurrentTypeOptionIsTheCurrentIndicatorOption,
+  IsEditMode,
+  IsIndicatorDatabaseEnactDatabase,
+  IsIndicatorDatabaseMainDatabase,
+  IsMainDatabase,
+  IsMainDatabaseNotAvailableForSelection,
+  IsNotIndicatorDatabaseEnactDatabase,
+  IsNotMainDatabase,
+  IsNotShowMode,
+  IsOutputSaved,
+  IsShowMode,
+  IsThereAndIndicatorWithEnteredReferanceAndDefferentId,
+} from "@/lib/Constants";
+import { stringToCapital } from "@/helpers/StringToCapital";
+import { getStructuredProvinces } from "@/helpers/IndicatorFormHelpers";
+import { AxiosError, AxiosResponse } from "axios";
 
-
-interface ComponentProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onSave: (indicator: Indicator) => void;
-    indicatorData?: Indicator | null;
-    indicators: Indicator[];
-    mode: "edit" | "show"
-}
-
-const defaultIndicatorState = (): Indicator => ({
-    id: null,
-    outputId: null,
-    outputRef: "",
-    indicator: "",
-    indicatorRef: "",
-    target: 0,
-    status: "active",
-    provinces: [],
-    dessaggregationType: "indevidual",
-    description: "",
-    database: "",
-    type: null,
-    subIndicator: null,
-});
-
-export const EditIndicatorModal: React.FC<ComponentProps> = ({
-    isOpen,
-    onClose,
-    onSave,
-    indicatorData,
-    indicators,
-    mode
+export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
+  isOpen,
+  onClose,
+  mode,
+  pageIdentifier,
+  indicatorId,
 }) => {
-    const [local, setLocal] = useState<Indicator>(defaultIndicatorState());
+  const {
+    reqForToastAndSetMessage,
+    axiosInstance,
+    reqForConfirmationModelFunc,
+  } = useParentContext();
+  const {
+    indicators,
+    setIndicators,
+    outputs,
+    projectProvinces,
+  }: {
+    indicators: Indicator[];
+    setIndicators: React.Dispatch<React.SetStateAction<Indicator[]>>;
+    outputs: Output[];
+    projectProvinces: string[];
+  } =
+    pageIdentifier == "create"
+      ? useProjectContext()
+      : pageIdentifier == "edit"
+      ? useProjectEditContext()
+      : useProjectShowContext();
 
-    useEffect(() => {
-        if (indicatorData) {
-            setLocal({
-            ...defaultIndicatorState(),
-            ...indicatorData,
-            });
-        } else {
-            setLocal(defaultIndicatorState());
-        }
-    }, [indicatorData, isOpen]);
+  const [local, setLocal] = useState<Indicator>(IndicatorDefault());
+  const [reqForSubIndicator, setReqForSubIndicator] = useState<boolean>(false);
 
-    const handleChange = (e: any) => {
+  const handleChange = (e: any) => {
     const { name, value } = e.target;
 
     if (name == "subIndicatorName" && local.subIndicator) {
+      setLocal((prev) => ({
+        ...prev,
+        subIndicator: {
+          ...prev.subIndicator!,
+          name: value,
+        },
+      }));
 
-        setLocal((prev) => ({
-            ...prev,
-            subIndicator: {
-                ...prev.subIndicator!,
-                name: value,
-            }
-        }))
+      return;
+    } else if (name == "subIndicatorTarget" && local.subIndicator) {
+      setLocal((prev) => ({
+        ...prev,
+        subIndicator: {
+          ...prev.subIndicator!,
+          target: Number(value),
+        },
+      }));
 
-        return;
-
-    }else if (name == "subIndicatorTarget" && local.subIndicator) {
-
-        setLocal((prev) => ({
-            ...prev,
-            subIndicator: {
-                ...prev.subIndicator!,
-                target: Number(value),
-            }
-        }))
-
-        return
+      return;
     }
 
     setLocal((prev) => ({
-        ...prev,
-        [name]:
+      ...prev,
+      [name]:
         name === "target"
-            ? Number(value)
-            : name === "type"
-            ? value || null
-            : value,
+          ? Number(value)
+          : name === "type"
+          ? value || null
+          : value,
     }));
-    };
+  };
 
-    const handleSave = () => {
-        if (!local.indicator.trim() || !local.indicatorRef.trim()) {
-            // minimal validation - you can replace with toast from parent
-            alert("Indicator name and reference are required.");
-            return;
-        }
-        onSave(local);
-        onClose();
-    };
-
-    const hundleIndicatorFormChange = (e: any) => {
+  const hundleIndicatorFormChange = (e: any) => {
     const { province, name, value } = e.target;
     if (!local.subIndicator) return;
 
     const updatedProvinces = local.subIndicator.provinces.map((p: any) =>
-        p.province === province.province
+      p.province === province.province
         ? {
             ...p,
             councilorCount:
-            name === "subIndicatorProvinceCouncilorCount" ? Number(value) : p.councilorCount,
+              name === "subIndicatorProvinceCouncilorCount"
+                ? Number(value)
+                : p.councilorCount,
             target:
-            name === "subIndicatorProvinceTarget" ? Number(value) : p.target,
-        }
+              name === "subIndicatorProvinceTarget" ? Number(value) : p.target,
+          }
         : p
     );
 
     setLocal((prev) => ({
-        ...prev,
-        subIndicator: {
+      ...prev,
+      subIndicator: {
         ...prev.subIndicator,
         provinces: updatedProvinces,
-        } as any,
+      } as any,
     }));
-    };
+  };
 
-    return (
+  const handleAddSubIndicator = () => {
+    if (IsMainDatabase(local)) {
+      reqForToastAndSetMessage("Only main database can have a sub indicator.");
+      return;
+    }
+
+    if (!reqForSubIndicator) {
+      setLocal((prev) => ({
+        ...prev,
+        subIndicator: {
+          id: null,
+          indicatorRef: `sub-${prev.indicatorRef}`,
+          name: "",
+          target: 0,
+          type: null,
+          dessaggregationType:
+            prev.dessaggregationType === "session" ? "indevidual" : "session",
+          provinces: prev.provinces.map((province) => ({
+            province: province.province,
+            target: 0,
+            councilorCount: 0,
+          })),
+        },
+      }));
+
+      setReqForSubIndicator(true);
+    } else {
+      setLocal((prev) => ({
+        ...prev,
+        subIndicator: null,
+      }));
+
+      setReqForSubIndicator(false);
+    }
+  };
+
+  const hundleSubmit = () => {
+    if (IsCreateMode(mode)) {
+      axiosInstance
+        .post("projects/i/indicator", { indicator: local })
+        .then((response: any) => {
+          setIndicators((prev) => [
+            ...prev,
+            {
+              ...local,
+              id: response.data.data.find(
+                (indicator: { id: string; indicatorRef: string }) =>
+                  indicator.indicatorRef == local.indicatorRef
+              ).id,
+              subIndicator: local.subIndicator
+                ? {
+                    ...local.subIndicator,
+                    id: response.data.data.find(
+                      (indicator: { id: string; indicatorRef: string }) =>
+                        indicator.indicatorRef ==
+                        local.subIndicator?.indicatorRef
+                    ).id,
+                  }
+                : null,
+            },
+          ]);
+          setLocal((prev) => {
+            return {
+              ...prev,
+              id: response.data.data.find(
+                (indicator: { id: string; indicatorRef: string }) =>
+                  indicator.indicatorRef == local.indicatorRef
+              ).id,
+              subIndicator: prev.subIndicator
+                ? {
+                    ...prev.subIndicator,
+                    id: response.data.data.find(
+                      (indicator: { id: string; indicatorRef: string }) =>
+                        indicator.indicatorRef ==
+                        local.subIndicator?.indicatorRef
+                    ).id,
+                  }
+                : null,
+            };
+          });
+          reqForToastAndSetMessage(response.data.message);
+        })
+        .catch((error: any) => {
+          reqForToastAndSetMessage(error.response.data.message);
+        });
+    } else if (IsEditMode(mode)) {
+      if (
+        IsThereAndIndicatorWithEnteredReferanceAndDefferentId(indicators, local)
+      ) {
+        reqForToastAndSetMessage(
+          "A project can not have two indicators with same referance !"
+        );
+        return;
+      }
+
+      setIndicators((prev) =>
+        prev.map((ind) =>
+          ind.indicatorRef == local.indicatorRef ? local : ind
+        )
+      );
+
+      axiosInstance
+        .put(`/projects/indicator/${local.id}`, local)
+        .then((response: any) => {
+          reqForToastAndSetMessage(response.data.message);
+        })
+        .catch((error: any) =>
+          reqForToastAndSetMessage(error.response.data.message)
+        );
+    }
+  };
+
+  const availableDatabasesForSelection = () => {
+    return databases.filter((opt) => {
+      if (opt.value == "main_database") {
+        if (IsMainDatabaseNotAvailableForSelection(indicators)) return false;
+      }
+      return true;
+    });
+  };
+
+  const availableTypes = () => {
+    return indicatorTypes.filter(
+      (opt) => !IsCurrentTypeOptionAvailable(indicators, opt, local)
+    );
+  };
+
+  const savedOuputs = () => {
+    return outputs
+      .filter((output) => IsOutputSaved(output))
+      .map((output) => ({ value: output.id!, label: output.outputRef }));
+  };
+
+  const handleIndicatorProvincesChange = (provinces: string[]) => {
+    if (!HasSubIndicator(local)) {
+      setLocal((prev) => {
+        return {
+          ...prev,
+          provinces: provinces.map((v) => ({
+            province: v,
+            target: 0,
+            councilorCount: 0,
+          })),
+        };
+      });
+    } else {
+      setLocal((prev) => {
+        return {
+          ...prev,
+          provinces: provinces.map((v) => ({
+            province: v,
+            target: 0,
+            councilorCount: 0,
+          })),
+          subIndicator: {
+            ...prev.subIndicator,
+            id: prev.subIndicator!.id,
+            indicatorRef: prev.subIndicator!.indicatorRef,
+            name: prev.subIndicator!.name,
+            target: prev.subIndicator!.target,
+            type: prev.subIndicator!.type,
+            dessaggregationType: prev.subIndicator!.dessaggregationType,
+            provinces: provinces.map((v) => ({
+              province: v,
+              target: 0,
+              councilorCount: 0,
+            })),
+          },
+        };
+      });
+    }
+  };
+
+  const handleCouncilorCountInputChange = (
+    councilorCount: number,
+    province: string
+  ) => {
+    setLocal((prev) => {
+      const updatedProvinces = prev.provinces.map((p) =>
+        p.province === province
+          ? {
+              ...p,
+              councilorCount: councilorCount,
+            }
+          : p
+      );
+
+      calculateEachIndicatorProvinceTargetAccordingTONumberOFCouncilorCount(
+        {
+          ...prev,
+          provinces: updatedProvinces,
+        },
+        setLocal
+      );
+
+      return {
+        ...prev,
+        provinces: updatedProvinces,
+      };
+    });
+  };
+
+  const handleProvinceTargetChange = (newTarget: number, province: string) => {
+    setLocal((prev) => ({
+      ...prev,
+      provinces: prev.provinces.map((p) =>
+        p.province === province ? { ...p, target: newTarget } : p
+      ),
+    }));
+  };
+
+  useEffect(() => {
+    if ((IsEditMode(mode) || IsShowMode(mode)) && indicatorId) {
+      axiosInstance
+        .get(`projects/indicator/${indicatorId}`)
+        .then((response: AxiosResponse<any, any, {}>) => {
+          setLocal(response.data.data);
+        })
+        .catch((error: AxiosError<any, any>) =>
+          reqForToastAndSetMessage(error.response?.data.message)
+        );
+    }
+  }, [indicatorId, isOpen]);
+
+  return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-        <DialogContent
+      <DialogContent
         className="sm:max-w-4xl border border-gray-300 dark:border-gray-600 rounded-lg ml-16 overflow-y-auto"
         style={{
           maxHeight: "85vh",
@@ -141,436 +384,364 @@ export const EditIndicatorModal: React.FC<ComponentProps> = ({
           paddingLeft: "16px",
           paddingRight: "16px",
         }}
-        >
+      >
         <DialogHeader>
-            <DialogTitle>{mode == "edit" ? "Edit Indicator" : "Show Indicator"}</DialogTitle>
+          <DialogTitle>
+            {IsEditMode(mode)
+              ? "Edit Indicator"
+              : IsCreateMode(mode)
+              ? "Create New Indicator"
+              : "Show Indicator"}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="grid gap-4">
-            <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1">
             <Label htmlFor="indicator">Indicator</Label>
             <Input
-                id="indicator"
-                name="indicator"
-                value={local.indicator || ""}
-                onChange={handleChange}
-                placeholder="Indicator name"
-                disabled={mode == "show"}
+              id="indicator"
+              name="indicator"
+              value={local.indicator || ""}
+              onChange={handleChange}
+              placeholder="Indicator name"
+              disabled={IsShowMode(mode)}
             />
-            </div>
+          </div>
 
-            <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1">
             <Label htmlFor="indicatorRef">Indicator Reference</Label>
             <Input
-                id="indicatorRef"
-                name="indicatorRef"
-                value={local.indicatorRef || ""}
-                onChange={handleChange}
-                placeholder="Indicator reference"
-                disabled={mode == "show"}
+              id="indicatorRef"
+              name="indicatorRef"
+              value={local.indicatorRef || ""}
+              onChange={handleChange}
+              placeholder="Indicator reference"
+              disabled={IsShowMode(mode)}
             />
-            </div>
+          </div>
 
-            <div className="flex gap-4">
+          <div className="flex gap-4">
             <div className="flex-1 flex flex-col gap-1">
-                <Label htmlFor="target">Target</Label>
-                <Input
+              <Label htmlFor="target">Target</Label>
+              <Input
                 id="target"
                 name="target"
                 type="number"
                 value={local.target ?? 0}
                 onChange={handleChange}
                 placeholder="Target"
-                disabled={mode == "show"}
-                />
+                disabled={IsShowMode(mode)}
+              />
             </div>
 
             <div className="flex-1 flex flex-col gap-1">
-                <Label htmlFor="status">Status</Label>
-                <SingleSelect
+              <Label htmlFor="status">Status</Label>
+              <SingleSelect
                 value={local.status}
                 onValueChange={(v: string) =>
-                    setLocal((prev) => ({ ...prev, status: v }))
+                  setLocal((prev) => ({ ...prev, status: v }))
                 }
-                options={[
-                    { value: "active", label: "Active" },
-                    { value: "notStarted", label: "Not Started" },
-                    { value: "inProgress", label: "In Progress" },
-                    { value: "achived", label: "Achived" },
-                    { value: "notAchived", label: "Not Achived" },
-                ]}
+                options={indicatorStatus}
                 placeholder="Select status"
-                disabled={mode == "show"}
-                />
+                disabled={IsShowMode(mode)}
+              />
             </div>
-            </div>
+          </div>
 
-            <div className="flex gap-4">
+          <div className="flex gap-4 flex-col">
             <div className="flex-1 flex flex-col gap-1">
-                <Label>Database</Label>
-                <SingleSelect
-                options={[
-                    {
-                    value: "main_database",
-                    label: "Main Database",
-                    },
-                    {
-                    value: "main_database_meal_tool",
-                    label: "Main Database (Target: Meal Tool)",
-                    },
-                    {
-                    value: "kit_database",
-                    label: "Kit Database",
-                    },
-                    {
-                    value: "psychoeducation_database",
-                    label: "Psychoeducation Database",
-                    },
-                    {
-                    value: "cd_database",
-                    label: "Community Dialog Database",
-                    },
-                    {
-                    value: "training_database",
-                    label: "Training Database",
-                    },
-                    {
-                    value: "referral_database",
-                    label: "Referral Database",
-                    },
-                    {
-                    value: "enact_database",
-                    label: "Enact Database",
-                    },
-                ].filter((opt) => {
-                    if (opt.value == "main_database") {
-                    if (indicators.find((indicator) => indicator.database == "main_database" && indicator.type == "adult_psychosocial_support") 
-                        && indicators.find((indicator) => indicator.database == "main_database" && indicator.type == "child_psychosocial_support")
-                    && indicators.find((indicator) => indicator.database == "main_database" && indicator.type == "parenting_skills")
-                    && indicators.find((indicator) => indicator.database == "main_database" && indicator.type == "child_care_practices"))
-                        return false;
-                    }
-                    return true;
-                })}
+              <Label>Database</Label>
+              <SingleSelect
+                options={availableDatabasesForSelection()}
                 value={local.database}
                 onValueChange={(value: string) =>
-                    setLocal((prev) => ({
+                  setLocal((prev) => ({
                     ...prev,
                     database: value,
-                    }))
+                  }))
                 }
-                disabled={mode == "show"}
-                />
+                disabled={IsShowMode(mode)}
+              />
 
-                {/* Type if the database is main database and dessaggregation type is not individual (backend helper) */}
-                {(local.database == "main_database" && local.dessaggregationType != "indevidual") && (
-                    <div className="flex flex-col gap-1 col-span-full">
-                        <Label>Type</Label>
-                        <SingleSelect
-                        options={[
-                            {
-                            value: "adult_psychosocial_support",
-                            label: "Adult Psychosocial Support",
-                            },
-                            {
-                            value: "child_psychosocial_support",
-                            label: "Child Psychosocial Support",
-                            },
-                            {
-                            value: "parenting_skills",
-                            label: "Parenting Skills",
-                            },
-                            {
-                            value: "child_care_practices",
-                            label: "Child Care Practices",
-                            },
-                        ].filter((opt) => !indicators.find((indicator) => (indicator.database == "main_database" && indicator.type == opt.value 
-                            && indicator.id !== local.id
-                        )))}
-                        value={local.type as unknown as string}
-                        onValueChange={(value: string) =>
-                            setLocal((prev) => ({
-                            ...prev,
-                            type: value,
-                            }))
-                        }
-                        disabled={mode == "show"}
-                        />
-                    </div>
-                )}
+              {IsMainDatabase(local) && (
+                <div className="flex flex-col gap-1 col-span-full">
+                  <Label>Type</Label>
+                  <SingleSelect
+                    options={availableTypes()}
+                    value={local.type as unknown as string}
+                    onValueChange={(value: string) =>
+                      setLocal((prev) => ({
+                        ...prev,
+                        type: value,
+                      }))
+                    }
+                    disabled={IsShowMode(mode)}
+                  />
+                </div>
+              )}
             </div>
-            </div>
+          </div>
 
-            {/* dessaggregation type */}
-            <div className="flex flex-col gap-1 col-span-full">
-                <Label htmlFor={`dessaggregationType`}>
-                    Dessagreggation Type
-                </Label>
-                <RadioGroup
-                    name="dessaggregationType"
-                    value={local.dessaggregationType}
-                    onValueChange={(value: string) => {
-                    const e = {
-                        target: {
-                        name: "dessaggregationType",
-                        value: value,
-                        },
-                    };
-                    hundleIndicatorFormChange(e);
-                    }}
-                    className="flex gap-6"
+          {/* Indicator output */}
+          <div className="flex-1 flex flex-col gap-1">
+            <Label>Output</Label>
+            <SingleSelect
+              options={savedOuputs()}
+              value={local.outputId ?? "Unknown output"}
+              onValueChange={(value: string) =>
+                setLocal((prev) => ({
+                  ...prev,
+                  outputId: value,
+                }))
+              }
+              disabled={IsShowMode(mode)}
+            />
+          </div>
+
+          {/* provinces */}
+          <div className="flex flex-col gap-1 col-span-full">
+            <Label htmlFor={`province`}>Indicator Provinces</Label>
+            <MultiSelect
+              options={getStructuredProvinces(projectProvinces)}
+              value={local.provinces.map((province) => province.province)}
+              onValueChange={(value: string[]) =>
+                handleIndicatorProvincesChange(value)
+              }
+              // error={indicatorFormErrors.provinces}
+              disabled={IsShowMode(mode)}
+            />
+          </div>
+
+          {/* dessaggregation type */}
+          <div className="flex flex-col gap-1 col-span-full">
+            <Label htmlFor={`dessaggregationType`}>Dessagreggation Type</Label>
+            <RadioGroup
+              name="dessaggregationType"
+              value={local.dessaggregationType}
+              onValueChange={(value: string) => {
+                const e = {
+                  target: { name: "dessaggregationType", value: value },
+                };
+                handleChange(e);
+              }}
+              className="flex gap-6"
+            >
+              {IsIndicatorDatabaseMainDatabase(local) && (
+                <div className="flex items-center gap-2">
+                  <RadioGroupItem
+                    value="session"
+                    id="session"
+                    disabled={IsShowMode(mode)}
+                  />
+                  <Label htmlFor={"session"}>Session</Label>
+                </div>
+              )}
+
+              {IsNotIndicatorDatabaseEnactDatabase(local) && (
+                <div className="flex items-center gap-2">
+                  <RadioGroupItem
+                    value="indevidual"
+                    id="indevidual"
+                    disabled={IsShowMode(mode)}
+                  />
+                  <Label htmlFor={"individual"}>Indevidual</Label>
+                </div>
+              )}
+
+              {IsIndicatorDatabaseEnactDatabase(local) && (
+                <div className="flex items-center gap-2">
+                  <RadioGroupItem
+                    value="enact"
+                    id="enact"
+                    disabled={IsShowMode(mode)}
+                  />
+                  <Label htmlFor={"enact"}>Enact</Label>
+                </div>
+              )}
+            </RadioGroup>
+          </div>
+
+          {local.provinces && (
+            <div className="flex flex-col gap-4 mt-4">
+              <Separator className="my-2" />
+              {local.provinces.map((province, idx) => (
+                <div
+                  key={idx}
+                  className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center"
                 >
-                    {(local.database == "main_database") && 
-                    <div className="flex items-center gap-2">
-                    <RadioGroupItem
-                        value="session"
-                        id="session"
-                        disabled={mode == "show"}
-                    />
-                    <Label htmlFor={'session'}>Session</Label>
-                    </div>}
-                    
-                    {local.database != "enact_database" && (
-                    <div className="flex items-center gap-2">
-                    <RadioGroupItem
-                        value="indevidual"
-                        id="indevidual"
-                        disabled={mode == "show"}
-                    />
-                    <Label htmlFor={'individual'}>
-                        Indevidual
+                  <div>
+                    <span>{province.province}</span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <Label htmlFor={`${province.province}-count`}>
+                      Councular Count
                     </Label>
-                    </div>
-                    )}  
-                    {local.database == "enact_database" && (
-                    <div className="flex items-center gap-2">
-                    <RadioGroupItem
-                        value="enact"
-                        id={'enact'}
-                        disabled={mode == "show"}
+                    <Input
+                      id={`${province.province}-count`}
+                      type="number"
+                      value={province.councilorCount}
+                      onChange={(e) =>
+                        handleCouncilorCountInputChange(
+                          Number(e.target.value),
+                          province.province
+                        )
+                      }
+                      placeholder={`${stringToCapital(
+                        province.province
+                      )} Councular Count ...`}
+                      disabled={IsShowMode(mode)}
                     />
-                    <Label htmlFor={'enact'}>Enact</Label>
-                    </div>
-                    )}
-                </RadioGroup>
-            </div>
-
-            {local.provinces && (
-                <div className="flex flex-col gap-4 mt-4">
-                    <Separator className="my-2" />
-                    {local.provinces.map((province, idx) => (
-                    <div
-                        key={idx}
-                        className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center"
-                    >
-                        <div>
-                        <span>{province.province}</span>
-                        </div>
-                        <div className="flex flex-col gap-1">
-                        <Label
-                            htmlFor={`${province.province}-count`}
-                        >
-                            Councular Count
-                        </Label>
-                        <Input
-                            id={`${province.province}-count`}
-                            type="number"
-                            value={province.councilorCount}
-                            onChange={(e) => {
-                            const value = Number(
-                                e.target.value
-                            );
-
-                            setLocal((prev) => {
-                                const updatedProvinces =
-                                prev.provinces.map((p) =>
-                                    p.province ===
-                                    province.province
-                                    ? {
-                                        ...p,
-                                        councilorCount: value,
-                                        }
-                                    : p
-                                );
-
-                                calculateEachIndicatorProvinceTargetAccordingTONumberOFCouncilorCount(
-                                {
-                                    ...prev,
-                                    provinces: updatedProvinces,
-                                }
-                                ,setLocal
-                                );
-
-                                return {
-                                ...prev,
-                                provinces: updatedProvinces,
-                                };
-                            });
-                            }}
-                            placeholder={`${
-                            province.province
-                                .charAt(0)
-                                .toUpperCase() +
-                            province.province
-                                .slice(1)
-                                .toLowerCase()
-                            } Councular Count ...`}
-                            disabled={mode == "show"}
-                        />
-                        </div>
-                        <div className="flex flex-col gap-1">
-                        <Label
-                            htmlFor={`${province.province}-target`}
-                        >
-                            Target
-                        </Label>
-                        <Input
-                            id={`${province.province}-target`}
-                            type="number"
-                            value={province.target || 0}
-                            onChange={(e) => {
-                            const value = Number(
-                                e.target.value
-                            );
-                            setLocal((prev) => ({
-                                ...prev,
-                                provinces: prev.provinces.map(
-                                (p) =>
-                                    p.province ===
-                                    province.province
-                                    ? {
-                                        ...p,
-                                        target: value,
-                                        }
-                                    : p
-                                ),
-                            }));
-                            }}
-                            placeholder={`${
-                            province.province
-                                .charAt(0)
-                                .toUpperCase() +
-                            province.province
-                                .slice(1)
-                                .toLowerCase()
-                            } Target ...`}
-                            disabled={mode == "show"}
-                        />
-                        </div>
-                    </div>
-                    ))}
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <Label htmlFor={`${province.province}-target`}>
+                      Target
+                    </Label>
+                    <Input
+                      id={`${province.province}-target`}
+                      type="number"
+                      value={province.target || 0}
+                      onChange={(e) => {
+                        handleProvinceTargetChange(
+                          Number(e.target.value),
+                          province.province
+                        );
+                      }}
+                      placeholder={`${stringToCapital(
+                        province.province
+                      )} Target ...`}
+                      disabled={IsShowMode(mode)}
+                    />
+                  </div>
                 </div>
-            )}
+              ))}
+            </div>
+          )}
 
-            <div className="flex flex-col gap-1">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                    id="description"
-                    name="description"
-                    value={local.description || ""}
-                    onChange={handleChange}
-                    placeholder="Optional description"
-                    disabled={mode == "show"}
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              name="description"
+              value={local.description || ""}
+              onChange={handleChange}
+              placeholder="Optional description"
+              disabled={IsShowMode(mode)}
+            />
+          </div>
+
+          {/* sub indicator if its not null */}
+          {local.subIndicator && (
+            <div className="flex flex-col gap-2">
+              <Label>Sub Indicator</Label>
+              <div className="flex flex-col gap-2">
+                <Input
+                  name="subIndicatorName"
+                  value={local.subIndicator.name}
+                  onChange={handleChange}
+                  placeholder="Sub Indicator Name"
+                  disabled={IsShowMode(mode)}
                 />
-            </div>
-
-            {/* sub indicator if its not null and */}
-            {local.subIndicator && (
-                <div className="flex flex-col gap-2">
-                    <Label>Sub Indicator</Label>
-                    <div className="flex flex-col gap-2">
-                        <Input
-                            name="subIndicatorName"
-                            value={local.subIndicator.name}
-                            onChange={handleChange}
-                            placeholder="Sub Indicator Name"
-                            disabled={mode == "show"}
-                        />
-                        <Input
-                            name="subIndicatorTarget"
-                            type="number"
-                            value={local.subIndicator.target}
-                            onChange={handleChange}
-                            placeholder="Sub Indicator Target"
-                            disabled={mode == "show"}
-                        />
-                        {/* sub indicator provinces and its target */}
-                        {local.subIndicator?.provinces.map((province, index) => (
-                        <div
-                        key={index}
-                        className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center"
-                        >
-                        <div>
-                            <span>{province.province}</span>
-                        </div>
-                        <div className="flex flex-col gap-1">
-                            <Label
-                            htmlFor={`${province.province}-count`}
-                            >
-                            Councular Count
-                            </Label>
-                            <Input
-                            id={`${province.province}-count`}
-                            type="number"
-                            name="subIndicatorProvinceCouncilorCount"
-                            value={province.councilorCount || 0}
-                            onChange={(e) => {
-                                hundleIndicatorFormChange({
-                                target: {
-                                    province: province,
-                                    name: e.target.name,
-                                    value: e.target.value,
-                                },
-                                });
-                            }}
-                            disabled={mode == "show"}
-                            />
-                        </div>
-                        <div className="flex flex-col gap-1">
-                            <Label
-                            htmlFor={`${province.province}-target`}
-                            >
-                            Target
-                            </Label>
-                            <Input
-                            id={`${province.province}-target`}
-                            type="number"
-                            name="subIndicatorProvinceTarget"
-                            value={province.target || 0}
-                            onChange={(e) => {
-                                hundleIndicatorFormChange({
-                                target: {
-                                    province: province,
-                                    name: e.target.name,
-                                    value: e.target.value,
-                                },
-                                });
-                            }}
-                            disabled={mode == "show"}
-                            />
-                        </div>
-                        </div>
-                        ))}
+                <Input
+                  name="subIndicatorTarget"
+                  type="number"
+                  value={local.subIndicator.target}
+                  onChange={handleChange}
+                  placeholder="Sub Indicator Target"
+                  disabled={IsShowMode(mode)}
+                />
+                {/* sub indicator provinces and its target */}
+                {local.subIndicator?.provinces.map((province, index) => (
+                  <div
+                    key={index}
+                    className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center"
+                  >
+                    <div>
+                      <span>{stringToCapital(province.province)}</span>
                     </div>
-                </div>
-            )}
+                    <div className="flex flex-col gap-1">
+                      <Label htmlFor={`${province.province}-count`}>
+                        Councular Count
+                      </Label>
+                      <Input
+                        id={`${province.province}-count`}
+                        type="number"
+                        name="subIndicatorProvinceCouncilorCount"
+                        value={province.councilorCount || 0}
+                        onChange={(e) => {
+                          hundleIndicatorFormChange({
+                            target: {
+                              province: province,
+                              name: e.target.name,
+                              value: e.target.value,
+                            },
+                          });
+                        }}
+                        disabled={IsShowMode(mode)}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <Label htmlFor={`${province.province}-target`}>
+                        Target
+                      </Label>
+                      <Input
+                        id={`${province.province}-target`}
+                        type="number"
+                        name="subIndicatorProvinceTarget"
+                        value={province.target || 0}
+                        onChange={(e) => {
+                          hundleIndicatorFormChange({
+                            target: {
+                              province: province,
+                              name: e.target.name,
+                              value: e.target.value,
+                            },
+                          });
+                        }}
+                        disabled={IsShowMode(mode)}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
-        {mode != "show" && (
-            <DialogFooter>
+        {IsNotShowMode(mode) && (
+          <DialogFooter>
             <div className="flex gap-2 justify-end w-full">
-            <Button variant="outline" onClick={onClose}>
+              <Button variant="outline" onClick={onClose}>
                 Cancel
-            </Button>
-            <Button onClick={handleSave}>Save</Button>
+              </Button>
+              <Button
+                type="button"
+                className="flex items-center gap-2"
+                onClick={handleAddSubIndicator}
+                disabled={IsNotMainDatabase(local.database)}
+              >
+                <Plus size={16} />
+                {reqForSubIndicator
+                  ? "Remove Sub Indicator"
+                  : "Add Sub Indicator"}
+              </Button>
+              <Button
+                onClick={() => {
+                  reqForConfirmationModelFunc(
+                    IsCreateMode(mode)
+                      ? IndicatorCreationMessage
+                      : IndicatorEditionMessage,
+                    hundleSubmit
+                  );
+                }}
+              >
+                Save
+              </Button>
             </div>
-        </DialogFooter>
+          </DialogFooter>
         )}
-        </DialogContent>
+      </DialogContent>
     </Dialog>
-    );
+  );
 };
 
-export default EditIndicatorModal;
-
-
+export default IndicatorModel;

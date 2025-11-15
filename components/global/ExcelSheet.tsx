@@ -38,11 +38,10 @@ type Indicator_ = {
 export type AprData = { impact: string; outcomes: Outcome[] };
 
 interface ComponentProps {
-  mode: "create" | "edit";
-  readonly?: boolean;
+  mode: "create" | "edit" | "show";
 }
 
-const MonitoringTablePage: React.FC<ComponentProps> = ({mode, readonly}) => {
+const MonitoringTablePage: React.FC<ComponentProps> = ({mode}) => {
 
   const {outcomes, projectGoal, outputs, indicators, dessaggregations, projectProvinces}: {
     outcomes: OutcomeType[],
@@ -51,7 +50,7 @@ const MonitoringTablePage: React.FC<ComponentProps> = ({mode, readonly}) => {
     dessaggregations: DessaggregationType[],
     projectGoal: string,
     projectProvinces: string[]
-  } = mode == "create" ? useProjectContext() : readonly ? useProjectShowContext() : useProjectEditContext();
+  } = mode == "create" ? useProjectContext() : mode == "show" ? useProjectShowContext() : useProjectEditContext();
 
   // Data for creating the preview of the final apr in apr preview TabContent.
   const finalDataForAprPreview: AprData = {
@@ -59,7 +58,7 @@ const MonitoringTablePage: React.FC<ComponentProps> = ({mode, readonly}) => {
     outcomes: outcomes.map((outcome) => ({
       name: outcome.outcome,
       outputs: outputs
-        .filter((output) => output.outcomeRef === outcome.outcomeRef)
+        .filter((output) => output.outcomeId === outcome.id)
         .map((output) => ({
           name: output.output,
           indicators: indicators
@@ -231,6 +230,8 @@ const MonitoringTablePage: React.FC<ComponentProps> = ({mode, readonly}) => {
         });
     });
   });
+
+  const readOnly = mode == "show";
 
   return (
     <div className="p-6 space-y-6">

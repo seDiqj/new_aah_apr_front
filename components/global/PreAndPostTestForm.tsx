@@ -1,11 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import axios from "axios";
-
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -13,28 +8,12 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useEffect, useState } from "react";
 import { useParentContext } from "@/contexts/ParentContext";
 import { useParams } from "next/navigation";
+import { PreAndPostTestsDefault } from "@/lib/FormsDefaultValues";
+import { PreAndPostTestFormType } from "@/types/Types";
+import { PreAndPostTestCreationMessage } from "@/lib/ConfirmationModelsTexts";
+import { PreAndPostTestsInterface } from "@/interfaces/Interfaces";
 
-const userSchema = z.object({
-  name: z.string().min(3),
-  title: z.string().min(3),
-  email: z.string().email(),
-  department: z.string().min(1),
-  role: z.string().min(1),
-  status: z.string().min(1),
-  password: z.string().optional(),
-  photo_path: z.any().optional(),
-  permissions: z.array(z.string()).optional(),
-});
-
-export type UserFormValues = z.infer<typeof userSchema>;
-
-interface ComponentProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  chapterId: string;
-}
-
-const PreAndPostTestForm: React.FC<ComponentProps> = ({
+const PreAndPostTestForm: React.FC<PreAndPostTestsInterface> = ({
   open,
   onOpenChange,
   chapterId,
@@ -43,21 +22,11 @@ const PreAndPostTestForm: React.FC<ComponentProps> = ({
     id: string;
   }>();
 
-  const { reqForToastAndSetMessage } = useParentContext();
-
-  const { axiosInstance } = useParentContext();
+  const { reqForToastAndSetMessage, axiosInstance, reqForConfirmationModelFunc } = useParentContext();
 
   const [loading, setLoading] = useState<boolean>(false);
 
-  const [formData, setFormData] = useState<{
-    preTestScore: number;
-    postTestScore: number;
-    remark: string;
-  }>({
-    preTestScore: 0,
-    postTestScore: 0,
-    remark: "",
-  });
+  const [formData, setFormData] = useState<PreAndPostTestFormType>(PreAndPostTestsDefault());
 
   const handleFormChange = (e: any) => {
     const { name, value } = e.target;
@@ -130,7 +99,10 @@ const PreAndPostTestForm: React.FC<ComponentProps> = ({
           </div>
 
           <div className="flex justify-end mt-4">
-            <Button type="submit" onClick={handleSubmit}>
+            <Button type="submit" onClick={() => reqForConfirmationModelFunc(
+              PreAndPostTestCreationMessage,
+              handleSubmit
+            )}>
               {loading ? "Submiting..." : "Submit"}
             </Button>
           </div>

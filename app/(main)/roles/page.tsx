@@ -9,6 +9,7 @@ import { useState } from "react";
 import { roleColumns } from "@/definitions/DataTableColumnsDefinitions";
 import RoleForm from "@/components/global/RoleForm";
 import { Can } from "@/components/Can";
+import { RoleFiltersList, RoleFilterUrl } from "@/lib/FiltersList";
 
 const RolesPage = () => {
   let [reqForRoleShowForm, setReqForRoleShowForm] = useState<boolean>(false);
@@ -53,11 +54,8 @@ const RolesPage = () => {
           editModelOpenerStateSetter={() => setReqForRoleUpdateForm(true)}
           idFeildForShowStateSetter={setIdFeildForShowStateSetter}
           showModelOpenerStateSetter={() => setReqForRoleShowForm(true)}
-          filterUrl="/filter/roles"
-          filtersList={[
-            "name",
-            "status",
-          ]}
+          filterUrl={RoleFilterUrl}
+          filtersList={RoleFiltersList}
         ></DataTableDemo>
 
         {/* For Creation */}

@@ -5,6 +5,7 @@ import DataTableDemo from "@/components/global/MulitSelectTable";
 import SubHeader from "@/components/global/SubHeader";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { permissionColumns } from "@/definitions/DataTableColumnsDefinitions";
+import { PermissionFiltersList, PermissionFilterUrl } from "@/lib/FiltersList";
 import { withPermission } from "@/lib/withPermission";
 
 const PermissionsPage = () => {
@@ -20,10 +21,8 @@ const PermissionsPage = () => {
           columns={permissionColumns}
           indexUrl="user_mng/table_permissions"
           searchableColumn="name"
-          filterUrl="/filter/permissions"
-          filtersList={[
-            "group_name"
-          ]}
+          filterUrl={PermissionFilterUrl}
+          filtersList={PermissionFiltersList}
         ></DataTableDemo>
         
       </div>

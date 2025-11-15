@@ -13,6 +13,8 @@ import { Input } from "@/components/ui/input";
 import { useParentContext } from "@/contexts/ParentContext";
 import { useParams } from "next/navigation";
 import { Button } from "../ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Loader2 } from "lucide-react";
 
 type Session = {
   group: string | null;
@@ -35,13 +37,11 @@ type IndicatorState = {
 };
 
 export default function SessionsPage() {
-  const { id } = useParams<{
-    id: string;
-  }>();
-
+  const { id } = useParams<{ id: string }>();
   const { reqForToastAndSetMessage, axiosInstance, reqForConfirmationModelFunc } = useParentContext();
 
   const [indicators, setIndicators] = useState<IndicatorState[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // Fetch indicators from backend
   useEffect(() => {
@@ -64,7 +64,6 @@ export default function SessionsPage() {
               description: d.description,
             })) || [],
         }));
-
         setIndicators(mapped);
       })
       .catch((error: any) => {
@@ -72,12 +71,11 @@ export default function SessionsPage() {
         reqForToastAndSetMessage(
           error.response?.data?.message || "Error fetching indicators"
         );
-      });
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const addSessionRow = (indicatorId: number) => {
-    const indicator = indicators.find((i) => i.id === indicatorId);
-
     setIndicators((prev) =>
       prev.map((ind) =>
         ind.id === indicatorId
@@ -94,8 +92,6 @@ export default function SessionsPage() {
   };
 
   const addGroupRow = (indicatorId: number) => {
-    const indicator = indicators.find((i) => i.id === indicatorId);
-
     setIndicators((prev) =>
       prev.map((ind) =>
         ind.id === indicatorId
@@ -122,7 +118,28 @@ export default function SessionsPage() {
       );
   };
 
-  useEffect(() => console.log(indicators), [indicators]);
+  if (loading) {
+    return (
+      <div className="w-full flex flex-col items-center justify-center py-16 gap-8 animate-in fade-in duration-500">
+        <Loader2 className="w-8 h-8 animate-spin opacity-70" />
+        <div className="w-full max-w-4xl space-y-6">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="space-y-4">
+              <Skeleton className="h-10 w-1/3 rounded-xl" />
+              <div className="space-y-2">
+                {Array.from({ length: 4 }).map((_, j) => (
+                  <Skeleton
+                    key={j}
+                    className="h-10 w-full rounded-xl bg-muted/30"
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
@@ -131,7 +148,7 @@ export default function SessionsPage() {
         return (
           <div key={indicator.id} className="mb-10">
             {/* Full-width Title per Indicator */}
-            <div className="bg-blue-600 text-center h-[51px] flex items-center justify-center mx-4 mt-4 rounded-2xl select-none">
+            <div className="text-center h-[51px] flex items-center justify-center mx-4 mt-4 rounded-2xl select-none border">
               <h1 className="text-xl font-bold">{indicator.type}</h1>
             </div>
 
@@ -141,7 +158,7 @@ export default function SessionsPage() {
                 <div className="border rounded-2xl shadow overflow-hidden">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-blue-600 text-white h-14 pointer-events-none">
+                      <TableRow className="text-white h-14 pointer-events-none">
                         <TableHead className="text-center">Session</TableHead>
                         <TableHead className="text-center">Date</TableHead>
                         <TableHead className="text-center">
@@ -161,11 +178,10 @@ export default function SessionsPage() {
                                 value={indicator.sessions[index].session}
                                 onChange={(e) =>
                                   setIndicators((prev) =>
-                                    prev.map((ind, i) => {
+                                    prev.map((ind) => {
                                       if (ind.id == indicator.id) {
                                         ind.sessions[index].session =
                                           e.target.value;
-                                        return ind;
                                       }
                                       return ind;
                                     })
@@ -180,13 +196,11 @@ export default function SessionsPage() {
                                 value={indicator.sessions[index].date}
                                 onChange={(e) =>
                                   setIndicators((prev) =>
-                                    prev.map((ind, i) => {
+                                    prev.map((ind) => {
                                       if (ind.id == indicator.id) {
                                         ind.sessions[index].date =
                                           e.target.value;
-                                        return ind;
                                       }
-
                                       return ind;
                                     })
                                   )
@@ -200,13 +214,11 @@ export default function SessionsPage() {
                                 value={indicator.sessions[index].topic}
                                 onChange={(e) =>
                                   setIndicators((prev) =>
-                                    prev.map((ind, i) => {
+                                    prev.map((ind) => {
                                       if (ind.id == indicator.id) {
                                         ind.sessions[index].topic =
                                           e.target.value;
-                                        return ind;
                                       }
-
                                       return ind;
                                     })
                                   )
@@ -216,29 +228,14 @@ export default function SessionsPage() {
                           </TableRow>
                         );
                       })}
-                      <TableRow className="border-b">
+                      <TableRow>
                         <TableCell colSpan={3} className="text-center">
                           <span
-                            onClick={() => {
-                              addSessionRow(indicator.id);
-                            }}
-                            className={`text-blue-600 cursor-pointer hover:underline`}
+                            onClick={() => addSessionRow(indicator.id)}
+                            className="cursor-pointer hover:underline"
                           >
                             + Add Session
                           </span>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow className="border-0">
-                        <TableCell
-                          colSpan={3}
-                          className="text-center font-semibold"
-                        >
-                          Total Sessions:{" "}
-                          {
-                            indicator.sessions.filter(
-                              (session) => session.group == null
-                            ).length
-                          }
                         </TableCell>
                       </TableRow>
                     </TableBody>
@@ -251,175 +248,123 @@ export default function SessionsPage() {
                 <div className="border rounded-2xl shadow overflow-hidden">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-blue-600 text-white h-14 pointer-events-none">
+                      <TableRow className="text-white h-14 pointer-events-none">
                         <TableHead className="text-center">Group</TableHead>
                         <TableHead className="text-center">Session</TableHead>
                         <TableHead className="text-center">Date</TableHead>
-                        <TableHead className="text-center">
-                          Session Topic
-                        </TableHead>
+                        <TableHead className="text-center">Topic</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {indicator.sessions
-                        .map((session, index) => {
-                          return { session, index };
-                        })
-                        .filter((session) => session.session.group != null)
-                        .map((item) => {
-                          console.log(item);
-                          return item;
-                        })
-                        .map((sessionWithIndix) => {
-                          return (
-                            <TableRow
-                              key={sessionWithIndix.index}
-                              className="border-b"
-                            >
-                              <TableCell className="text-center">
-                                <Input
-                                  className="border-none focus-visible:ring-0"
-                                  placeholder="Group"
-                                  value={
-                                    indicator.sessions[sessionWithIndix.index]
-                                      .group!
-                                  }
-                                  onChange={(e) =>
-                                    setIndicators((prev) =>
-                                      prev.map((ind, i) => {
-                                        if (ind.id == indicator.id) {
-                                          ind.sessions[
-                                            sessionWithIndix.index
-                                          ].group = e.target.value;
-
-                                          return ind;
-                                        }
-
-                                        return ind;
-                                      })
-                                    )
-                                  }
-                                />
-                              </TableCell>
-                              <TableCell className="text-center">
-                                <Input
-                                  className="border-none focus-visible:ring-0"
-                                  placeholder="Session"
-                                  value={
-                                    indicator.sessions[sessionWithIndix.index]
-                                      .session
-                                  }
-                                  onChange={(e) =>
-                                    setIndicators((prev) =>
-                                      prev.map((ind, i) => {
-                                        if (ind.id == indicator.id) {
-                                          ind.sessions[
-                                            sessionWithIndix.index
-                                          ].session = e.target.value;
-
-                                          return ind;
-                                        }
-
-                                        return ind;
-                                      })
-                                    )
-                                  }
-                                />
-                              </TableCell>
-                              <TableCell className="text-center">
-                                <Input
-                                  type="date"
-                                  className="border-none focus-visible:ring-0"
-                                  value={
-                                    indicator.sessions[sessionWithIndix.index]
-                                      .date
-                                  }
-                                  onChange={(e) =>
-                                    setIndicators((prev) =>
-                                      prev.map((ind, i) => {
-                                        if (ind.id == indicator.id) {
-                                          indicator.sessions[
-                                            sessionWithIndix.index
-                                          ].date = e.target.value;
-
-                                          return ind;
-                                        }
-
-                                        return ind;
-                                      })
-                                    )
-                                  }
-                                />
-                              </TableCell>
-                              <TableCell className="text-center">
-                                <Input
-                                  className="border-none focus-visible:ring-0"
-                                  placeholder="Topic"
-                                  value={
-                                    indicator.sessions[sessionWithIndix.index]
-                                      .topic
-                                  }
-                                  onChange={(e) =>
-                                    setIndicators((prev) =>
-                                      prev.map((ind, i) => {
-                                        if (ind.id == indicator.id) {
-                                          ind.sessions[
-                                            sessionWithIndix.index
-                                          ].topic = e.target.value;
-
-                                          return ind;
-                                        }
-
-                                        return ind;
-                                      })
-                                    )
-                                  }
-                                />
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                      <TableRow className="border-b">
+                        .map((session, index) => ({ session, index }))
+                        .filter((s) => s.session.group != null)
+                        .map((item) => (
+                          <TableRow key={item.index} className="border-b">
+                            <TableCell className="text-center">
+                              <Input
+                                placeholder="Group"
+                                className="border-none focus-visible:ring-0"
+                                value={item.session.group!}
+                                onChange={(e) =>
+                                  setIndicators((prev) =>
+                                    prev.map((ind) => {
+                                      if (ind.id === indicator.id) {
+                                        ind.sessions[item.index].group =
+                                          e.target.value;
+                                      }
+                                      return ind;
+                                    })
+                                  )
+                                }
+                              />
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <Input
+                                placeholder="Session"
+                                className="border-none focus-visible:ring-0"
+                                value={item.session.session}
+                                onChange={(e) =>
+                                  setIndicators((prev) =>
+                                    prev.map((ind) => {
+                                      if (ind.id === indicator.id) {
+                                        ind.sessions[item.index].session =
+                                          e.target.value;
+                                      }
+                                      return ind;
+                                    })
+                                  )
+                                }
+                              />
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <Input
+                                type="date"
+                                className="border-none focus-visible:ring-0"
+                                value={item.session.date}
+                                onChange={(e) =>
+                                  setIndicators((prev) =>
+                                    prev.map((ind) => {
+                                      if (ind.id === indicator.id) {
+                                        ind.sessions[item.index].date =
+                                          e.target.value;
+                                      }
+                                      return ind;
+                                    })
+                                  )
+                                }
+                              />
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <Input
+                                placeholder="Topic"
+                                className="border-none focus-visible:ring-0"
+                                value={item.session.topic}
+                                onChange={(e) =>
+                                  setIndicators((prev) =>
+                                    prev.map((ind) => {
+                                      if (ind.id === indicator.id) {
+                                        ind.sessions[item.index].topic =
+                                          e.target.value;
+                                      }
+                                      return ind;
+                                    })
+                                  )
+                                }
+                              />
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      <TableRow>
                         <TableCell colSpan={4} className="text-center">
                           <span
                             onClick={() => addGroupRow(indicator.id)}
-                            className={`text-blue-600 cursor-pointer hover:underline`}
+                            className="cursor-pointer hover:underline"
                           >
                             + Add Session
                           </span>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow className="border-0">
-                        <TableCell
-                          colSpan={4}
-                          className="text-center font-semibold"
-                        >
-                          Total Sessions:{" "}
-                          {
-                            indicator.sessions.filter(
-                              (session) => session.group != null
-                            ).length
-                          }
                         </TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>
                 </div>
               </div>
-
-              
             </div>
-            
           </div>
         );
       })}
 
-      <div className="flex flex-row items-center justify-end w-full pr-4">
-        <Button onClick={() => reqForConfirmationModelFunc(
-          "Are you compleatly sure ?",
-          "",
-          handleSubmit
-        )}>Submit</Button>
+      <div className="flex justify-end w-full pr-4 mt-6">
+        <Button
+          onClick={() =>
+            reqForConfirmationModelFunc(
+              "",
+              handleSubmit
+            )
+          }
+        >
+          Submit
+        </Button>
       </div>
     </div>
   );

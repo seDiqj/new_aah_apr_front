@@ -17,6 +17,8 @@ import {
   XCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { ApproveAprMessage, RejectAprMessage } from "@/lib/ConfirmationModelsTexts";
+import { ApprovedAprsFiltersList, ApprovedAprsFilterUrl } from "@/lib/FiltersList";
 
 const SubmittedDatabasesPage = () => {
   const {
@@ -89,8 +91,7 @@ const SubmittedDatabasesPage = () => {
               variant={"outline"}
               onClick={() =>
                 reqForConfirmationModelFunc(
-                  "Are you compleatly sure ?",
-                  "This action will mark the selected APR as approved and notify the users who reviewed it.",
+                  ApproveAprMessage,
                   approveApr
                 )
               }
@@ -103,8 +104,7 @@ const SubmittedDatabasesPage = () => {
               variant={"outline"}
               onClick={() =>
               reqForConfirmationModelFunc(
-                "Are you compleatly sure ?",
-                "This action will mark the selected APR as rejected and notify the user who reviewed it.",
+                RejectAprMessage,
                 rejectApr
               )
               }
@@ -121,8 +121,8 @@ const SubmittedDatabasesPage = () => {
             </Button>
           </div>
         }
-        filterUrl="/filter/aprroved_aprs"
-        filtersList={["projectCode", "province", "database", "fromDate", "toDate"]}
+        filterUrl={ApprovedAprsFilterUrl}
+        filtersList={ApprovedAprsFiltersList}
       ></DataTableDemo>
 
       {OpenSubmittedDatabaseSummaryModel && (

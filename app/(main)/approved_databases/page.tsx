@@ -10,7 +10,8 @@ import { submittedAndFirstApprovedDatabasesTableColumn } from "@/definitions/Dat
 import { Button } from "@/components/ui/button";
 import { useParentContext } from "@/contexts/ParentContext";
 import { FileChartColumn } from "lucide-react";
-import { ClipboardCheck } from "lucide-react";
+import { GenerateAprMessage } from "@/lib/ConfirmationModelsTexts";
+import { ApprovedDatabasesFiltersList, ApprovedDatabasesFilterUrl } from "@/lib/FiltersList";
 
 
 const SubmittedDatabasesPage = () => {
@@ -62,8 +63,7 @@ const SubmittedDatabasesPage = () => {
               variant={"outline"}
               onClick={() =>
                 reqForConfirmationModelFunc(
-                  "Generate APR ?",
-                  "",
+                  GenerateAprMessage,
                   generateApr
                 )
               }
@@ -72,8 +72,8 @@ const SubmittedDatabasesPage = () => {
             </Button>
           </div>
         }
-        filterUrl="/filter/approved_databases"
-        filtersList={["projectCode", "province", "database", "fromDate", "toDate"]}
+        filterUrl={ApprovedDatabasesFilterUrl}
+        filtersList={ApprovedDatabasesFiltersList}
       ></DataTableDemo>
 
       {OpenSubmittedDatabaseSummaryModel && (

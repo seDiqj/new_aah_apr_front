@@ -17,41 +17,35 @@ import { withPermission } from "@/lib/withPermission";
 import CreateNewProgramMain from "./CreateNewProgramMain";
 import { MainDatabaseBeneficiaryFormSchema } from "@/schemas/FormsSchema";
 import { MainDatabaseBeneficiary } from "@/types/Types";
+import { MainDbBeneficiaryDefault } from "@/lib/FormsDefaultValues";
+import { MainDatabaseBeneficiaryCreationMessage } from "@/lib/ConfirmationModelsTexts";
+import {
+  DisabilityTypeOptions,
+  GenderOptions,
+  HousholdStatusOptions,
+  MaritalStatusOptions,
+  ReferredForProtectionOptions,
+} from "@/lib/SingleAndMultiSelectOptionsList";
+import { MainDatabaseBeneficiaryCreation } from "@/interfaces/Interfaces";
 
-interface DatabaseSummaryProps {
-  open: boolean;
-  onOpenChange: (value: boolean) => void;
-  title: string;
-  createdProgramStateSetter?: any  
-}
+const MainDatabaseBeneficiaryForm: React.FC<
+  MainDatabaseBeneficiaryCreation
+> = ({ open, onOpenChange, title, createdProgramStateSetter }) => {
+  const {
+    reqForToastAndSetMessage,
+    reqForConfirmationModelFunc,
+    axiosInstance,
+    handleReload,
+  } = useParentContext();
 
-const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
-  open,
-  onOpenChange,
-  title,
-  createdProgramStateSetter
-}) => {
-  const { reqForToastAndSetMessage, axiosInstance, handleReload } = useParentContext();
-
-  const [formData, setFormData] = useState<MainDatabaseBeneficiary>({
-    program: "",
-    beneficiaryCode: "",
-    clientName: "",
-    fatherHusbandName: "",
-    gender: "male",
-    age: 0,
-    childCode: "",
-    childAge: 0,
-    phone: "",
-    householdStatus: "idp_drought",
-    literacyLevel: "",
-    maritalStatus: "single",
-    disabilityType: "person_without_disability",
-    referredForProtection: false,
-    dateOfRegistration: ""
-  });
+  const [formData, setFormData] = useState<MainDatabaseBeneficiary>(
+    MainDbBeneficiaryDefault()
+  );
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+
+  const [reqForProgramCreationForm, setReqForProgramCreationForm] =
+    useState<boolean>(false);
 
   const handleFormChange = (e: any) => {
     const name: string = e.target.name;
@@ -69,14 +63,16 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
     const result = MainDatabaseBeneficiaryFormSchema.safeParse(formData);
 
     if (!result.success) {
-    const errors: { [key: string]: string } = {};
-    result.error.issues.forEach((issue) => {
-      const field = issue.path[0];
-      if (field) errors[field as string] = issue.message;
-    });
+      const errors: { [key: string]: string } = {};
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0];
+        if (field) errors[field as string] = issue.message;
+      });
 
-    setFormErrors(errors);
-      reqForToastAndSetMessage("Please fix validation errors before submitting.");
+      setFormErrors(errors);
+      reqForToastAndSetMessage(
+        "Please fix validation errors before submitting."
+      );
       return;
     }
 
@@ -86,8 +82,8 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
       .post("/main_db/beneficiary", formData)
       .then((response: any) => {
         reqForToastAndSetMessage(response.data.message);
-        
-        handleReload()
+
+        handleReload();
       })
       .catch((error: any) => {
         reqForToastAndSetMessage(error.response.data.message);
@@ -111,8 +107,6 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
         reqForToastAndSetMessage(error.response.data.message)
       );
   }, [open]);
-
-  const [reqForProgramCreationForm, setReqForProgramCreationForm] = useState<boolean>(false);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -167,7 +161,14 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
 
             {/* Create New Program Button */}
             <div className="w-full border-2 rounded-2xl">
-              <Button onClick={() => setReqForProgramCreationForm(!reqForProgramCreationForm)} className="w-full">Create New Program</Button>
+              <Button
+                onClick={() =>
+                  setReqForProgramCreationForm(!reqForProgramCreationForm)
+                }
+                className="w-full"
+              >
+                Create New Program
+              </Button>
             </div>
           </div>
         </div>
@@ -190,8 +191,14 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
                   name="dateOfRegistration"
                   type="date"
                   onChange={handleFormChange}
-                  className={`border rounded-xl p-2 rounded ${formErrors.dateOfRegistration ? "!border-red-500" : ""} w-full`}
-                  title={formErrors.dateOfRegistration ? formErrors["dateOfRegistration"] : undefined}
+                  className={`border rounded-xl p-2 rounded ${
+                    formErrors.dateOfRegistration ? "!border-red-500" : ""
+                  } w-full`}
+                  title={
+                    formErrors.dateOfRegistration
+                      ? formErrors["dateOfRegistration"]
+                      : undefined
+                  }
                 />
               </div>
 
@@ -203,7 +210,9 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
                   id="code"
                   name="code"
                   placeholder="Code ..."
-                  className={`border p-2 rounded ${formErrors.code ? "!border-red-500" : ""} w-full`}
+                  className={`border p-2 rounded ${
+                    formErrors.code ? "!border-red-500" : ""
+                  } w-full`}
                   onChange={handleFormChange}
                 />
               </div>
@@ -212,11 +221,15 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
               <div className="flex flex-col gap-4">
                 <Label htmlFor="clientName">Client Name</Label>
                 <Input
-                  title={formErrors.clientName ? formErrors["clientName"] : undefined}
-                  id="clientName"
-                  name="clientName"
+                  title={
+                    formErrors.name ? formErrors["name"] : undefined
+                  }
+                  id="name"
+                  name="name"
                   placeholder="Client Name ..."
-                  className={`border p-2 rounded ${formErrors.clientName ? "!border-red-500" : ""} w-full`}
+                  className={`border p-2 rounded ${
+                    formErrors.name ? "!border-red-500" : ""
+                  } w-full`}
                   onChange={handleFormChange}
                 />
               </div>
@@ -225,11 +238,17 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
               <div className="flex flex-col gap-4">
                 <Label htmlFor="fatherHusbandName">Father / Husbend Name</Label>
                 <Input
-                  title={formErrors.fatherHusbandName ? formErrors["fatherHusbandName"] : undefined}
+                  title={
+                    formErrors.fatherHusbandName
+                      ? formErrors["fatherHusbandName"]
+                      : undefined
+                  }
                   id="fatherHusbandName"
                   name="fatherHusbandName"
                   placeholder="Father / Husbend Name ..."
-                  className={`border p-2 rounded ${formErrors.fatherHusbandName ? "!border-red-500" : ""} w-full`}
+                  className={`border p-2 rounded ${
+                    formErrors.fatherHusbandName ? "!border-red-500" : ""
+                  } w-full`}
                   onChange={handleFormChange}
                 />
               </div>
@@ -238,11 +257,7 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
               <div className="flex flex-col gap-4">
                 <Label htmlFor="gender">Gender</Label>
                 <SingleSelect
-                  options={[
-                    { value: "male", label: "Male" },
-                    { value: "female", label: "Female" },
-                    { value: "other", label: "Other" },
-                  ]}
+                  options={GenderOptions}
                   value={formData.gender}
                   onValueChange={(value: string) => {
                     handleFormChange({
@@ -265,7 +280,9 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
                   name="age"
                   type="number"
                   placeholder="Age ..."
-                  className={`border p-2 rounded ${formErrors.age ? "!border-red-500" : ""} w-full`}
+                  className={`border p-2 rounded ${
+                    formErrors.age ? "!border-red-500" : ""
+                  } w-full`}
                   onChange={handleFormChange}
                 />
               </div>
@@ -274,11 +291,15 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
               <div className="flex flex-col gap-4">
                 <Label htmlFor="childCode">Child Of BNF Code</Label>
                 <Input
-                  title={formErrors.childCode ? formErrors["childCode"] : undefined}
+                  title={
+                    formErrors.childCode ? formErrors["childCode"] : undefined
+                  }
                   id="childCode"
                   name="childCode"
                   placeholder="Child Code ..."
-                  className={`border p-2 rounded ${formErrors.childCode ? "!border-red-500" : ""} w-full`}
+                  className={`border p-2 rounded ${
+                    formErrors.childCode ? "!border-red-500" : ""
+                  } w-full`}
                   onChange={handleFormChange}
                 />
               </div>
@@ -287,12 +308,16 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
               <div className="flex flex-col gap-4">
                 <Label htmlFor="childAge">Age Of Child OF BNF</Label>
                 <Input
-                  title={formErrors.childAge ? formErrors["childAge"] : undefined}
+                  title={
+                    formErrors.childAge ? formErrors["childAge"] : undefined
+                  }
                   id="childAge"
                   name="childAge"
                   type="number"
                   placeholder="Age Of Child ..."
-                  className={`border p-2 rounded ${formErrors.childAge ? "!border-red-500" : ""} w-full`}
+                  className={`border p-2 rounded ${
+                    formErrors.childAge ? "!border-red-500" : ""
+                  } w-full`}
                   onChange={handleFormChange}
                 />
               </div>
@@ -306,7 +331,9 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
                   name="phone"
                   type="tel"
                   placeholder="Phone ..."
-                  className={`border p-2 rounded ${formErrors.phone ? "!border-red-500" : ""} w-full`}
+                  className={`border p-2 rounded ${
+                    formErrors.phone ? "!border-red-500" : ""
+                  } w-full`}
                   onChange={handleFormChange}
                 />
               </div>
@@ -315,14 +342,7 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
               <div className="flex flex-col gap-4">
                 <Label htmlFor="maritalStatus">Marital Status</Label>
                 <SingleSelect
-                  options={[
-                    { value: "single", label: "Single" },
-                    { value: "married", label: "Married" },
-                    { value: "divorced", label: "Divorced" },
-                    { value: "widowed", label: "Widowed" },
-                    { value: "widower", label: "Widower" },
-                    { value: "separated", label: "Separated" },
-                  ]}
+                  options={MaritalStatusOptions}
                   value={formData.maritalStatus}
                   onValueChange={(value: string) =>
                     handleFormChange({
@@ -340,13 +360,7 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
               <div className="flex flex-col gap-4">
                 <Label htmlFor="householdStatus">Household Status of BNF</Label>
                 <SingleSelect
-                  options={[
-                    { value: "idp_drought", label: "IDP (IDP Drought)" },
-                    { value: "idp_conflict", label: "IDP (IDP Conflict)" },
-                    { value: "returnee", label: "Returnee" },
-                    { value: "host_community", label: "Host Community" },
-                    { value: "refugee", label: "Refugee" },
-                  ]}
+                  options={HousholdStatusOptions}
                   value={formData.householdStatus}
                   onValueChange={(value: string) =>
                     handleFormChange({
@@ -364,11 +378,17 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
               <div className="flex flex-col gap-4">
                 <Label htmlFor="literacyLevel">Literacy Level Of BNF</Label>
                 <Input
-                  title={formErrors.literacyLevel ? formErrors["literacyLevel"] : undefined}
+                  title={
+                    formErrors.literacyLevel
+                      ? formErrors["literacyLevel"]
+                      : undefined
+                  }
                   id="literacyLevel"
                   name="literacyLevel"
                   placeholder="Literacy Level ..."
-                  className={`border p-2 rounded ${formErrors.literacyLevel ? "!border-red-500" : ""} w-full`}
+                  className={`border p-2 rounded ${
+                    formErrors.literacyLevel ? "!border-red-500" : ""
+                  } w-full`}
                   onChange={handleFormChange}
                 />
               </div>
@@ -377,16 +397,7 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
               <div className="flex flex-col gap-4">
                 <Label htmlFor="disabilityType">Disablility Type</Label>
                 <SingleSelect
-                  options={[
-                    {
-                      value: "person_with_disability",
-                      label: "Person With Disablility",
-                    },
-                    {
-                      value: "person_without_disability",
-                      label: "Person Without Disablility",
-                    },
-                  ]}
+                  options={DisabilityTypeOptions}
                   value={formData.disabilityType}
                   onValueChange={(value: string) =>
                     handleFormChange({
@@ -406,10 +417,7 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
                   Referred For Protection
                 </Label>
                 <SingleSelect
-                  options={[
-                    { label: "Yes", value: "true" },
-                    { label: "No", value: "false" },
-                  ]}
+                  options={ReferredForProtectionOptions}
                   value={formData.referredForProtection ? "true" : "false"}
                   onValueChange={(value: string) =>
                     handleFormChange({
@@ -427,18 +435,27 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
 
           {/* Program create form */}
           {reqForProgramCreationForm && (
-              <CreateNewProgramMain
+            <CreateNewProgramMain
               open={reqForProgramCreationForm}
               onOpenChange={setReqForProgramCreationForm}
               mode="create"
               createdProgramStateSetter={handleFormChange}
               programsListStateSetter={setPrograms}
             ></CreateNewProgramMain>
-          )} 
+          )}
         </div>
 
         {/* Submit Button */}
-        <Button onClick={handleSubmit} className="w-full mt-6">
+        <Button
+          type="button"
+          onClick={(e) =>
+            reqForConfirmationModelFunc(
+              MainDatabaseBeneficiaryCreationMessage,
+              () => handleSubmit(e)
+            )
+          }
+          className="w-full mt-6"
+        >
           Submit
         </Button>
       </DialogContent>
@@ -446,4 +463,7 @@ const MainDatabaseBeneficiaryForm: React.FC<DatabaseSummaryProps> = ({
   );
 };
 
-export default withPermission(MainDatabaseBeneficiaryForm, "Maindatabase.create");
+export default withPermission(
+  MainDatabaseBeneficiaryForm,
+  "Maindatabase.create"
+);

@@ -13,11 +13,10 @@ import { useProjectContext } from "../create_new_project/page";
 import { cardsBottomButtons } from "./CardsBottomButtons";
 
 interface ComponentProps {
-    mode: "create" | "edit",
-    readOnly?: boolean
+    mode: "create" | "edit" | "show",
 }
 
-const Isp3SubPage: React.FC<ComponentProps> = ({mode, readOnly}) => {
+const Isp3SubPage: React.FC<ComponentProps> = ({mode}) => {
 
     const {axiosInstance, reqForToastAndSetMessage} = useParentContext();
 
@@ -26,7 +25,7 @@ const Isp3SubPage: React.FC<ComponentProps> = ({mode, readOnly}) => {
         setCurrentTab: (value: string) => void;
         isp3: Isp3[];
         setIsp3: React.Dispatch<React.SetStateAction<Isp3[]>>
-    } = mode == "create" ? useProjectContext() : readOnly ? useProjectShowContext() : useProjectEditContext();
+    } = mode == "create" ? useProjectContext() : mode == "show" ? useProjectShowContext() : useProjectEditContext();
 
 
     const hundleSubmit = () => {
@@ -44,6 +43,8 @@ const Isp3SubPage: React.FC<ComponentProps> = ({mode, readOnly}) => {
         });
     };
 
+    const readOnly = mode == "show";
+    
     return (
         <>
         

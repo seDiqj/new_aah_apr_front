@@ -11,90 +11,51 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Skeleton } from "../ui/skeleton";
 import { useParams } from "next/navigation";
 import { useParentContext } from "@/contexts/ParentContext";
+import { MealToolDefault } from "@/lib/FormsDefaultValues";
+import { MealToolFormType } from "@/types/Types";
+import { MealToolCreationMessage, MealToolEditionMessage } from "@/lib/ConfirmationModelsTexts";
+import { baselineOptions, endlineOptions } from "@/lib/SingleAndMultiSelectOptionsList";
 
-interface ComponentProps {
-    open: boolean;
-    onOpenChange: (value: boolean) => void;
-    onSubmit: (e: any) => void;
-    mealToolsStateSetter: any;
-    mealToolsState: any;
-    mode: "create" | "update" | "show"
-}
-
-const baselineOptions = [
-    "Low",
-    "Moderate",
-    "High",
-    "Evaluation Not Possible",
-    "N / A",
-  ];
-  const endlineOptions = [
-    "Low",
-    "Moderate",
-    "High",
-    "Evaluation Not Possible",
-    "N / A",
-  ];
-
-const MealToolForm: React.FC<ComponentProps> = ({
+const MealToolForm: React.FC<MealToolInterface> = ({
   open,
   onOpenChange,
   mealToolsStateSetter,
   mealToolsState,
   onSubmit,
-  mode
+  mode,
+  mealtoolId
 }) => {
 
-  const {reqForConfirmationModelFunc} = useParentContext()
+  const {reqForConfirmationModelFunc, axiosInstance} = useParentContext()
 
   const {id} = useParams();
 
   const [loading, setLoading] = useState(false);
 
-  const renderSkeletonInput = () => (
-    <Skeleton className="h-10 w-full rounded-md" />
-  );
-
   const [baselineSelection, setBaselineSelection] = useState<string>("");
   const [endlineSelection, setEndlineSelection] = useState<string>("");
 
-  const [mealTool, setMealTool] = useState({
-      beneficiary_id: id,
-      type: "",
-      baselineDate: "",
-      endlineDate: "",
-      baselineTotalScore: "",
-      endlineTotalScore: "",
-      improvementPercentage: "",
-      isBaselineActive: false,
-      isEndlineActive: false,
-      evaluation: "",
-});
+  const [mealTool, setMealTool] = useState<MealToolFormType>(MealToolDefault(id as unknown as string));
 
-const handleFormChange = (e: any) => {
-    setMealTool({ ...mealTool, [e.target.name]: e.target.value });
-};
-
-const handleAdd = () => {
-    if (!mealTool.type) return;
-    mealToolsStateSetter([...mealToolsState, mealTool]);
-    setMealTool({
-      beneficiary_id: id,
-      type: "",
-      baselineDate: "",
-      endlineDate: "",
-      baselineTotalScore: "",
-      endlineTotalScore: "",
-      improvementPercentage: "",
-      isBaselineActive: false,
-      isEndlineActive: false,
-      evaluation: "",
-    });
+  const handleFormChange = (e: any) => {
+      setMealTool({ ...mealTool, [e.target.name]: e.target.value });
   };
+
+  const handleAdd = () => {
+      if (!mealTool.type) return;
+      mealToolsStateSetter([...mealToolsState, mealTool]);
+      setMealTool(MealToolDefault(id as unknown as string));
+      onSubmit([...mealToolsState, mealTool])
+  };
+
+  useEffect(() => {
+    if (mode == "show" || mode == "edit" && mealtoolId)
+      setMealTool(mealToolsState.find((mt: any) => mt.id == mealtoolId))
+  }, [])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -229,12 +190,12 @@ const handleAdd = () => {
                     Percentage Of Improvement
                     </Label>
                     <Input
-                    id="improvementPercentage"
-                    name="improvementPercentage"
-                    type="number"
-                    value={mealTool.improvementPercentage}
-                    onChange={handleFormChange}
-                    className="border w-full"
+                      id="improvementPercentage"
+                      name="improvementPercentage"
+                      type="number"
+                      value={mealTool.improvementPercentage}
+                      onChange={handleFormChange}
+                      className="border w-full"
                     />
                 </div>
                 </div>
@@ -297,8 +258,7 @@ const handleAdd = () => {
        <div className="flex justify-end">
             <Button className="w-full mt-6" onClick={(e) => {
               reqForConfirmationModelFunc(
-                "Are you sure ?",
-                "This action can not be undone !",
+                (mode == "create" ? MealToolCreationMessage : MealToolEditionMessage),
                 () => {
                   handleAdd();
                   onSubmit(e);
@@ -310,5 +270,9 @@ const handleAdd = () => {
     </Dialog>
   );
 };
+
+const renderSkeletonInput = () => (
+    <Skeleton className="h-10 w-full rounded-md" />
+  );
 
 export default MealToolForm                 

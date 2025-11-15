@@ -8,18 +8,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { BeneficiaryForm } from "@/types/Types";
-import { SingleSelect } from "../single-select";
 import { MultiSelect } from "../multi-select";
 import { useParentContext } from "@/contexts/ParentContext";
 import { useParams } from "next/navigation";
+import { ReferralInterface } from "@/interfaces/Interfaces";
+import { ReferralFormPersonalInforType, ReferralReasonFormType, ReferredByAndReferredToFormType } from "@/types/Types";
+import { ReasoneOfReferralDefault, ReferralFormPersonalInfoDefault, ReferredByAndReferredToDefault } from "@/lib/FormsDefaultValues";
+import { LanguagesOptions, servicesOptions } from "@/lib/SingleAndMultiSelectOptionsList";
+import { ReferralSubmitButtonMessage } from "@/lib/ConfirmationModelsTexts";
 
-interface ComponentProps {
-  beneficiaryInfo: BeneficiaryForm | null;
-  referralInfo: any;
-}
-
-const ReferralForm: React.FC<ComponentProps> = ({
+const ReferralForm: React.FC<ReferralInterface> = ({
   beneficiaryInfo,
   referralInfo,
 }) => {
@@ -29,92 +27,41 @@ const ReferralForm: React.FC<ComponentProps> = ({
   const { reqForToastAndSetMessage, axiosInstance, reqForConfirmationModelFunc } = useParentContext();
 
   // Question states
-  const [q1Yes, setQ1Yes] = useState(false);
-  const [q1Text, setQ1Text] = useState("");
+  const [q1Yes, setQ1Yes] = useState<boolean>(false);
+  const [q1Text, setQ1Text] = useState<string>("");
 
-  const [q2Yes, setQ2Yes] = useState(false);
-  const [consentRead, setConsentRead] = useState(false);
+  const [q2Yes, setQ2Yes] = useState<boolean>(false);
+  const [consentRead, setConsentRead] = useState<boolean>(false);
 
   // Referral table states
-  const [caseNo, setCaseNo] = useState("");
-  const [dateOfReferral, setDateOfReferral] = useState("");
-  const [referralTypeInternal, setReferralTypeInternal] = useState(false);
-  const [referralTypeExternal, setReferralTypeExternal] = useState(false);
+  const [caseNo, setCaseNo] = useState<string>("");
+  const [dateOfReferral, setDateOfReferral] = useState<string>("");
+  const [referralTypeInternal, setReferralTypeInternal] = useState<boolean>(false);
+  const [referralTypeExternal, setReferralTypeExternal] = useState<boolean>(false);
   const [consentProvided, setConsentProvided] = useState<"yes" | "no" | "">("");
-  const [consentReason, setConsentReason] = useState("");
+  const [consentReason, setConsentReason] = useState<string>("");
 
   // Referred By / To
-  const [referredBy, setReferredBy] = useState({
-    name: "",
-    agency: "",
-    phone: "",
-    email: "",
-    address: "",
-  });
-  const [referredTo, setReferredTo] = useState({
-    name: "",
-    agency: "",
-    phone: "",
-    email: "",
-    address: "",
-  });
+  const [referredBy, setReferredBy] = useState<ReferredByAndReferredToFormType>(ReferredByAndReferredToDefault());
+  const [referredTo, setReferredTo] = useState<ReferredByAndReferredToFormType>(ReferredByAndReferredToDefault());
 
   // Reason of referral
-  const [reasons, setReasons] = useState({
-    mentalHealthAlert: "",
-    selfHarm: "",
-    suicideIdeation: "",
-    undiagnosedPsychosis: "",
-  });
+  const [reasons, setReasons] = useState<ReferralReasonFormType>(ReasoneOfReferralDefault());
 
   // Services requested
-  const servicesList = [
-    "Alternative care",
-    "Security (safe shelter)",
-    "Education (formal)",
-    "Non-formal education",
-    "S/GBV specialized care",
-    "Family tracing and reunification",
-    "Basic psychosocial support",
-    "Food",
-    "Non-food items",
-    "Documentation",
-    "Services for beneficiary with disabilities",
-    "Shelter",
-    "WASH",
-    "Relocation",
-    "Cash assistance",
-    "Livelihoods",
-    "Sexual & reproductive health",
-    "Protection issues",
-    "Others (please specify)",
-    "General health & medical support",
-    "Nutrition",
-    "Legal support",
-  ];
-  const [selectedServices, setSelectedServices] = useState<
-    Record<string, boolean>
-  >(() => servicesList.reduce((acc, s) => ({ ...acc, [s]: false }), {}));
-  const [otherServiceText, setOtherServiceText] = useState("");
+  const [selectedServices, setSelectedServices] = useState<Record<string, boolean>>(() => servicesOptions.reduce((acc, s) => ({ ...acc, [s]: false }), {}));
+  const [otherServiceText, setOtherServiceText] = useState<string>("");
 
   // Expected outcome
-  const [expectedOutcome, setExpectedOutcome] = useState("");
+  const [expectedOutcome, setExpectedOutcome] = useState<string>("");
 
   // Final row
-  const [providerAcceptsYes, setProviderAcceptsYes] = useState(false);
-  const [providerAcceptsNo, setProviderAcceptsNo] = useState(false);
-  const [notAcceptedReason, setNotAcceptedReason] = useState("");
+  const [providerAcceptsYes, setProviderAcceptsYes] = useState<boolean>(false);
+  const [providerAcceptsNo, setProviderAcceptsNo] = useState<boolean>(false);
+  const [notAcceptedReason, setNotAcceptedReason] = useState<string>("");
 
   // personal inforamtion.
-  const [personalInfo, setPersonalInfo] = useState<{
-    nationalId: string;
-    currentAddress: string;
-    spokenLanguage: string[];
-  }>({
-    nationalId: "",
-    currentAddress: "",
-    spokenLanguage: [],
-  });
+  const [personalInfo, setPersonalInfo] = useState<ReferralFormPersonalInforType>(ReferralFormPersonalInfoDefault());
 
   function toggleService(name: string) {
     setSelectedServices((prev) => ({ ...prev, [name]: !prev[name] }));
@@ -267,7 +214,7 @@ const ReferralForm: React.FC<ComponentProps> = ({
     "border-0 border-b border-transparent focus:border-gray-300 focus:border-b focus:outline-none rounded-none";
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form>
       <Card className="w-full max-w-5xl mx-auto p-4">
         <CardHeader className="flex items-start justify-between gap-4">
           <div>
@@ -616,11 +563,7 @@ const ReferralForm: React.FC<ComponentProps> = ({
                   }
                 />
                 <MultiSelect
-                  options={[
-                    { value: "pashto", label: "Pashto" },
-                    { value: "dari", label: "Dari" },
-                    { value: "other", label: "Other" },
-                  ]}
+                  options={LanguagesOptions}
                   value={personalInfo.spokenLanguage}
                   onValueChange={(value: string[]) => {
                     setPersonalInfo((prev) => ({
@@ -707,7 +650,7 @@ const ReferralForm: React.FC<ComponentProps> = ({
           <div className="space-y-3">
             <Label>Type of services requested</Label>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-              {servicesList.map((s) => (
+              {servicesOptions.map((s) => (
                 <div key={s} className="flex items-center gap-2">
                   <Checkbox
                     id={s}
@@ -795,9 +738,8 @@ const ReferralForm: React.FC<ComponentProps> = ({
           </div>
 
           <div className="flex justify-end">
-            <Button onClick={(e) => reqForConfirmationModelFunc(
-              "Are you compleatly sure ?",
-              "",
+            <Button type="button" onClick={(e) => reqForConfirmationModelFunc(
+              ReferralSubmitButtonMessage,
               () => handleSubmit(e)
             )}>Submit</Button>
           </div>

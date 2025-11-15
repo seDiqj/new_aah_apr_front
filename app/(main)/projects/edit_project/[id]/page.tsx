@@ -20,10 +20,11 @@ import OutcomeForm from "../../Components/OutcomeForm";
 import AprLogsSubPage from "../../Components/AprLogsSubPage";
 import IndicatorForm from "../../Components/IndicatorForm";
 import Isp3SubPage from "../../Components/Isp3SubPage";
+import { IndicatorModel } from "@/components/global/IndicatorEditModel";
+import { Button } from "@/components/ui/button";
 
 const EditProjectPage = () => {
-
-  const {id} = useParams();
+  const { id } = useParams();
 
   const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
 
@@ -51,18 +52,20 @@ const EditProjectPage = () => {
 
   const [indicators, setIndicators] = useState<Indicator[]>([]);
 
-  const [dessaggregations, setDessaggregations] = useState<Dessaggregation[]>([]);
+  const [dessaggregations, setDessaggregations] = useState<Dessaggregation[]>(
+    []
+  );
 
   const [isp3, setIsp3] = useState<Isp3[]>(
     isp3s.map((i) => ({
       name: i,
       indicators: [],
-    })),
+    }))
   );
 
   const [projectId, setProjectId] = useState<number | null>(null);
   const [projectProvinces, setProjectProvinces] = useState<string[]>(["kabul"]);
-  const [projectGoal, setProjectGoal] = useState<string>('');
+  const [projectGoal, setProjectGoal] = useState<string>("");
   const [currentTab, setCurrentTab] = useState<string>("project");
 
   const [actionLogs, setActionLogs] = useState([]);
@@ -78,188 +81,259 @@ const EditProjectPage = () => {
     }[]
   >([]);
 
-  const [projectAprStatus, setProjectAprStatus] = useState<string>("notCreatedYet");
-  
-  
+  const [projectAprStatus, setProjectAprStatus] =
+    useState<string>("notCreatedYet");
+
   // Fech project data
   useEffect(() => {
+    axiosInstance
+      .get(`/projects/${id}`)
+      .then((response: any) => {
+        const { outcomesInfo, ...project } = response.data.data;
+        project["provinces"] = project.provinces.map(
+          (province: { id: string; name: string; pivo: any }) => province.name
+        );
+        setFormData(project);
+        setProjectProvinces(project["provinces"]);
+        setOutcomes(
+          outcomesInfo.map((outcome: any) => {
+            const { outputs, ...outcomeInfo } = outcome;
 
-    axiosInstance.get(`/projects/${id}`)
-    .then((response: any) => {
-      const {outcomesInfo, ...project} = response.data.data;
-      project["provinces"] = project.provinces.map((province: {id: string, name: string, pivo: any}) => province.name);
-      setFormData(project);
-      setProjectProvinces(project["provinces"]);
-      setOutcomes(outcomesInfo.map((outcome: any) => {
-        const {outputs, ...outcomeInfo} = outcome;
+            return outcomeInfo;
+          })
+        );
+        setOutputs(
+          outcomesInfo.flatMap((outcome: any) => {
+            const outputs = outcome.outputs.flatMap((output: any) => {
+              const { indicators, ...outputInfo } = output;
 
-        return outcomeInfo;
-      }));
-      setOutputs(outcomesInfo.flatMap((outcome: any) => {
-        const outputs =  outcome.outputs.flatMap((output: any) => {
-          const {indicators, ...outputInfo} = output;
-          
-          outputInfo["outcomeId"] = outcome.id;
-          outputInfo["outcomeRef"] = outcome.outcomeRef;
+              outputInfo["outcomeId"] = outcome.id;
+              outputInfo["outcomeRef"] = outcome.outcomeRef;
 
-          return outputInfo;
+              return outputInfo;
+            });
+
+            return outputs;
+          })
+        );
+        setIndicators(
+          outcomesInfo.flatMap((outcome: any) => {
+            const indicators = outcome.outputs.flatMap((output: any) =>
+              output.indicators.flatMap((indicator: any) => {
+                const { dessaggregations, ...indicatorInfo } = indicator;
+
+                indicatorInfo["outputId"] = output.id;
+                indicatorInfo["outputRef"] = output.outputRef;
+
+                return indicatorInfo;
+              })
+            );
+
+            return indicators;
+          })
+        );
+        setDessaggregations(
+          outcomesInfo.flatMap((outcome: any) => {
+            const dessaggregations = outcome.outputs.flatMap((output: any) =>
+              output.indicators.flatMap((indicator: any) =>
+                indicator.dessaggregations.flatMap((dessaggregation: any) => {
+                  dessaggregation["indicatorId"] = dessaggregation.indicator_id;
+
+                  return dessaggregation;
+                })
+              )
+            );
+            return dessaggregations;
+          })
+        );
+        setProjectAprStatus(project.aprStatus);
+        setProjectId(project.id);
+        outcomesInfo.flatMap((outcome: any) => {
+          const isp3s = outcome.outputs.flatMap((output: any) =>
+            output.indicators.flatMap((indicator: any) =>
+              indicator.isp3.flatMap((isp: any) => {
+                setIsp3((prev) =>
+                  prev.map((i) =>
+                    i.name == isp.description
+                      ? {
+                          ...i,
+                          indicators: [...i.indicators, isp.pivot.indicator_id],
+                        }
+                      : i
+                  )
+                );
+              })
+            )
+          );
+          return isp3s;
         });
-
-        return outputs;
-      }));
-      setIndicators(outcomesInfo.flatMap((outcome: any) => {
-        const indicators = outcome.outputs.flatMap((output: any) => output.indicators.flatMap((indicator: any) => {
-          const {dessaggregations, ...indicatorInfo} = indicator;
-
-          indicatorInfo["outputId"] = output.id;
-          indicatorInfo["outputRef"] = output.outputRef;
-
-          return indicatorInfo;
-        }))
-
-        return indicators;
-      }));
-      setDessaggregations(outcomesInfo.flatMap((outcome: any) => {
-        const dessaggregations = outcome.outputs.flatMap((output: any) => output.indicators.flatMap((indicator: any) => indicator.dessaggregations.flatMap((dessaggregation: any) => {
-
-          dessaggregation["indicatorId"] = dessaggregation.indicator_id;
-
-          return dessaggregation;
-
-        })))
-        return dessaggregations;
-      }));
-      setProjectAprStatus(project.aprStatus);
-      setProjectId(project.id)
-      outcomesInfo.flatMap((outcome: any) => {
-        const isp3s = outcome.outputs.flatMap((output: any) => output.indicators.flatMap((indicator: any) => indicator.isp3.flatMap((isp: any) => {
-
-          setIsp3((prev) => prev.map((i) => 
-            i.name == isp.description ?
-            {
-              ...i,
-              indicators: [...i.indicators, isp.pivot.indicator_id]
-            }:
-            i
-          ))
-
-        })))
-        return isp3s;
-      });
-    }).catch((error: any) => reqForToastAndSetMessage(error.response.data.message));
+      })
+      .catch((error: any) =>
+        reqForToastAndSetMessage(error.response.data.message)
+      );
   }, []);
+
+  const [reqForOutcomeForm, setReqForOutcomeForm] = useState(false);
+  const [reqForOutputForm, setReqForOutputForm] = useState(false);
+  const [reqForIndicatorForm, setReqForIndicatorForm] = useState(false);
 
   return (
     <>
-      <ComponentContext.Provider value={{
-        formData,
-        setFormData,
-        outcomes,
-        setOutcomes,
-        outputs,
-        setOutputs,
-        indicators,
-        setIndicators,
-        dessaggregations,
-        setDessaggregations,
-        projectId,
-        setProjectId,
-        projectGoal,
-        setProjectGoal,
-        projectProvinces,
-        setProjectProvinces,
-        currentTab,
-        setCurrentTab,
-        logs,
-        setLogs,
-        projectAprStatus,
-        setProjectAprStatus,
-        isp3,
-        setIsp3,
-        actionLogs,
-        setActionLogs
-      }}>
+      <ComponentContext.Provider
+        value={{
+          formData,
+          setFormData,
+          outcomes,
+          setOutcomes,
+          outputs,
+          setOutputs,
+          indicators,
+          setIndicators,
+          dessaggregations,
+          setDessaggregations,
+          projectId,
+          setProjectId,
+          projectGoal,
+          setProjectGoal,
+          projectProvinces,
+          setProjectProvinces,
+          currentTab,
+          setCurrentTab,
+          logs,
+          setLogs,
+          projectAprStatus,
+          setProjectAprStatus,
+          isp3,
+          setIsp3,
+          actionLogs,
+          setActionLogs,
+        }}
+      >
         <div className="w-full h-full p-2">
-        <Navbar14 />
-        <div className="flex flex-row items-center justify-start my-2">
-          <BreadcrumbWithCustomSeparator></BreadcrumbWithCustomSeparator>
+          <Navbar14 />
+          <div className="flex flex-row items-center justify-start my-2">
+            <BreadcrumbWithCustomSeparator></BreadcrumbWithCustomSeparator>
+          </div>
+          <SubHeader pageTitle={"Create New Project"}>
+            <div className="flex flex-row items-center justify-end gap-2">
+              {(currentTab == "outcome" ||
+                currentTab == "output" ||
+                currentTab == "indicator") && (
+                <Button
+                  onClick={() => {
+                    switch (currentTab) {
+                      case "outcome":
+                        setReqForOutcomeForm(true);
+                        break;
+                      case "output":
+                        setReqForOutputForm(true);
+                        break;
+                      case "indicator":
+                        if (outputs.length == 0) {
+                          reqForToastAndSetMessage(
+                            "Please add at least one ouptut !"
+                          );
+                          return;
+                        }
+                        setReqForIndicatorForm(true);
+                        break;
+                    }
+                  }}
+                >
+                  {currentTab == "outcome"
+                    ? "New Outcome"
+                    : currentTab == "output"
+                    ? "New Output"
+                    : "New Indicator"}
+                </Button>
+              )}
+            </div>
+          </SubHeader>
+          <div className="flex flex-1 h-[440px] w-full flex-col gap-6">
+            <Tabs
+              defaultValue="project"
+              onValueChange={(value: string) => setCurrentTab(value)}
+              value={currentTab}
+              className="h-full"
+            >
+              {/* List of tabs */}
+              <TabsList className="w-full">
+                <TabsTrigger value="project">Project</TabsTrigger>
+                <TabsTrigger value="outcome">OutCome</TabsTrigger>
+                <TabsTrigger value="output">Output</TabsTrigger>
+                <TabsTrigger value="indicator">Indicator</TabsTrigger>
+                <TabsTrigger value="dessaggregation">
+                  Dessaggregation
+                </TabsTrigger>
+                <TabsTrigger value="aprPreview">APR Preview</TabsTrigger>
+                <TabsTrigger value="isp3">ISP3</TabsTrigger>
+                <TabsTrigger value="finalization">APR Finalization</TabsTrigger>
+                <TabsTrigger value="logs">Logs</TabsTrigger>
+              </TabsList>
+
+              {/* Project */}
+              <TabsContent value="project" className="h-full">
+                <ProjectForm mode="edit"></ProjectForm>
+              </TabsContent>
+
+              {/* Outcome */}
+              <TabsContent value="outcome" className="h-full">
+                <OutcomeForm mode="edit"></OutcomeForm>
+              </TabsContent>
+
+              {/* Output */}
+              <TabsContent value="output" className="h-full">
+                <OutputForm mode="edit"></OutputForm>
+              </TabsContent>
+
+              {/* Indicator */}
+              <TabsContent value="indicator" className="h-full">
+                <IndicatorForm mode="edit"></IndicatorForm>
+              </TabsContent>
+
+              {/* Dessaggregation */}
+              <TabsContent value="dessaggregation" className="h-full">
+                <DessaggregationForm mode="edit"></DessaggregationForm>
+              </TabsContent>
+
+              {/* APR preview */}
+              <TabsContent value="aprPreview" className="h-full">
+                <MonitoringTablePage mode="edit"></MonitoringTablePage>
+              </TabsContent>
+
+              {/* ISP3 */}
+              <TabsContent value="isp3" className="h-full">
+                <Isp3SubPage mode="edit"></Isp3SubPage>
+              </TabsContent>
+
+              {/* APR Finalization */}
+              <TabsContent value="finalization" className="h-full">
+                <AprFinalizationSubPage mode="edit"></AprFinalizationSubPage>
+              </TabsContent>
+
+              {/* APR Logs */}
+              <TabsContent value="logs" className="h-full overflow-hidden">
+                <AprLogsSubPage mode="edit"></AprLogsSubPage>
+              </TabsContent>
+            </Tabs>
+          </div>
+
+          {reqForIndicatorForm && (
+            <IndicatorModel
+              isOpen={reqForIndicatorForm}
+              onClose={() => setReqForIndicatorForm(false)}
+              mode="create"
+              pageIdentifier="edit"
+            />
+          )}
         </div>
-        <SubHeader pageTitle={"Create New Project"}></SubHeader>
-        <div className="flex flex-1 h-[440px] w-full flex-col gap-6">
-          <Tabs
-            defaultValue="project"
-            onValueChange={(value: string) => setCurrentTab(value)}
-            value={currentTab}
-            className="h-full"
-          >
-            {/* List of tabs */}
-            <TabsList className="w-full">
-              <TabsTrigger value="project">Project</TabsTrigger>
-              <TabsTrigger value="outcome">OutCome</TabsTrigger>
-              <TabsTrigger value="output">Output</TabsTrigger>
-              <TabsTrigger value="indicator">Indicator</TabsTrigger>
-              <TabsTrigger value="dessaggregation">Dessaggregation</TabsTrigger>
-              <TabsTrigger value="aprPreview">APR Preview</TabsTrigger>
-              <TabsTrigger value="isp3">ISP3</TabsTrigger>
-              <TabsTrigger value="finalization">APR Finalization</TabsTrigger>
-              <TabsTrigger value="logs">Logs</TabsTrigger>
-            </TabsList>
-
-            {/* Project */}
-            <TabsContent value="project" className="h-full">
-              <ProjectForm mode="edit"></ProjectForm>
-            </TabsContent>
-
-            {/* Outcome */}
-            <TabsContent value="outcome" className="h-full">
-              <OutcomeForm mode="edit" readOnly={false}></OutcomeForm>
-            </TabsContent>
-
-            {/* Output */}
-            <TabsContent value="output" className="h-full">
-              <OutputForm mode="edit" readOnly={false}></OutputForm>
-            </TabsContent>
-
-            {/* Indicator */}
-            <TabsContent value="indicator" className="h-full">
-              <IndicatorForm mode="edit"></IndicatorForm>
-            </TabsContent>
-
-            {/* Dessaggregation */}
-            <TabsContent value="dessaggregation" className="h-full">
-              <DessaggregationForm mode="edit"></DessaggregationForm>
-            </TabsContent>
-
-            {/* APR preview */}
-            <TabsContent value="aprPreview" className="h-full">
-              <MonitoringTablePage mode="edit"></MonitoringTablePage>
-            </TabsContent>
-
-            {/* ISP3 */}
-            <TabsContent value="isp3" className="h-full">
-              <Isp3SubPage mode="edit"></Isp3SubPage>
-            </TabsContent>
-
-            {/* APR Finalization */}
-            <TabsContent value="finalization" className="h-full">
-              <AprFinalizationSubPage mode="edit"></AprFinalizationSubPage>
-            </TabsContent>
-
-            {/* APR Logs */}
-            <TabsContent value="logs" className="h-full overflow-hidden">
-              <AprLogsSubPage mode="edit"></AprLogsSubPage>
-            </TabsContent>
-          </Tabs>
-        </div>
-                
-      </div>
       </ComponentContext.Provider>
     </>
   );
 };
 
 export const ComponentContext = createContext<any>({});
-  
+
 export const useProjectEditContext = () => useContext(ComponentContext);
 
 export default withPermission(EditProjectPage, "Project.edit");

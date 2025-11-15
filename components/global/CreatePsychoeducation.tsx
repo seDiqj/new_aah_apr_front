@@ -16,61 +16,13 @@ import { SingleSelect } from "../single-select";
 import { useEffect, useState } from "react";
 import { useParentContext } from "@/contexts/ParentContext";
 import { withPermission } from "@/lib/withPermission";
-import { z } from "zod";
 import { PsychoeducationFormSchema } from "@/schemas/FormsSchema";
+import { PsychoeducationForm } from "@/types/Types";
+import { PsychoeducationDefault } from "@/lib/FormsDefaultValues";
+import { PsychoeducationCreationMessage, PsychoeducationEditionMessage } from "@/lib/ConfirmationModelsTexts";
+import { PsychoeducationFormInterface } from "@/interfaces/Interfaces";
 
-
-type PsychoeducationForm = {
-  programInformation: {
-    indicator_id: string;
-    project_id: string;
-    focalPoint: string;
-    province_id: string;
-    district_id: string;
-    village: string;
-    siteCode: string;
-    healthFacilityName: string;
-    interventionModality: string;
-  };
-  psychoeducationInformation: {
-    awarenessTopic: string;
-    awarenessDate: string;
-    // men
-    ofMenHostCommunity: string;
-    ofMenIdp: string;
-    ofMenRefugee: string;
-    ofMenReturnee: string;
-    ofMenDisabilityType: string;
-    // women
-    ofWomenHostCommunity: string;
-    ofWomenIdp: string;
-    ofWomenRefugee: string;
-    ofWomenReturnee: string;
-    ofWomenDisabilityType: string;
-    // boy
-    ofBoyHostCommunity: string;
-    ofBoyIdp: string;
-    ofBoyRefugee: string;
-    ofBoyReturnee: string;
-    ofBoyDisabilityType: string;
-    // girl
-    ofGirlHostCommunity: string;
-    ofGirlIdp: string;
-    ofGirlRefugee: string;
-    ofGirlReturnee: string;
-    ofGirlDisabilityType: string;
-    remark: string;
-  };
-};
-
-interface DatabaseSummaryProps {
-  open: boolean;
-  onOpenChange: (value: boolean) => void;
-  mode: "create" | "edit" | "show";
-  psychoeducationId?: string;
-}
-
-const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
+const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
   open,
   onOpenChange,
   mode,
@@ -78,50 +30,17 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
 }) => {
   const { reqForToastAndSetMessage, axiosInstance, handleReload, reqForConfirmationModelFunc } = useParentContext();
 
-  const [formData, setFormData] = useState<PsychoeducationForm>({
-    programInformation: {
-      indicator_id: "",
-      project_id: "",
-      focalPoint: "",
-      province_id: "",
-      district_id: "",
-      village: "",
-      siteCode: "",
-      healthFacilityName: "",
-      interventionModality: "",
-    },
-    psychoeducationInformation: {
-      awarenessTopic: "",
-      awarenessDate: "",
-      // men
-      ofMenHostCommunity: "",
-      ofMenIdp: "",
-      ofMenRefugee: "",
-      ofMenReturnee: "",
-      ofMenDisabilityType: "",
-      // women
-      ofWomenHostCommunity: "",
-      ofWomenIdp: "",
-      ofWomenRefugee: "",
-      ofWomenReturnee: "",
-      ofWomenDisabilityType: "",
-      // boy
-      ofBoyHostCommunity: "",
-      ofBoyIdp: "",
-      ofBoyRefugee: "",
-      ofBoyReturnee: "",
-      ofBoyDisabilityType: "",
-      // girl
-      ofGirlHostCommunity: "",
-      ofGirlIdp: "",
-      ofGirlRefugee: "",
-      ofGirlReturnee: "",
-      ofGirlDisabilityType: "",
-      remark: "",
-    },
-  });
+  const [formData, setFormData] = useState<PsychoeducationForm>(PsychoeducationDefault());
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+
+  const [indicators, setIndicators] = useState<{id: string; indicatorRef: string;}[]>([]);
+
+  const [districts, setDistricts] = useState<{ id: string; name: string }[]>([]);
+
+  const [provinces, setProvinces] = useState<{ id: string; name: string }[]>([]);
+
+  const [projects, setProjects] = useState<{ id: string; projectCode: string }[]>([]);
 
   const handleFormChange = (e: any, part: "program" | "psychoeducation") => {
     const { name, value } = e.target;
@@ -146,19 +65,18 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
 
   const handleSubmit = () => {
 
-
     const result = PsychoeducationFormSchema.safeParse(formData);
 
     if (!result.success) {
-    const errors: { [key: string]: string } = {};
-    result.error.issues.forEach((issue) => {
-      const field = issue.path[0];
-      if (field) errors[field as string] = issue.message;
-    });
+      const errors: { [key: string]: string } = {};
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0];
+        if (field) errors[field as string] = issue.message;
+      });
 
-    setFormErrors(errors);
-      reqForToastAndSetMessage("Please fix validation errors before submitting.");
-      return;
+      setFormErrors(errors);
+        reqForToastAndSetMessage("Please fix validation errors before submitting.");
+        return;
     }
 
     setFormErrors({});
@@ -191,25 +109,6 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
         );
     }
   };
-
-  const [indicators, setIndicators] = useState<
-    {
-      id: string;
-      indicatorRef: string;
-    }[]
-  >([]);
-
-  const [districts, setDistricts] = useState<{ id: string; name: string }[]>(
-    []
-  );
-
-  const [provinces, setProvinces] = useState<{ id: string; name: string }[]>(
-    []
-  );
-
-  const [projects, setProjects] = useState<
-    { id: string; projectCode: string }[]
-  >([]);
 
   useEffect(() => {
     axiosInstance
@@ -569,8 +468,7 @@ const CreatePsychoeducation: React.FC<DatabaseSummaryProps> = ({
 
         {/* Submit Button */}
         {mode != "show" && <Button className="w-full mt-6" onClick={(e) => reqForConfirmationModelFunc(
-          "Are you compleatly sure ?",
-          "",
+          (mode == "create" ? PsychoeducationCreationMessage : PsychoeducationEditionMessage),
           () => handleSubmit()
         )}>
           Submit

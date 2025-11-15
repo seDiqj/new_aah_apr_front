@@ -17,6 +17,8 @@ import { useParentContext } from "@/contexts/ParentContext";
 import { CommunityDialogBeneficiaryForm } from "@/types/Types";
 import { withPermission } from "@/lib/withPermission";
 import { CdDatabaseBenefciaryFormSchema } from "@/schemas/FormsSchema";
+import { CommunityDialogueBeneficiaryDefault } from "@/lib/FormsDefaultValues";
+import { CdDatabaseBenefciaryEditionMessage } from "@/lib/ConfirmationModelsTexts";
 
 interface ComponentProps {
   open: boolean;
@@ -31,24 +33,10 @@ const BeneficiaryUpdateCD: React.FC<ComponentProps> = ({
 }) => {
   const { reqForToastAndSetMessage, axiosInstance, handleReload, reqForConfirmationModelFunc } = useParentContext();
 
-  const [formData, setFormData] = useState<CommunityDialogBeneficiaryForm>({
-    name: "",
-    fatherHusbandName: "",
-    age: 0,
-    maritalStatus: "",
-    gender: "",
-    phone: "",
-    nationalId: "",
-    jobTitle: "",
-    incentiveReceived: false,
-    incentiveAmount: "",
-    dateOfRegistration: ""
-  });
+  const [formData, setFormData] = useState<CommunityDialogBeneficiaryForm>(CommunityDialogueBeneficiaryDefault());
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   
-  useEffect(() => console.log(formErrors), [formErrors]);
-
   useEffect(() => {
     if (open && beneficiaryId) {
       axiosInstance
@@ -298,8 +286,7 @@ const BeneficiaryUpdateCD: React.FC<ComponentProps> = ({
         </div>
 
         <Button className="w-full mt-6" onClick={() => reqForConfirmationModelFunc(
-          "Are you compleatly sure ?",
-          "",
+          CdDatabaseBenefciaryEditionMessage,
           () => handleUpdate()
         )}>
           Update

@@ -1,14 +1,7 @@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
+import { ConfirmationModelInterface } from "@/interfaces/Interfaces";
 
-
-interface ComponentProps {
-    open: boolean;
-    onOpenChange: (value: boolean) => void;
-    message: string;
-    onOk: any;
-}
-
-const ConfirmationModel: React.FC<ComponentProps> = ({onOk, open, onOpenChange, message}) => {
+const ConfirmationModel: React.FC<ConfirmationModelInterface> = ({onOk, open, onOpenChange, message}) => {
     return (
         <AlertDialog open={open} onOpenChange={onOpenChange}>
           <AlertDialogContent>

@@ -9,19 +9,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useParentContext } from "@/contexts/ParentContext";
+import { TrainingProfileInterface } from "@/interfaces/Interfaces";
 import { createAxiosInstance } from "@/lib/axios";
-import { ChapterForm, TrainingForm } from "@/types/Types";
+import { TrainingFormDefault } from "@/lib/FormsDefaultValues";
+import { ChapterForm, Evaluations, TrainingForm } from "@/types/Types";
 import { Plus } from "lucide-react";
 import { use, useEffect, useState } from "react";
 
-interface ComponentProps {
-  params: Promise<{
-    id: string;
-  }>;
-}
-
-const TrainingProfilePage: React.FC<ComponentProps> = (
-  params: ComponentProps
+const TrainingProfilePage: React.FC<TrainingProfileInterface> = (
+  params: TrainingProfileInterface
 ) => {
   const { id } = use(params.params);
 
@@ -31,32 +27,11 @@ const TrainingProfilePage: React.FC<ComponentProps> = (
 
   let [open, setOpen] = useState<boolean>(false);
 
-  const [trainingInfo, setTrainingInfo] = useState<TrainingForm>({
-    project_id: "",
-    province: "",
-    district: "",
-    trainingLocation: "",
-    name: "",
-    participantCatagory: "",
-    aprIncluded: false,
-    trainingModality: "",
-    startDate: "",
-    endDate: "",
-    indicator: "",
-  });
+  const [trainingInfo, setTrainingInfo] = useState<TrainingForm>(TrainingFormDefault());
 
   const [chaptersData, setChaptersData] = useState<ChapterForm[]>([]);
 
-  const [evaluationsData, setEvaluationsData] = useState<{
-    evaluations: {
-      informative: number;
-      usefulness: number;
-      understanding: number;
-      relevance: number;
-      applicability: number;
-    };
-    remark: string;
-  } | null>(null);
+  const [evaluationsData, setEvaluationsData] = useState<Evaluations>(null);
 
   useEffect(() => {
     axiosInstance(`training_db/training/${id}`)

@@ -2,65 +2,30 @@
 
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { SingleSelect } from "../single-select";
-import { Checkbox } from "../ui/checkbox";
 import { useParentContext } from "@/contexts/ParentContext";
-import { createAxiosInstance } from "@/lib/axios";
-import {
-  Accordion,
-  AccordionItem,
-  AccordionTrigger,
-  AccordionContent,
-} from "@/components/ui/accordion";
-import { Chapter, TrainingForm } from "@/types/Types";
+import { ChapterForm, TrainingForm } from "@/types/Types";
+import { ChapterDefault, TrainingDefault } from "@/lib/FormsDefaultValues";
+import { TrainingUpdateInterface } from "@/interfaces/Interfaces";
 
-interface ComponentProps {
-  open: boolean;
-  onOpenChange: (value: boolean) => void;
-  title: string;
-  trainingId: number;
-}
-
-const UpdateTrainingForm: React.FC<ComponentProps> = ({
+const UpdateTrainingForm: React.FC<TrainingUpdateInterface> = ({
   open,
   onOpenChange,
   title,
   trainingId,
 }) => {
-  const { reqForToastAndSetMessage } = useParentContext();
-  const axiosInstance = createAxiosInstance();
+  const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
 
-  const [formData, setFormData] = useState<TrainingForm>({
-    projectCode: "",
-    province: "",
-    district: "",
-    trainingLocation: "",
-    name: "",
-    participantCatagory: "",
-    aprIncluded: true,
-    trainingModality: "",
-    startDate: "",
-    endDate: "",
-    indicator: "",
-  });
+  const [formData, setFormData] = useState<TrainingForm>(TrainingDefault());
 
-  const [chapter, setChapter] = useState<Chapter>({
-    topic: "",
-    facilitatorName: "",
-    facilitatorJobTitle: "",
-    startDate: "",
-    endDate: "",
-  });
-  const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [chapter, setChapter] = useState<ChapterForm>(ChapterDefault());
+
+  const [chapters, setChapters] = useState<ChapterForm[]>([]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement> | { target: { name: string; value: string } }
@@ -98,9 +63,9 @@ const UpdateTrainingForm: React.FC<ComponentProps> = ({
     e.preventDefault();
     axiosInstance
       .put(`/training_db/training/${trainingId}`, { ...formData, chapters })
-      .then((res) => reqForToastAndSetMessage(res.data.message))
-      .catch((err) =>
-        reqForToastAndSetMessage(err.response?.data?.message || "Error")
+      .then((response: any) => reqForToastAndSetMessage(response.data.message))
+      .catch((error: any) =>
+        reqForToastAndSetMessage(error.response?.data?.message || "Error")
       );
   };
 
@@ -109,7 +74,6 @@ const UpdateTrainingForm: React.FC<ComponentProps> = ({
   const [projects, setProjects] = useState<{ projectCode: string }[]>([]);
   const [indicators, setIndicators] = useState<{ indicator: string }[]>([]);
 
-  // گرفتن دیتاهای عمومی
   useEffect(() => {
     axiosInstance.get("/global/districts").then((res: any) => setDistricts(Object.values(res.data.data)));
     axiosInstance.get("/global/provinces").then((res: any) => setProvinces(Object.values(res.data.data)));
@@ -117,7 +81,6 @@ const UpdateTrainingForm: React.FC<ComponentProps> = ({
     axiosInstance.get("/global/indicators/training_database").then((res: any) => setIndicators(Object.values(res.data.data)));
   }, []);
 
-  // گرفتن داده فرم برای Update
   useEffect(() => {
     if (!trainingId || !open) return;
 
@@ -140,7 +103,7 @@ const UpdateTrainingForm: React.FC<ComponentProps> = ({
         });
         setChapters(data.chapters || []);
       })
-      .catch((err) => reqForToastAndSetMessage(err.response?.data?.message || "Error"));
+      .catch((error: any) => reqForToastAndSetMessage(error.response?.data?.message || "Error"));
   }, [trainingId, open]);
 
   return (

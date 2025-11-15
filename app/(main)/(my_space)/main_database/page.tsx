@@ -12,14 +12,19 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Share2, ToggleRight } from "lucide-react";
 import { Can } from "@/components/Can";
-import Preloader from "@/components/global/Preloader";
 import MainDatabaseBeneficiaryUpdateForm from "@/components/global/MainDatabaseBeneficiaryUpdateForm";
 import { withPermission } from "@/lib/withPermission";
+import { ChangeAprIncludedStatusButtonMessage, ReferrBeneficiaryButtonMessage } from "@/lib/ConfirmationModelsTexts";
+import {MainDatabaseBeneficiariesFilters, MainDatabaseBeneficiariesFilterUrl} from "@/lib/FiltersList";
 
 const MainDatabasePage = () => {
-  const { reqForToastAndSetMessage, axiosInstance, changeBeneficairyAprIncludedStatus
-    , reqForConfirmationModelFunc
- } = useParentContext();
+  const { 
+    reqForToastAndSetMessage, 
+    axiosInstance, 
+    changeBeneficairyAprIncludedStatus, 
+    reqForConfirmationModelFunc
+  } = useParentContext();
+
   const router = useRouter();
 
   let [idFeildForEditStateSetter, setIdFeildForEditStateSetter] = useState<
@@ -74,9 +79,7 @@ const MainDatabasePage = () => {
             <Can permission="Maindatabase.create">
               <Button
                 onClick={() =>
-                  setReqForBeneficiaryCreationForm(
-                    !reqForBeneficiaryCreationForm
-                  )
+                  setReqForBeneficiaryCreationForm(!reqForBeneficiaryCreationForm)
                 }
               >
                 Create New Benficiary
@@ -102,8 +105,7 @@ const MainDatabasePage = () => {
               <Button
                 title="Send Beneficiary to referral"
                 onClick={() => reqForConfirmationModelFunc(
-                  "Are you compleatly sure ?",
-                  "This action can not be undone !",
+                  ReferrBeneficiaryButtonMessage,
                   referrBeneficiaies
                 )}
                 variant="outline"
@@ -111,18 +113,15 @@ const MainDatabasePage = () => {
                 <Share2 />
               </Button>
               <Button variant={"outline"} onClick={() => reqForConfirmationModelFunc(
-                  "Are you compleatly sure ?",
-                  "This action can not be undone !",
+                  ChangeAprIncludedStatusButtonMessage,
                   () => {changeBeneficairyAprIncludedStatus(idFeildForEditStateSetter)}
                 )} title="Change Apr Included">
                 <ToggleRight></ToggleRight>
               </Button>
             </div>
           }
-          filterUrl="/filter/main_database/beneficiaries"
-          filtersList={["projectCode", "indicator", "focalPoint", "province", "siteCode", "healthFacilitator", "dateOfRegistration",
-            "age", "maritalStatus", "householdStatus", "baselineDate", "endlineDate"
-          ]}
+          filterUrl={MainDatabaseBeneficiariesFilterUrl}
+          filtersList={MainDatabaseBeneficiariesFilters}
         ></DataTableDemo>
         {/* Beneficiary creation form */}
         {reqForBeneficiaryCreationForm && (

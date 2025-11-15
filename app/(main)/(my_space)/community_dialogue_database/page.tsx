@@ -14,6 +14,7 @@ import CommunityDialogueSelector from "@/components/global/CommunityDialogSelect
 import BeneficiaryUpdateCD from "@/components/global/BeneficiaryUpdateFormCd";
 import { withPermission } from "@/lib/withPermission";
 import { Can } from "@/components/Can";
+import { CommunityDialogueBeneficiariesFiltersList, CommunityDialogueBeneficiariesFilterUrl } from "@/lib/FiltersList";
 
 const CommunityDialogDatabasePage = () => {
   const router = useRouter();
@@ -102,8 +103,8 @@ const CommunityDialogDatabasePage = () => {
           }
           editBtnPermission="Dialogue.edit"
           deleteBtnPermission="Dialogue.delete"
-          filterUrl="/filter/cd_database/beneficiaries"
-          filtersList={["projectCode", "province", "indicator", "age", "gender", "dateOfRegistration"]}
+          filterUrl={CommunityDialogueBeneficiariesFilterUrl}
+          filtersList={CommunityDialogueBeneficiariesFiltersList}
         ></DataTableDemo>
 
         {reqForBeneficiaryCreationForm && (

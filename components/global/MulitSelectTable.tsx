@@ -40,6 +40,7 @@ import {
 import { useParentContext } from "@/contexts/ParentContext";
 import { ChevronDown, Edit, Filter, Trash } from "lucide-react";
 import { Can } from "../Can";
+import { DeleteButtonMessage } from "@/lib/ConfirmationModelsTexts";
 
 interface ComponentProps {
   columns: ColumnDef<any>[];
@@ -239,8 +240,7 @@ const DataTableDemo: React.FC<ComponentProps> = ({
               <Button onClick={() => {
                   
                   reqForConfirmationModelFunc(
-                    "Are you sure to delete selected rows ?",
-                    "",
+                    DeleteButtonMessage,
                     handleDelete
                   );
                   

@@ -25,6 +25,7 @@ import { CalendarIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParentContext } from "@/contexts/ParentContext";
 import { SubmittNewDatabaseFormSchema } from "@/schemas/FormsSchema";
+import { SubmitNewDatabaseMessage } from "@/lib/ConfirmationModelsTexts";
 
 const months = [
   "January",
@@ -132,7 +133,6 @@ const SubmitNewDB: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
       axiosInstance
         .get(`/projects/project_databases_&_provinces/${selectedProject.id}`)
         .then((response: any) => {
-          console.log(response.data.data);
           setDatabases(response.data.data.databases);
           setProvinces(response.data.data.provinces);
         })
@@ -408,8 +408,7 @@ const SubmitNewDB: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
           {/* Submit button */}
           <div className="flex flex-row items-center justify-end w-full px-2">
             <Button onClick={() => reqForConfirmationModelFunc(
-              "Are you compleatly sure ?",
-              "",
+              SubmitNewDatabaseMessage,
               handleSubmit
             )} className="mt-4 w-32">
               Submit

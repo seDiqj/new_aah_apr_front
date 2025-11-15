@@ -14,15 +14,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useParentContext } from "@/contexts/ParentContext";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { CommunityDialogueSessionDefault } from "@/lib/FormsDefaultValues";
+import { CommunityDialogueSessionForm } from "@/types/Types";
+import { CommunityDialogueSessionSubmitMessage } from "@/lib/ConfirmationModelsTexts";
+import { IsCreateMode, IsEditMode, IsNotShowMode, IsShowMode } from "@/lib/Constants";
+import { CommunityDialogueSessionFormInterface } from "@/interfaces/Interfaces";
 
-interface ComponentProps {
-  open: boolean;
-  onOpenChange: (value: boolean) => void;
-  sessionId?: string;
-  mode: "create" | "edit" | "show";
-}
 
-const SessionForm: React.FC<ComponentProps> = ({
+const SessionForm: React.FC<CommunityDialogueSessionFormInterface> = ({
   open,
   onOpenChange,
   sessionId,
@@ -30,13 +29,15 @@ const SessionForm: React.FC<ComponentProps> = ({
 }) => {
   const { id } = useParams();
 
-  const { reqForToastAndSetMessage, axiosInstance, reqForConfirmationModelFunc } = useParentContext();
+  const {
+    reqForToastAndSetMessage,
+    axiosInstance,
+    reqForConfirmationModelFunc,
+  } = useParentContext();
 
-  const [formData, setFormData] = useState({
-    community_dialogue_id: id,
-    topic: "",
-    date: "",
-  });
+  const [formData, setFormData] = useState<CommunityDialogueSessionForm>(
+    CommunityDialogueSessionDefault(id as unknown as string)
+  );
 
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
@@ -74,7 +75,7 @@ const SessionForm: React.FC<ComponentProps> = ({
   };
 
   useEffect(() => {
-    if (mode === "edit" || mode === "show") {
+    if (IsEditMode(mode) || IsShowMode(mode)) {
       setFetching(true);
       axiosInstance
         .get(`/community_dialogue_db/community_dialogue/session/${sessionId}`)
@@ -95,9 +96,9 @@ const SessionForm: React.FC<ComponentProps> = ({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
-            {mode === "create"
+            {IsCreateMode(mode)
               ? "Add New Session"
-              : mode === "edit"
+              : IsEditMode(mode)
               ? "Update Session"
               : "Session Information"}
           </DialogTitle>
@@ -143,13 +144,17 @@ const SessionForm: React.FC<ComponentProps> = ({
           </div>
         </div>
 
-        {mode !== "show" && !fetching && (
-          <Button onClick={() => reqForConfirmationModelFunc(
-            "Are you compleatly sure ?",
-            "",
-            () => handleSubmit()
-          )} disabled={loading}>
-            {loading ? "Saving..." : mode === "create" ? "Save" : "Update"}
+        {IsNotShowMode(mode) && !fetching && (
+          <Button
+            onClick={() =>
+              reqForConfirmationModelFunc(
+                CommunityDialogueSessionSubmitMessage,
+                () => handleSubmit()
+              )
+            }
+            disabled={loading}
+          >
+            {loading ? "Saving..." : IsCreateMode(mode) ? "Save" : "Update"}
           </Button>
         )}
       </DialogContent>

@@ -14,14 +14,11 @@ import {
 import { useParentContext } from "@/contexts/ParentContext";
 import { ChapterForm } from "@/types/Types";
 import { useParams } from "next/navigation";
+import { ChapterDefault } from "@/lib/FormsDefaultValues";
+import { ChapterCreationMessage } from "@/lib/ConfirmationModelsTexts";
+import { ChapterFormInterface } from "@/interfaces/Interfaces";
 
-interface ComponentProps {
-  open: boolean;
-  onOpenChange: (value: boolean) => void;
-  title: string;
-}
-
-const CreateNewChapterForm: React.FC<ComponentProps> = ({
+const CreateNewChapterForm: React.FC<ChapterFormInterface> = ({
   open,
   onOpenChange,
   title,
@@ -30,13 +27,7 @@ const CreateNewChapterForm: React.FC<ComponentProps> = ({
 
   const { reqForToastAndSetMessage, axiosInstance, reqForConfirmationModelFunc } = useParentContext();
 
-  const [formData, setFormData] = useState<ChapterForm>({
-    topic: "",
-    facilitatorName: "",
-    facilitatorJobTitle: "",
-    startDate: "",
-    endDate: "",
-  });
+  const [formData, setFormData] = useState<ChapterForm>(ChapterDefault());
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -118,8 +109,7 @@ const CreateNewChapterForm: React.FC<ComponentProps> = ({
 
           <div className="col-span-2">
             <Button onClick={(e) => reqForConfirmationModelFunc(
-              "Are you compleatly sure ?",
-              "",
+              ChapterCreationMessage,
               () => handleSubmit(e)
             )} className="w-full mt-6">
               Submit

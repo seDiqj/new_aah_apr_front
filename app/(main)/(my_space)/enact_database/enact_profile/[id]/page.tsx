@@ -12,9 +12,11 @@ import { useParentContext } from "@/contexts/ParentContext";
 import { InfoItem } from "../../../referral_database/beneficiary_profile/[id]/page";
 import { useParams } from "next/navigation";
 import AssessmentScoreForm from "@/components/global/AssessmentScoreForm";
+import { IsIdFeild } from "@/lib/Constants";
 
 const MainDatabasePage = () => {
-  const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
+  const { reqForToastAndSetMessage, axiosInstance, reloadFlag } =
+    useParentContext();
 
   const { id } = useParams<{
     id: string;
@@ -33,12 +35,7 @@ const MainDatabasePage = () => {
     }[]
   >();
 
-  const hasRef = useRef(false);
-
   useEffect(() => {
-    if (hasRef.current) return;
-    hasRef.current = true;
-
     axiosInstance
       .get(`/enact_database/show_for_profile/${id}`)
       .then((response: any) => {
@@ -49,7 +46,7 @@ const MainDatabasePage = () => {
       .catch((error: any) => {
         reqForToastAndSetMessage(error.response.data.message);
       });
-  }, []);
+  }, [reloadFlag]);
 
   return (
     <>
@@ -89,18 +86,38 @@ const MainDatabasePage = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-                    {assessmentInfo &&
-                      Object.entries(assessmentInfo).map((entry, i) => {
-                        if (entry[0] == "id") return;
-                        return (
-                          <InfoItem
+                  <div>
+                    {assessmentInfo ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {Object.entries(assessmentInfo).map(
+                          ([key, value], index) => {
+                            if (IsIdFeild(key)) return;
+                            return (
+                              <div
+                                key={index}
+                                className="flex flex-col rounded-xl border p-3 transition-all hover:shadow-sm"
+                              >
+                                <span className="text-xs font-medium uppercase opacity-70 tracking-wide">
+                                  {key.replace(/([A-Z])/g, " $1")}
+                                </span>
+                                <span className="text-sm font-semibold truncate">
+                                  {value?.toString() || "-"}
+                                </span>
+                              </div>
+                            );
+                          }
+                        )}
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {Array.from({ length: 10 }).map((_, i) => (
+                          <div
                             key={i}
-                            label={entry[0].toUpperCase()}
-                            value={entry[1].toString()}
+                            className="h-[56px] w-full rounded-xl animate-pulse bg-muted/30"
                           />
-                        );
-                      })}
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -112,21 +129,23 @@ const MainDatabasePage = () => {
             >
               <Card className="min-h-[400px] shadow-sm border border-border max-h-full w-full overflow-y-auto">
                 <CardContent>
-                  {assessmentsData?.map((assessment, i) => {
-                    return (
-                      <Card
-                        key={i}
-                        className="flex flex-row items-center justify-between w-full px-2 mb-2"
-                      >
-                        <div>
-                          <span>{`Assessment ${i + 1}`}</span>
-                        </div>
-                        <CardContent>
-                          <Button onClick={() => {}}>Assess</Button>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
+                  {assessmentsData?.length == 0
+                    ? Message()
+                    : assessmentsData?.map((assessment, i) => {
+                        return (
+                          <Card
+                            key={i}
+                            className="flex flex-row items-center justify-between w-full px-2 mb-2"
+                          >
+                            <div>
+                              <span>{`Assessment ${i + 1}`}</span>
+                            </div>
+                            <CardContent>
+                              <Button onClick={() => {}}>Assess</Button>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -140,6 +159,16 @@ const MainDatabasePage = () => {
             ></AssessmentScoreForm>
           )}
         </div>
+      </div>
+    </>
+  );
+};
+
+const Message = () => {
+  return (
+    <>
+      <div className="flex flex-row items-center justify-center text-center">
+        No assessments was found !
       </div>
     </>
   );
