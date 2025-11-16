@@ -195,7 +195,7 @@ const KitDbBeneficiaryProfilePage: React.FC<
                 <DataTableDemo
                   columns={beneficiaryKitListColumns}
                   indexUrl={`/kit_db/bnf_kits/${id}`}
-                  deleteUrl="kit_db/delete_kit"
+                  deleteUrl={`kit_db/delete_kit_from_beneficiary/${id}`}
                   searchableColumn="kit"
                   idFeildForEditStateSetter={setIdFeildForEditStateSetter}
                   idFeildForShowStateSetter={setIdFeildForShowStateSetter}

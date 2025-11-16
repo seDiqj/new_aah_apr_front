@@ -21,6 +21,7 @@ import { PsychoeducationForm } from "@/types/Types";
 import { PsychoeducationDefault } from "@/lib/FormsDefaultValues";
 import { PsychoeducationCreationMessage, PsychoeducationEditionMessage } from "@/lib/ConfirmationModelsTexts";
 import { PsychoeducationFormInterface } from "@/interfaces/Interfaces";
+import { IsCreateMode, IsEditMode, IsShowMode } from "@/lib/Constants";
 
 const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
   open,
@@ -65,23 +66,23 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
 
   const handleSubmit = () => {
 
-    const result = PsychoeducationFormSchema.safeParse(formData);
+    // const result = PsychoeducationFormSchema.safeParse(formData);
 
-    if (!result.success) {
-      const errors: { [key: string]: string } = {};
-      result.error.issues.forEach((issue) => {
-        const field = issue.path[0];
-        if (field) errors[field as string] = issue.message;
-      });
+    // if (!result.success) {
+    //   const errors: { [key: string]: string } = {};
+    //   result.error.issues.forEach((issue) => {
+    //     const field = issue.path[0];
+    //     if (field) errors[field as string] = issue.message;
+    //   });
 
-      setFormErrors(errors);
-        reqForToastAndSetMessage("Please fix validation errors before submitting.");
-        return;
-    }
+    //   setFormErrors(errors);
+    //     reqForToastAndSetMessage("Please fix validation errors before submitting.");
+    //     return;
+    // }
 
-    setFormErrors({});
+    // setFormErrors({});
 
-    if (mode == "create") {
+    if (IsCreateMode(mode)) {
       axiosInstance
         .post("/psychoeducation_db/psychoeducation", formData)
         .then((response: any) =>
@@ -93,7 +94,7 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)
         );
-    } else if (mode == "edit") {
+    } else if (IsEditMode(mode)) {
       axiosInstance.put(
         `/psychoeducation_db/psychoeducation/${psychoeducationId}`,
         formData
@@ -150,11 +151,10 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
   }, [formData.programInformation.project_id]);
 
   useEffect(() => {
-    if ((mode == "edit" || mode == "show") && psychoeducationId && open) {
+    if ((IsEditMode(mode) || IsShowMode(mode)) && psychoeducationId && open) {
       axiosInstance
         .get(`/psychoeducation_db/psychoeducation/${psychoeducationId}`)
         .then((response: any) => {
-          console.log(response.data.data);
           const { programData, ...psychoeducationData } = response.data.data;
 
           setFormData((prev) => ({
@@ -167,7 +167,7 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
     }
   }, [mode, psychoeducationId]);
 
-  const readOnly: boolean = mode == "show";
+  const readOnly: boolean = IsShowMode(mode);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -205,24 +205,16 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
             <Label>Project Code</Label>
             <SingleSelect
               options={projects.map((project, i) => ({
-                value: project.projectCode,
+                value: project.id,
                 label: project.projectCode.toUpperCase(),
               }))}
-              value={
-                projects.find(
-                  (project: { id: string; projectCode: string }) =>
-                    project.id == formData.programInformation.project_id
-                )?.projectCode ?? ""
-              }
+              value={formData.programInformation.project_id}
               onValueChange={(value: string) =>
                 handleFormChange(
                   {
                     target: {
                       name: "project_id",
-                      value: projects.find(
-                        (project: { id: string; projectCode: string }) =>
-                          project.projectCode == value
-                      )?.id,
+                      value: value
                     },
                   },
                   "program"
@@ -237,24 +229,16 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
             <Label>Select Indicator</Label>
             <SingleSelect
               options={indicators.map((indicator, i) => ({
-                value: indicator.indicatorRef,
+                value: indicator.id,
                 label: indicator.indicatorRef,
               }))}
-              value={
-                indicators.find(
-                  (indicator: { id: string; indicatorRef: string }) =>
-                    indicator.id === formData.programInformation.indicator_id
-                )?.indicatorRef ?? ""
-              }
+              value={formData.programInformation.indicator_id}
               onValueChange={(value: string) =>
                 handleFormChange(
                   {
                     target: {
                       name: "indicator_id",
-                      value: indicators.find(
-                        (indicator: { id: string; indicatorRef: string }) =>
-                          indicator.indicatorRef === value
-                      )?.id,
+                      value: value,
                     },
                   },
                   "program"
@@ -282,24 +266,16 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
             <Label>Province</Label>
             <SingleSelect
               options={provinces.map((province, i) => ({
-                value: province.name,
+                value: province.id,
                 label: province.name.toUpperCase(),
               }))}
-              value={
-                provinces.find(
-                  (province: { id: string; name: string }) =>
-                    province.id == formData.programInformation.province_id
-                )?.name ?? ""
-              }
+              value={formData.programInformation.province_id}
               onValueChange={(value: string) =>
                 handleFormChange(
                   {
                     target: {
                       name: "province_id",
-                      value: provinces.find(
-                        (province: { id: string; name: string }) =>
-                          province.name == value
-                      )?.id,
+                      value: value
                     },
                   },
                   "program"
@@ -314,24 +290,16 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
             <Label>District</Label>
             <SingleSelect
               options={districts.map((district, i) => ({
-                value: district.name,
+                value: district.id,
                 label: district.name.toUpperCase(),
               }))}
-              value={
-                districts.find(
-                  (district: { id: string; name: string }) =>
-                    district.id == formData.programInformation.district_id
-                )?.name ?? ""
-              }
+              value={formData.programInformation.district_id}
               onValueChange={(value: string) =>
                 handleFormChange(
                   {
                     target: {
                       name: "district_id",
-                      value: districts.find(
-                        (district: { id: string; name: string }) =>
-                          district.name == value
-                      )?.id,
+                      value: value
                     },
                   },
                   "program"

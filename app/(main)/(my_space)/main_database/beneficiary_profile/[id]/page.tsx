@@ -20,6 +20,7 @@ import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useParentContext } from "@/contexts/ParentContext";
+import { MainDatabaseBeneficiaryProfileInterface } from "@/interfaces/Interfaces";
 import { BeneficiaryEvaluationSubmitButtonMessage, MealToolDeleteButtonMessage } from "@/lib/ConfirmationModelsTexts";
 import { BeneficiaryEvaluationDefault } from "@/lib/FormsDefaultValues";
 import { clientSatisfactionOptions } from "@/lib/SingleAndMultiSelectOptionsList";
@@ -27,14 +28,8 @@ import { withPermission } from "@/lib/withPermission";
 import { BeneficiaryEvaluationType, MainDatabaseBeneficiaryProfileInfoType, MainDatabaseProgram } from "@/types/Types";
 import { use, useEffect, useState } from "react";
 
-interface ComponentProps {
-  params: Promise<{
-    id: string;
-  }>;
-}
-
-const BeneficiaryProfilePage: React.FC<ComponentProps> = (
-  params: ComponentProps
+const BeneficiaryProfilePage: React.FC<MainDatabaseBeneficiaryProfileInterface> = (
+  params: MainDatabaseBeneficiaryProfileInterface
 ) => {
   const { id } = use(params.params);
 

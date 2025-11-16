@@ -24,7 +24,7 @@ import { ChapterForm, TrainingForm } from "@/types/Types";
 import { ChapterDefault, TrainingDefault } from "@/lib/FormsDefaultValues";
 import { TrainingCreationMessage, TrainingEditionMessage } from "@/lib/ConfirmationModelsTexts";
 import { TrainingFormInterface } from "@/interfaces/Interfaces";
-import { IsShowMode } from "@/lib/Constants";
+import { IsCreateMode, IsEditMode, IsEditOrShowMode, IsNotShowMode, IsShowMode } from "@/lib/Constants";
 
 
 const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
@@ -52,7 +52,7 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
 
   const [projects, setProjects] = useState<{ id: string; projectCode: string }[]>([]);
 
-  const [indicators, setIndicators] = useState<{ id: string; indicator: string }[]>([]);
+  const [indicators, setIndicators] = useState<{ id: string; indicatorRef: string }[]>([]);
 
   const handleChange = (
     e:
@@ -84,9 +84,9 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
 
     try {
       let res;
-      if (mode === "edit" && id) {
+      if (IsEditMode(mode) && id) {
         res = await axiosInstance.put(`/training_db/training/${id}`, payload);
-      } else if (mode === "create") {
+      } else if (IsCreateMode(mode)) {
         res = await axiosInstance.post("/training_db/training", payload);
       } else return;
 
@@ -106,17 +106,17 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
   };
 
   useEffect(() => {
-    if ((mode === "edit" || mode === "show") && id) {
+    if (IsEditOrShowMode(mode) && id) {
       setLoading(true);
   
       axiosInstance
-        .get(`/training_db/training/${id}`)
+        .get(`/training_db/training_for_edit/${id}`)
         .then((response: any) => {
           const data = response.data.data;
           setFormData({
             project_id: data.project_id || "",
-            province_id: data.province || "",
-            district_id: data.district || "",
+            province_id: data.province_id || "",
+            district_id: data.district_id || "",
             trainingLocation: data.trainingLocation || "",
             name: data.name || "",
             participantCatagory: data.participantCatagory || "",
@@ -124,7 +124,7 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
             trainingModality: data.trainingModality || "",
             startDate: data.startDate || "",
             endDate: data.endDate || "",
-            indicator_id: data.indicator || "",
+            indicator_id: data.indicator_id || "",
           });
           setChapters(data.chapters || []);
         })
@@ -147,13 +147,17 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
     axiosInstance.get("/global/districts").then((res: any) => {
       setDistricts(Object.values(res.data.data));
     });
-    axiosInstance.get("/global/provinces").then((res: any) => {
-      setProvinces(Object.values(res.data.data));
-    });
     axiosInstance
       .get("/global/indicators/training_database")
       .then((res: any) => setIndicators(Object.values(res.data.data)));
   }, []);
+
+  useEffect(() => {
+    if (!formData.project_id) return
+    axiosInstance.get(`/global/project/provinces/${formData.project_id}`).then((res: any) => {
+      setProvinces(Object.values(res.data.data));
+    });
+  }, [formData.project_id])
 
   if (loading) {
     return (
@@ -205,11 +209,11 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
               disabled={isReadOnly}
               options={indicators.map((i) => ({
                 value: i.id,
-                label: i.indicator.toUpperCase(),
+                label: i.indicatorRef.toUpperCase(),
               }))}
               value={formData.indicator_id}
               onValueChange={(value: string) =>
-                handleChange({ target: { name: "indicator", value } })
+                handleChange({ target: { name: "indicator_id", value } })
               }
             />
           </div>
@@ -225,7 +229,7 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
               }))}
               value={formData.province_id}
               onValueChange={(value: string) =>
-                handleChange({ target: { name: "province", value } })
+                handleChange({ target: { name: "province_id", value } })
               }
             />
           </div>
@@ -241,7 +245,7 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
               }))}
               value={formData.district_id}
               onValueChange={(value: string) =>
-                handleChange({ target: { name: "district", value } })
+                handleChange({ target: { name: "district_id", value } })
               }
             />
           </div>
@@ -448,12 +452,12 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
 
           {/* --- Buttons --- */}
           <div className="col-span-2 mt-6">
-            {mode !== "show" ? (
+            {IsNotShowMode(mode) ? (
               <Button type="button" className="w-full" onClick={(e) => reqForConfirmationModelFunc(
-                (mode == "create" ? TrainingCreationMessage : TrainingEditionMessage),
+                (IsCreateMode(mode) ? TrainingCreationMessage : TrainingEditionMessage),
                 () => handleSubmit(e)
               )}>
-                {mode === "edit" ? "Update" : "Submit"}
+                {IsEditMode(mode) ? "Update" : "Submit"}
               </Button>
             ) : (
               <Button

@@ -13,12 +13,10 @@ import { useProjectContext } from "../create_new_project/page";
 import { useProjectEditContext } from "../edit_project/[id]/page";
 import { useProjectShowContext } from "../project_show/[id]/page";
 import { IsEnteredStatusCallingToBeApproveAtLevelAboveTheAllowedLevel, IsEnteredStatusCallsToRejectAtTheLevelAboveTheCurrentLimit, IsEnteredStatusLocaltedAtTheLowerLevelThenTheCurrentStatus, IsValidAprStatus } from "@/lib/Constants";
+import { AprFinalizationSubPageInterface } from "@/interfaces/Interfaces";
 
-interface ComponentProps {
-  mode: "create" | "edit" | "show";
-}
 
-const AprFinalizationSubPage: React.FC<ComponentProps> = ({mode}) => {
+const AprFinalizationSubPage: React.FC<AprFinalizationSubPageInterface> = ({mode}) => {
 
     const {reqForToastAndSetMessage, axiosInstance} = useParentContext();
     const {projectId, actionLogs, setActionLogs, projectAprStatus, setProjectAprStatus} = mode == "create" ? useProjectContext() : mode == "show" ? useProjectShowContext() : useProjectEditContext();

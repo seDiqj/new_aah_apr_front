@@ -23,13 +23,16 @@ import { SingleSelect } from "../single-select";
 import { OutputInterface } from "@/interfaces/Interfaces";
 import {
   IsCreateMode,
+  IsCreatePage,
   IsEditMode,
+  IsEditPage,
+  IsNotShowMode,
   IsOutcomeSaved,
   IsShowMode,
   IsThereAnyOutputWithEnteredReferance,
   IsThereAnyOutputWithEnteredReferanceAndDefferentId,
 } from "@/lib/Constants";
-import { OutcomeFormSchema, OutputFormSchema } from "@/schemas/FormsSchema";
+import { OutputFormSchema } from "@/schemas/FormsSchema";
 
 const OutputModel: React.FC<OutputInterface> = ({
   isOpen,
@@ -51,12 +54,11 @@ const OutputModel: React.FC<OutputInterface> = ({
     outcomes: Outcome[];
     outputs: Output[];
     setOutputs: React.Dispatch<React.SetStateAction<Output[]>>;
-  } =
-    pageIdentifier == "create"
-      ? useProjectContext()
-      : pageIdentifier == "edit"
-      ? useProjectEditContext()
-      : useProjectShowContext();
+  } = IsCreatePage(pageIdentifier)
+    ? useProjectContext()
+    : IsEditPage(pageIdentifier)
+    ? useProjectEditContext()
+    : useProjectShowContext();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [formData, setFormData] = useState<Output>(OutputDefault());
@@ -72,22 +74,21 @@ const OutputModel: React.FC<OutputInterface> = ({
     }));
   };
 
-  useEffect(() => console.log(formErrors), [formErrors]);
-
   const handleSubmit = () => {
-
     const result = OutputFormSchema.safeParse(formData);
-    
+
     if (!result.success) {
-        const errors: { [key: string]: string } = {};
-        result.error.issues.forEach((issue) => {
+      const errors: { [key: string]: string } = {};
+      result.error.issues.forEach((issue) => {
         const field = issue.path[0];
         if (field) errors[field as string] = issue.message;
-        });
+      });
 
-        setFormErrors(errors);
-        reqForToastAndSetMessage("Please fix validation errors before submitting.");
-        return;
+      setFormErrors(errors);
+      reqForToastAndSetMessage(
+        "Please fix validation errors before submitting."
+      );
+      return;
     }
 
     setFormErrors({});
@@ -162,9 +163,9 @@ const OutputModel: React.FC<OutputInterface> = ({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>
-            {mode == "create"
+            {IsCreateMode(mode)
               ? "Create New Output"
-              : mode == "edit"
+              : IsEditMode(mode)
               ? "Edit Output"
               : "Show Output"}
           </DialogTitle>
@@ -222,7 +223,7 @@ const OutputModel: React.FC<OutputInterface> = ({
           </div>
         </div>
 
-        {mode != "show" && (
+        {IsNotShowMode(mode) && (
           <DialogFooter>
             <div className="flex gap-2 w-full justify-end">
               <Button variant="outline" onClick={() => onOpenChange(false)}>
@@ -231,7 +232,7 @@ const OutputModel: React.FC<OutputInterface> = ({
               <Button
                 onClick={() =>
                   reqForConfirmationModelFunc(
-                    mode == "create"
+                    IsCreateMode(mode)
                       ? OutputCreationMessage
                       : OutputEditionMessage,
                     handleSubmit

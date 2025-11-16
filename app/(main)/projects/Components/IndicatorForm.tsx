@@ -28,6 +28,7 @@ import { IndicatorFormInterface } from "@/interfaces/Interfaces";
 import {
   IsCreateMode,
   IsIndicatorRelatedToThisOutput,
+  IsOutputSaved,
   IsShowMode,
 } from "@/lib/Constants";
 
@@ -59,72 +60,6 @@ const IndicatorForm: React.FC<IndicatorFormInterface> = ({ mode }) => {
   const [reqForIndicatorShowModel, setReqForIndicatorShowModel] =
     useState<boolean>(false);
 
-  const hundleSubmit = () => {
-    axiosInstance
-      .post("projects/i/indicator", {
-        indicators: indicators
-          .filter((indicator) => indicator.id == null)
-          .map((indicator) => {
-            const correspondingOutputId = outputs.find(
-              (output) => output.outputRef == indicator.outputRef
-            )?.id;
-
-            indicator.outputId = correspondingOutputId ?? null;
-
-            if (!indicator.outputId) {
-              reqForToastAndSetMessage(
-                `Indicator with referance ${indicator.indicatorRef} has no valid output \n Note : Before creating some indicators to a output please ensure that the ouput is already stored in database !`
-              );
-
-              return;
-            }
-
-            const { outputRef, ...updatedIndicatoForApi } = indicator;
-
-            return indicator;
-          }),
-      })
-      .then((response: any) => {
-        reqForToastAndSetMessage(response.data.message);
-        setIndicators((prevIndicators) =>
-          prevIndicators.map((indicator) => {
-            const backendIndicator = response.data.data.find(
-              (item: { id: string; indicatorRef: string }) =>
-                item.indicatorRef === indicator.indicatorRef
-            );
-
-            const newIndicatorId = backendIndicator
-              ? backendIndicator.id
-              : indicator.id;
-
-            let updatedSubIndicator = indicator.subIndicator;
-
-            if (indicator.subIndicator?.indicatorRef) {
-              const backendSub = response.data.data.find(
-                (item: { id: string; indicatorRef: string }) =>
-                  item.indicatorRef === indicator.subIndicator!.indicatorRef
-              );
-              if (backendSub) {
-                updatedSubIndicator = {
-                  ...indicator.subIndicator,
-                  id: backendSub.id,
-                };
-              }
-            }
-
-            return {
-              ...indicator,
-              id: newIndicatorId,
-              subIndicator: updatedSubIndicator,
-            };
-          })
-        );
-      })
-      .catch((error: any) => {
-        reqForToastAndSetMessage(error.response.data.message);
-      });
-  };
-
   const readOnly = IsShowMode(mode);
 
   return (
@@ -140,7 +75,7 @@ const IndicatorForm: React.FC<IndicatorFormInterface> = ({ mode }) => {
         <CardContent className="flex flex-col gap-6 overflow-auto">
           <Accordion type="single" collapsible className="w-full">
             {outputs
-              .filter((o) => o.id != null)
+              .filter((o) => IsOutputSaved(o))
               .map((item, index) => (
                 <AccordionItem key={index} value={`item-${index}`}>
                   <AccordionTrigger>{item.output}</AccordionTrigger>
@@ -150,8 +85,8 @@ const IndicatorForm: React.FC<IndicatorFormInterface> = ({ mode }) => {
                       {indicators
                         .filter((ind) =>
                           IsIndicatorRelatedToThisOutput(
-                            item.id as unknown as number,
-                            ind.outputId as unknown as number
+                            Number(item.id),
+                            Number(ind.outputId)
                           )
                         )
                         .map((indItem, indIndex) => (
@@ -191,7 +126,7 @@ const IndicatorForm: React.FC<IndicatorFormInterface> = ({ mode }) => {
                                     onClick={() => {
                                       setReqForIndicatorShowModel(true);
                                       setIndicatorIdForEditOrShow(
-                                        indItem.id as unknown as number
+                                        Number(indItem.id)
                                       );
                                     }}
                                     size={18}
@@ -202,7 +137,7 @@ const IndicatorForm: React.FC<IndicatorFormInterface> = ({ mode }) => {
                                     onClick={() => {
                                       setReqForIndicatorEditModel(true);
                                       setIndicatorIdForEditOrShow(
-                                        indItem.id as unknown as number
+                                        Number(indItem.id)
                                       );
                                     }}
                                     size={18}
@@ -222,7 +157,7 @@ const IndicatorForm: React.FC<IndicatorFormInterface> = ({ mode }) => {
           {cardsBottomButtons(
             setCurrentTab,
             "output",
-            readOnly ? undefined : hundleSubmit,
+            undefined,
             setCurrentTab,
             "dessaggregation"
           )}

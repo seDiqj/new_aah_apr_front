@@ -16,7 +16,8 @@ import {
   KitDatabaseProgramCreationMessage,
   KitDatabaseProgramEditionMessage,
 } from "@/lib/ConfirmationModelsTexts";
-import { IsCreateMode, IsEditMode, IsShowMode } from "@/lib/Constants";
+import { IsANullValue, IsCreateMode, IsEditMode, IsNotShowMode, IsShowMode } from "@/lib/Constants";
+import { AxiosError } from "axios";
 
 interface ComponentProps {
   open: boolean;
@@ -54,11 +55,10 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
 
   // Fetch program data from backend in edit and show mode.
   useEffect(() => {
-    if ((mode === "edit" || mode === "show") && programId && open) {
+    if ((IsEditMode(mode) || IsShowMode(mode)) && programId && open) {
       axiosInstance
         .get(`/global/program/${programId}`)
         .then((response: any) => {
-          console.log(response.data.data);
           setFormData(response.data.data);
         })
         .catch((error: any) => {
@@ -98,7 +98,7 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
 
     setFormErrors({});
 
-    if (mode === "create") {
+    if (IsCreateMode(mode)) {
       axiosInstance
         .post("/global/program/kit_database", formData)
         .then((response: any) => {
@@ -107,7 +107,7 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
             createdProgramStateSetter({
               target: {
                 name: "program",
-                value: formData.focalPoint,
+                value: response.data.data.id,
               },
             });
 
@@ -115,6 +115,7 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
             programsListStateSetter((prev: { focalPoint: number }[]) => [
               ...prev,
               {
+                id: response.data.data.id,
                 focalPoint: formData.focalPoint,
               },
             ]);
@@ -123,7 +124,7 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)
         );
-    } else if (mode === "edit" && programId) {
+    } else if (IsEditMode(mode) && programId) {
       axiosInstance
         .put(`/global/program/${programId}`, formData)
         .then((response: any) => {
@@ -136,10 +137,10 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
     }
   };
 
-  const [districts, setDistricts] = useState<{ id: string; name: string }[]>(
+  const [districts, setDistricts] = useState<{ name: string }[]>(
     []
   );
-  const [provinces, setProvinces] = useState<{ id: string; name: string }[]>(
+  const [provinces, setProvinces] = useState<{ name: string }[]>(
     []
   );
   const [projects, setProjects] = useState<
@@ -151,9 +152,6 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
       .get("/global/districts")
       .then((res: any) => setDistricts(Object.values(res.data.data)));
     axiosInstance
-      .get(`/global/project/provinces/${formData.project_id}`)
-      .then((res: any) => setProvinces(Object.values(res.data.data)));
-    axiosInstance
       .get("/projects/p/kit_database")
       .then((res: any) => {
         setProjects(Object.values(res.data.data));
@@ -163,7 +161,15 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
       );
   }, []);
 
-  const readOnly = mode === "show";
+  useEffect(() => {
+    if (!formData.project_id) return;
+    axiosInstance
+      .get(`/global/project/provinces/${formData.project_id}`)
+      .then((res: any) => setProvinces(Object.values(res.data.data)))
+      .catch((error: AxiosError<any, any>) => reqForToastAndSetMessage(error.response?.data.message));
+  }, [formData.project_id]);
+
+  const readOnly = IsShowMode(mode);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -189,7 +195,7 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
                 })
               }
               disabled={readOnly}
-              error={formErrors.projectCode}
+              error={formErrors.project_id}
             />
           </div>
           {/* Focal point */}
@@ -211,17 +217,17 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
             <Label>Province</Label>
             <SingleSelect
               options={provinces.map((p) => ({
-                value: p.id,
+                value: p.name.toLowerCase(),
                 label: p.name.toUpperCase(),
               }))}
-              value={formData.province_id}
+              value={formData.province}
               onValueChange={(value: string) =>
                 handleFormChange({
-                  target: { name: "province_id", value },
+                  target: { name: "province", value },
                 })
               }
               disabled={readOnly}
-              error={formErrors.province_id}
+              error={formErrors.province}
             />
           </div>
           {/* District */}
@@ -229,17 +235,17 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
             <Label>District</Label>
             <SingleSelect
               options={districts.map((d) => ({
-                value: d.id,
+                value: d.name,
                 label: d.name.toUpperCase(),
               }))}
-              value={formData.district_id}
+              value={formData.district}
               onValueChange={(value: string) =>
                 handleFormChange({
-                  target: { name: "district_id", value },
+                  target: { name: "district", value },
                 })
               }
               disabled={readOnly}
-              error={formErrors.district_id}
+              error={formErrors.district}
             />
           </div>
           {/* Village */}
@@ -299,20 +305,20 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
             />
           </div>
           {/* Submit */}
-          {mode !== "show" && (
+          {IsNotShowMode(mode) && (
             <div className="flex justify-end col-span-2">
               <Button
                 type="button"
                 onClick={(e) =>
                   reqForConfirmationModelFunc(
-                    mode == "create"
+                    IsCreateMode(mode)
                       ? KitDatabaseProgramCreationMessage
                       : KitDatabaseProgramEditionMessage,
                     () => handleSubmit(e)
                   )
                 }
               >
-                {mode === "create" ? "Submit" : "Update"}
+                {IsCreateMode(mode) ? "Submit" : "Update"}
               </Button>
             </div>
           )}

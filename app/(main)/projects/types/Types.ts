@@ -64,6 +64,7 @@ export type Output =
   };
 
 export type Dessaggregation = {
+    id: string | null;
     indicatorId: string | null;
     indicatorRef: string;
     dessaggration: string;

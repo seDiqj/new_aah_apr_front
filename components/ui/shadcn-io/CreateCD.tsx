@@ -16,33 +16,50 @@ import { useParentContext } from "@/contexts/ParentContext";
 import { CdFormSchema } from "@/schemas/FormsSchema";
 import { CommunityDialogueFormType } from "@/types/Types";
 import { CommunityDialogueFormDefault } from "@/lib/FormsDefaultValues";
-import { CommunityDialogueCreationMessage, CommunityDialogueEditionMessage } from "@/lib/ConfirmationModelsTexts";
-
-interface ComponentProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  mode: "create" | "update" | "show";
-  dialogueId?: number;
-}
+import {
+  CommunityDialogueCreationMessage,
+  CommunityDialogueEditionMessage,
+} from "@/lib/ConfirmationModelsTexts";
+import { CommunityDialogueFormInterface } from "@/interfaces/Interfaces";
+import {
+  IsCreateMode,
+  IsEditMode,
+  IsEditOrShowMode,
+  IsNotShowMode,
+  IsShowMode,
+} from "@/lib/Constants";
 
 const inputClass = "border h-8 w-full text-base px-2 rounded-md";
 const labelClass = "block text-sm font-medium mb-1";
 
-const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
-  open,
-  onOpenChange,
-  mode,
-  dialogueId,
-}) => {
-  const { reqForToastAndSetMessage, axiosInstance, handleReload, reqForConfirmationModelFunc } = useParentContext();
+const CommunityDialogueFormComponent: React.FC<
+  CommunityDialogueFormInterface
+> = ({ open, onOpenChange, mode, dialogueId }) => {
+  const {
+    reqForToastAndSetMessage,
+    axiosInstance,
+    handleReload,
+    reqForConfirmationModelFunc,
+  } = useParentContext();
 
-  const [formData, setFormData] = useState<CommunityDialogueFormType>(CommunityDialogueFormDefault());
+  const [formData, setFormData] = useState<CommunityDialogueFormType>(
+    CommunityDialogueFormDefault()
+  );
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
-  const [groups, setGroups] = useState<{ id: number | null; name: string }[]>([]);
+  const [groups, setGroups] = useState<{ id: number | null; name: string }[]>(
+    []
+  );
 
-  const [sessions, setSessions] = useState<{ id: number | null, type: "initial" | "followUp"; topic: string; date: string }[]>([{ id: null, type: "initial", topic: "", date: "" }]);
+  const [sessions, setSessions] = useState<
+    {
+      id: number | null;
+      type: "initial" | "followUp";
+      topic: string;
+      date: string;
+    }[]
+  >([{ id: null, type: "initial", topic: "", date: "" }]);
   const [remark, setRemark] = useState<string>("");
 
   const [projects, setProjects] = useState<
@@ -58,7 +75,7 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
     { id: string; indicatorRef: string }[]
   >([]);
 
-  const isReadOnly = mode === "show";
+  const isReadOnly = IsShowMode(mode);
 
   useEffect(() => {
     axiosInstance
@@ -70,7 +87,7 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
   }, []);
 
   useEffect(() => {
-    if ((mode === "update" || mode === "show") && dialogueId) {
+    if (IsEditOrShowMode(mode) && dialogueId) {
       axiosInstance
         .get(`/community_dialogue_db/community_dialogue_for_edit/${dialogueId}`)
         .then((res: any) => {
@@ -78,7 +95,9 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
           setFormData(data.programInformation);
           setGroups(data.groups?.map((g: any) => ({ ...g })) ?? []);
           setSessions(
-            data.sessions ?? [{ id: null, type: "initial", topic: "", date: "" }]
+            data.sessions ?? [
+              { id: null, type: "initial", topic: "", date: "" },
+            ]
           );
           console.log(data.sessions);
           setRemark(data.remark ?? "");
@@ -123,24 +142,25 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
   };
 
   const handleSubmit = () => {
-
     const result = CdFormSchema.safeParse(formData);
 
     if (!result.success) {
-    const errors: { [key: string]: string } = {};
-    result.error.issues.forEach((issue) => {
-      const field = issue.path[0];
-      if (field) errors[field as string] = issue.message;
-    });
+      const errors: { [key: string]: string } = {};
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0];
+        if (field) errors[field as string] = issue.message;
+      });
 
-    setFormErrors(errors);
-      reqForToastAndSetMessage("Please fix validation errors before submitting.");
+      setFormErrors(errors);
+      reqForToastAndSetMessage(
+        "Please fix validation errors before submitting."
+      );
       return;
     }
 
     setFormErrors({});
 
-    if (mode === "create") {
+    if (IsCreateMode(mode)) {
       axiosInstance
         .post("/community_dialogue_db/community_dialogue", {
           programInformation: formData,
@@ -150,12 +170,12 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
         })
         .then((response: any) => {
           reqForToastAndSetMessage(response.data.message);
-          handleReload()
+          handleReload();
         })
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response?.data?.message)
         );
-    } else if (mode === "update" && dialogueId) {
+    } else if (IsEditMode(mode) && dialogueId) {
       axiosInstance
         .put(`/community_dialogue_db/community_dialogue/${dialogueId}`, {
           programInformation: formData,
@@ -165,7 +185,7 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
         })
         .then((response: any) => {
           reqForToastAndSetMessage(response.data.message);
-          handleReload()
+          handleReload();
         })
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response?.data?.message)
@@ -175,7 +195,10 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
 
   const addGroup = () => setGroups([...groups, { id: null, name: "" }]);
   const addSession = () =>
-    setSessions([...sessions, { id: null, type: "followUp", topic: "", date: "" }]);
+    setSessions([
+      ...sessions,
+      { id: null, type: "followUp", topic: "", date: "" },
+    ]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -204,18 +227,15 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
             <Label className={labelClass}>Project Code</Label>
             <SingleSelect
               options={projects.map((p) => ({
-                value: p.projectCode,
+                value: p.id,
                 label: p.projectCode.toUpperCase(),
               }))}
-              value={
-                projects.find((p) => p.id == formData.project_id)
-                  ?.projectCode ?? ""
-              }
+              value={formData.project_id}
               onValueChange={(value) =>
                 handleFormChange({
                   target: {
                     name: "project_id",
-                    value: projects.find((p) => p.projectCode == value)?.id,
+                    value: value,
                   },
                 })
               }
@@ -234,7 +254,9 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
               placeholder="Focal Point"
               // className={inputClass}
               disabled={isReadOnly}
-              className={`border p-2 rounded ${formErrors.focalPoint ? "!border-red-500" : ""}`}
+              className={`border p-2 rounded ${
+                formErrors.focalPoint ? "!border-red-500" : ""
+              }`}
               title={formErrors.focalPoint}
             />
           </div>
@@ -244,17 +266,15 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
             <Label className={labelClass}>Province</Label>
             <SingleSelect
               options={provinces.map((p) => ({
-                value: p.name,
+                value: p.id,
                 label: p.name.toUpperCase(),
               }))}
-              value={
-                provinces.find((p) => p.id == formData.province_id)?.name ?? ""
-              }
+              value={formData.province_id}
               onValueChange={(value) =>
                 handleFormChange({
                   target: {
                     name: "province_id",
-                    value: provinces.find((p) => p.name == value)?.id,
+                    value: value,
                   },
                 })
               }
@@ -268,17 +288,15 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
             <Label className={labelClass}>District</Label>
             <SingleSelect
               options={districts.map((d) => ({
-                value: d.name,
+                value: d.id,
                 label: d.name.toUpperCase(),
               }))}
-              value={
-                districts.find((d) => d.id == formData.district_id)?.name ?? ""
-              }
+              value={formData.district_id}
               onValueChange={(value) =>
                 handleFormChange({
                   target: {
                     name: "district_id",
-                    value: districts.find((d) => d.name == value)?.id,
+                    value: value,
                   },
                 })
               }
@@ -297,7 +315,9 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
               placeholder="Village"
               // className={inputClass}
               disabled={isReadOnly}
-              className={`border p-2 rounded ${formErrors.village ? "!border-red-500" : ""}`}
+              className={`border p-2 rounded ${
+                formErrors.village ? "!border-red-500" : ""
+              }`}
               title={formErrors.village}
             />
           </div>
@@ -307,18 +327,15 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
             <Label className={labelClass}>Select Indicator</Label>
             <SingleSelect
               options={indicators.map((i) => ({
-                value: i.indicatorRef,
+                value: i.id,
                 label: i.indicatorRef.toUpperCase(),
               }))}
-              value={
-                indicators.find((i) => i.id == formData.indicator_id)
-                  ?.indicatorRef ?? ""
-              }
+              value={formData.indicator_id}
               onValueChange={(value) =>
                 handleFormChange({
                   target: {
                     name: "indicator_id",
-                    value: indicators.find((i) => i.indicatorRef == value)?.id,
+                    value: value,
                   },
                 })
               }
@@ -328,7 +345,7 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
           </div>
 
           {/* Add Group Button */}
-          {mode !== "show" && (
+          {IsNotShowMode(mode) && (
             <div className="flex items-end">
               <Button
                 variant="secondary"
@@ -407,7 +424,7 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
         ))}
 
         {/* Add Session Button */}
-        {mode !== "show" && (
+        {IsNotShowMode(mode) && (
           <div className="flex justify-start">
             <Button
               variant="secondary"
@@ -433,15 +450,22 @@ const CommunityDialogueFormComponent: React.FC<ComponentProps> = ({
 
         {/* Submit / Update / Close Button */}
         <div className="mt-6">
-          {mode != "show" && (
-            <Button className="w-full" onClick={() => reqForConfirmationModelFunc(
-              (mode == "create" ? CommunityDialogueCreationMessage : CommunityDialogueEditionMessage),
-              () => handleSubmit()
-            )}>
-              {mode == "create" ? "Submit" : "Update"}
+          {IsNotShowMode(mode) && (
+            <Button
+              className="w-full"
+              onClick={() =>
+                reqForConfirmationModelFunc(
+                  IsCreateMode(mode)
+                    ? CommunityDialogueCreationMessage
+                    : CommunityDialogueEditionMessage,
+                  () => handleSubmit()
+                )
+              }
+            >
+              {IsCreateMode(mode) ? "Submit" : "Update"}
             </Button>
           )}
-          {mode === "show" && (
+          {IsShowMode(mode) && (
             <Button className="w-full" onClick={() => onOpenChange(false)}>
               Close
             </Button>

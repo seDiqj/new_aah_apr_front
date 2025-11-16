@@ -78,9 +78,9 @@ const KitDatabaseBeneficiaryForm: React.FC<KitDatabaseBeneficiaryFormInterface> 
       );
   };
 
-  const [programs, setPrograms] = useState<{ focalPoint: number;}[]>([]);
+  const [programs, setPrograms] = useState<{ id: string; focalPoint: number;}[]>([]);
 
-  const [indicators, setIndicators] = useState<{ indicator: string;}[]>([]);
+  const [indicators, setIndicators] = useState<{ id: string; indicatorRef: string;}[]>([]);
 
   useEffect(() => {
     // Fetching kit database programs
@@ -130,7 +130,7 @@ const KitDatabaseBeneficiaryForm: React.FC<KitDatabaseBeneficiaryFormInterface> 
             <div className="flex flex-col w-full border-2 rounded-2xl">
               <SingleSelect
                 options={programs.map((program) => ({
-                  value: program.focalPoint.toString(),
+                  value: program.id,
                   label: program.focalPoint.toString().toUpperCase(),
                 }))}
                 value={formData.program}
@@ -174,8 +174,8 @@ const KitDatabaseBeneficiaryForm: React.FC<KitDatabaseBeneficiaryFormInterface> 
             <div className="flex flex-col w-full border-2 rounded-2xl">
               <MultiSelect
                 options={indicators.map((indicator) => ({
-                  value: indicator.indicator,
-                  label: indicator.indicator.toUpperCase(),
+                  value: indicator.id,
+                  label: indicator.indicatorRef.toUpperCase(),
                 }))}
                 value={formData.indicators}
                 onValueChange={(value: string[]) => {

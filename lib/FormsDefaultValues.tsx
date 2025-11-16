@@ -259,6 +259,7 @@ export const KitDefault: () => KitFormType = () => ({
 
 export const MainDatabaseBeneficiaryUpdateDefault: () => MainDatabaseBeneficiaryUpdateType = () => ({
     id: "",
+    program: "",
     dateOfRegistration: "",
     code: "",
     name: "",

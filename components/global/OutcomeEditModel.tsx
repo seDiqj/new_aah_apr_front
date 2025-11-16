@@ -12,7 +12,7 @@ import { OutcomeCreationMessage, OutcomeEditionMessage } from "@/lib/Confirmatio
 import { Outcome } from "@/app/(main)/projects/types/Types";
 import { OutcomeDefault } from "@/lib/FormsDefaultValues";
 import { OutcomeInterface } from "@/interfaces/Interfaces";
-import { IsCreateMode, IsEditMode, IsShowMode, IsThereAnyOutcomeWithEnteredReferance, IsThereAnyOutcomeWithEnteredReferanceAndDefferentId } from "@/lib/Constants";
+import { IsCreateMode, IsCreatePage, IsEditMode, IsEditOrShowMode, IsEditPage, IsShowMode, IsThereAnyOutcomeWithEnteredReferance, IsThereAnyOutcomeWithEnteredReferanceAndDefferentId } from "@/lib/Constants";
 
 const OutcomeModel: React.FC<OutcomeInterface> = ({
     isOpen,
@@ -29,7 +29,7 @@ const OutcomeModel: React.FC<OutcomeInterface> = ({
             outcomes: Outcome[];
             setOutcomes: React.Dispatch<React.SetStateAction<Outcome[]>>;
             setCurrentTab: (value: string) => void;
-        } = pageIdentifier == "create" ? useProjectContext() : pageIdentifier == "edit" ? useProjectEditContext() :
+        } = IsCreatePage(pageIdentifier) ? useProjectContext() : IsEditPage(pageIdentifier) ? useProjectEditContext() :
             useProjectShowContext();
 
     const [formData, setFormData] = useState<Outcome>(OutcomeDefault());
@@ -104,7 +104,7 @@ const OutcomeModel: React.FC<OutcomeInterface> = ({
     };
 
     useEffect(() => {
-        if ((IsEditMode(mode) || IsShowMode(mode)) && outcomeId) {
+        if (IsEditOrShowMode(mode) && outcomeId) {
             setIsLoading(true);
             axiosInstance.get(`/projects/outcome/${outcomeId}`)
             .then((response: any) => setFormData(response.data.data))

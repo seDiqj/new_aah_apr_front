@@ -12,7 +12,7 @@ import OutputEditModel from "@/components/global/OutputEditModel";
 import { useProjectEditContext } from "../edit_project/[id]/page";
 import { useProjectShowContext } from "../project_show/[id]/page";
 import { OutputFormInterface } from "@/interfaces/Interfaces";
-import { IsOutcomeSaved, IsOutputRelatedToThisOutcome, IsShowMode } from "@/lib/Constants";
+import { IsCreateMode, IsOutcomeSaved, IsOutputRelatedToThisOutcome, IsShowMode } from "@/lib/Constants";
 
 const OutputForm: React.FC<OutputFormInterface> = ({mode}) => {
 
@@ -23,7 +23,7 @@ const OutputForm: React.FC<OutputFormInterface> = ({mode}) => {
         outcomes: Outcome[];
         outputs: Output[],
         setOutputs: React.Dispatch<React.SetStateAction<Output[]>>;
-    } = mode == "create" ? useProjectContext() : mode =="show" ? useProjectShowContext() : useProjectEditContext();
+    } = IsCreateMode(mode) ? useProjectContext() : IsShowMode(mode) ? useProjectShowContext() : useProjectEditContext();
 
     const [reqForOutputEditModel, setReqForOutputEditModel] = useState<boolean>(false);
     const [reqForOutputShowModel, setReqForOutputShowModel] = useState<boolean>(false);

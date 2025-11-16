@@ -92,6 +92,7 @@ const MainDatabaseBeneficiaryForm: React.FC<
 
   const [programs, setPrograms] = useState<
     {
+      id: string;
       focalPoint: number;
     }[]
   >([]);
@@ -134,7 +135,7 @@ const MainDatabaseBeneficiaryForm: React.FC<
             <div className="flex flex-col w-full border-2 rounded-2xl">
               <SingleSelect
                 options={programs.map((program) => ({
-                  value: program.focalPoint.toString(),
+                  value: program.id,
                   label: program.focalPoint.toString().toUpperCase(),
                 }))}
                 value={formData.program}
@@ -221,9 +222,7 @@ const MainDatabaseBeneficiaryForm: React.FC<
               <div className="flex flex-col gap-4">
                 <Label htmlFor="clientName">Client Name</Label>
                 <Input
-                  title={
-                    formErrors.name ? formErrors["name"] : undefined
-                  }
+                  title={formErrors.name ? formErrors["name"] : undefined}
                   id="name"
                   name="name"
                   placeholder="Client Name ..."

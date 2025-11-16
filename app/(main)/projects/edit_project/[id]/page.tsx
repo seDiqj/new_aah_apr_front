@@ -214,7 +214,7 @@ const EditProjectPage = () => {
           <div className="flex flex-row items-center justify-start my-2">
             <BreadcrumbWithCustomSeparator></BreadcrumbWithCustomSeparator>
           </div>
-          <SubHeader pageTitle={"Create New Project"}>
+          <SubHeader pageTitle={"Edit Project"}>
             <div className="flex flex-row items-center justify-end gap-2">
               {(currentTab == "outcome" ||
                 currentTab == "output" ||

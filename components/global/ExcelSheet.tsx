@@ -19,6 +19,8 @@ import { Output as OutputType } from "@/app/(main)/projects/types/Types";
 import { Indicator as IndicatorType } from "@/app/(main)/projects/types/Types";
 import { useProjectEditContext } from "@/app/(main)/projects/edit_project/[id]/page";
 import { useProjectShowContext } from "@/app/(main)/projects/project_show/[id]/page";
+import { IsCreateMode, IsShowMode } from "@/lib/Constants";
+import { MonitoringTablePageInterface } from "@/interfaces/Interfaces";
 
 type Output = { name: string; indicators: Indicator_[] };
 
@@ -37,11 +39,7 @@ type Indicator_ = {
 
 export type AprData = { impact: string; outcomes: Outcome[] };
 
-interface ComponentProps {
-  mode: "create" | "edit" | "show";
-}
-
-const MonitoringTablePage: React.FC<ComponentProps> = ({mode}) => {
+const MonitoringTablePage: React.FC<MonitoringTablePageInterface> = ({mode}) => {
 
   const {outcomes, projectGoal, outputs, indicators, dessaggregations, projectProvinces}: {
     outcomes: OutcomeType[],
@@ -50,7 +48,7 @@ const MonitoringTablePage: React.FC<ComponentProps> = ({mode}) => {
     dessaggregations: DessaggregationType[],
     projectGoal: string,
     projectProvinces: string[]
-  } = mode == "create" ? useProjectContext() : mode == "show" ? useProjectShowContext() : useProjectEditContext();
+  } = IsCreateMode(mode) ? useProjectContext() : IsShowMode(mode) ? useProjectShowContext() : useProjectEditContext();
 
   // Data for creating the preview of the final apr in apr preview TabContent.
   const finalDataForAprPreview: AprData = {

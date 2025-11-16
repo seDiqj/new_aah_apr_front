@@ -10,8 +10,8 @@ import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useParentContext } from "@/contexts/ParentContext";
 import { TrainingProfileInterface } from "@/interfaces/Interfaces";
-import { createAxiosInstance } from "@/lib/axios";
-import { TrainingFormDefault } from "@/lib/FormsDefaultValues";
+import { IsANullValue, IsIdFeild } from "@/lib/Constants";
+import { TrainingDefault } from "@/lib/FormsDefaultValues";
 import { ChapterForm, Evaluations, TrainingForm } from "@/types/Types";
 import { Plus } from "lucide-react";
 import { use, useEffect, useState } from "react";
@@ -21,13 +21,13 @@ const TrainingProfilePage: React.FC<TrainingProfileInterface> = (
 ) => {
   const { id } = use(params.params);
 
-  const { reqForToastAndSetMessage } = useParentContext();
-
-  const axiosInstance = createAxiosInstance();
+  const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
 
   let [open, setOpen] = useState<boolean>(false);
 
-  const [trainingInfo, setTrainingInfo] = useState<TrainingForm>(TrainingFormDefault());
+  const [trainingInfo, setTrainingInfo] = useState<TrainingForm>(
+    TrainingDefault()
+  );
 
   const [chaptersData, setChaptersData] = useState<ChapterForm[]>([]);
 
@@ -84,33 +84,15 @@ const TrainingProfilePage: React.FC<TrainingProfileInterface> = (
           <TabsContent value="trainingInfo">
             <Card className="max-h-[400px]">
               <CardContent className="h-full grid gap-4 max-h-[400px] overflow-auto">
-                <div className="grid grid-cols-2 gap-4">
-                  {Object.entries(trainingInfo).map((info, index) => (
-                    <div key={index} className="flex gap-7 p-2 rounded">
-                      <span>{info[0]} : </span>
-                      <span>{info[1]}</span>
-                    </div>
-                  ))}
-                </div>
+                {structuredInfo(trainingInfo)}
               </CardContent>
             </Card>
           </TabsContent>
           {chaptersData.map((chapter, index) => (
             <TabsContent key={index} value={`chapter-${index + 1}`}>
               <Card>
-                <CardContent className="grid gap-6">
-                  <div className="grid grid-cols-2 gap-4">
-                    {Object.entries(chapter).map((entity, index) => {
-                      if (entity[0] == "id") return;
-
-                      return (
-                        <div key={index} className="flex gap-7 p-2 rounded">
-                          <span>{entity[0]} : </span>
-                          <span>{entity[1]}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
+                <CardContent className="grid gap-6 min-h-[340px]">
+                  {structuredInfo(chapter)}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -134,6 +116,42 @@ const TrainingProfilePage: React.FC<TrainingProfileInterface> = (
           ></CreateNewChapterForm>
         )}
       </div>
+    </>
+  );
+};
+
+const structuredInfo = (info: any) => {
+  return (
+    <>
+      {info ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {Object.entries(info).map(([key, value], index) => {
+            if (IsIdFeild(key) || IsANullValue(value)) return;
+            return (
+              <div
+                key={index}
+                className="flex flex-col rounded-xl border p-3 transition-all hover:shadow-sm"
+              >
+                <span className="text-xs font-medium uppercase opacity-70 tracking-wide">
+                  {key.replace(/([A-Z])/g, " $1")}
+                </span>
+                <span className="text-sm font-semibold truncate">
+                  {value?.toString() || "-"}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div
+              key={i}
+              className="h-[56px] w-full rounded-xl animate-pulse bg-muted/30"
+            />
+          ))}
+        </div>
+      )}
     </>
   );
 };

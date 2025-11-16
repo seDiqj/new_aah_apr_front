@@ -19,6 +19,7 @@ import { KitDatabaseBeneficiaryUpdateFormType } from "@/types/Types";
 import { KitDatabaseBeneficiaryUpdateDefault } from "@/lib/FormsDefaultValues";
 import { KitDatabaseBeneficiaryEditionMessage } from "@/lib/ConfirmationModelsTexts";
 import { DisabilityTypeOptions, GenderOptions, HousholdStatusOptions, MaritalStatusOptions, ReferredForProtectionOptions } from "@/lib/SingleAndMultiSelectOptionsList";
+import { KitDatabaseBenficiaryUpdateForm } from "@/interfaces/Interfaces";
 
 
 const KitDatabaseBeneficiaryUpdateForm: React.FC<KitDatabaseBenficiaryUpdateForm> = ({
@@ -31,8 +32,8 @@ const KitDatabaseBeneficiaryUpdateForm: React.FC<KitDatabaseBenficiaryUpdateForm
 
   const [formData, setFormData] = useState<KitDatabaseBeneficiaryUpdateFormType>(KitDatabaseBeneficiaryUpdateDefault());
 
-  const [programs, setPrograms] = useState<any[]>([]);
-  const [indicators, setIndicators] = useState<any[]>([]);
+  const [programs, setPrograms] = useState<{id: string; focalPoint: string}[]>([]);
+  const [indicators, setIndicators] = useState<{id: string, indicatorRef: string}[]>([]);
 
   // Fetch beneficiary data
   useEffect(() => {
@@ -111,7 +112,6 @@ const KitDatabaseBeneficiaryUpdateForm: React.FC<KitDatabaseBenficiaryUpdateForm
         onOpenChange(false);
       })
       .catch((error: any) => {
-        console.log(error.response?.data);
         reqForToastAndSetMessage(
           error.response?.data?.message || "Update failed"
         );
@@ -137,8 +137,8 @@ const KitDatabaseBeneficiaryUpdateForm: React.FC<KitDatabaseBenficiaryUpdateForm
             <div className="flex flex-col w-full border-2 rounded-2xl">
               <MultiSelect
                 options={indicators.map((indicator) => ({
-                  value: indicator.indicator,
-                  label: indicator.indicator.toUpperCase(),
+                  value: indicator.id,
+                  label: indicator.indicatorRef.toUpperCase(),
                 }))}
                 value={formData.indicators}
                 onValueChange={(value: string[]) =>
@@ -348,9 +348,9 @@ const KitDatabaseBeneficiaryUpdateForm: React.FC<KitDatabaseBenficiaryUpdateForm
         </div>
 
         {/* Submit */}
-        <Button className="w-full mt-6" onClick={() => reqForConfirmationModelFunc(
+        <Button type="button" className="w-full mt-6" onClick={(e) => reqForConfirmationModelFunc(
           KitDatabaseBeneficiaryEditionMessage,
-          handleSubmit
+          () => handleSubmit(e)
         )}>
           Update
         </Button>

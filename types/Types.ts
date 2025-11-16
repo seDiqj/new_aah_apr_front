@@ -62,7 +62,7 @@ export type MainDatabaseBeneficiary = {
 };
 
 export type MainDatabaseProgram = {
-  projectCode: string;
+  project_id: string;
   focalPoint: string;
   province: string;
   district: string;
@@ -75,8 +75,8 @@ export type MainDatabaseProgram = {
 export type KitDatabaseProgram = {
   project_id: string;
   focalPoint: string;
-  province_id: string;
-  district_id: string;
+  province: string;
+  district: string;
   village: string;
   siteCode: string;
   healthFacilityName: string;
@@ -294,6 +294,7 @@ export type SingleAndMultiSelectOptionsListType = {
 
 export type MainDatabaseBeneficiaryUpdateType = {
   id: string;
+  program: string;
   dateOfRegistration: string;
   code: string;
   name: string;

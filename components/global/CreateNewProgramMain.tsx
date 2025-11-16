@@ -13,6 +13,7 @@ import { MainDatabaseProgramFormSchema } from "@/schemas/FormsSchema";
 import { MainDatabaseProgramDefault } from "@/lib/FormsDefaultValues";
 import { MainDatabaseProgramCreationMessage, MainDatabaseProgramEditionMessage } from "@/lib/ConfirmationModelsTexts";
 import { MainDatabaseProgramFormInterface } from "@/interfaces/Interfaces";
+import { IsCreateMode, IsEditMode, IsShowMode } from "@/lib/Constants";
 
 const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
   open,
@@ -30,11 +31,10 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
 
   // Fetch program data from backend in edit and show mode.
   useEffect(() => {
-    if ((mode === "edit" || mode === "show") && programId && open) {
+    if ((IsEditMode(mode) || IsShowMode(mode)) && programId && open) {
       axiosInstance
         .get(`/global/program/${programId}`)
         .then((response: any) => {
-          console.log(response.data.data);
           setFormData(response.data.data);
         })
         .catch((error: any) => {
@@ -71,7 +71,7 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
     setFormErrors({});
 
 
-    if (mode === "create") {
+    if (IsCreateMode(mode)) {
       axiosInstance
         .post("/global/program/main_database", formData)
         .then((response: any) =>
@@ -81,7 +81,7 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
             createdProgramStateSetter({
             target: {
               name: "program",
-              value: formData.focalPoint
+              value: response.data.data.id
               }
             })
 
@@ -89,17 +89,18 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
             programsListStateSetter((prev: {focalPoint: number}[]) => [
               ...prev,
               {
-                focalPoint: formData.focalPoint
+                id: response.data.data.id,
+                focalPoint: formData.focalPoint,
               }
             ])
 
-            handleReload()
+            handleReload();
         }
         )
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)
         );
-    } else if (mode === "edit" && programId) {
+    } else if (IsEditMode(mode) && programId) {
       axiosInstance
         .put(`/global/program/${programId}`, formData)
         .then((response: any) =>
@@ -116,7 +117,7 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
 
   const [districts, setDistricts] = useState<{ name: string }[]>([]);
   const [provinces, setProvinces] = useState<{ name: string }[]>([]);
-  const [projects, setProjects] = useState<{ projectCode: string }[]>([]);
+  const [projects, setProjects] = useState<{ id: string; projectCode: string }[]>([]);
 
   useEffect(() => {
     axiosInstance
@@ -127,18 +128,19 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
       .then((res: any) => setProvinces(Object.values(res.data.data)));
     axiosInstance
       .get("/projects/p/main_database")
-      .then((res: any) => setProjects(Object.values(res.data.data)));
+      .then((res: any) => setProjects(Object.values(res.data.data)))
+      .catch((error: any) => reqForToastAndSetMessage(error.response.data.message));
   }, []);
 
-  const readOnly = mode === "show";
+  const readOnly = IsShowMode(mode);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex flex-col h-[80%] w-[70%]">
         <DialogTitle>
-          {mode === "create" && "Create New Program"}
-          {mode === "edit" && "Edit Program"}
-          {mode === "show" && "Program Details"}
+          {IsCreateMode(mode) && "Create New Program"}
+          {IsEditMode(mode) && "Edit Program"}
+          {IsShowMode(mode) && "Program Details"}
         </DialogTitle>
         <form className="space-y-4 grid grid-cols-2 gap-4">
           {/* Project code */}
@@ -146,17 +148,17 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
             <Label>Project Code</Label>
             <SingleSelect
               options={projects.map((p) => ({
-                value: p.projectCode,
+                value: p.id,
                 label: p.projectCode.toUpperCase(),
               }))}
-              value={formData.projectCode}
+              value={formData.project_id}
               onValueChange={(value: string) =>
                 handleFormChange({
-                  target: { name: "projectCode", value: value },
+                  target: { name: "project_id", value: value },
                 })
               }
               disabled={readOnly}
-              error={formErrors.projectCode}
+              error={formErrors.project_id}
             />
           </div>
           {/* Focal point */}

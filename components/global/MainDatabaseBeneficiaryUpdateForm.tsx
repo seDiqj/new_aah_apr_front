@@ -17,17 +17,29 @@ import { withPermission } from "@/lib/withPermission";
 import { Skeleton } from "../ui/skeleton";
 import { MainDatabaseBeneficiaryUpdateType } from "@/types/Types";
 import { MainDatabaseBeneficiaryUpdateDefault } from "@/lib/FormsDefaultValues";
-import { DisabilityTypeOptions, GenderOptions, HousholdStatusOptions, MaritalStatusOptions, ReferredForProtectionOptions } from "@/lib/SingleAndMultiSelectOptionsList";
+import {
+  DisabilityTypeOptions,
+  GenderOptions,
+  HousholdStatusOptions,
+  MaritalStatusOptions,
+  ReferredForProtectionOptions,
+} from "@/lib/SingleAndMultiSelectOptionsList";
 import { MainDatabaseBeneficiaryEditionMessage } from "@/lib/ConfirmationModelsTexts";
+import { MainDatabaseBeneficiaryUpdate } from "@/interfaces/Interfaces";
 
-const MainDatabaseBeneficiaryUpdateForm: React.FC<MainDatabaseBeneficiaryUpdate> = ({
-  open,
-  onOpenChange,
-  beneficiaryId,
-}) => {
-  const { reqForToastAndSetMessage, axiosInstance, handleReload, reqForConfirmationModelFunc } = useParentContext();
+const MainDatabaseBeneficiaryUpdateForm: React.FC<
+  MainDatabaseBeneficiaryUpdate
+> = ({ open, onOpenChange, beneficiaryId }) => {
+  const {
+    reqForToastAndSetMessage,
+    axiosInstance,
+    handleReload,
+    reqForConfirmationModelFunc,
+  } = useParentContext();
 
-  const [formData, setFormData] = useState<MainDatabaseBeneficiaryUpdateType>(MainDatabaseBeneficiaryUpdateDefault());
+  const [formData, setFormData] = useState<MainDatabaseBeneficiaryUpdateType>(
+    MainDatabaseBeneficiaryUpdateDefault()
+  );
   const [program, setProgram] = useState<string>("");
   const [programs, setPrograms] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -41,6 +53,7 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<MainDatabaseBeneficiaryUpdate>
           const data = response.data.data;
           setFormData({
             id: beneficiaryId,
+            program: data.programs[0].id || "",
             dateOfRegistration: data.dateOfRegistration || "",
             code: data.code || "",
             name: data.name || "",
@@ -104,7 +117,7 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<MainDatabaseBeneficiaryUpdate>
       .then((response: any) => {
         reqForToastAndSetMessage(response.data.message);
         onOpenChange(false);
-        handleReload()
+        handleReload();
       })
       .catch((error: any) => {
         reqForToastAndSetMessage(
@@ -147,21 +160,17 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<MainDatabaseBeneficiaryUpdate>
               <div className="flex flex-col w-full border-2 rounded-2xl">
                 <SingleSelect
                   options={programs.map((program) => ({
-                    value: program?.focalPoint,
+                    value: program?.id,
                     label: program?.focalPoint,
                   }))}
-                  value={
-                    programs.find((p) => p.id == program)?.focalPoint ?? ""
-                  }
+                  value={formData.program}
                   onValueChange={(value: string) =>
                     setFormData((prev) => ({
                       ...prev,
-                      program: programs.find(
-                        (program) => program?.focalPoint == value
-                      )?.id,
+                      program: value,
                     }))
                   }
-                  placeholder="Assign Indicator"
+                  placeholder="Select Program "
                 />
               </div>
 
@@ -372,10 +381,16 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<MainDatabaseBeneficiaryUpdate>
         )}
 
         {/* Submit */}
-        <Button className="w-full mt-6" onClick={() => reqForConfirmationModelFunc(
-          MainDatabaseBeneficiaryEditionMessage,
-          handleSubmit
-        )}>
+        <Button
+          className="w-full mt-6"
+          type="button"
+          onClick={(e) =>
+            reqForConfirmationModelFunc(
+              MainDatabaseBeneficiaryEditionMessage,
+              () => handleSubmit(e)
+            )
+          }
+        >
           {loading ? "Loading ..." : "Update"}
         </Button>
       </DialogContent>

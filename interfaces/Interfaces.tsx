@@ -242,3 +242,28 @@ export interface CommunityDialogueSessionFormInterface {
   sessionId?: string;
   mode: "create" | "edit" | "show";
 }
+
+export interface CommunityDialogueFormInterface {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  mode: "create" | "update" | "show";
+  dialogueId?: number;
+}
+
+export interface MainDatabaseBeneficiaryProfileInterface {
+  params: Promise<{
+    id: string;
+  }>;
+}
+
+export interface Isp3SubPageInterface {
+    mode: "create" | "edit" | "show",
+}
+
+export interface MonitoringTablePageInterface {
+  mode: "create" | "edit" | "show";
+}
+
+export interface AprFinalizationSubPageInterface {
+  mode: "create" | "edit" | "show";
+}

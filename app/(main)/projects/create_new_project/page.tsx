@@ -14,7 +14,6 @@ import DessaggregationForm from "../Components/DessaggregationForm";
 import ProjectForm from "../Components/ProjectForm";
 import { Dessaggregation, Isp3, Output } from "../types/Types";
 import AprFinalizationSubPage from "../Components/AprFinalizationSubPage";
-import { isp3s } from "../utils/OptionLists";
 import AprLogsSubPage from "../Components/AprLogsSubPage";
 import IndicatorForm from "../Components/IndicatorForm";
 import Isp3SubPage from "../Components/Isp3SubPage";
@@ -126,7 +125,7 @@ const NewProjectPage = () => {
               <TabsTrigger value="output">Output</TabsTrigger>
               <TabsTrigger value="indicator">Indicator</TabsTrigger>
               <TabsTrigger value="dessaggregation">Dessaggregation</TabsTrigger>
-              <TabsTrigger value="aprPreview">APR Preview</TabsTrigger>
+              {/* <TabsTrigger value="aprPreview">APR Preview</TabsTrigger> */}
               <TabsTrigger value="isp3">ISP3</TabsTrigger>
               <TabsTrigger value="finalization">APR Finalization</TabsTrigger>
               <TabsTrigger value="logs">Logs</TabsTrigger>
@@ -158,9 +157,9 @@ const NewProjectPage = () => {
             </TabsContent>
 
             {/* APR preview */}
-            <TabsContent value="aprPreview" className="h-full">
+            {/* <TabsContent value="aprPreview" className="h-full">
               <MonitoringTablePage mode="create"></MonitoringTablePage>
-            </TabsContent>
+            </TabsContent> */}
  
             {/* ISP3 */}
             <TabsContent value="isp3" className="h-full">

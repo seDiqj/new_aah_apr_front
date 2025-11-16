@@ -164,14 +164,14 @@ export const roleColumns: ColumnDef<Role>[] = [
     },
   },
   {
-    accessorKey: "created_date",
+    accessorKey: "created_at",
     header: () => <div className="text-left">Created at</div>,
-    cell: ({ row }) => row.getValue("updated_date"),
+    cell: ({ row }) => row.getValue("created_at"),
   },
   {
-    accessorKey: "updated_date",
+    accessorKey: "updated_at",
     header: () => <div className="text-left">Updated at</div>,
-    cell: ({ row }) => row.getValue("updated_date"),
+    cell: ({ row }) => row.getValue("updated_at"),
   },
 ];
 

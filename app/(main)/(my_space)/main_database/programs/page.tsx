@@ -54,29 +54,29 @@ const MainDatabaseProgramsPage = () => {
         {/* Program create form */}
         {reqForProgramCreationForm && (
             <CreateNewProgramMain
-            open={reqForProgramCreationForm}
-            onOpenChange={setReqForProgramCreationForm}
-            mode="create"
+              open={reqForProgramCreationForm}
+              onOpenChange={setReqForProgramCreationForm}
+              mode="create"
           ></CreateNewProgramMain>
         )}        
 
         {/* Program edit form */}
         {reqForProgramEditionForm && (
             <CreateNewProgramMain
-            open={reqForProgramEditionForm}
-            onOpenChange={setReqForProgramEditionForm}
-            mode="edit"
-            programId={idFeildForEditStateSetter!}
+              open={reqForProgramEditionForm}
+              onOpenChange={setReqForProgramEditionForm}
+              mode="edit"
+              programId={idFeildForEditStateSetter!}
           ></CreateNewProgramMain>
         )}
 
         {/* Program show form */}
         {reqForProgramShowForm && (
             <CreateNewProgramMain
-            open={reqForProgramShowForm}
-            onOpenChange={setReqForProgramShowForm}
-            mode="show"
-            programId={idFeildForShowStateSetter!}
+              open={reqForProgramShowForm}
+              onOpenChange={setReqForProgramShowForm}
+              mode="show"
+              programId={idFeildForShowStateSetter!}
           ></CreateNewProgramMain>
         )}
       </div>

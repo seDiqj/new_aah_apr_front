@@ -194,29 +194,41 @@ export const IsThereAnyOutcomeWithEnteredReferanceAndDefferentId = (
   );
 };
 
-export const IsCreateMode = (mode: "create" | "edit" | "show"): boolean => {
+export const IsCreateMode = (mode: "create" | "edit" | "update" | "show"): boolean => {
   return mode == "create";
 };
 
-export const IsEditMode = (mode: "create" | "edit" | "show"): boolean => {
-  return mode == "edit";
+export const IsEditMode = (mode: "create" | "edit" | "update" | "show"): boolean => {
+  return (mode == "edit") || (mode == "update");
 };
 
-export const IsShowMode = (mode: "create" | "edit" | "show"): boolean => {
+export const IsShowMode = (mode: "create" | "edit" | "update" | "show"): boolean => {
   return mode == "show";
 };
 
-export const IsNotCreateMode = (mode: "create" | "edit" | "show"): boolean => {
+export const IsNotCreateMode = (mode: "create" | "edit" | "update" | "show"): boolean => {
   return mode != "create";
 };
 
-export const IsNotEditMode = (mode: "create" | "edit" | "show"): boolean => {
-  return mode != "edit";
+export const IsNotEditMode = (mode: "create" | "edit" | "update" | "show"): boolean => {
+  return (mode != "edit") && (mode != "update");
 };
 
-export const IsNotShowMode = (mode: "create" | "edit" | "show"): boolean => {
+export const IsNotShowMode = (mode: "create" | "edit" | "update" | "show"): boolean => {
   return mode != "show";
 };
+
+export const IsCreateOrEditMode = (mode: "create" | "edit" | "update" | "show"): boolean => {
+  return (mode == "create") || (mode == "edit" || mode == "update");
+}
+
+export const IsEditOrShowMode = (mode: "create" | "edit" | "update" | "show"): boolean => {
+  return (mode == "edit" || mode == "update") || (mode == "show");
+}
+
+export const IsCreateOrShowMode = (mode: "create" | "edit" | "update" | "show"): boolean => {
+  return (mode == "create") || (mode == "show");
+}
 
 export const HasDessaggregationTheseFeature = (
   dessaggregation: Dessaggregation,
@@ -354,17 +366,51 @@ export const IsOutputRelatedToThisOutcome = (
 };
 
 export const IsNotMainDatabase = (database: string): boolean => {
-    return database != "main_database";
-}
+  return database != "main_database";
+};
 
 export const IsOutputSaved = (output: Output): boolean => {
-    return output.id !== null;
-}
+  return output.id !== null;
+};
 
 export const IsOutcomeSaved = (outcome: Outcome): boolean => {
-    return outcome.id !== null;
-}
+  return outcome.id !== null;
+};
 
 export const IsANullValue = (value: any): boolean => {
   return value == null;
+};
+
+export const IsNotANullValue = (value: any): boolean => {
+  return value != null;
+}
+
+export const IsCreatePage = (
+  pageIdentifier: "create" | "edit" | "show"
+): boolean => {
+  return pageIdentifier == "create";
+};
+
+export const IsEditPage = (
+  pageIdentifier: "create" | "edit" | "show"
+): boolean => {
+  return pageIdentifier == "edit";
+};
+
+export const IsShowPage = (
+  pageIdentifier: "create" | "edit" | "show"
+): boolean => {
+  return pageIdentifier == "show";
+};
+
+export const IsIndicatorSaved = (indicator: Indicator): boolean => {
+  return IsNotANullValue(indicator.id)
+}
+
+export const NotSavedYet = (value: any): boolean => {
+  return value.id == null;
+}
+
+export const IsDessaggregationSaved = (dessaggration: Dessaggregation): boolean => {
+  return IsNotANullValue(dessaggration.id)
 }

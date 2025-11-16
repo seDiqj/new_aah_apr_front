@@ -35,10 +35,12 @@ import { IndicatorModelInterface } from "@/interfaces/Interfaces";
 import {
   HasSubIndicator,
   IsCreateMode,
+  IsCreatePage,
   IsCurrentTypeOptionAvailable,
   IsCurrentTypeOptionHasBeenTakenByOtherIndicators,
   IsCurrentTypeOptionIsTheCurrentIndicatorOption,
   IsEditMode,
+  IsEditPage,
   IsIndicatorDatabaseEnactDatabase,
   IsIndicatorDatabaseMainDatabase,
   IsMainDatabase,
@@ -77,9 +79,9 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
     outputs: Output[];
     projectProvinces: string[];
   } =
-    pageIdentifier == "create"
+    IsCreatePage(pageIdentifier)
       ? useProjectContext()
-      : pageIdentifier == "edit"
+      : IsEditPage(pageIdentifier)
       ? useProjectEditContext()
       : useProjectShowContext();
 
@@ -150,7 +152,7 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
   };
 
   const handleAddSubIndicator = () => {
-    if (IsMainDatabase(local)) {
+    if (IsNotMainDatabase(local.database)) {
       reqForToastAndSetMessage("Only main database can have a sub indicator.");
       return;
     }

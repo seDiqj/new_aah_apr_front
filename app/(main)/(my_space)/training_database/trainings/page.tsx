@@ -16,8 +16,6 @@ import { useEffect, useState } from "react";
 const TrainingsPage = () => {
   const router = useRouter();
 
-  const [open, setOpen] = useState<boolean>(false);
-
   let [idFeildForEditStateSetter, setIdFeildForEditStateSetter] = useState<
     number | null
   >(null);

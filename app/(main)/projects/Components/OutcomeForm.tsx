@@ -10,6 +10,7 @@ import { useProjectContext } from "../create_new_project/page";
 import OutcomeEditModal from "@/components/global/OutcomeEditModel";
 import { useProjectEditContext } from "../edit_project/[id]/page";
 import { useProjectShowContext } from "../project_show/[id]/page";
+import { IsCreateMode, IsShowMode } from "@/lib/Constants";
 
 interface ComponentProps {
     mode: "create" | "edit" | "show";
@@ -22,13 +23,13 @@ const OutcomeForm: React.FC<ComponentProps> = ({mode}) => {
         outcomes: Outcome[];
         setOutcomes: React.Dispatch<React.SetStateAction<Outcome[]>>;
         setCurrentTab: (value: string) => void;
-    } = mode == "create" ? useProjectContext(): mode == "show" ? useProjectShowContext() : useProjectEditContext();
+    } = IsCreateMode(mode) ? useProjectContext(): IsShowMode(mode) ? useProjectShowContext() : useProjectEditContext();
     
     const [reqForOutcomeEditModel, setReqForOutcomeEditModel] = useState<boolean>(false);
     const [reqForOutcomeShowModel, setReqForOutcomeShowModel] = useState<boolean>(false);
     const [outcomeIdForEditOrShow, setOutcomeIdForEditOrShow] = useState<number | null>(null);
 
-    const readOnly = mode == "show";
+    const readOnly = IsShowMode(mode);
 
     return (
         <>

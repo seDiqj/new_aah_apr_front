@@ -127,6 +127,8 @@ export const ResetButtonMessage: string = "This action will reset all inputs to 
 
 export const CancelButtonMessage: string = "This action will discard your changes !";
 
+export const DoneButtonMessage: string = "This action will save dessaggregations for current indicator !";
+
 // DATABASE MANAGEMENT
 
 export const SubmitNewDatabaseMessage: string = "This action will submit the selected database and send a notification to spicified manager !";

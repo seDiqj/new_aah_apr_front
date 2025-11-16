@@ -13,7 +13,12 @@ import { AssessmentFormSchema } from "@/schemas/FormsSchema";
 import { AssessmentDefault } from "@/lib/FormsDefaultValues";
 import { AssessmentSubmitButtonMessage } from "@/lib/ConfirmationModelsTexts";
 import { AssessmentFormInterface } from "@/interfaces/Interfaces";
-import { IsCreateMode, IsEditMode, IsShowMode } from "@/lib/Constants";
+import {
+  IsCreateMode,
+  IsEditMode,
+  IsEditOrShowMode,
+  IsShowMode,
+} from "@/lib/Constants";
 import { AssessmentTypeOptions } from "@/lib/SingleAndMultiSelectOptionsList";
 
 const AssessmentForm: React.FC<AssessmentFormInterface> = ({
@@ -26,7 +31,7 @@ const AssessmentForm: React.FC<AssessmentFormInterface> = ({
     reqForToastAndSetMessage,
     axiosInstance,
     reqForConfirmationModelFunc,
-    handleReload
+    handleReload,
   } = useParentContext();
 
   const [formData, setFormData] = useState<AssessmentFormType>(
@@ -78,19 +83,17 @@ const AssessmentForm: React.FC<AssessmentFormInterface> = ({
 
     setFormErrors({});
 
-    if (mode === "create") {
+    if (IsCreateMode(mode)) {
       axiosInstance
         .post("/enact_database/", formData)
-        .then((response: any) =>
-        {
+        .then((response: any) => {
           reqForToastAndSetMessage(response.data.message);
           handleReload();
-        }
-        )
+        })
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)
         );
-    } else if (mode === "edit" && projectId) {
+    } else if (IsEditMode(mode) && projectId) {
       axiosInstance
         .put(`/enact_database/${projectId}`, formData)
         .then((response: any) =>
@@ -104,7 +107,7 @@ const AssessmentForm: React.FC<AssessmentFormInterface> = ({
 
   // Fetch program data from backend in edit and show mode.
   useEffect(() => {
-    if ((IsEditMode(mode) || IsShowMode(mode)) && projectId && open) {
+    if (IsEditOrShowMode(mode) && projectId && open) {
       axiosInstance
         .get(`/enact_database/${projectId}`)
         .then((response: any) => {
@@ -158,20 +161,15 @@ const AssessmentForm: React.FC<AssessmentFormInterface> = ({
             <Label>Project Code</Label>
             <SingleSelect
               options={projects.map((p) => ({
-                value: p.projectCode,
+                value: p.id,
                 label: p.projectCode,
               }))}
-              value={
-                projects.find((project) => project.id == formData.project_id)
-                  ?.projectCode ?? ""
-              }
+              value={formData.project_id}
               onValueChange={(value: string) =>
                 handleFormChange({
                   target: {
                     name: "project_id",
-                    value: projects.find(
-                      (project) => project.projectCode == value
-                    )?.id,
+                    value: value,
                   },
                 })
               }
@@ -184,21 +182,15 @@ const AssessmentForm: React.FC<AssessmentFormInterface> = ({
             <Label>Indicator</Label>
             <SingleSelect
               options={indicators.map((indicator) => ({
-                value: indicator.indicatorRef,
+                value: indicator.id,
                 label: indicator.indicatorRef.toUpperCase(),
               }))}
-              value={
-                indicators.find(
-                  (indicator) => indicator.id == formData.indicator_id
-                )?.indicatorRef ?? ""
-              }
+              value={formData.indicator_id}
               onValueChange={(value: string) =>
                 handleFormChange({
                   target: {
                     name: "indicator_id",
-                    value: indicators.find(
-                      (indicator) => indicator.indicatorRef == value
-                    )?.id,
+                    value: value,
                   },
                 })
               }
@@ -211,20 +203,15 @@ const AssessmentForm: React.FC<AssessmentFormInterface> = ({
             <Label>Province</Label>
             <SingleSelect
               options={provinces.map((province) => ({
-                value: province.name,
+                value: province.id,
                 label: province.name.toUpperCase(),
               }))}
-              value={
-                provinces.find(
-                  (province) => province.id == formData.province_id
-                )?.name ?? ""
-              }
+              value={formData.province_id}
               onValueChange={(value: string) =>
                 handleFormChange({
                   target: {
                     name: "province_id",
-                    value: provinces.find((province) => province.name == value)
-                      ?.id,
+                    value: value,
                   },
                 })
               }

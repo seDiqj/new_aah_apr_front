@@ -1,13 +1,11 @@
 import { z } from "zod";
 
 export const MainDatabaseBeneficiaryFormSchema = z.object({
-  program: z.string().min(1, {
+  program: z.number().min(1, {
     error: "Select a valid program !",
   }),
   dateOfRegistration: z.string("Select a valid date"),
-  name: z
-    .string()
-    .min(3, "Beneficiary name should be at least 3 characters !"),
+  name: z.string().min(3, "Beneficiary name should be at least 3 characters !"),
   fatherHusbandName: z
     .string()
     .min(3, "Beneficiary father/husband name should be at least 3 characters"),
@@ -44,7 +42,7 @@ export const MainDatabaseBeneficiaryFormSchema = z.object({
 });
 
 export const KitDatabaseBeneficiaryFormSchema = z.object({
-  program: z.string().min(1, {
+  program: z.number().min(1, {
     error: "Select a valid program !",
   }),
   // indicators: z.array<string>("").min(1, "Select at least one indicator !"),
@@ -305,7 +303,7 @@ export const OutcomeFormSchema = z.object({
 });
 
 export const OutputFormSchema = z.object({
-  outcomeId: z.string().min(1, "Outcome referance is required !"),
+  outcomeId: z.number().min(1, "Outcome referance is required !"),
   output: z.string().min(1, "Output is requried !"),
   outputRef: z.string().min(1, "Output referance is required!"),
 });
@@ -353,7 +351,7 @@ export const IndicatorFormSchema = z.object({
 });
 
 export const MainDatabaseProgramFormSchema = z.object({
-  projectCode: z.string().min(1, "Project code is required"),
+  project_id: z.number().min(1, "Project code is required"),
   focalPoint: z
     .string()
     .min(3, "Focal point must be at least 3 characters or 3 digits"),
@@ -366,12 +364,12 @@ export const MainDatabaseProgramFormSchema = z.object({
 });
 
 export const KitDatabaseProgramFormSchema = z.object({
-  project_id: z.string().min(1, "Project code is required"),
+  project_id: z.number().min(1, "Project code is required"),
   focalPoint: z
     .string()
     .min(3, "Focal point must be at least 3 characters or 3 digits"),
-  province_id: z.string().min(1, "Select a valid province"),
-  district_id: z.string().min(1, "Select a valid district"),
+  province: z.string().min(1, "Select a valid province"),
+  district: z.string().min(1, "Select a valid district"),
   village: z.string().min(1, "Village name should be at least 2 characters"),
   siteCode: z.string().min(1, "Site code should be at least 1 characters !"),
   healthFacilityName: z.string().min(3, "Health facility name is required"),

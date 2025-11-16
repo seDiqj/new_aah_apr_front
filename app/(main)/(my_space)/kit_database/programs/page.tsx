@@ -8,7 +8,10 @@ import SubHeader from "@/components/global/SubHeader";
 import { Button } from "@/components/ui/button";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { mainDatabaseAndKitDatabaseProgramColumns } from "@/definitions/DataTableColumnsDefinitions";
-import { KitDatabaseProgramsFiltersList, KitDatabaseProgramsFilterUrl } from "@/lib/FiltersList";
+import {
+  KitDatabaseProgramsFiltersList,
+  KitDatabaseProgramsFilterUrl,
+} from "@/lib/FiltersList";
 import { useState } from "react";
 
 const MainDatabaseProgramsPage = () => {
@@ -49,7 +52,7 @@ const MainDatabaseProgramsPage = () => {
           deleteUrl="/global/delete_programs"
           searchableColumn="name"
           deleteBtnPermission="Kit.delete"
-          editBtnPermission="Kit.edite"
+          editBtnPermission="Kit.edit"
           viewPermission="Kit.view"
           idFeildForEditStateSetter={setIdFeildForEditStateSetter}
           editModelOpenerStateSetter={setOpenEditMode}
@@ -62,11 +65,10 @@ const MainDatabaseProgramsPage = () => {
         {/* Program create form */}
         {open && (
           <CreateNewProgramKit
-          open={open}
-          onOpenChange={setOpen}
-          mode="create"
-        ></CreateNewProgramKit>
-
+            open={open}
+            onOpenChange={setOpen}
+            mode="create"
+          ></CreateNewProgramKit>
         )}
         {openEditMode && idFeildForEditStateSetter !== null && (
           <CreateNewProgramKit

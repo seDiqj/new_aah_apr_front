@@ -23,7 +23,7 @@ import { UserCreateFormSchema, UserEditFormSchema } from "@/schemas/FormsSchema"
 import { UserInterface } from "@/interfaces/Interfaces"
 import { steps } from "@/lib/SingleAndMultiSelectOptionsList"
 import { UserCreationMessage, UserEditionMessage } from "@/lib/ConfirmationModelsTexts"
-import { IsCreateMode, IsEditMode, IsShowMode } from "@/lib/Constants"
+import { IsCreateMode, IsEditMode, IsEditOrShowMode, IsNotCreateMode, IsShowMode } from "@/lib/Constants"
 
 const ProfileModal: React.FC<UserInterface> = ({
   open,
@@ -45,7 +45,7 @@ const ProfileModal: React.FC<UserInterface> = ({
     password: "",
     email_verified_at: "",
     photo_path: "",
-    department: "",
+    // department: "",
     status: "active",
     role: ""
   })
@@ -55,7 +55,7 @@ const ProfileModal: React.FC<UserInterface> = ({
   const [allPermissions, setAllPermissions] = useState<{ [key: string]: Record<string, string>[] }>({})
   const [userPermissions, setUserPermissions] = useState<string[]>([])
 
-  const isReadOnly = mode === "show"
+  const isReadOnly = IsShowMode(mode)
 
   const handlePermissionToggle = (permissionId: string) => {
     if (isReadOnly) return
@@ -93,7 +93,7 @@ const ProfileModal: React.FC<UserInterface> = ({
 
     let result;
 
-    if (mode == "create")
+    if (IsCreateMode(mode))
       result = UserCreateFormSchema.safeParse(form);
 
     else 
@@ -120,7 +120,7 @@ const ProfileModal: React.FC<UserInterface> = ({
     formData.append("title", form.title)
     formData.append("email", form.email)
     formData.append("password", form.password)
-    formData.append("department", form.department)
+    // formData.append("department", form.department)
     formData.append("status", form.status)
     if (selectedFile) {
       formData.append("photo_path", selectedFile)
@@ -148,7 +148,7 @@ const ProfileModal: React.FC<UserInterface> = ({
 
 
   useEffect(() => {
-    if (mode === "edit" || mode === "show") {
+    if (IsEditOrShowMode(mode)) {
       Promise.all([
         axiosInstance.get(`/user_mng/user/${userId}`),
         axiosInstance.get(`/user_mng/permissions_&_roles`),
@@ -223,7 +223,7 @@ const ProfileModal: React.FC<UserInterface> = ({
 
         {/* Main Content */}
         <div className="flex-1 p-10 overflow-y-auto">
-          {loading && mode !== "create" ? (
+          {loading && IsNotCreateMode(mode) ? (
             <>
               <DialogHeader>
                 <Skeleton className="h-6 w-1/3 mb-4" />
@@ -289,7 +289,7 @@ const ProfileModal: React.FC<UserInterface> = ({
                   </div>
 
                   <div className="grid grid-cols-2 gap-6">
-                    {["name", "title", "email","password", "department", "status"].map((field) => 
+                    {["name", "title", "email","password", "status"].map((field) => 
                       {
 
                         if (field === "password" && !IsCreateMode(mode)) 
