@@ -144,3 +144,9 @@ export const GenerateAprMessage: string = "This action will generate the selecte
 export const ApproveAprMessage: string = "This action will mark the selected APR as approved and notify the users who reviewed it.";
 
 export const RejectAprMessage: string = "This action will mark the selected APR as rejected and notify the user who reviewed it.";
+
+export const DeleteOutcomeMessage: string = "This action will delete the selected outcome !";
+
+export const DeleteOutputMessage: string = "This action will delete the selected output !";
+
+export const DeleteIndicatorMessage: string = "This action will delete the selected indicator !";

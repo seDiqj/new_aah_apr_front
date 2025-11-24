@@ -42,12 +42,12 @@ import {
   HasDessaggregationTheseFeature,
   IsCreateMode,
   IsIndicatorSaved,
+  IsNotShowMode,
   IsShowMode,
   IsTheDessaggregationOfThisIndicatorAndProvince,
   isTheTotalTargetOfDessaggregationsEqualToTotalTargetOfIndicator,
   IsTotalOfDessaggregationsOfProvinceBiggerThenTotalOfProvince,
   IsTotalOfDessaggregationsOfProvinceLessThenTotalOfProvince,
-  NotSavedYet,
   WasIndexFound,
 } from "@/lib/Constants";
 import {
@@ -242,7 +242,7 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="grid gap-6 overflow-auto">
+        <CardContent className="grid gap-6">
           <div className="flex flex-col gap-3 w-full">
             {/* List all indicators */}
             {indicators
@@ -262,7 +262,11 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                         setDessaggregationBeforeEdit(dessaggregations);
                       }}
                     >
-                      {IsCreateMode(mode) ? "Add" : readOnly ? "Check" : "Edit"}
+                      {IsCreateMode(mode)
+                        ? "Add"
+                        : IsShowMode(mode)
+                        ? "Check"
+                        : "Edit"}
                     </Button>
                   </CardContent>
                 </Card>
@@ -276,14 +280,14 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                   setSelectedIndicator(null);
                 }}
               >
-                <DialogContent className="flex flex-col justify-between sm:max-w-2xl md:max-w-4xl lg:max-w-6xl h-[90vh] overflow-auto">
+                <DialogContent className="flex flex-col justify-between sm:max-w-2xl md:max-w-4xl lg:max-w-6xl h-[90vh]">
                   <DialogHeader>
                     <DialogTitle>
                       {`${selectedIndicator.indicator}: (Target : ${selectedIndicator.target})`}
                     </DialogTitle>
                   </DialogHeader>
                   {/* Content */}
-                  <div className="flex flex-col w-full h-full z-50">
+                  <div className="flex flex-col w-full h-full z-50 overflow-auto">
                     {/* Tabs */}
                     <div className="flex flex-row items-center justify-around">
                       <Tabs
@@ -459,142 +463,145 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                           <TabsContent
                             value={selectedIndicator.subIndicator.dessaggregationType.toLowerCase()}
                           >
-                            {selectedIndicator.subIndicator.provinces.map((province) => {
-                              const totalForProvince =
-                                calculateProvinceDessaggregationsTotal(
-                                  province.province,
-                                  selectedIndicator?.subIndicator!.indicatorRef
+                            {selectedIndicator.subIndicator.provinces.map(
+                              (province) => {
+                                const totalForProvince =
+                                  calculateProvinceDessaggregationsTotal(
+                                    province.province,
+                                    selectedIndicator?.subIndicator!
+                                      .indicatorRef
+                                  );
+
+                                return (
+                                  <React.Fragment key={province.province}>
+                                    <Table className="border-2 mx-auto w-[90%]">
+                                      <TableCaption className="caption-top text-left">
+                                        {`${province.province} (Target : ${province.target})`}
+                                      </TableCaption>
+                                      <TableHeader>
+                                        <TableRow className="border-2 w-10">
+                                          <TableHead className="text-center">
+                                            <Checkbox />
+                                          </TableHead>
+                                          <TableHead className="text-center">
+                                            Description
+                                          </TableHead>
+                                          <TableHead className="text-center">
+                                            Target
+                                          </TableHead>
+                                        </TableRow>
+                                      </TableHeader>
+                                      <TableBody>
+                                        {getReliableDessaggregationOptionsForSubIndicatorAccordingToDessagregationType(
+                                          selectedIndicator.subIndicator!
+                                            .dessaggregationType
+                                        ).map((opt, i) => {
+                                          const existing =
+                                            dessaggregations.find((d) =>
+                                              HasDessaggregationTheseFeature(
+                                                d,
+                                                opt,
+                                                province.province,
+                                                selectedIndicator?.subIndicator!
+                                                  .indicatorRef
+                                              )
+                                            );
+                                          const isChecked = !!existing;
+
+                                          return (
+                                            <TableRow key={i}>
+                                              <TableCell className="text-center w-10">
+                                                <Checkbox
+                                                  checked={isChecked}
+                                                  onCheckedChange={(checked) =>
+                                                    addOrRemoveDessaggregation(
+                                                      checked as unknown as boolean,
+                                                      opt,
+                                                      province.province,
+                                                      selectedIndicator.subIndicator!
+                                                    )
+                                                  }
+                                                  disabled={readOnly}
+                                                />
+                                              </TableCell>
+
+                                              <TableCell className="text-center">
+                                                {opt}
+                                              </TableCell>
+
+                                              <TableCell>
+                                                <Input
+                                                  type="number"
+                                                  value={
+                                                    existing
+                                                      ? String(existing.target)
+                                                      : ""
+                                                  }
+                                                  onChange={(e) => {
+                                                    handleDessaggregationsInputsChange(
+                                                      opt,
+                                                      province.province,
+                                                      selectedIndicator.subIndicator!,
+                                                      e.target.value
+                                                    );
+                                                  }}
+                                                  className="mx-auto max-w-[200px] text-center"
+                                                  disabled={readOnly}
+                                                />
+                                              </TableCell>
+                                            </TableRow>
+                                          );
+                                        })}
+
+                                        <TableRow>
+                                          <TableCell className="text-center w-10">
+                                            <Checkbox className="hidden" />
+                                          </TableCell>
+                                          <TableCell className="text-center">
+                                            TOTAL TARGET
+                                          </TableCell>
+                                          <TableCell>
+                                            <Input
+                                              disabled
+                                              value={totalForProvince}
+                                              className="mx-auto max-w-[200px] text-center"
+                                            />
+                                          </TableCell>
+                                        </TableRow>
+                                      </TableBody>
+                                    </Table>
+                                    {/* Error previewer */}
+                                    {IsTotalOfDessaggregationsOfProvinceBiggerThenTotalOfProvince(
+                                      totalForProvince,
+                                      province.target
+                                    ) && (
+                                      <div className="flex flex-row items-center justify-start w-[90%] mx-auto">
+                                        <p className="text-red-500 text-sm mt-2">
+                                          ⚠ The total target ({totalForProvince}
+                                          ) exceeds the assigned target (
+                                          {province.target}) for{" "}
+                                          {province.province}!
+                                        </p>
+                                      </div>
+                                    )}
+                                    {IsTotalOfDessaggregationsOfProvinceLessThenTotalOfProvince(
+                                      totalForProvince,
+                                      province.target
+                                    ) && (
+                                      <div className="flex flex-row items-center justify-start w-[90%] mx-auto">
+                                        <p className="text-red-500 text-sm mt-2">
+                                          ⚠ The total target ({totalForProvince}
+                                          ) should be equal to assigned target (
+                                          {province.target}) for{" "}
+                                          {province.province}!
+                                        </p>
+                                      </div>
+                                    )}
+                                    <Separator className="my-5" />
+                                  </React.Fragment>
                                 );
-
-                              return (
-                                <React.Fragment key={province.province}>
-                                  <Table className="border-2 mx-auto w-[90%]">
-                                    <TableCaption className="caption-top text-left">
-                                      {`${province.province} (Target : ${province.target})`}
-                                    </TableCaption>
-                                    <TableHeader>
-                                      <TableRow className="border-2 w-10">
-                                        <TableHead className="text-center">
-                                          <Checkbox />
-                                        </TableHead>
-                                        <TableHead className="text-center">
-                                          Description
-                                        </TableHead>
-                                        <TableHead className="text-center">
-                                          Target
-                                        </TableHead>
-                                      </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                      {getReliableDessaggregationOptionsForSubIndicatorAccordingToDessagregationType(
-                                        selectedIndicator.subIndicator!
-                                          .dessaggregationType
-                                      ).map((opt, i) => {
-                                        const existing = dessaggregations.find(
-                                          (d) =>
-                                            HasDessaggregationTheseFeature(
-                                              d,
-                                              opt,
-                                              province.province,
-                                              selectedIndicator?.subIndicator!
-                                                .indicatorRef
-                                            )
-                                        );
-                                        const isChecked = !!existing;
-
-                                        return (
-                                          <TableRow key={i}>
-                                            <TableCell className="text-center w-10">
-                                              <Checkbox
-                                                checked={isChecked}
-                                                onCheckedChange={(checked) =>
-                                                  addOrRemoveDessaggregation(
-                                                    checked as unknown as boolean,
-                                                    opt,
-                                                    province.province,
-                                                    selectedIndicator.subIndicator!
-                                                  )
-                                                }
-                                                disabled={readOnly}
-                                              />
-                                            </TableCell>
-
-                                            <TableCell className="text-center">
-                                              {opt}
-                                            </TableCell>
-
-                                            <TableCell>
-                                              <Input
-                                                type="number"
-                                                value={
-                                                  existing
-                                                    ? String(existing.target)
-                                                    : ""
-                                                }
-                                                onChange={(e) => {
-                                                  handleDessaggregationsInputsChange(
-                                                    opt,
-                                                    province.province,
-                                                    selectedIndicator.subIndicator!,
-                                                    e.target.value
-                                                  );
-                                                }}
-                                                className="mx-auto max-w-[200px] text-center"
-                                                disabled={readOnly}
-                                              />
-                                            </TableCell>
-                                          </TableRow>
-                                        );
-                                      })}
-
-                                      <TableRow>
-                                        <TableCell className="text-center w-10">
-                                          <Checkbox className="hidden" />
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                          TOTAL TARGET
-                                        </TableCell>
-                                        <TableCell>
-                                          <Input
-                                            disabled
-                                            value={totalForProvince}
-                                            className="mx-auto max-w-[200px] text-center"
-                                          />
-                                        </TableCell>
-                                      </TableRow>
-                                    </TableBody>
-                                  </Table>
-                                  {/* Error previewer */}
-                                  {IsTotalOfDessaggregationsOfProvinceBiggerThenTotalOfProvince(
-                                    totalForProvince,
-                                    province.target
-                                  ) && (
-                                    <div className="flex flex-row items-center justify-start w-[90%] mx-auto">
-                                      <p className="text-red-500 text-sm mt-2">
-                                        ⚠ The total target ({totalForProvince})
-                                        exceeds the assigned target (
-                                        {province.target}) for{" "}
-                                        {province.province}!
-                                      </p>
-                                    </div>
-                                  )}
-                                  {IsTotalOfDessaggregationsOfProvinceLessThenTotalOfProvince(
-                                    totalForProvince,
-                                    province.target
-                                  ) && (
-                                    <div className="flex flex-row items-center justify-start w-[90%] mx-auto">
-                                      <p className="text-red-500 text-sm mt-2">
-                                        ⚠ The total target ({totalForProvince})
-                                        should be equal to assigned target (
-                                        {province.target}) for{" "}
-                                        {province.province}!
-                                      </p>
-                                    </div>
-                                  )}
-                                  <Separator className="my-5" />
-                                </React.Fragment>
-                              );
-                            })}
+                              }
+                            )}
                           </TabsContent>
                         )}
                       </Tabs>
@@ -602,8 +609,8 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                   </div>
 
                   <DialogFooter className="z-50">
-                    <div className="flex flex-row items-center justify-end fixed -bottom-40 gap-2">
-                      {!readOnly && (
+                    <div className="flex flex-row items-center justify-end fixed bottom-0 gap-2">
+                      {IsNotShowMode(mode) && (
                         <Button
                           className="bg-blue-400"
                           onClick={() =>
@@ -624,7 +631,7 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                       <Button onClick={onCancel} className="bg-red-400">
                         Cancel
                       </Button>
-                      {!readOnly && (
+                      {IsNotShowMode(mode) && (
                         <Button
                           type="button"
                           className="bg-green-400"
@@ -632,15 +639,26 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                             selectedIndicator,
                             dessaggregations
                           )}
-                          onClick={(e) =>
+                          onClick={(e) => {
+                            if (
+                              isTheTotalTargetOfDessaggregationsEqualToTotalTargetOfIndicator(
+                                selectedIndicator,
+                                dessaggregations
+                              )
+                            ) {
+                              reqForToastAndSetMessage(
+                                "The total target of dessaggregations should be equal to total target of indicator !"
+                              );
+                              return;
+                            }
                             reqForConfirmationModelFunc(
                               DoneButtonMessage,
                               () => {
                                 setSelectedIndicator(null);
                                 hundleSubmit();
                               }
-                            )
-                          }
+                            );
+                          }}
                         >
                           Done
                         </Button>

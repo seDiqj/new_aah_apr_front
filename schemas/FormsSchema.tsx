@@ -242,7 +242,7 @@ export const UserCreateFormSchema = z.object({
   password: z
     .string("Password must be at least 7 characters !")
     .min(7, "Password must be at least 7 characters !"),
-  department: z.string("Select a valid department !"),
+  // department: z.string("Select a valid department !"),
   role: z.string("Select a valid role !"),
   status: z.string("Select a valid status"),
 });

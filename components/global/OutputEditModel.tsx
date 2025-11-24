@@ -10,6 +10,7 @@ import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import {
+  CancelButtonMessage,
   OutputCreationMessage,
   OutputEditionMessage,
 } from "@/lib/ConfirmationModelsTexts";
@@ -28,11 +29,13 @@ import {
   IsEditPage,
   IsNotShowMode,
   IsOutcomeSaved,
+  IsOutputEdited,
   IsShowMode,
   IsThereAnyOutputWithEnteredReferance,
   IsThereAnyOutputWithEnteredReferanceAndDefferentId,
 } from "@/lib/Constants";
 import { OutputFormSchema } from "@/schemas/FormsSchema";
+import { Textarea } from "../ui/textarea";
 
 const OutputModel: React.FC<OutputInterface> = ({
   isOpen,
@@ -62,6 +65,9 @@ const OutputModel: React.FC<OutputInterface> = ({
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [formData, setFormData] = useState<Output>(OutputDefault());
+  const [outputBeforeEdit, setOutputBeforeEdite] = useState<Output>(
+    OutputDefault()
+  );
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
   const handleFormChange = (e: any) => {
@@ -122,6 +128,7 @@ const OutputModel: React.FC<OutputInterface> = ({
             ...prev,
             { ...formData, id: response.data.data.id },
           ]);
+          onOpenChange(false);
         })
         .catch((error: any) => {
           reqForToastAndSetMessage(error.response.data.message);
@@ -135,11 +142,24 @@ const OutputModel: React.FC<OutputInterface> = ({
           setOutputs((prev) =>
             prev.map((output) => (output.id == formData.id ? formData : output))
           );
+          onOpenChange(false);
         })
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)
         )
         .finally(() => setIsLoading(false));
+  };
+
+  const handleCancel = () => {
+    if (IsOutputEdited(outputBeforeEdit, formData)) {
+      reqForConfirmationModelFunc(CancelButtonMessage, () =>
+        onOpenChange(false)
+      );
+
+      return;
+    }
+
+    onOpenChange(false);
   };
 
   useEffect(() => {
@@ -148,8 +168,8 @@ const OutputModel: React.FC<OutputInterface> = ({
       axiosInstance
         .get(`projects/output/${outputId}`)
         .then((response: any) => {
-          console.log(response.data.data);
           setFormData(response.data.data);
+          setOutputBeforeEdite(response.data.data)
         })
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)
@@ -194,7 +214,7 @@ const OutputModel: React.FC<OutputInterface> = ({
 
           <div className="flex flex-col gap-1">
             <Label htmlFor="output">Output</Label>
-            <Input
+            <Textarea
               id="output"
               name="output"
               value={formData.output}
@@ -226,7 +246,7 @@ const OutputModel: React.FC<OutputInterface> = ({
         {IsNotShowMode(mode) && (
           <DialogFooter>
             <div className="flex gap-2 w-full justify-end">
-              <Button variant="outline" onClick={() => onOpenChange(false)}>
+              <Button variant="outline" onClick={handleCancel}>
                 Cancel
               </Button>
               <Button

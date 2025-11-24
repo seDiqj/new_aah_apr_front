@@ -99,7 +99,7 @@ const ProjectForm: React.FC<ComponentProps> = ({mode}) => {
 
                     <div className="flex flex-col gap-1">
                       <Label htmlFor="projectTitle">Project Title</Label>
-                      <Input
+                      <Textarea
                         id="projectTitle"
                         name="projectTitle"
                         value={formData.projectTitle}
@@ -112,7 +112,7 @@ const ProjectForm: React.FC<ComponentProps> = ({mode}) => {
 
                     <div className="flex flex-col gap-1">
                       <Label htmlFor="projectGoal">Project Goal</Label>
-                      <Input
+                      <Textarea
                         id="projectGoal"
                         name="projectGoal"
                         value={formData.projectGoal}
@@ -248,12 +248,11 @@ const ProjectForm: React.FC<ComponentProps> = ({mode}) => {
 
                     <div className="flex flex-col gap-1">
                       <Label htmlFor="reportingPeriod">Reporting Period</Label>
-                      <Input
+                      <Textarea
                         id="reportingPeriod"
                         name="reportingPeriod"
                         value={formData.reportingPeriod}
                         onChange={hundleFormChange}
-                        type="text"
                         className={`border p-2 rounded ${formErrors.reportingPeriod ? "!border-red-500" : ""}`}
                         title={formErrors.reportingPeriod}
                         disabled={readOnly}

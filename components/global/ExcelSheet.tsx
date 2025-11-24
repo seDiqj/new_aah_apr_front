@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
@@ -51,7 +51,8 @@ const MonitoringTablePage: React.FC<MonitoringTablePageInterface> = ({mode}) => 
   } = IsCreateMode(mode) ? useProjectContext() : IsShowMode(mode) ? useProjectShowContext() : useProjectEditContext();
 
   // Data for creating the preview of the final apr in apr preview TabContent.
-  const finalDataForAprPreview: AprData = {
+  const finalDataForAprPreview: AprData = useMemo(() => {
+  return {
     impact: projectGoal,
     outcomes: outcomes.map((outcome) => ({
       name: outcome.outcome,
@@ -84,9 +85,7 @@ const MonitoringTablePage: React.FC<MonitoringTablePageInterface> = ({mode}) => 
                   target: indicator.subIndicator.target,
                   isSub: true,
                   disaggregation: dessaggregations
-                    .filter(
-                      (d) => d.indicatorRef === `sub-${indicator.indicatorRef}`
-                    )
+                    .filter((d) => d.indicatorRef === `sub-${indicator.indicatorRef}`)
                     .map((d) => ({
                       name: `${d.dessaggration}     (${d.province})`,
                       target: d.target,
@@ -95,12 +94,13 @@ const MonitoringTablePage: React.FC<MonitoringTablePageInterface> = ({mode}) => 
                 };
 
               if (sub) return [main, sub];
-
               return [main];
             }),
         })),
     })),
   };
+}, [outcomes, outputs, indicators, dessaggregations, projectGoal]);
+
 
   const [selectedProvince, setSelectedProvince] = useState<string>("Master");
   const [isFullscreen, setIsFullscreen] = useState(false);

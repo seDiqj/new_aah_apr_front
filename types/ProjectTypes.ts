@@ -13,7 +13,7 @@ type Indicator = {
     target: number;
     councilorCount: number;
   }[];
-  dessaggregationType: "session" | "indevidual" | "enact";
+  dessaggregationType: "session" | "indevidual" | "enact" | string;
   description: string;
   subIndicator: {
     id: string | null;

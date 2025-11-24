@@ -154,6 +154,7 @@ const ProfileModal: React.FC<UserInterface> = ({
         axiosInstance.get(`/user_mng/permissions_&_roles`),
       ])
         .then(([userRes, rolePermRes]: any) => {
+          console.log(userRes)
           const { permissions, role, ...rest } = userRes.data.data;
           setForm(prev => ({ ...prev, ...rest }));
           setAllPermissions(rolePermRes.data.data.permissions);

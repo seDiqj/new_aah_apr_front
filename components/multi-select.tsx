@@ -75,7 +75,7 @@ export function MultiSelect({
           title={error ? error : undefined}
           disabled={disabled}
         >
-          <div className="flex flex-wrap gap-1 max-h-16 overflow-auto">
+          <div className="flex gap-1 max-h-16 overflow-auto">
             {selectedOptions.length > 0 ? (
               selectedOptions.map((opt) => (
                 <Badge key={opt.value} variant="secondary">

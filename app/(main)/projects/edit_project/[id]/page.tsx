@@ -22,6 +22,8 @@ import IndicatorForm from "../../Components/IndicatorForm";
 import Isp3SubPage from "../../Components/Isp3SubPage";
 import { IndicatorModel } from "@/components/global/IndicatorEditModel";
 import { Button } from "@/components/ui/button";
+import OutcomeModel from "@/components/global/OutcomeEditModel";
+import OutputModel from "@/components/global/OutputEditModel";
 
 const EditProjectPage = () => {
   const { id } = useParams();
@@ -265,7 +267,7 @@ const EditProjectPage = () => {
                 <TabsTrigger value="dessaggregation">
                   Dessaggregation
                 </TabsTrigger>
-                <TabsTrigger value="aprPreview">APR Preview</TabsTrigger>
+                {/* <TabsTrigger value="aprPreview">APR Preview</TabsTrigger> */}
                 <TabsTrigger value="isp3">ISP3</TabsTrigger>
                 <TabsTrigger value="finalization">APR Finalization</TabsTrigger>
                 <TabsTrigger value="logs">Logs</TabsTrigger>
@@ -297,9 +299,9 @@ const EditProjectPage = () => {
               </TabsContent>
 
               {/* APR preview */}
-              <TabsContent value="aprPreview" className="h-full">
+              {/* <TabsContent value="aprPreview" className="h-full">
                 <MonitoringTablePage mode="edit"></MonitoringTablePage>
-              </TabsContent>
+              </TabsContent> */}
 
               {/* ISP3 */}
               <TabsContent value="isp3" className="h-full">
@@ -325,6 +327,24 @@ const EditProjectPage = () => {
               mode="create"
               pageIdentifier="edit"
             />
+          )}
+
+          {reqForOutcomeForm && (
+            <OutcomeModel
+              isOpen={reqForOutcomeForm}
+              onOpenChange={setReqForOutcomeForm}
+              mode="create"
+              pageIdentifier="edit"
+            ></OutcomeModel>
+          )}
+
+          {reqForOutputForm && (
+            <OutputModel
+              isOpen={reqForOutputForm}
+              onOpenChange={setReqForOutputForm}
+              mode={"create"}
+              pageIdentifier={"edit"}
+            ></OutputModel>
           )}
         </div>
       </ComponentContext.Provider>

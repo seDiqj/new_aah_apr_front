@@ -69,7 +69,7 @@ export function SingleSelect({
             )}
             title={error ? error : undefined}
           >
-            <div className="flex flex-wrap gap-1 items-center">
+            <div className="flex gap-1 items-center overflow-auto">
               {value ? (
                 <Badge variant="secondary">
                   {options.find((v) => v.value === value)?.label?.toUpperCase()}

@@ -1,43 +1,120 @@
-const calculateEachIndicatorProvinceTargetAccordingTONumberOFCouncilorCount =
-    (indicator: Indicator, indicatorStataSetter: any) => {
-      if (indicator == null || indicator.provinces.length == 0) return;
+import {
+  IsANullOrUndefinedValue,
+  IsANullValue,
+  isNotASubIndicator,
+  NoProvinceSelectedForIndicator,
+  NoProvinceSelectedForSubIndicator,
+} from "./Constants";
 
-      const totalIndicatorTarget: number = indicator.target;
-      const totalNumberOfIndicatorCouncilorCount: number =
-        indicator.provinces.reduce(
-          (acc, current) => acc + Number(current.councilorCount || 0),
-          0
-        );
+const calculateEachIndicatorProvinceTargetAccordingTONumberOFCouncilorCount = (
+  indicator: Indicator,
+  indicatorStataSetter: any
+) => {
+  if (indicator == null || indicator.provinces.length == 0) return;
 
-      const provinceWithMostNumberOfCouncilorCount: string =
-        indicator.provinces.reduce((maxObj, item) =>
-          item.councilorCount > maxObj.councilorCount ? item : maxObj
-        ).province;
+  const totalIndicatorTarget: number = indicator.target;
+  const totalNumberOfIndicatorCouncilorCount: number =
+    indicator.provinces.reduce(
+      (acc, current) => acc + Number(current.councilorCount || 0),
+      0
+    );
 
-      const baseTargetForEachCouncilor: number =
-        totalIndicatorTarget / totalNumberOfIndicatorCouncilorCount;
+  const provinceWithMostNumberOfCouncilorCount: string =
+    indicator.provinces.reduce((maxObj, item) =>
+      item.councilorCount > maxObj.councilorCount ? item : maxObj
+    ).province;
 
-      const needForSomeManipulation: boolean =
-        totalIndicatorTarget % totalNumberOfIndicatorCouncilorCount == 0
-          ? false
-          : true;
+  const baseTargetForEachCouncilor: number =
+    totalIndicatorTarget / totalNumberOfIndicatorCouncilorCount;
 
-      if (needForSomeManipulation) {
-        const manipulatedBaseTargetForEachCouncilor = Math.floor(
-          baseTargetForEachCouncilor
-        );
+  const needForSomeManipulation: boolean =
+    totalIndicatorTarget % totalNumberOfIndicatorCouncilorCount == 0
+      ? false
+      : true;
 
-        const eachCouncilorTargetExceptTheProvinceWhichHasTheMostCouncilorCount: number =
-          manipulatedBaseTargetForEachCouncilor;
+  if (needForSomeManipulation) {
+    const manipulatedBaseTargetForEachCouncilor = Math.floor(
+      baseTargetForEachCouncilor
+    );
 
-        const councilorTargetOfProvinceWithMostNumberOfCouncilorCount: number =
-          totalIndicatorTarget -
-          (totalNumberOfIndicatorCouncilorCount - 1) *
-            eachCouncilorTargetExceptTheProvinceWhichHasTheMostCouncilorCount;
+    const eachCouncilorTargetExceptTheProvinceWhichHasTheMostCouncilorCount: number =
+      manipulatedBaseTargetForEachCouncilor;
 
-        indicatorStataSetter((prev: any) => ({
-          ...prev,
-          provinces: prev.provinces.map((province: any) => ({
+    const councilorTargetOfProvinceWithMostNumberOfCouncilorCount: number =
+      totalIndicatorTarget -
+      (totalNumberOfIndicatorCouncilorCount - 1) *
+        eachCouncilorTargetExceptTheProvinceWhichHasTheMostCouncilorCount;
+
+    indicatorStataSetter((prev: any) => ({
+      ...prev,
+      provinces: prev.provinces.map((province: any) => ({
+        ...province,
+        target:
+          province.province == provinceWithMostNumberOfCouncilorCount
+            ? (province.councilorCount - 1) *
+                eachCouncilorTargetExceptTheProvinceWhichHasTheMostCouncilorCount +
+              councilorTargetOfProvinceWithMostNumberOfCouncilorCount
+            : province.councilorCount *
+              eachCouncilorTargetExceptTheProvinceWhichHasTheMostCouncilorCount,
+      })),
+    }));
+  } else {
+    indicatorStataSetter((prev: any) => ({
+      ...prev,
+      provinces: prev.provinces.map((province: any) => ({
+        ...province,
+        target: province.councilorCount * baseTargetForEachCouncilor,
+      })),
+    }));
+  }
+};
+
+export const calculateEachSubIndicatorProvinceTargetAccordingTONumberOFCouncilorCount =
+  (indicator: Indicator, indicatorStataSetter: any) => {
+    if (
+      isNotASubIndicator(indicator.subIndicator) ||
+      NoProvinceSelectedForSubIndicator(indicator.subIndicator!)
+    )
+      return;
+
+    const totalIndicatorTarget: number = indicator.subIndicator.target;
+    const totalNumberOfIndicatorCouncilorCount: number =
+      indicator.subIndicator.provinces.reduce(
+        (acc, current) => acc + Number(current.councilorCount || 0),
+        0
+      );
+
+    const provinceWithMostNumberOfCouncilorCount: string =
+      indicator.subIndicator.provinces.reduce((maxObj, item) =>
+        item.councilorCount > maxObj.councilorCount ? item : maxObj
+      ).province;
+
+    const baseTargetForEachCouncilor: number =
+      totalIndicatorTarget / totalNumberOfIndicatorCouncilorCount;
+
+    const needForSomeManipulation: boolean =
+      totalIndicatorTarget % totalNumberOfIndicatorCouncilorCount == 0
+        ? false
+        : true;
+
+    if (needForSomeManipulation) {
+      const manipulatedBaseTargetForEachCouncilor = Math.floor(
+        baseTargetForEachCouncilor
+      );
+
+      const eachCouncilorTargetExceptTheProvinceWhichHasTheMostCouncilorCount: number =
+        manipulatedBaseTargetForEachCouncilor;
+
+      const councilorTargetOfProvinceWithMostNumberOfCouncilorCount: number =
+        totalIndicatorTarget -
+        (totalNumberOfIndicatorCouncilorCount - 1) *
+          eachCouncilorTargetExceptTheProvinceWhichHasTheMostCouncilorCount;
+
+      indicatorStataSetter((prev: any) => ({
+        ...prev,
+        subIndicator: {
+          ...prev.subIndicator,
+          provinces: prev.subIndicator.provinces.map((province: any) => ({
             ...province,
             target:
               province.province == provinceWithMostNumberOfCouncilorCount
@@ -47,88 +124,21 @@ const calculateEachIndicatorProvinceTargetAccordingTONumberOFCouncilorCount =
                 : province.councilorCount *
                   eachCouncilorTargetExceptTheProvinceWhichHasTheMostCouncilorCount,
           })),
-        }));
-      } else {
-        indicatorStataSetter((prev: any) => ({
-          ...prev,
-          provinces: prev.provinces.map((province: any) => ({
+        },
+      }));
+    } else {
+      indicatorStataSetter((prev: any) => ({
+        ...prev,
+        subIndicator: {
+          ...prev.subIndicator,
+          provinces: prev.subIndicator.provinces.map((province: any) => ({
             ...province,
             target: province.councilorCount * baseTargetForEachCouncilor,
           })),
-        }));
-      }
-};
-
-
-const calculateEachSubIndicatorProvinceTargetAccordingTONumberOFCouncilorCount =
-    (indicator: Indicator, indicatorStataSetter: any) => {
-      if (indicator.subIndicator == null || indicator.subIndicator.provinces.length == 0) return;
-
-      const totalIndicatorTarget: number = indicator.subIndicator.target;
-      const totalNumberOfIndicatorCouncilorCount: number =
-        indicator.subIndicator.provinces.reduce(
-          (acc, current) => acc + Number(current.councilorCount || 0),
-          0
-        );
-
-      const provinceWithMostNumberOfCouncilorCount: string =
-        indicator.subIndicator.provinces.reduce((maxObj, item) =>
-          item.councilorCount > maxObj.councilorCount ? item : maxObj
-        ).province;
-
-      const baseTargetForEachCouncilor: number =
-        totalIndicatorTarget / totalNumberOfIndicatorCouncilorCount;
-
-      const needForSomeManipulation: boolean =
-        totalIndicatorTarget % totalNumberOfIndicatorCouncilorCount == 0
-          ? false
-          : true;
-
-      if (needForSomeManipulation) {
-        const manipulatedBaseTargetForEachCouncilor = Math.floor(
-          baseTargetForEachCouncilor
-        );
-
-        const eachCouncilorTargetExceptTheProvinceWhichHasTheMostCouncilorCount: number =
-          manipulatedBaseTargetForEachCouncilor;
-
-        const councilorTargetOfProvinceWithMostNumberOfCouncilorCount: number =
-          totalIndicatorTarget -
-          (totalNumberOfIndicatorCouncilorCount - 1) *
-            eachCouncilorTargetExceptTheProvinceWhichHasTheMostCouncilorCount;
-
-        indicatorStataSetter((prev: any) => ({
-          ...prev,
-          subIndicator: {
-            ...prev.subIndicator,
-            provinces: prev.subIndicator.provinces.map((province: any) => ({
-            ...province,
-            target:
-              province.province == provinceWithMostNumberOfCouncilorCount
-                ? (province.councilorCount - 1) *
-                    eachCouncilorTargetExceptTheProvinceWhichHasTheMostCouncilorCount +
-                  councilorTargetOfProvinceWithMostNumberOfCouncilorCount
-                : province.councilorCount *
-                  eachCouncilorTargetExceptTheProvinceWhichHasTheMostCouncilorCount,
-          })),
-          }
-        }));
-      } else {
-        indicatorStataSetter((prev: any) => ({
-          ...prev,
-          subIndicator: {
-            ...prev.subIndicator,
-            provinces: prev.subIndicator.provinces.map((province: any) => ({
-            ...province,
-            target: province.councilorCount * baseTargetForEachCouncilor,
-          })),
-          }
-        }));
-      }
-};
-
-
-export { calculateEachSubIndicatorProvinceTargetAccordingTONumberOFCouncilorCount };
+        },
+      }));
+    }
+  };
 
 export default calculateEachIndicatorProvinceTargetAccordingTONumberOFCouncilorCount;
 

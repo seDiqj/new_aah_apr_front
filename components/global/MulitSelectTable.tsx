@@ -97,7 +97,13 @@ const DataTableDemo: React.FC<ComponentProps> = ({
   editBtnPermission,
   viewPermission,
 }) => {
-  const { reqForToastAndSetMessage, axiosInstance, reloadFlag, reqForConfirmationModelFunc, setGloabalLoading } = useParentContext();
+  const {
+    reqForToastAndSetMessage,
+    axiosInstance,
+    reloadFlag,
+    reqForConfirmationModelFunc,
+    setGloabalLoading,
+  } = useParentContext();
 
   const [loading, setLoading] = React.useState(true);
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -134,7 +140,7 @@ const DataTableDemo: React.FC<ComponentProps> = ({
   // Fetch table data
   const fetchTableData = () => {
     setLoading(true);
-    setGloabalLoading(true)
+    setGloabalLoading(true);
     axiosInstance
       .get(indexUrl)
       .then((response: any) => {
@@ -145,9 +151,12 @@ const DataTableDemo: React.FC<ComponentProps> = ({
           err.response?.data?.message || "Failed to fetch data"
         );
 
-        if (err.response.data.data) setData(err.response.data.data)
+        if (err.response.data.data) setData(err.response.data.data);
       })
-      .finally(() => {setLoading(false); setGloabalLoading(false);});
+      .finally(() => {
+        setLoading(false);
+        setGloabalLoading(false);
+      });
   };
 
   // Delete selected rows
@@ -166,8 +175,7 @@ const DataTableDemo: React.FC<ComponentProps> = ({
   };
 
   React.useEffect(() => {
-      fetchTableData();
-      console.log("Table data reloaded");
+    fetchTableData();
   }, [reloadFlag]);
 
   // Sync selected row id for edit
@@ -237,14 +245,15 @@ const DataTableDemo: React.FC<ComponentProps> = ({
 
           {deleteUrl && Object.keys(rowSelection).length >= 1 && (
             <Can permission={deleteBtnPermission ?? "ok"}>
-              <Button onClick={() => {
-                  
+              <Button
+                onClick={() => {
                   reqForConfirmationModelFunc(
                     DeleteButtonMessage,
                     handleDelete
                   );
-                  
-                }} variant="outline">
+                }}
+                variant="outline"
+              >
                 <Trash color="red" />
               </Button>
             </Can>
@@ -383,14 +392,16 @@ const DataTableDemo: React.FC<ComponentProps> = ({
                     {row
                       .getVisibleCells()
                       .slice(0, 8)
-                      .map((cell) => (
-                        <TableCell key={cell.id}>
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </TableCell>
-                      ))}
+                      .map((cell) => {
+                        return (
+                          <TableCell key={cell.id}>
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
+                          </TableCell>
+                        );
+                      })}
                   </TableRow>
                 ))}
           </TableBody>

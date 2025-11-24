@@ -1,6 +1,6 @@
 import { enactDessaggregationOptions, indevidualDessaggregationOptions, sessionDessaggregationOptions } from "@/app/(main)/projects/utils/OptionLists";
 
-export const getReliableDessaggregationOptionsAccordingToDessagregationType = (dessaggregationType: "session" | "indevidual" | "enact") => {
+export const getReliableDessaggregationOptionsAccordingToDessagregationType = (dessaggregationType: "session" | "indevidual" | "enact" | string) => {
     if (dessaggregationType == "session")
         return sessionDessaggregationOptions;
     else if (dessaggregationType == "indevidual")
@@ -9,7 +9,7 @@ export const getReliableDessaggregationOptionsAccordingToDessagregationType = (d
         return enactDessaggregationOptions
 }
 
-export const getReliableDessaggregationOptionsForSubIndicatorAccordingToDessagregationType = (dessaggregationType: "session" | "indevidual") => {
+export const getReliableDessaggregationOptionsForSubIndicatorAccordingToDessagregationType = (dessaggregationType: string) => {
     if (dessaggregationType == "session")
         return sessionDessaggregationOptions;
     else

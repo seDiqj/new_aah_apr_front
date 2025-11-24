@@ -157,9 +157,9 @@ const NewProjectPage = () => {
             </TabsContent>
 
             {/* APR preview */}
-            {/* <TabsContent value="aprPreview" className="h-full">
+            <TabsContent value="aprPreview" className="h-full">
               <MonitoringTablePage mode="create"></MonitoringTablePage>
-            </TabsContent> */}
+            </TabsContent>
  
             {/* ISP3 */}
             <TabsContent value="isp3" className="h-full">

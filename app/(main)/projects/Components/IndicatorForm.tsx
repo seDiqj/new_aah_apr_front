@@ -31,9 +31,10 @@ import {
   IsOutputSaved,
   IsShowMode,
 } from "@/lib/Constants";
+import { DeleteIndicatorMessage } from "@/lib/ConfirmationModelsTexts";
 
 const IndicatorForm: React.FC<IndicatorFormInterface> = ({ mode }) => {
-  const { axiosInstance, reqForToastAndSetMessage } = useParentContext();
+  const { reqForCofirmationModelFunc } = useParentContext();
 
   const {
     outputs,
@@ -106,15 +107,20 @@ const IndicatorForm: React.FC<IndicatorFormInterface> = ({ mode }) => {
                             <div className="flex flex-row items-center justify-end gap-2">
                               {!readOnly && (
                                 <Trash
-                                  onClick={() => {
-                                    setIndicators((prev) =>
-                                      prev.filter((_, i) => i !== indIndex)
-                                    );
-                                    handleDelete(
-                                      "projects/indicator",
-                                      indItem.id
-                                    );
-                                  }}
+                                  onClick={() =>
+                                    reqForCofirmationModelFunc(
+                                      DeleteIndicatorMessage,
+                                      () => {
+                                        setIndicators((prev) =>
+                                          prev.filter((_, i) => i !== indIndex)
+                                        );
+                                        handleDelete(
+                                          "projects/indicator",
+                                          indItem.id
+                                        );
+                                      }
+                                    )
+                                  }
                                   className="cursor-pointer text-red-500 hover:text-red-700"
                                   size={18}
                                 />

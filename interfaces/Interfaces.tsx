@@ -267,3 +267,7 @@ export interface MonitoringTablePageInterface {
 export interface AprFinalizationSubPageInterface {
   mode: "create" | "edit" | "show";
 }
+
+export interface OutcomeFormInterface {
+    mode: "create" | "edit" | "show";
+}

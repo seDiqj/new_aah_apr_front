@@ -12,7 +12,9 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
 import { Separator } from "../ui/separator";
-import calculateEachIndicatorProvinceTargetAccordingTONumberOFCouncilorCount from "@/lib/IndicatorProvincesTargetCalculator";
+import calculateEachIndicatorProvinceTargetAccordingTONumberOFCouncilorCount, {
+  calculateEachSubIndicatorProvinceTargetAccordingTONumberOFCouncilorCount,
+} from "@/lib/IndicatorProvincesTargetCalculator";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { useParentContext } from "@/contexts/ParentContext";
 import { Plus } from "lucide-react";
@@ -23,6 +25,7 @@ import { Indicator, Output } from "@/app/(main)/projects/types/Types";
 import { MultiSelect } from "../multi-select";
 import { IndicatorDefault } from "@/lib/FormsDefaultValues";
 import {
+  CancelButtonMessage,
   IndicatorCreationMessage,
   IndicatorEditionMessage,
 } from "@/lib/ConfirmationModelsTexts";
@@ -37,14 +40,15 @@ import {
   IsCreateMode,
   IsCreatePage,
   IsCurrentTypeOptionAvailable,
-  IsCurrentTypeOptionHasBeenTakenByOtherIndicators,
-  IsCurrentTypeOptionIsTheCurrentIndicatorOption,
   IsEditMode,
   IsEditPage,
   IsIndicatorDatabaseEnactDatabase,
   IsIndicatorDatabaseMainDatabase,
+  IsIndicatorEdited,
   IsMainDatabase,
   IsMainDatabaseNotAvailableForSelection,
+  IsNotANullOrUndefinedValue,
+  isNotASubIndicator,
   IsNotIndicatorDatabaseEnactDatabase,
   IsNotMainDatabase,
   IsNotShowMode,
@@ -55,6 +59,7 @@ import {
 import { stringToCapital } from "@/helpers/StringToCapital";
 import { getStructuredProvinces } from "@/helpers/IndicatorFormHelpers";
 import { AxiosError, AxiosResponse } from "axios";
+import { RemoveIdFielsFromObj } from "@/helpers/GlobalHelpers";
 
 export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
   isOpen,
@@ -78,14 +83,16 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
     setIndicators: React.Dispatch<React.SetStateAction<Indicator[]>>;
     outputs: Output[];
     projectProvinces: string[];
-  } =
-    IsCreatePage(pageIdentifier)
-      ? useProjectContext()
-      : IsEditPage(pageIdentifier)
-      ? useProjectEditContext()
-      : useProjectShowContext();
+  } = IsCreatePage(pageIdentifier)
+    ? useProjectContext()
+    : IsEditPage(pageIdentifier)
+    ? useProjectEditContext()
+    : useProjectShowContext();
 
   const [local, setLocal] = useState<Indicator>(IndicatorDefault());
+  const [indicatorBeforeEdit, setIndicatorBeforeEdit] = useState<Indicator>(
+    IndicatorDefault()
+  );
   const [reqForSubIndicator, setReqForSubIndicator] = useState<boolean>(false);
 
   const handleChange = (e: any) => {
@@ -113,15 +120,26 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
       return;
     }
 
-    setLocal((prev) => ({
-      ...prev,
-      [name]:
-        name === "target"
-          ? Number(value)
-          : name === "type"
-          ? value || null
-          : value,
-    }));
+    setLocal((prev) => {
+      if (name == "target")
+        calculateEachIndicatorProvinceTargetAccordingTONumberOFCouncilorCount(
+          {
+            ...prev,
+            target: Number(value),
+          },
+          setLocal
+        );
+
+      return {
+        ...prev,
+        [name]:
+          name === "target"
+            ? Number(value)
+            : name === "type"
+            ? value || null
+            : value,
+      };
+    });
   };
 
   const hundleIndicatorFormChange = (e: any) => {
@@ -232,6 +250,7 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
             };
           });
           reqForToastAndSetMessage(response.data.message);
+          onClose();
         })
         .catch((error: any) => {
           reqForToastAndSetMessage(error.response.data.message);
@@ -243,6 +262,10 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
         reqForToastAndSetMessage(
           "A project can not have two indicators with same referance !"
         );
+        return;
+      } else if (!IsIndicatorEdited(indicatorBeforeEdit, local)) {
+        reqForToastAndSetMessage("No changes were made !");
+        onClose();
         return;
       }
 
@@ -256,6 +279,7 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
         .put(`/projects/indicator/${local.id}`, local)
         .then((response: any) => {
           reqForToastAndSetMessage(response.data.message);
+          onClose();
         })
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)
@@ -287,23 +311,70 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
   const handleIndicatorProvincesChange = (provinces: string[]) => {
     if (!HasSubIndicator(local)) {
       setLocal((prev) => {
+        calculateEachIndicatorProvinceTargetAccordingTONumberOFCouncilorCount(
+          {
+            ...prev,
+            provinces: provinces.map((p) => ({
+              province: p,
+              target:
+                indicatorBeforeEdit.provinces.find(
+                  (province) => province.province == p
+                )?.target ?? 0,
+              councilorCount:
+                indicatorBeforeEdit.provinces.find(
+                  (province) => province.province == p
+                )?.councilorCount ?? 0,
+            })),
+          },
+          setLocal
+        );
         return {
           ...prev,
-          provinces: provinces.map((v) => ({
-            province: v,
-            target: 0,
-            councilorCount: 0,
+          provinces: provinces.map((p) => ({
+            province: p,
+            target:
+              indicatorBeforeEdit.provinces.find(
+                (province) => province.province == p
+              )?.target ?? 0,
+            councilorCount:
+              indicatorBeforeEdit.provinces.find(
+                (province) => province.province == p
+              )?.councilorCount ?? 0,
           })),
         };
       });
     } else {
       setLocal((prev) => {
+        calculateEachIndicatorProvinceTargetAccordingTONumberOFCouncilorCount(
+          {
+            ...prev,
+            provinces: provinces.map((p) => ({
+              province: p,
+              target:
+                indicatorBeforeEdit.provinces.find(
+                  (province) => province.province == p
+                )?.target ?? 0,
+              councilorCount:
+                indicatorBeforeEdit.provinces.find(
+                  (province) => province.province == p
+                )?.councilorCount ?? 0,
+            })),
+          },
+          setLocal
+        );
+
         return {
           ...prev,
-          provinces: provinces.map((v) => ({
-            province: v,
-            target: 0,
-            councilorCount: 0,
+          provinces: provinces.map((p) => ({
+            province: p,
+            target:
+              indicatorBeforeEdit.provinces.find(
+                (province) => province.province == p
+              )?.target ?? 0,
+            councilorCount:
+              indicatorBeforeEdit.provinces.find(
+                (province) => province.province == p
+              )?.councilorCount ?? 0,
           })),
           subIndicator: {
             ...prev.subIndicator,
@@ -313,8 +384,8 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
             target: prev.subIndicator!.target,
             type: prev.subIndicator!.type,
             dessaggregationType: prev.subIndicator!.dessaggregationType,
-            provinces: provinces.map((v) => ({
-              province: v,
+            provinces: provinces.map((p) => ({
+              province: p,
               target: 0,
               councilorCount: 0,
             })),
@@ -353,21 +424,68 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
     });
   };
 
+  const handleSubIndicatorCouncilorCountInputChange = (
+    councilorCount: number,
+    province: string
+  ) => {
+    if (isNotASubIndicator(local.subIndicator)) return;
+    setLocal((prev) => {
+      const updatedProvinces = prev.subIndicator!.provinces.map((p) =>
+        p.province == province ? { ...p, councilorCount: councilorCount } : p
+      );
+
+      calculateEachSubIndicatorProvinceTargetAccordingTONumberOFCouncilorCount(
+        {
+          ...prev,
+          subIndicator: {
+            ...prev.subIndicator!,
+            provinces: updatedProvinces,
+          },
+        },
+        setLocal
+      );
+
+      return {
+        ...prev,
+        subIndicator: {
+          ...prev.subIndicator!,
+          provinces: updatedProvinces,
+        },
+      };
+    });
+  };
+
   const handleProvinceTargetChange = (newTarget: number, province: string) => {
-    setLocal((prev) => ({
-      ...prev,
-      provinces: prev.provinces.map((p) =>
-        p.province === province ? { ...p, target: newTarget } : p
-      ),
-    }));
+    setLocal((prev) => {
+      return {
+        ...prev,
+        provinces: prev.provinces.map((p) =>
+          p.province === province ? { ...p, target: newTarget } : p
+        ),
+      };
+    });
+  };
+
+  const handleCancel = () => {
+    if (IsEditMode(mode) && IsIndicatorEdited(indicatorBeforeEdit, local)) {
+      reqForConfirmationModelFunc(CancelButtonMessage, onClose);
+
+      return;
+    }
+
+    onClose();
   };
 
   useEffect(() => {
-    if ((IsEditMode(mode) || IsShowMode(mode)) && indicatorId) {
+    if (
+      (IsEditMode(mode) || IsShowMode(mode)) &&
+      IsNotANullOrUndefinedValue(indicatorId)
+    ) {
       axiosInstance
         .get(`projects/indicator/${indicatorId}`)
         .then((response: AxiosResponse<any, any, {}>) => {
           setLocal(response.data.data);
+          setIndicatorBeforeEdit(response.data.data);
         })
         .catch((error: AxiosError<any, any>) =>
           reqForToastAndSetMessage(error.response?.data.message)
@@ -378,9 +496,9 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
-        className="sm:max-w-4xl border border-gray-300 dark:border-gray-600 rounded-lg ml-16 overflow-y-auto"
+        className="sm:max-w-4xl border border-gray-300 dark:border-gray-600 rounded-lg ml-16 overflow-hidden"
         style={{
-          maxHeight: "85vh",
+          minHeight: "85vh",
           paddingTop: "10px",
           paddingBottom: "10px",
           paddingLeft: "16px",
@@ -397,10 +515,10 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="grid gap-4">
+        <div className="grid gap-4 overflow-auto h-[400px]">
           <div className="flex flex-col gap-1">
             <Label htmlFor="indicator">Indicator</Label>
-            <Input
+            <Textarea
               id="indicator"
               name="indicator"
               value={local.indicator || ""}
@@ -669,15 +787,12 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
                         type="number"
                         name="subIndicatorProvinceCouncilorCount"
                         value={province.councilorCount || 0}
-                        onChange={(e) => {
-                          hundleIndicatorFormChange({
-                            target: {
-                              province: province,
-                              name: e.target.name,
-                              value: e.target.value,
-                            },
-                          });
-                        }}
+                        onChange={(e) =>
+                          handleSubIndicatorCouncilorCountInputChange(
+                            Number(e.target.value),
+                            province.province
+                          )
+                        }
                         disabled={IsShowMode(mode)}
                       />
                     </div>
@@ -711,8 +826,8 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
 
         {IsNotShowMode(mode) && (
           <DialogFooter>
-            <div className="flex gap-2 justify-end w-full">
-              <Button variant="outline" onClick={onClose}>
+            <div className="flex gap-2 justify-end w-full fixed bottom-2">
+              <Button variant="outline" onClick={handleCancel}>
                 Cancel
               </Button>
               <Button
