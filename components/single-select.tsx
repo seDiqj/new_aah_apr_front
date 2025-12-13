@@ -83,7 +83,11 @@ export function SingleSelect({
         </PopoverTrigger>
         <PopoverContent className="w-[300px] p-0">
           <Command>
-            <CommandInput className="!border-0 !outline-0" placeholder="Search..." disabled={disabled} />
+            <CommandInput
+              className="border-0 outline-none focus:ring-0"
+              placeholder="Search..."
+              disabled={disabled}
+            />
             <CommandEmpty>No results found.</CommandEmpty>
             <CommandGroup>
               {options.map((opt) => {
@@ -96,7 +100,9 @@ export function SingleSelect({
                     <div
                       className={cn(
                         "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border",
-                        isSelected ? "bg-primary text-primary-foreground border-primary" : "border-[var(--border)]"
+                        isSelected
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "border-[var(--border)]"
                       )}
                     >
                       {isSelected && <Check className="h-3 w-3" />}

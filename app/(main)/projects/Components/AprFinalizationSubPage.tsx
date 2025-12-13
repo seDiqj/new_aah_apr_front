@@ -134,7 +134,7 @@ const AprFinalizationSubPage: React.FC<AprFinalizationSubPageInterface> = ({
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
       );
-  }, []);
+  }, [projectAprStatus]);
 
   const readOnly: boolean = IsShowMode(mode);
 
@@ -146,190 +146,214 @@ const AprFinalizationSubPage: React.FC<AprFinalizationSubPageInterface> = ({
         </CardHeader>
 
         <CardContent className="grid gap-6">
-          {aprFinalizationSteps.filter((step) => permissions.includes(step.permission)).map((step, index) => {
-            const canReject = index !== 0;
-            return (
-              <div
-                key={step.id}
-                className="flex items-center justify-between gap-3"
-              >
-                <div className="flex items-center gap-3">
-                  <AlertDialog
-                    open={
-                      step.id == "create"
-                        ? reqForCreationModel
-                        : step.id == "submit"
-                        ? reqForSubmitionModel
-                        : step.id == "grantFinalize"
-                        ? reqForGrantFinalizationModel
-                        : reqForHqFinalizationModel
-                    }
-                  >
-                    <AlertDialogTrigger asChild>
-                      <Checkbox
-                        id={step.id}
-                        checked={
-                          (() => {
-                            const currentIdx =
-                              projectAprStatusList.indexOf(projectAprStatus);
-                            const stepIdx = projectAprStatusList.indexOf(
-                              step.acceptStatusValue!
-                            );
+          {aprFinalizationSteps
+            .filter((step) => permissions.includes(step.permission))
+            .map((step, index) => {
+              const canReject = index !== 0;
+              return (
+                <div
+                  key={step.id}
+                  className="flex items-center justify-between gap-3"
+                >
+                  <div className="flex items-center gap-3 w-full">
+                    <AlertDialog
+                      open={
+                        step.id == "create"
+                          ? reqForCreationModel
+                          : step.id == "submit"
+                          ? reqForSubmitionModel
+                          : step.id == "grantFinalize"
+                          ? reqForGrantFinalizationModel
+                          : reqForHqFinalizationModel
+                      }
+                    >
+                      <div>
+                        <AlertDialogTrigger asChild>
+                          <Checkbox
+                            id={step.id}
+                            checked={
+                              (() => {
+                                const currentIdx =
+                                  projectAprStatusList.indexOf(
+                                    projectAprStatus
+                                  );
+                                const stepIdx = projectAprStatusList.indexOf(
+                                  step.acceptStatusValue!
+                                );
 
-                            const isRejected = step.rejectStatusValue
-                              ? projectAprStatus === step.rejectStatusValue
-                              : false;
+                                const isRejected = step.rejectStatusValue
+                                  ? projectAprStatus === step.rejectStatusValue
+                                  : false;
 
-                            return (
-                              !isRejected &&
-                              stepIdx !== -1 &&
-                              currentIdx >= stepIdx
-                            );
-                          })() || projectAprStatus == step.acceptStatusValue
-                        }
-                        onCheckedChange={() =>
-                          step.id == "create"
-                            ? setReqForCreationModel(true)
-                            : step.id == "submit"
-                            ? setReqForSubmitionModel(true)
-                            : step.id == "grantFinalize"
-                            ? setReqForGrantFinalizationModel(true)
-                            : setReqForHqFinalizationModel(true)
-                        }
-                        disabled={readOnly}
-                      />
-                    </AlertDialogTrigger>
-
-                    <AlertDialogContent className="space-y-4">
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>
-                          {canReject ? (
-                            <>
-                              Do you want to{" "}
-                              <span className="text-green-600">Accept</span> or{" "}
-                              <span className="text-red-600">Reject</span> this
-                              step?
-                            </>
-                          ) : (
-                            <>
-                              Confirm{" "}
-                              <span className="text-green-600">
-                                {step.label}
-                              </span>
-                              ?
-                            </>
-                          )}
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          {step.description}
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-
-                      {/* Textarea for comment */}
-                      <div className="flex flex-col gap-2">
-                        <Label
-                          htmlFor={`comment-${step.id}`}
-                          className="text-sm font-medium"
-                        >
-                          Enter your comment
-                        </Label>
-                        <Textarea
-                          id={`comment-${step.id}`}
-                          value={comment}
-                          onChange={(e) => setComment(e.target.value)}
-                          className="resize-none border rounded p-2 text-sm"
-                          placeholder="Write your comment here..."
-                          disabled={readOnly}
-                        />
+                                return (
+                                  !isRejected &&
+                                  stepIdx !== -1 &&
+                                  currentIdx >= stepIdx
+                                );
+                              })() || projectAprStatus == step.acceptStatusValue
+                            }
+                            onCheckedChange={() =>
+                              step.id == "create"
+                                ? setReqForCreationModel(true)
+                                : step.id == "submit"
+                                ? setReqForSubmitionModel(true)
+                                : step.id == "grantFinalize"
+                                ? setReqForGrantFinalizationModel(true)
+                                : setReqForHqFinalizationModel(true)
+                            }
+                            disabled={readOnly}
+                          />
+                        </AlertDialogTrigger>
                       </div>
 
-                      <AlertDialogFooter className="flex justify-between">
-                        <AlertDialogCancel
-                          onClick={() =>
-                            step.id == "create"
-                              ? setReqForCreationModel(false)
-                              : step.id == "submit"
-                              ? setReqForSubmitionModel(false)
-                              : step.id == "grantFinalize"
-                              ? setReqForGrantFinalizationModel(false)
-                              : setReqForHqFinalizationModel(false)
-                          }
-                        >
-                          Cancel
-                        </AlertDialogCancel>
+                      <AlertDialogContent className="space-y-4">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            {canReject ? (
+                              <>
+                                Do you want to{" "}
+                                <span className="text-green-600">Accept</span>{" "}
+                                or <span className="text-red-600">Reject</span>{" "}
+                                this step?
+                              </>
+                            ) : (
+                              <>
+                                Confirm{" "}
+                                <span className="text-green-600">
+                                  {step.label}
+                                </span>
+                                ?
+                              </>
+                            )}
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            {step.description}
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
 
-                        {canReject ? (
-                          <div className="flex gap-2">
-                            <Button
-                              variant="destructive"
-                              onClick={() =>
-                                reqForConfirmationModelFunc(
-                                  RejectFinalizationMessage,
-                                  () => {
-                                    if (comment.trim()) {
-                                      changeProjectAprStatus(
-                                        step.rejectStatusValue!
-                                      );
-                                    } else {
-                                      reqForToastAndSetMessage(
-                                        "Comment section is required !"
-                                      );
-                                    }
-                                  }
-                                )
-                              }
-                              disabled={readOnly}
-                            >
-                              Reject
-                            </Button>
-
-                            <Button
-                              onClick={() =>
-                                reqForConfirmationModelFunc(
-                                  AcceptFinalizationMessage,
-                                  () => {
-                                    if (comment.trim()) {
-                                      changeProjectAprStatus(
-                                        step.acceptStatusValue!
-                                      );
-                                    } else {
-                                      reqForToastAndSetMessage(
-                                        "Comment section is required !"
-                                      );
-                                    }
-                                  }
-                                )
-                              }
-                              disabled={readOnly}
-                            >
-                              Accept
-                            </Button>
-                          </div>
-                        ) : (
-                          <Button
-                            onClick={() => {
-                              if (comment.trim()) {
-                                changeProjectAprStatus(step.acceptStatusValue!);
-                              } else {
-                                reqForToastAndSetMessage(
-                                  "Comment section is required !"
-                                );
-                              }
-                            }}
-                            disabled={readOnly}
+                        {/* Textarea for comment */}
+                        <div className="flex flex-col gap-2">
+                          <Label
+                            htmlFor={`comment-${step.id}`}
+                            className="text-sm font-medium"
                           >
-                            {step.buttonLabel}
-                          </Button>
-                        )}
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                            Enter your comment
+                          </Label>
+                          <Textarea
+                            id={`comment-${step.id}`}
+                            value={comment}
+                            onChange={(e) => setComment(e.target.value)}
+                            className="resize-none border rounded p-2 text-sm"
+                            placeholder="Write your comment here..."
+                            disabled={readOnly}
+                          />
+                        </div>
 
-                  <Label htmlFor={step.id}>{step.label}</Label>
+                        <AlertDialogFooter className="flex justify-between">
+                          <AlertDialogCancel
+                            onClick={() =>
+                              step.id == "create"
+                                ? setReqForCreationModel(false)
+                                : step.id == "submit"
+                                ? setReqForSubmitionModel(false)
+                                : step.id == "grantFinalize"
+                                ? setReqForGrantFinalizationModel(false)
+                                : setReqForHqFinalizationModel(false)
+                            }
+                          >
+                            Cancel
+                          </AlertDialogCancel>
+
+                          {canReject ? (
+                            <div className="flex gap-2">
+                              <Button
+                                variant="destructive"
+                                onClick={() =>
+                                  reqForConfirmationModelFunc(
+                                    RejectFinalizationMessage,
+                                    () => {
+                                      if (comment.trim()) {
+                                        changeProjectAprStatus(
+                                          step.rejectStatusValue!
+                                        );
+                                      } else {
+                                        reqForToastAndSetMessage(
+                                          "Comment section is required !"
+                                        );
+                                      }
+                                    }
+                                  )
+                                }
+                                disabled={readOnly}
+                              >
+                                Reject
+                              </Button>
+
+                              <Button
+                                onClick={() =>
+                                  reqForConfirmationModelFunc(
+                                    AcceptFinalizationMessage,
+                                    () => {
+                                      if (comment.trim()) {
+                                        changeProjectAprStatus(
+                                          step.acceptStatusValue!
+                                        );
+                                      } else {
+                                        reqForToastAndSetMessage(
+                                          "Comment section is required !"
+                                        );
+                                      }
+                                    }
+                                  )
+                                }
+                                disabled={readOnly}
+                              >
+                                Accept
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button
+                              onClick={() => {
+                                if (comment.trim()) {
+                                  changeProjectAprStatus(
+                                    step.acceptStatusValue!
+                                  );
+                                } else {
+                                  reqForToastAndSetMessage(
+                                    "Comment section is required !"
+                                  );
+                                }
+                              }}
+                              disabled={readOnly}
+                            >
+                              {step.buttonLabel}
+                            </Button>
+                          )}
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+
+                    <div className="flex flex-row items-center justify-between w-full">
+                      <Label htmlFor={step.id}>{step.label}</Label>
+
+                      <div>
+                        <span>
+                          {`${
+                            actionLogs.find(
+                              (log: any) => log.action === step.id
+                            ).name
+                          } - ${
+                            actionLogs.find(
+                              (log: any) => log.action === step.id
+                            ).date
+                          }`}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
 
           {/* Action Progress Bar */}
           <div className="mt-8 max-w-full overflow-auto">

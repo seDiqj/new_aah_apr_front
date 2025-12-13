@@ -192,9 +192,10 @@ const OutcomeModel: React.FC<OutcomeInterface> = ({
   return (
     <Dialog open={isOpen} onOpenChange={() => onOpenChange(false)}>
       <DialogContent
-        className="sm:max-w-3xl border border-gray-300 dark:border-gray-600 rounded-lg ml-16 overflow-hidden"
+        className="sm:max-w-3xl border border-gray-300 dark:border-gray-600 rounded-lg ml-16 overflow-auto"
         style={{
           minHeight: "60vh",
+          maxHeight: "60vh",
           paddingTop: "10px",
           paddingBottom: "10px",
           paddingLeft: "16px",

@@ -169,18 +169,6 @@ const MainDatabasePage = () => {
                               <span>{`Assessment ${i + 1}`}</span>
                             </div>
                             <CardContent className="flex flex-row gap-4">
-                              <Edit
-                                className="cursor-pointer text-orange-500 hover:text-orange-700"
-                                onClick={() => {
-                                  setSelectedAssessmentId(
-                                    Number(assessment.id)
-                                  );
-                                  setReqForAssessmentEditModel(
-                                    !reqForAssessmentEditModel
-                                  );
-                                }}
-                                size={18}
-                              ></Edit>
                               <Eye
                                 className="cursor-pointer text-orange-500 hover:text-orange-700"
                                 onClick={() => {
@@ -234,7 +222,7 @@ const MainDatabasePage = () => {
             <AssessmentScoreForm
               open={reqForAssessmentShowModel}
               onOpenChange={setReqForAssessmentShowModel}
-              mode={"edit"}
+              mode={"show"}
               assessmentId={selectedAssessmentId}
             ></AssessmentScoreForm>
           )}

@@ -109,6 +109,7 @@ const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
               {}
             )
           );
+          setAssessmentData(response.data.data.date);
         })
         .catch((error: AxiosError<any>) => {
           reqForToastAndSetMessage(error.response?.data?.message);
@@ -142,6 +143,8 @@ const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
             <Input
               type="date"
               value={assessmentDate}
+              disabled={readOnly}
+              readOnly={readOnly}
               onChange={(e) => setAssessmentData(e.target.value)}
               className="border-gray-300 rounded-lg shadow-sm px-4 py-2 w-full md:w-64 min-w-full"
             />
@@ -175,6 +178,7 @@ const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
                         value={formData[assessment.id]}
                         className="w-full md:w-40 lg:w-48 text-center border-gray-300 rounded-lg px-3 py-2 text-lg"
                         readOnly={readOnly}
+                        disabled={readOnly}
                         onChange={handleFormChange}
                       />
                     </div>

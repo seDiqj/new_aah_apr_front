@@ -212,7 +212,7 @@ input {
   border: 1px solid var(--border);
   background-color: var(--input);
   transition: border-color 0.2s ease;
-}
+} 
 
 input:hover {
   border-color: var(--input-border-hover);
@@ -224,23 +224,19 @@ input:focus {
   box-shadow: 0 0 0 3px rgba(0, 95, 182, 0.2);
 }
 
-/* تنظیم کلی برای تمام input type=date */
 input[type="date"] {
-  direction: ltr;            /* تاریخ از چپ به راست نمایش داده شود */
-  text-align: left;          /* متن تاریخ در سمت چپ باشد */
-  padding-right: 30px;       /* فضا برای آیکون سمت راست */
-  position: relative;
+  direction: ltr;           
+  text-align: left;          
+  padding-right: 30px;       
 }
 
-/* آیکون را به سمت راست منتقل کن */
 input[type="date"]::-webkit-calendar-picker-indicator {
   position: absolute;
-  right: 5px;                /* فاصله از سمت راست */
-  left: auto;                /* حذف چسبیدن به سمت چپ */
+  right: 5px;                
+  left: auto;                
   cursor: pointer;
 }
 
-/* در فایرفاکس (تاثیر محدود دارد) */
 input[type="date"]::-moz-focus-inner {
   padding: 0;
 }

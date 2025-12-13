@@ -30,58 +30,57 @@ type Outcome = { name: string; outputs: Output[] };
 
 export default function MonitoringTablePage() {
   const exportToExcel = (data: any) => {
-  const wb = XLSX.utils.book_new();
-  const ws_data: any[][] = [];
-  const merges: any[] = [];
+    const wb = XLSX.utils.book_new();
+    const ws_data: any[][] = [];
+    const merges: any[] = [];
 
-  let rowIndex = 1;
+    let rowIndex = 1;
 
-  data.outcomes.forEach((outcome: any, oIdx: number) => {
-    outcome.outputs.forEach((output: any, opIdx: number) => {
-      output.indicators.forEach((indicator: any, iIdx: number) => {
-        ws_data.push([
-          oIdx === 0 && opIdx === 0 && iIdx === 0 ? data.impact : "", // Impact
-          opIdx === 0 && iIdx === 0 ? outcome.name : "", // Outcome
-          iIdx === 0 ? output.name : "", // Output
-          indicator.code + " - " + indicator.name, // Indicator
-        ]);
+    data.outcomes.forEach((outcome: any, oIdx: number) => {
+      outcome.outputs.forEach((output: any, opIdx: number) => {
+        output.indicators.forEach((indicator: any, iIdx: number) => {
+          ws_data.push([
+            oIdx === 0 && opIdx === 0 && iIdx === 0 ? data.impact : "", // Impact
+            opIdx === 0 && iIdx === 0 ? outcome.name : "", // Outcome
+            iIdx === 0 ? output.name : "", // Output
+            indicator.code + " - " + indicator.name, // Indicator
+          ]);
 
-        // Mergeها
-        if (oIdx === 0 && opIdx === 0 && iIdx === 0) {
-          merges.push({
-            s: { r: rowIndex, c: 0 },
-            e: { r: totalRows - 1, c: 0 },
-          });
-        }
+          if (oIdx === 0 && opIdx === 0 && iIdx === 0) {
+            merges.push({
+              s: { r: rowIndex, c: 0 },
+              e: { r: totalRows - 1, c: 0 },
+            });
+          }
 
-        // Outcome merge
-        if (opIdx === 0 && iIdx === 0) {
-          merges.push({
-            s: { r: rowIndex, c: 1 },
-            e: { r: rowIndex + rowsPerOutcome(outcome) - 1, c: 1 },
-          });
-        }
+          if (opIdx === 0 && iIdx === 0) {
+            merges.push({
+              s: { r: rowIndex, c: 1 },
+              e: { r: rowIndex + rowsPerOutcome(outcome) - 1, c: 1 },
+            });
+          }
 
-        // Output merge
-        if (iIdx === 0) {
-          merges.push({
-            s: { r: rowIndex, c: 2 },
-            e: { r: rowIndex + rowsPerOutput(output) - 1, c: 2 },
-          });
-        }
+          if (iIdx === 0) {
+            merges.push({
+              s: { r: rowIndex, c: 2 },
+              e: { r: rowIndex + rowsPerOutput(output) - 1, c: 2 },
+            });
+          }
 
-        rowIndex++;
+          rowIndex++;
+        });
       });
     });
-  });
 
-  const ws = XLSX.utils.aoa_to_sheet([["Impact","Outcome","Output","Indicator"], ...ws_data]);
-  ws["!merges"] = merges;
+    const ws = XLSX.utils.aoa_to_sheet([
+      ["Impact", "Outcome", "Output", "Indicator"],
+      ...ws_data,
+    ]);
+    ws["!merges"] = merges;
 
-  XLSX.utils.book_append_sheet(wb, ws, "Monitoring");
-  XLSX.writeFile(wb, "Monitoring.xlsx");
-};
-
+    XLSX.utils.book_append_sheet(wb, ws, "Monitoring");
+    XLSX.writeFile(wb, "Monitoring.xlsx");
+  };
 
   const { id } = useParams<{
     id: string;
@@ -92,7 +91,6 @@ export default function MonitoringTablePage() {
   const [selectedProvinces, setSelectedProvinces] = useState<string[]>([]);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const sheetRef = useRef<HTMLDivElement>(null);
-
 
   const [data, setData] = useState<{
     impact: string;
@@ -300,6 +298,7 @@ export default function MonitoringTablePage() {
     axiosInstance
       .get(`/apr_management/show_apr/${id}`)
       .then((response: any) => {
+        console.log(response.data.data);
         setData(response.data.data);
       })
       .catch((error: any) =>
@@ -502,7 +501,7 @@ export default function MonitoringTablePage() {
           Monitoring &amp; Evaluation Table
         </h1>
 
-        <Card>
+        {/* <Card>
           <CardContent className="flex flex-wrap gap-3 p-3">
             {provinces.map((province) => (
               <div key={province} className="flex items-center space-x-2">
@@ -520,7 +519,7 @@ export default function MonitoringTablePage() {
               </div>
             ))}
           </CardContent>
-        </Card>
+        </Card> */}
 
         <Card>
           <CardContent className="p-0 overflow-auto">
@@ -603,6 +602,220 @@ export default function MonitoringTablePage() {
 
             <Separator className="my-4" />
 
+            <h2 className="text-lg font-bold text-center mb-2">ISP3 Table</h2>
+
+            <Table className="min-w-max border-collapse border border-slate-400">
+              <TableHeader>
+                <TableRow className="bg-green-600 text-white text-sm">
+                  <TableHead className="border-r border-white text-center">
+                    ISP3
+                  </TableHead>
+                  <TableHead className="border-r border-white text-center">
+                    Indicator
+                  </TableHead>
+                  <TableHead className="border-r border-white text-center">
+                    Target
+                  </TableHead>
+                  <TableHead className="border-r border-white text-center">
+                    Total achievement
+                  </TableHead>
+                  <TableHead className="border-r border-white text-center">
+                    % Achieved
+                  </TableHead>
+                  <TableHead className="border-r border-white text-center bg-blue-400">
+                    Q1
+                  </TableHead>
+                  <TableHead className="border-r border-white text-center">
+                    Jan
+                  </TableHead>
+                  <TableHead className="border-r border-white text-center">
+                    Feb
+                  </TableHead>
+                  <TableHead className="border-r border-white text-center">
+                    Mar
+                  </TableHead>
+                  <TableHead className="border-r border-white text-center bg-blue-400">
+                    Q2
+                  </TableHead>
+                  <TableHead className="border-r border-white text-center">
+                    Apr
+                  </TableHead>
+                  <TableHead className="border-r border-white text-center">
+                    May
+                  </TableHead>
+                  <TableHead className="border-r border-white text-center">
+                    Jun
+                  </TableHead>
+                  <TableHead className="border-r border-white text-center bg-blue-400">
+                    Q3
+                  </TableHead>
+                  <TableHead className="border-r border-white text-center">
+                    Jul
+                  </TableHead>
+                  <TableHead className="border-r border-white text-center">
+                    Aug
+                  </TableHead>
+                  <TableHead className="border-r border-white text-center">
+                    Sep
+                  </TableHead>
+                  <TableHead className="border-r border-white text-center bg-blue-400">
+                    Q4
+                  </TableHead>
+                  <TableHead className="border-r border-white text-center">
+                    Oct
+                  </TableHead>
+                  <TableHead className="border-r border-white text-center">
+                    Nov
+                  </TableHead>
+                  <TableHead className="border-r border-white text-center">
+                    Dec
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data.isp3s.map((isp, ispIndex) => {
+                  // محاسبه تعداد کل ردیف‌های ISP3 شامل تمام indicators + disaggregation ها
+                  const rowsPerISP3 = isp.indicators.reduce(
+                    (sum: number, ind: any) =>
+                      sum + 1 + (ind.disaggregation?.length || 0),
+                    0
+                  );
+
+                  return isp.indicators.map((ind: any, iIndex: number) => {
+                    const indicatorTotal = ind.disaggregation.reduce(
+                      (a: any, b: any) => a + b.target,
+                      0
+                    );
+                    const monthsSum = Array.from({ length: 12 }).map((_, m) =>
+                      ind.disaggregation.reduce(
+                        (s: any, d: any) => s + (d.months?.[m] || 0),
+                        0
+                      )
+                    );
+                    const quarters = [
+                      monthsSum.slice(0, 3).reduce((a, b) => a + b, 0),
+                      monthsSum.slice(3, 6).reduce((a, b) => a + b, 0),
+                      monthsSum.slice(6, 9).reduce((a, b) => a + b, 0),
+                      monthsSum.slice(9, 12).reduce((a, b) => a + b, 0),
+                    ];
+                    const totalAchievement = monthsSum.reduce(
+                      (a, b) => a + b,
+                      0
+                    );
+                    const percentAchieved = indicatorTotal
+                      ? ((totalAchievement / indicatorTotal) * 100).toFixed(2)
+                      : "0";
+
+                    return (
+                      <React.Fragment key={`isp3-${ispIndex}-${iIndex}`}>
+                        {/* Indicator row */}
+                        <TableRow className="border-b border-slate-400">
+                          {iIndex === 0 && (
+                            <TableCell
+                              rowSpan={rowsPerISP3}
+                              className="text-sm whitespace-normal border-r border-slate-400 text-center"
+                            >
+                              {isp.isp3}
+                            </TableCell>
+                          )}
+                          <TableCell className="text-sm border-r border-slate-400 bg-blue-400">
+                            {ind.indicator}
+                          </TableCell>
+                          <TableCell className="text-right font-semibold text-sm border-r border-slate-400 bg-blue-400">
+                            {indicatorTotal}
+                          </TableCell>
+                          <TableCell className="text-right font-semibold text-sm border-r border-slate-400 bg-blue-400">
+                            {totalAchievement}
+                          </TableCell>
+                          <TableCell className="text-right font-semibold text-sm border-r border-slate-400 bg-blue-400">
+                            {percentAchieved}%
+                          </TableCell>
+                          {quarters.map((q, qIndex) => (
+                            <React.Fragment key={qIndex}>
+                              <TableCell className="text-right border-r border-slate-400 text-sm bg-blue-400">
+                                {q}
+                              </TableCell>
+                              {monthsSum
+                                .slice(qIndex * 3, qIndex * 3 + 3)
+                                .map((m, mIndex) => (
+                                  <TableCell
+                                    key={`${qIndex}-${mIndex}`}
+                                    className="text-right border-r border-slate-400 text-sm bg-blue-400"
+                                  >
+                                    {m}
+                                  </TableCell>
+                                ))}
+                            </React.Fragment>
+                          ))}
+                        </TableRow>
+
+                        {/* Disaggregation rows */}
+                        {ind.disaggregation.map((d: any, dIndex: any) => {
+                          const qMonths = Array.from({ length: 4 }).map(
+                            (_, qIndex) => {
+                              const start = qIndex * 3;
+                              const months = d.months?.slice(
+                                start,
+                                start + 3
+                              ) ?? [0, 0, 0];
+                              return {
+                                quarterValue: months.reduce((a, b) => a + b, 0),
+                                months,
+                              };
+                            }
+                          );
+
+                          const disTotalAchievement =
+                            d.months?.reduce((a: any, b: any) => a + b, 0) || 0;
+                          const disPercent = d.target
+                            ? ((disTotalAchievement / d.target) * 100).toFixed(
+                                2
+                              )
+                            : "0";
+
+                          return (
+                            <TableRow
+                              key={`isp3-dis-${ispIndex}-${iIndex}-${dIndex}`}
+                              className="border-b border-slate-400"
+                            >
+                              <TableCell className="text-xs border-r border-slate-400 pl-6">
+                                {d.name}
+                              </TableCell>
+                              <TableCell className="text-right text-xs border-r border-slate-400">
+                                {d.target}
+                              </TableCell>
+                              <TableCell className="text-right text-xs border-r border-slate-400">
+                                {disTotalAchievement}
+                              </TableCell>
+                              <TableCell className="text-right text-xs border-r border-slate-400">
+                                {disPercent}%
+                              </TableCell>
+                              {qMonths.map((q, qIndex) => (
+                                <React.Fragment
+                                  key={`isp3-dis-${ispIndex}-${iIndex}-${dIndex}-q${qIndex}`}
+                                >
+                                  <TableCell className="text-right bg-blue-400 text-xs border-r border-slate-400">
+                                    {q.quarterValue}
+                                  </TableCell>
+                                  {q.months.map((m, mIndex) => (
+                                    <TableCell
+                                      key={`isp3-dis-${ispIndex}-${iIndex}-${dIndex}-m${qIndex}-${mIndex}`}
+                                      className="text-right text-xs border-r border-slate-400"
+                                    >
+                                      {m}
+                                    </TableCell>
+                                  ))}
+                                </React.Fragment>
+                              ))}
+                            </TableRow>
+                          );
+                        })}
+                      </React.Fragment>
+                    );
+                  });
+                })}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
       </div>

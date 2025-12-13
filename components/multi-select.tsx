@@ -39,7 +39,7 @@ export function MultiSelect({
   onValueChange,
   placeholder = "Select...",
   disabled = false,
-  error
+  error,
 }: MultiSelectProps) {
   const [open, setOpen] = React.useState(false);
 
@@ -90,31 +90,33 @@ export function MultiSelect({
         </Button>
       </PopoverTrigger>
       {!disabled && (
-        <PopoverContent className="w-[300px] p-0 max-h-64 overflow-auto">
-          <Command>
+        <PopoverContent className="w-[300px] p-0 max-h-[200px]">
+          <Command className="flex h-full flex-col">
             <CommandInput placeholder="Search..." />
             <CommandEmpty>No results found.</CommandEmpty>
-            <CommandGroup>
-              {options.map((opt) => {
-                const isSelected = value?.includes(opt.value);
-                return (
-                  <CommandItem
-                    key={opt.value}
-                    onSelect={() => toggleOption(opt.value)}
-                  >
-                    <div
-                      className={cn(
-                        "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
-                        isSelected ? "bg-primary text-primary-foreground" : ""
-                      )}
+            <div className="flex-1 overflow-y-auto">
+              <CommandGroup>
+                {options.map((opt) => {
+                  const isSelected = value?.includes(opt.value);
+                  return (
+                    <CommandItem
+                      key={opt.value}
+                      onSelect={() => toggleOption(opt.value)}
                     >
-                      {isSelected && <Check className="h-3 w-3" />}
-                    </div>
-                    {opt.label}
-                  </CommandItem>
-                );
-              })}
-            </CommandGroup>
+                      <div
+                        className={cn(
+                          "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
+                          isSelected ? "bg-primary text-primary-foreground" : ""
+                        )}
+                      >
+                        {isSelected && <Check className="h-3 w-3" />}
+                      </div>
+                      {opt.label}
+                    </CommandItem>
+                  );
+                })}
+              </CommandGroup>
+            </div>
           </Command>
         </PopoverContent>
       )}

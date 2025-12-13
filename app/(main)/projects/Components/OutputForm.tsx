@@ -198,7 +198,7 @@ const OutputForm: React.FC<OutputFormInterface> = ({ mode }) => {
           isOpen={reqForOutputForm}
           onOpenChange={setReqForOutputForm}
           mode={"create"}
-          pageIdentifier={"create"}
+          pageIdentifier={mode}
         ></OutputModel>
       )}
 

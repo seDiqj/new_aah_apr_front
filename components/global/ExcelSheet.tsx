@@ -245,8 +245,6 @@ const MonitoringTablePage: React.FC<MonitoringTablePageInterface> = ({
     });
   });
 
-  const readOnly = IsShowMode(mode);
-
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-end">
