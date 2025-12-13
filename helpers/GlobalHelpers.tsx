@@ -1,4 +1,8 @@
-import { IsIdFeild, IsNonePrimitiveTypeAndNotNullOrUndefined, IsNonPrimitiveType } from "@/lib/Constants";
+import {
+  IsIdFeild,
+  IsNonePrimitiveTypeAndNotNullOrUndefined,
+  IsNonPrimitiveType,
+} from "@/constants/Constants";
 
 export const RemoveIdFielsFromObj = (obj: {
   [key: string]: any;
@@ -6,7 +10,8 @@ export const RemoveIdFielsFromObj = (obj: {
   const objKeys: any[] = Object.keys(obj);
 
   for (const key of objKeys) {
-    if (IsNonePrimitiveTypeAndNotNullOrUndefined(obj[key])) RemoveIdFielsFromObj(obj[key]);
+    if (IsNonePrimitiveTypeAndNotNullOrUndefined(obj[key]))
+      RemoveIdFielsFromObj(obj[key]);
     else if (IsIdFeild(key)) delete obj[key];
   }
 

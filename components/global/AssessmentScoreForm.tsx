@@ -7,19 +7,29 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { useEffect, useState, useMemo } from "react";
 import { useParams } from "next/navigation";
-import { EnactResetButtonMessage, EnactSubmitButtonMessage } from "@/lib/ConfirmationModelsTexts";
+import {
+  EnactResetButtonMessage,
+  EnactSubmitButtonMessage,
+} from "@/constants/ConfirmationModelsTexts";
 import { AssessmentScoreFormInterface } from "@/interfaces/Interfaces";
 import { Assessments } from "@/types/Types";
-import { IsCreateMode, IsEditMode, IsShowMode } from "@/lib/Constants";
+import { IsCreateMode, IsEditMode, IsShowMode } from "@/constants/Constants";
+import { AxiosError, AxiosResponse } from "axios";
 
 const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
   open,
   onOpenChange,
   mode,
   projectId,
+  assessmentId,
 }) => {
   const { id } = useParams<{ id: string }>();
-  const { reqForToastAndSetMessage, axiosInstance, reqForConfirmationModelFunc, handleReload } = useParentContext();
+  const {
+    reqForToastAndSetMessage,
+    axiosInstance,
+    reqForConfirmationModelFunc,
+    handleReload,
+  } = useParentContext();
 
   const [formData, setFormData] = useState<Record<string, number>>(
     Array.from({ length: 15 }, (_, i) => i + 1).reduce(
@@ -55,22 +65,22 @@ const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
-    const request =
-      IsCreateMode(mode)
-        ? axiosInstance.post("/enact_database/assess_assessment", {
-            enactId: id,
-            scores: formData,
-            date: assessmentDate,
-          })
-        : axiosInstance.put(`/enact_database/${projectId}`, formData);
+    const request = IsCreateMode(mode)
+      ? axiosInstance.post("/enact_database/assess_assessment", {
+          enactId: id,
+          scores: formData,
+          date: assessmentDate,
+        })
+      : axiosInstance.put(`/enact_database/${projectId}`, formData);
 
     request
       .then((res: any) => {
         reqForToastAndSetMessage(res.data.message);
+        onOpenChange(false);
         handleReload();
       })
       .catch((err: any) =>
-        reqForToastAndSetMessage(err.response?.data?.message || "Error")
+        reqForToastAndSetMessage(err.response?.data?.message)
       );
   };
 
@@ -82,6 +92,29 @@ const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
   );
 
   const titleColors = ["#1E3A8A", "#059669", "#7C3AED", "#F97316"];
+
+  useEffect(() => {
+    if (!assessmentId) return;
+
+    if (IsShowMode(mode) || IsEditMode(mode)) {
+      axiosInstance
+        .get(`/enact_database/assessment/${assessmentId}`)
+        .then((response: AxiosResponse<any>) => {
+          setFormData(
+            Array.from({ length: 15 }, (_, i) => i + 1).reduce(
+              (acc, cur) => ({
+                ...acc,
+                [cur]: Number(response.data.data.questions?.[cur]?.score ?? 0),
+              }),
+              {}
+            )
+          );
+        })
+        .catch((error: AxiosError<any>) => {
+          reqForToastAndSetMessage(error.response?.data?.message);
+        });
+    }
+  }, [mode, assessmentId]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -114,45 +147,48 @@ const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
             />
           </div>
 
-          {Object.entries(assessmentsList).map(([groupName, assessments], i) => (
-            <div
-              key={groupName}
-              className="flex flex-col gap-6 p-6 rounded-xl shadow-inner w-full"
-            >
-              <Label
-                className="font-bold text-xl mb-4"
-                style={{ color: titleColors[i % titleColors.length] }}
+          {Object.entries(assessmentsList).map(
+            ([groupName, assessments], i) => (
+              <div
+                key={groupName}
+                className="flex flex-col gap-6 p-6 rounded-xl shadow-inner w-full"
               >
-                {groupName.toUpperCase()}
-              </Label>
+                <Label
+                  className="font-bold text-xl mb-4"
+                  style={{ color: titleColors[i % titleColors.length] }}
+                >
+                  {groupName.toUpperCase()}
+                </Label>
 
-              <div className="flex flex-col gap-4 w-full">
-                {assessments.map((assessment) => (
-                  <div
-                    key={assessment.id}
-                    className="flex flex-col md:flex-row items-start md:items-center justify-between border-b pb-4 pt-4 px-4 rounded-lg shadow-sm min-h-[70px]"
-                  >
-                    <span className="text-base md:text-lg mb-2 md:mb-0">
-                      {assessment.description}
-                    </span>
-                    <Input
-                      type="number"
-                      name={assessment.id}
-                      value={formData[assessment.id]}
-                      className="w-full md:w-40 lg:w-48 text-center border-gray-300 rounded-lg px-3 py-2 text-lg"
-                      readOnly={readOnly}
-                      onChange={handleFormChange}
-                    />
-                  </div>
-                ))}
+                <div className="flex flex-col gap-4 w-full">
+                  {assessments.map((assessment) => (
+                    <div
+                      key={assessment.id}
+                      className="flex flex-col md:flex-row items-start md:items-center justify-between border-b pb-4 pt-4 px-4 rounded-lg shadow-sm min-h-[70px]"
+                    >
+                      <span className="text-base md:text-lg mb-2 md:mb-0">
+                        {assessment.description}
+                      </span>
+                      <Input
+                        type="number"
+                        name={assessment.id}
+                        value={formData[assessment.id]}
+                        className="w-full md:w-40 lg:w-48 text-center border-gray-300 rounded-lg px-3 py-2 text-lg"
+                        readOnly={readOnly}
+                        onChange={handleFormChange}
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
-
+            )
+          )}
 
           <div className="flex justify-between items-center p-4 rounded-xl shadow-inner">
             <span className="font-semibold text-lg">Total Score:</span>
-            <span className="font-bold text-xl text-blue-600">{totalScore}</span>
+            <span className="font-bold text-xl text-blue-600">
+              {totalScore}
+            </span>
           </div>
 
           {!readOnly && (
@@ -160,20 +196,23 @@ const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
               <Button
                 type="button"
                 className="px-6 py-2 bg-gray-400 hover:bg-gray-500 rounded-xl shadow-md"
-                onClick={() => reqForConfirmationModelFunc(
-                  EnactResetButtonMessage,
-                  handleReset
-                )}
+                onClick={() =>
+                  reqForConfirmationModelFunc(
+                    EnactResetButtonMessage,
+                    handleReset
+                  )
+                }
               >
                 Reset
               </Button>
               <Button
                 type="button"
                 className="px-8 py-3 bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg"
-                onClick={(e) => reqForConfirmationModelFunc(
-                  EnactSubmitButtonMessage,
-                  () => handleSubmit(e)
-                )}
+                onClick={(e) =>
+                  reqForConfirmationModelFunc(EnactSubmitButtonMessage, () =>
+                    handleSubmit(e)
+                  )
+                }
               >
                 {IsCreateMode(mode) ? "Save" : "Update"}
               </Button>

@@ -11,16 +11,22 @@ import { Button } from "../ui/button";
 import { useEffect, useState } from "react";
 import { useParentContext } from "@/contexts/ParentContext";
 import { TrainingSelectorInterface } from "@/interfaces/Interfaces";
-import { TrainingSelectorMessage } from "@/lib/ConfirmationModelsTexts";
+import { TrainingSelectorMessage } from "@/constants/ConfirmationModelsTexts";
+import { IsNotANullOrUndefinedValue } from "@/constants/Constants";
 
 const TrainingSelectorDialog: React.FC<TrainingSelectorInterface> = ({
   open,
   onOpenChange,
   ids,
+  trainingsData,
 }) => {
-  const { reqForToastAndSetMessage, axiosInstance, reqForConfirmationModelFunc } = useParentContext();
+  const {
+    reqForToastAndSetMessage,
+    axiosInstance,
+    reqForConfirmationModelFunc,
+  } = useParentContext();
 
-  const [trainings, setTrainings] = useState<{name: string;}[]>([]);
+  const [trainings, setTrainings] = useState<{ name: string }[]>([]);
 
   const [selectedTraining, setSelectedTraining] = useState<string>("");
 
@@ -47,6 +53,9 @@ const TrainingSelectorDialog: React.FC<TrainingSelectorInterface> = ({
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
       );
+
+    if (IsNotANullOrUndefinedValue(trainingsData))
+      setSelectedTraining(trainingsData!);
   }, [open]);
 
   return (
@@ -75,10 +84,14 @@ const TrainingSelectorDialog: React.FC<TrainingSelectorInterface> = ({
         />
 
         {/* Submit Button */}
-        <Button onClick={() => reqForConfirmationModelFunc(
-          TrainingSelectorMessage,
-          () => handleSubmit()
-        )} className="w-full mt-6">
+        <Button
+          onClick={() =>
+            reqForConfirmationModelFunc(TrainingSelectorMessage, () =>
+              handleSubmit()
+            )
+          }
+          className="w-full mt-6"
+        >
           Submit
         </Button>
       </DialogContent>

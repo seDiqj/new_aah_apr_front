@@ -6,25 +6,26 @@ import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import Cards from "@/components/ui/shadcn-io/Cards";
 import SubmitSummary from "@/components/ui/shadcn-io/submitSummary";
 import { useState } from "react";
-import {
-  submittedAndFirstApprovedDatabasesTableColumn,
-} from "@/definitions/DataTableColumnsDefinitions";
+import { submittedAndFirstApprovedDatabasesTableColumn } from "@/definitions/DataTableColumnsDefinitions";
 import { Button } from "@/components/ui/button";
 import { useParentContext } from "@/contexts/ParentContext";
-import {
-  Eye,
-  ShieldCheck,
-  XCircle,
-} from "lucide-react";
+import { Eye, ShieldCheck, XCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { ApproveAprMessage, RejectAprMessage } from "@/lib/ConfirmationModelsTexts";
-import { ApprovedAprsFiltersList, ApprovedAprsFilterUrl } from "@/lib/FiltersList";
+import {
+  ApproveAprMessage,
+  RejectAprMessage,
+} from "@/constants/ConfirmationModelsTexts";
+import {
+  ApprovedAprsFiltersList,
+  ApprovedAprsFilterUrl,
+} from "@/constants/FiltersList";
 
 const SubmittedDatabasesPage = () => {
   const {
     reqForToastAndSetMessage,
     reqForConfirmationModelFunc,
     axiosInstance,
+    handleReload,
   } = useParentContext();
 
   const router = useRouter();
@@ -41,30 +42,34 @@ const SubmittedDatabasesPage = () => {
   const approveApr = () => {
     if (!idFeildForEditStateSetter)
       reqForToastAndSetMessage("Please select a valid apr.");
-    axiosInstance.post(
-      `/apr_management/approve_apr/${idFeildForEditStateSetter}`,
-      {
-        newStatus: "secondApproved"
-      }
-    )
-    .then((response: any) => reqForToastAndSetMessage(response.data.message))
-    .catch((error: any) => reqForToastAndSetMessage(error.response.data.message))
-    ;
+    axiosInstance
+      .post(`/apr_management/approve_apr/${idFeildForEditStateSetter}`, {
+        newStatus: "secondApproved",
+      })
+      .then((response: any) => {
+        reqForToastAndSetMessage(response.data.message);
+        handleReload();
+      })
+      .catch((error: any) =>
+        reqForToastAndSetMessage(error.response.data.message)
+      );
   };
 
   const rejectApr = () => {
     if (!idFeildForEditStateSetter)
       reqForToastAndSetMessage("Please select a valid apr.");
-    axiosInstance.post(
-      `/apr_management/approve_apr/${idFeildForEditStateSetter}`,
-      {
-        newStatus: "secondRejected"
-      }
-    )
-    .then((response: any) => reqForToastAndSetMessage(response.data.message))
-    .catch((error: any) => reqForToastAndSetMessage(error.response.data.message))
-    ;
-  }
+    axiosInstance
+      .post(`/apr_management/approve_apr/${idFeildForEditStateSetter}`, {
+        newStatus: "fourthRejected",
+      })
+      .then((response: any) => {
+        reqForToastAndSetMessage(response.data.message);
+        handleReload();
+      })
+      .catch((error: any) =>
+        reqForToastAndSetMessage(error.response.data.message)
+      );
+  };
 
   const previewApr = () => {
     router.push(`/test/${idFeildForEditStateSetter}`);
@@ -74,7 +79,7 @@ const SubmittedDatabasesPage = () => {
     <>
       <Navbar14 />
       <SubHeader pageTitle={"Approve Apr's"}></SubHeader>
-      <Cards/>
+      <Cards />
 
       <DataTableDemo
         columns={submittedAndFirstApprovedDatabasesTableColumn}
@@ -90,10 +95,7 @@ const SubmittedDatabasesPage = () => {
               className="text-blue-600"
               variant={"outline"}
               onClick={() =>
-                reqForConfirmationModelFunc(
-                  ApproveAprMessage,
-                  approveApr
-                )
+                reqForConfirmationModelFunc(ApproveAprMessage, approveApr)
               }
             >
               <ShieldCheck />
@@ -103,10 +105,7 @@ const SubmittedDatabasesPage = () => {
               className="text-red-500"
               variant={"outline"}
               onClick={() =>
-              reqForConfirmationModelFunc(
-                RejectAprMessage,
-                rejectApr
-              )
+                reqForConfirmationModelFunc(RejectAprMessage, rejectApr)
               }
             >
               <XCircle />

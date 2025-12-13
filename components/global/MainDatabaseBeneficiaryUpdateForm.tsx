@@ -16,15 +16,15 @@ import { useParentContext } from "@/contexts/ParentContext";
 import { withPermission } from "@/lib/withPermission";
 import { Skeleton } from "../ui/skeleton";
 import { MainDatabaseBeneficiaryUpdateType } from "@/types/Types";
-import { MainDatabaseBeneficiaryUpdateDefault } from "@/lib/FormsDefaultValues";
+import { MainDatabaseBeneficiaryUpdateDefault } from "@/constants/FormsDefaultValues";
 import {
   DisabilityTypeOptions,
   GenderOptions,
   HousholdStatusOptions,
   MaritalStatusOptions,
   ReferredForProtectionOptions,
-} from "@/lib/SingleAndMultiSelectOptionsList";
-import { MainDatabaseBeneficiaryEditionMessage } from "@/lib/ConfirmationModelsTexts";
+} from "@/constants/SingleAndMultiSelectOptionsList";
+import { MainDatabaseBeneficiaryEditionMessage } from "@/constants/ConfirmationModelsTexts";
 import { MainDatabaseBeneficiaryUpdate } from "@/interfaces/Interfaces";
 
 const MainDatabaseBeneficiaryUpdateForm: React.FC<

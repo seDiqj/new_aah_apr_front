@@ -11,7 +11,7 @@ import {
 import { MultiSelect } from "@/components/multi-select";
 import { Label } from "@/components/ui/label";
 import { isp3s } from "../utils/OptionLists";
-import React from "react";
+import React, { useEffect } from "react";
 import { Indicator, Isp3 } from "../types/Types";
 import { useParentContext } from "@/contexts/ParentContext";
 import { useProjectEditContext } from "../edit_project/[id]/page";
@@ -19,7 +19,11 @@ import { useProjectShowContext } from "../project_show/[id]/page";
 import { useProjectContext } from "../create_new_project/page";
 import { cardsBottomButtons } from "./CardsBottomButtons";
 import { Isp3SubPageInterface } from "@/interfaces/Interfaces";
-import { IsCreateMode, IsIndicatorSaved, IsShowMode } from "@/lib/Constants";
+import {
+  IsCreateMode,
+  IsIndicatorSaved,
+  IsShowMode,
+} from "@/constants/Constants";
 
 const Isp3SubPage: React.FC<Isp3SubPageInterface> = ({ mode }) => {
   const { axiosInstance, reqForToastAndSetMessage } = useParentContext();
@@ -56,6 +60,8 @@ const Isp3SubPage: React.FC<Isp3SubPageInterface> = ({ mode }) => {
 
   const readOnly = IsShowMode(mode);
 
+  useEffect(() => console.log(isp3), [isp3]);
+
   return (
     <>
       <Card className="h-full w-full relative overflow-auto">
@@ -64,41 +70,38 @@ const Isp3SubPage: React.FC<Isp3SubPageInterface> = ({ mode }) => {
           <CardDescription>Link indicators to isp3.</CardDescription>
         </CardHeader>
 
-        <CardContent className="flex flex-col gap-6">
-          {isp3s.map((name, index) => (
-            <div
-              key={index}
-              className="flex items-center justify-between gap-4"
-            >
-              <Label className="whitespace-nowrap">{name}</Label>
+        <CardContent className="flex flex-col gap-6 overflow-auto h-[70%]">
+          {isp3.map((item, index) => {
+            return (
+              <div
+                key={index}
+                className="flex items-center justify-between gap-4"
+              >
+                <Label className="whitespace-nowrap">{item.name}</Label>
 
-              <div className="w-[280px] flex-shrink-0">
-                <MultiSelect
-                  options={indicators
-                    .filter((indicator) => IsIndicatorSaved(indicator))
-                    .map((ind) => ({
-                      label: ind.indicatorRef,
-                      value: String(ind.id),
-                    }))}
-                  value={isp3.find((i) => i.name === name)?.indicators ?? []}
-                  onValueChange={(value: string[]) =>
-                    setIsp3((prev) =>
-                      prev.map((item) =>
-                        item.name === name
-                          ? {
-                              ...item,
-                              indicators: value,
-                            }
-                          : item
+                <div className="w-[280px] flex-shrink-0">
+                  <MultiSelect
+                    options={indicators
+                      .filter((indicator) => IsIndicatorSaved(indicator))
+                      .map((ind) => ({
+                        label: ind.indicatorRef,
+                        value: String(ind.id),
+                      }))}
+                    value={item.indicators.map((ind) => String(ind))}
+                    onValueChange={(value: string[]) =>
+                      setIsp3((prev) =>
+                        prev.map((i) =>
+                          i.name === item.name ? { ...i, indicators: value } : i
+                        )
                       )
-                    )
-                  }
-                  placeholder="Select indicator to link"
-                  disabled={readOnly}
-                />
+                    }
+                    placeholder="Select indicator to link"
+                    disabled={readOnly}
+                  />
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </CardContent>
 
         <CardFooter className="flex flex-row items-center justify-end w-full absolute bottom-5">
@@ -107,7 +110,8 @@ const Isp3SubPage: React.FC<Isp3SubPageInterface> = ({ mode }) => {
             "aprPreview",
             readOnly ? undefined : hundleSubmit,
             setCurrentTab,
-            "finalization"
+            "finalization",
+            "isp3"
           )}
         </CardFooter>
       </Card>

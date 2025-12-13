@@ -2,7 +2,7 @@
 
 import SubHeader from "@/components/global/SubHeader";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,7 +17,7 @@ import SessionForm from "@/components/global/CommunityDialogueSessionForm";
 import { Button } from "@/components/ui/button";
 import { Can } from "@/components/Can";
 import { withPermission } from "@/lib/withPermission";
-import { IsIdFeild } from "@/lib/Constants";
+import { IsIdFeild } from "@/constants/Constants";
 
 const CommunityDialogueProfilePage = () => {
   const { id } = useParams<{
@@ -29,6 +29,8 @@ const CommunityDialogueProfilePage = () => {
     axiosInstance,
     reqForConfirmationModelFunc,
   } = useParentContext();
+
+  const router = useRouter();
 
   let [idFeildForEditStateSetter, setIdFeildForEditStateSetter] = useState<
     number | null
@@ -74,7 +76,6 @@ const CommunityDialogueProfilePage = () => {
     axiosInstance
       .get(`/community_dialogue_db/community_dialogue/${id}`)
       .then((response: any) => {
-        console.log(response.data.data);
         setCommunityDialogue(response.data.data);
       })
       .catch((error: any) =>
@@ -84,173 +85,179 @@ const CommunityDialogueProfilePage = () => {
 
   const [selectedTab, setSelectedTab] = useState<string>("programInfo");
 
+  const openBeneficiaryProfile = (value: boolean, id: number) => {
+    router.push(`/community_dialogue_database/beneficiary_profile/${id}`);
+  };
+
+  useEffect(() => {
+    if (idFeildForShowStateSetter)
+      openBeneficiaryProfile(true, idFeildForShowStateSetter);
+  }, [idFeildForShowStateSetter]);
+
   return (
     <>
-      <Navbar14 />
-      <div className="flex flex-row items-center justify-start my-2">
-        <BreadcrumbWithCustomSeparator></BreadcrumbWithCustomSeparator>
-      </div>
-      <div className="mt-4 ml-6">
-        <SubHeader pageTitle={"Community Dialogue Profile"}>
-          {selectedTab == "cdSessions" && (
-            <Can permission="Dialogue.create">
-              <div>
-                <Button
-                  onClick={() =>
-                    setReqForSessionCreationForm(!reqForSessionCreationForm)
-                  }
-                >
-                  Add New Session
-                </Button>
-              </div>
-            </Can>
-          )}
-        </SubHeader>
-      </div>
-
-      <div className="w-full h-full">
-        <div className="w-full overflow-x-auto">
-          <Tabs
-            defaultValue="programInfo"
-            onValueChange={handleTabChange}
-            className="h-full"
-          >
-            {/* List of tabs */}
-            <TabsList className="w-full">
-              <TabsTrigger value="programInfo">Program Info</TabsTrigger>
-              <TabsTrigger value="cdSessions">Sessions</TabsTrigger>
-
-              {/* Community Dialogue groups tabs */}
-              {communityDialogue?.groups.map((group) => (
-                <TabsTrigger key={group.id} value={group.name}>
-                  {group.name.toUpperCase()}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-
-            {/* Program information */}
-            <TabsContent value="programInfo" className="h-full">
-              <Card className="shadow-sm border border-border w-full bg-background">
-                <CardHeader>
-                  <CardTitle className="text-xl font-semibold text-foreground">
-                    Program Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div >
-                    {communityDialogue ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {Object.entries(communityDialogue.program).map(
-                          ([key, value], index) => {
-                            if (IsIdFeild(key)) return;
-                            return (
-                              <div
-                                key={index}
-                                className="flex flex-col rounded-xl border p-3 transition-all hover:shadow-sm"
-                              >
-                                <span className="text-xs font-medium uppercase opacity-70 tracking-wide">
-                                  {key.replace(/([A-Z])/g, " $1")}
-                                </span>
-                                <span className="text-sm font-semibold truncate">
-                                  {value?.toString() || "-"}
-                                </span>
-                              </div>
-                            );
-                          }
-                        )}
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {Array.from({ length: 10 }).map((_, i) => (
-                          <div
-                            key={i}
-                            className="h-[56px] w-full rounded-xl animate-pulse bg-muted/30"
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Sessions */}
-            <TabsContent value="cdSessions" className="h-full">
-              <Card className="shadow-sm border border-border w-full bg-background">
-                <CardHeader>
-                  <CardTitle className="text-xl font-semibold text-foreground">
-                    Community Dialogue Sessions List
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <DataTableDemo
-                    columns={communityDialoguesSessionTableColumns}
-                    indexUrl={`/community_dialogue_db/community_dialogue/sessions/${id}`}
-                    deleteUrl="/community_dialogue_db/community_dialogue/sessions/delete_sessions"
-                    searchableColumn="type"
-                    idFeildForEditStateSetter={setIdFeildForEditStateSetter}
-                    editModelOpenerStateSetter={setReqForSessionEditionForm}
-                    idFeildForShowStateSetter={setIdFeildForShowStateSetter}
-                    showModelOpenerStateSetter={setReqForSessionShowForm}
-                  ></DataTableDemo>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Each group content */}
-            <TabsContent
-              value={
-                communityDialogue?.groups.find(
-                  (group: { id: string; name: string }) => group.id == groupId
-                )?.name ?? ""
-              }
-              className="h-full"
-            >
-              <Card className="shadow-sm border border-border w-full bg-background">
-                <CardHeader>
-                  <CardTitle className="text-xl font-semibold text-foreground">
-                    {}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <DataTableDemo
-                    columns={mainDatabaseAndKitDatabaseBeneficiaryColumns}
-                    indexUrl={`community_dialogue_db/community_dialogue/groups/beneficiaries/${groupId}`}
-                    deleteUrl="/community_dialogue_db/community_dialogue/sessions/delete_sessions"
-                    searchableColumn="name"
-                    idFeildForEditStateSetter={setIdFeildForEditStateSetter}
-                    idFeildForShowStateSetter={setIdFeildForShowStateSetter}
-                    showModelOpenerStateSetter={() => {}}
-                  ></DataTableDemo>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+      <div className="w-full h-full p-2">
+        <Navbar14 />
+        <div>
+          <BreadcrumbWithCustomSeparator></BreadcrumbWithCustomSeparator>
+        </div>
+        <div className="mt-2">
+          <SubHeader pageTitle={"Community Dialogue Profile"}></SubHeader>
         </div>
 
-        {reqForSessionCreationForm && (
-          <SessionForm
-            open={reqForSessionCreationForm}
-            onOpenChange={setReqForSessionCreationForm}
-            mode={"create"}
-          ></SessionForm>
-        )}
-        {reqForSessionEditionForm && (
-          <SessionForm
-            open={reqForSessionEditionForm}
-            onOpenChange={setReqForSessionEditionForm}
-            mode={"edit"}
-            sessionId={idFeildForEditStateSetter as unknown as string}
-          ></SessionForm>
-        )}
-        {reqForSessionShowForm && (
-          <SessionForm
-            open={reqForSessionShowForm}
-            onOpenChange={setReqForSessionShowForm}
-            mode={"show"}
-            sessionId={idFeildForShowStateSetter as unknown as string}
-          ></SessionForm>
-        )}
+        <div className="w-full h-full">
+          <div className="w-full overflow-x-auto">
+            <Tabs
+              defaultValue="programInfo"
+              onValueChange={handleTabChange}
+              className="h-full"
+            >
+              {/* List of tabs */}
+              <TabsList className="w-full">
+                <TabsTrigger value="programInfo">Program Info</TabsTrigger>
+                <TabsTrigger value="cdSessions">Sessions</TabsTrigger>
+
+                {/* Community Dialogue groups tabs */}
+                {communityDialogue?.groups.map((group) => (
+                  <TabsTrigger key={group.id} value={group.name}>
+                    {group.name.toUpperCase()}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+
+              {/* Program information */}
+              <TabsContent
+                value="programInfo"
+                className="h-full overflow-hidden"
+              >
+                <Card className="shadow-sm border border-border w-full bg-background">
+                  <CardHeader>
+                    <CardTitle className="text-xl font-semibold text-foreground">
+                      Program Information
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="overflow-auto">
+                    <div>
+                      {communityDialogue ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {Object.entries(communityDialogue.program).map(
+                            ([key, value], index) => {
+                              if (IsIdFeild(key)) return;
+                              return (
+                                <div
+                                  key={index}
+                                  className="flex flex-col rounded-xl border p-3 transition-all hover:shadow-sm"
+                                >
+                                  <span className="text-xs font-medium uppercase opacity-70 tracking-wide">
+                                    {key.replace(/([A-Z])/g, " $1")}
+                                  </span>
+                                  <span className="text-sm font-semibold truncate">
+                                    {value?.toString() || "-"}
+                                  </span>
+                                </div>
+                              );
+                            }
+                          )}
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {Array.from({ length: 10 }).map((_, i) => (
+                            <div
+                              key={i}
+                              className="h-[56px] w-full rounded-xl animate-pulse bg-muted/30"
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Sessions */}
+              <TabsContent value="cdSessions" className="h-full">
+                <Card className="shadow-sm border border-border w-full bg-background">
+                  <CardHeader>
+                    <CardTitle className="flex flex-row items-center justify-between px-2text-xl font-semibold text-foreground">
+                      <span>Community Dialogue Sessions List</span>
+                      <Can permission="Dialogue.create">
+                        <Button
+                          onClick={() =>
+                            setReqForSessionCreationForm(
+                              !reqForSessionCreationForm
+                            )
+                          }
+                        >
+                          Add New Session
+                        </Button>
+                      </Can>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <DataTableDemo
+                      columns={communityDialoguesSessionTableColumns}
+                      indexUrl={`/community_dialogue_db/community_dialogue/sessions/${id}`}
+                      deleteUrl="/community_dialogue_db/community_dialogue/sessions/delete_sessions"
+                      searchableColumn="type"
+                      idFeildForEditStateSetter={setIdFeildForEditStateSetter}
+                      editModelOpenerStateSetter={setReqForSessionEditionForm}
+                      idFeildForShowStateSetter={setIdFeildForShowStateSetter}
+                      showModelOpenerStateSetter={setReqForSessionShowForm}
+                    ></DataTableDemo>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Each group content */}
+              <TabsContent
+                value={
+                  communityDialogue?.groups.find(
+                    (group: { id: string; name: string }) => group.id == groupId
+                  )?.name ?? ""
+                }
+                className="h-full"
+              >
+                <Card className="shadow-sm border border-border w-full bg-background">
+                  <CardContent>
+                    <DataTableDemo
+                      columns={mainDatabaseAndKitDatabaseBeneficiaryColumns}
+                      indexUrl={`community_dialogue_db/community_dialogue/groups/beneficiaries/${groupId}`}
+                      deleteUrl="/community_dialogue_db/community_dialogue/sessions/delete_sessions"
+                      searchableColumn="name"
+                      idFeildForEditStateSetter={setIdFeildForEditStateSetter}
+                      idFeildForShowStateSetter={setIdFeildForShowStateSetter}
+                      showModelOpenerStateSetter={() => {}}
+                    ></DataTableDemo>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+
+          {reqForSessionCreationForm && (
+            <SessionForm
+              open={reqForSessionCreationForm}
+              onOpenChange={setReqForSessionCreationForm}
+              mode={"create"}
+            ></SessionForm>
+          )}
+          {reqForSessionEditionForm && (
+            <SessionForm
+              open={reqForSessionEditionForm}
+              onOpenChange={setReqForSessionEditionForm}
+              mode={"edit"}
+              sessionId={idFeildForEditStateSetter as unknown as string}
+            ></SessionForm>
+          )}
+          {reqForSessionShowForm && (
+            <SessionForm
+              open={reqForSessionShowForm}
+              onOpenChange={setReqForSessionShowForm}
+              mode={"show"}
+              sessionId={idFeildForShowStateSetter as unknown as string}
+            ></SessionForm>
+          )}
+        </div>
       </div>
     </>
   );

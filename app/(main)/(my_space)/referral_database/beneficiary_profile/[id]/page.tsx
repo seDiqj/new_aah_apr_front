@@ -15,7 +15,7 @@ import ReferralForm from "@/components/global/ReferralForm";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import BreadcrumbWithCustomSeparator from "@/components/global/BreadCrumb";
 import SubHeader from "@/components/global/SubHeader";
-import { IsANullValue, IsIdFeild } from "@/lib/Constants";
+import { IsANullValue, IsIdFeild } from "@/constants/Constants";
 
 const BeneProfileTabs = () => {
   const { id } = useParams<{
@@ -123,9 +123,7 @@ const BeneProfileTabs = () => {
                     Beneficiary Information
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                    {structuredInfo(beneficiaryInfo)}
-                </CardContent>
+                <CardContent>{structuredInfo(beneficiaryInfo)}</CardContent>
               </Card>
             </TabsContent>
 
@@ -145,7 +143,7 @@ const BeneProfileTabs = () => {
       </div>
     </>
   );
-}
+};
 
 // Reusable info item component
 export function InfoItem({ label, value }: { label: string; value: string }) {
@@ -156,7 +154,6 @@ export function InfoItem({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
-
 
 const structuredInfo = (info: any) => {
   return (
@@ -193,7 +190,5 @@ const structuredInfo = (info: any) => {
     </>
   );
 };
-
-
 
 export default BeneProfileTabs;

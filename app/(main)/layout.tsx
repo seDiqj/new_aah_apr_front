@@ -8,6 +8,8 @@ import Parent from "@/components/layout/Parent";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { PermissionProvider } from "@/contexts/PermissionContext";
+import GlobalListeners from "@/providers/GlobalListeners";
+import { EventProvider } from "@/contexts/EventContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,22 +41,24 @@ export default async function RootLayout({
       >
         <SidebarProvider defaultOpen={defaultOpen}>
           <>
-            <PermissionProvider>
-              <Parent>
-                <ThemeProvider
-                  attribute="class"
-                  defaultTheme="system"
-                  enableSystem
-                  disableTransitionOnChange
-                >
-                  <div className="flex flex-row">
-                    <AppSidebar />
-                    <div className="flex-1">{children}</div>
-                    <Toaster />
-                  </div>
-                </ThemeProvider>
-              </Parent>
-            </PermissionProvider>
+            <Parent>
+              <PermissionProvider>
+                <EventProvider>
+                  <ThemeProvider
+                    attribute="class"
+                    defaultTheme="system"
+                    enableSystem
+                    disableTransitionOnChange
+                  >
+                    <div className="flex flex-row">
+                      <AppSidebar />
+                      <div className="flex-1">{children}</div>
+                      <Toaster />
+                    </div>
+                  </ThemeProvider>
+                </EventProvider>
+              </PermissionProvider>
+            </Parent>
           </>
         </SidebarProvider>
       </body>

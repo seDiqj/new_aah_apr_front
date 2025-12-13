@@ -12,7 +12,10 @@ import KitDatabaseBeneficiaryForm from "@/components/global/KitDatabaseBeneficia
 import KitDatabaseBeneficiaryUpdateForm from "@/components/global/KitDatabaseBeneficiaryUpdateForm";
 import { Can } from "@/components/Can";
 import { withPermission } from "@/lib/withPermission";
-import { KitDatabaseBeneficiaryFiltersList, KitDatabaseBeneficiaryFiltersUrl } from "@/lib/FiltersList";
+import {
+  KitDatabaseBeneficiaryFiltersList,
+  KitDatabaseBeneficiaryFiltersUrl,
+} from "@/constants/FiltersList";
 
 const MainDatabasePage = () => {
   const router = useRouter();
@@ -95,10 +98,10 @@ const MainDatabasePage = () => {
           <KitDatabaseBeneficiaryUpdateForm
             open={reqForBeneficiaryUpdateForm}
             onOpenChange={setReqForBeneficiaryUpdateForm}
-            beneficiaryId={idFeildForEditStateSetter as unknown as string} title={""}
+            beneficiaryId={idFeildForEditStateSetter as unknown as string}
+            title={""}
           ></KitDatabaseBeneficiaryUpdateForm>
         )}
-
       </div>
     </>
   );

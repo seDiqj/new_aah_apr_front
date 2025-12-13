@@ -11,16 +11,22 @@ import {
 import { Edit, Eye, Trash } from "lucide-react";
 import { cardsBottomButtons } from "./CardsBottomButtons";
 import React, { useState } from "react";
-import { handleDelete } from "../utils/CommonFunctions";
 import { Outcome } from "../types/Types";
 import { useProjectContext } from "../create_new_project/page";
 import OutcomeEditModal from "@/components/global/OutcomeEditModel";
 import { useProjectEditContext } from "../edit_project/[id]/page";
 import { useProjectShowContext } from "../project_show/[id]/page";
-import { IsCreateMode, IsShowMode } from "@/lib/Constants";
+import {
+  IsCreateMode,
+  IsNotANullValue,
+  IsNotShowMode,
+  IsShowMode,
+} from "@/constants/Constants";
 import { OutcomeFormInterface } from "@/interfaces/Interfaces";
 import { useParentContext } from "@/contexts/ParentContext";
-import { DeleteOutcomeMessage } from "@/lib/ConfirmationModelsTexts";
+import { DeleteOutcomeMessage } from "@/constants/ConfirmationModelsTexts";
+import OutcomeModel from "@/components/global/OutcomeEditModel";
+import { Button } from "@/components/ui/button";
 
 const OutcomeForm: React.FC<OutcomeFormInterface> = ({ mode }) => {
   const { reqForConfirmationModelFunc } = useParentContext();
@@ -29,11 +35,13 @@ const OutcomeForm: React.FC<OutcomeFormInterface> = ({ mode }) => {
     outcomes,
     setOutcomes,
     setCurrentTab,
+    handleDelete,
   }: {
     projectId: number | null;
     outcomes: Outcome[];
     setOutcomes: React.Dispatch<React.SetStateAction<Outcome[]>>;
     setCurrentTab: (value: string) => void;
+    handleDelete: (url: string, id: string | null) => void;
   } = IsCreateMode(mode)
     ? useProjectContext()
     : IsShowMode(mode)
@@ -48,20 +56,25 @@ const OutcomeForm: React.FC<OutcomeFormInterface> = ({ mode }) => {
     number | null
   >(null);
 
+  const [reqForOutcomeForm, setReqForOutcomeForm] = useState(false);
+
   const readOnly = IsShowMode(mode);
 
   return (
     <>
       <Card className="relative h-full flex flex-col">
-        <CardHeader className="w-full">
-          <CardTitle>Add Outcomes</CardTitle>
-          <CardDescription>
-            Define each Outcome with its reference code
-          </CardDescription>
+        <CardHeader className="flex flex-row items-center justify-end w-full">
+          <CardTitle>
+            {IsNotShowMode(mode) && (
+              <Button onClick={() => setReqForOutcomeForm(!reqForOutcomeForm)}>
+                Add Outcomes
+              </Button>
+            )}
+          </CardTitle>
         </CardHeader>
 
-        <CardContent className="flex flex-col gap-4 overflow-auto">
-          <div className="mt-4 max-h-60 ">
+        <CardContent className="flex flex-col gap-4 overflow-auto h-[70%]">
+          <div className="mt-4">
             {outcomes.length === 0 && (
               <p className="text-center text-sm text-muted-foreground py-3">
                 No outcomes added yet.
@@ -96,7 +109,7 @@ const OutcomeForm: React.FC<OutcomeFormInterface> = ({ mode }) => {
                       size={18}
                     />
                   )}
-                  {item.id != null &&
+                  {IsNotANullValue(item.id) &&
                     (!readOnly ? (
                       <Edit
                         className="cursor-pointer text-orange-500 hover:text-orange-700"
@@ -136,6 +149,15 @@ const OutcomeForm: React.FC<OutcomeFormInterface> = ({ mode }) => {
           )}
         </CardFooter>
       </Card>
+
+      {IsNotShowMode(mode) && reqForOutcomeForm && (
+        <OutcomeModel
+          isOpen={reqForOutcomeForm}
+          onOpenChange={setReqForOutcomeForm}
+          mode="create"
+          pageIdentifier="create"
+        ></OutcomeModel>
+      )}
 
       {reqForOutcomeEditModel && outcomeIdForEditOrShow && (
         <OutcomeEditModal

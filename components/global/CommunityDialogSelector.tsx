@@ -27,24 +27,31 @@ import {
 } from "@/components/ui/table";
 import { Checkbox } from "../ui/checkbox";
 import { withPermission } from "@/lib/withPermission";
-import { CommunityDialogues, SelectedCommunityDialoguesGroups } from "@/types/Types";
-import { CommunityDialogueSelectorSubmitMessage } from "@/lib/ConfirmationModelsTexts";
+import {
+  CommunityDialogues,
+  SelectedCommunityDialoguesGroups,
+} from "@/types/Types";
+import { CommunityDialogueSelectorSubmitMessage } from "@/constants/ConfirmationModelsTexts";
 import { CommunityDialogueSelectorInterface } from "@/interfaces/Interfaces";
 
+const CommunityDialogueSelector: React.FC<
+  CommunityDialogueSelectorInterface
+> = ({ open, onOpenChange, ids }) => {
+  const {
+    reqForToastAndSetMessage,
+    axiosInstance,
+    reqForConfirmationModelFunc,
+  } = useParentContext();
 
-const CommunityDialogueSelector: React.FC<CommunityDialogueSelectorInterface> = ({
-  open,
-  onOpenChange,
-  ids,
-}) => {
-  const { reqForToastAndSetMessage, axiosInstance, reqForConfirmationModelFunc } = useParentContext();
+  const [communityDialogues, setCommunityDialogues] =
+    useState<CommunityDialogues>([]);
 
-  const [communityDialogues, setCommunityDialogues] = useState<CommunityDialogues>([]);
-
-  const [selectedCommunityDialoguesGroup, setSelectedCommunityDialoguesGroup] = useState<SelectedCommunityDialoguesGroups>([]);
+  const [selectedCommunityDialoguesGroup, setSelectedCommunityDialoguesGroup] =
+    useState<SelectedCommunityDialoguesGroups>([]);
 
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [hoveredRowTopRectPosision, setHoveredRowTopRectPosision] = useState<number>(0);
+  const [hoveredRowTopRectPosision, setHoveredRowTopRectPosision] =
+    useState<number>(0);
   const [hoveredCd, setHoveredCd] = useState<any>();
   const dialogContentRef = useRef<HTMLDivElement>(null);
   const [areWeInSubDropDown, setAreWeInSubDropDown] = useState<boolean>(false);
@@ -60,7 +67,10 @@ const CommunityDialogueSelector: React.FC<CommunityDialogueSelectorInterface> = 
         communityDialogue: selectedCommunityDialoguesGroup,
         ids: ids,
       })
-      .then((response: any) => reqForToastAndSetMessage(response.data.message))
+      .then((response: any) => {
+        onOpenChange(false);
+        reqForToastAndSetMessage(response.data.message);
+      })
       .catch((error: any) => {
         reqForToastAndSetMessage(error.response.data.message);
       });
@@ -165,10 +175,15 @@ const CommunityDialogueSelector: React.FC<CommunityDialogueSelectorInterface> = 
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <Button onClick={() => reqForConfirmationModelFunc(
-          CommunityDialogueSelectorSubmitMessage,
-          () => handleSubmit()
-        )} className="w-full mt-6">
+        <Button
+          onClick={() =>
+            reqForConfirmationModelFunc(
+              CommunityDialogueSelectorSubmitMessage,
+              () => handleSubmit()
+            )
+          }
+          className="w-full mt-6"
+        >
           Submit
         </Button>
       </DialogContent>

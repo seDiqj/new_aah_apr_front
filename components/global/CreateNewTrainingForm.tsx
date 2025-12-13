@@ -21,11 +21,22 @@ import {
   AccordionContent,
 } from "@/components/ui/accordion";
 import { ChapterForm, TrainingForm } from "@/types/Types";
-import { ChapterDefault, TrainingDefault } from "@/lib/FormsDefaultValues";
-import { TrainingCreationMessage, TrainingEditionMessage } from "@/lib/ConfirmationModelsTexts";
+import {
+  ChapterDefault,
+  TrainingDefault,
+} from "@/constants/FormsDefaultValues";
+import {
+  TrainingCreationMessage,
+  TrainingEditionMessage,
+} from "@/constants/ConfirmationModelsTexts";
 import { TrainingFormInterface } from "@/interfaces/Interfaces";
-import { IsCreateMode, IsEditMode, IsEditOrShowMode, IsNotShowMode, IsShowMode } from "@/lib/Constants";
-
+import {
+  IsCreateMode,
+  IsEditMode,
+  IsEditOrShowMode,
+  IsNotShowMode,
+  IsShowMode,
+} from "@/constants/Constants";
 
 const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
   open,
@@ -34,7 +45,12 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
   mode,
   id,
 }) => {
-  const { reqForToastAndSetMessage, axiosInstance, handleReload, reqForConfirmationModelFunc } = useParentContext();
+  const {
+    reqForToastAndSetMessage,
+    axiosInstance,
+    handleReload,
+    reqForConfirmationModelFunc,
+  } = useParentContext();
 
   const isReadOnly = IsShowMode(mode);
 
@@ -46,13 +62,21 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
 
   const [chapter, setChapter] = useState<ChapterForm>(ChapterDefault());
 
-  const [districts, setDistricts] = useState<{ id: string; name: string }[]>([]);
+  const [districts, setDistricts] = useState<{ id: string; name: string }[]>(
+    []
+  );
 
-  const [provinces, setProvinces] = useState<{ id: string; name: string }[]>([]);
+  const [provinces, setProvinces] = useState<{ id: string; name: string }[]>(
+    []
+  );
 
-  const [projects, setProjects] = useState<{ id: string; projectCode: string }[]>([]);
+  const [projects, setProjects] = useState<
+    { id: string; projectCode: string }[]
+  >([]);
 
-  const [indicators, setIndicators] = useState<{ id: string; indicatorRef: string }[]>([]);
+  const [indicators, setIndicators] = useState<
+    { id: string; indicatorRef: string }[]
+  >([]);
 
   const handleChange = (
     e:
@@ -91,7 +115,7 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
       } else return;
 
       reqForToastAndSetMessage(res.data.message);
-      handleReload()
+      handleReload();
       onOpenChange(false);
     } catch (err: any) {
       reqForToastAndSetMessage(err.response?.data?.message || "Error");
@@ -108,7 +132,7 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
   useEffect(() => {
     if (IsEditOrShowMode(mode) && id) {
       setLoading(true);
-  
+
       axiosInstance
         .get(`/training_db/training_for_edit/${id}`)
         .then((response: any) => {
@@ -129,18 +153,23 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
           setChapters(data.chapters || []);
         })
         .catch((error: any) => {
-          reqForToastAndSetMessage(error.response?.data?.message || "Error loading data");
+          reqForToastAndSetMessage(
+            error.response?.data?.message || "Error loading data"
+          );
         })
         .finally(() => setLoading(false));
     }
   }, [mode, id]);
 
   useEffect(() => {
-    axiosInstance.get("/projects/p/training_database")
-    .then((res: any) => {
-      setProjects(Object.values(res.data.data));
-    })
-    .catch((error: any) => reqForToastAndSetMessage(error.response.data.message));
+    axiosInstance
+      .get("/projects/p/training_database")
+      .then((res: any) => {
+        setProjects(Object.values(res.data.data));
+      })
+      .catch((error: any) =>
+        reqForToastAndSetMessage(error.response.data.message)
+      );
   }, []);
 
   useEffect(() => {
@@ -153,11 +182,13 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
   }, []);
 
   useEffect(() => {
-    if (!formData.project_id) return
-    axiosInstance.get(`/global/project/provinces/${formData.project_id}`).then((res: any) => {
-      setProvinces(Object.values(res.data.data));
-    });
-  }, [formData.project_id])
+    if (!formData.project_id) return;
+    axiosInstance
+      .get(`/global/project/provinces/${formData.project_id}`)
+      .then((res: any) => {
+        setProvinces(Object.values(res.data.data));
+      });
+  }, [formData.project_id]);
 
   if (loading) {
     return (
@@ -179,9 +210,7 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
           <DialogTitle className="text-lg">{title}</DialogTitle>
         </DialogHeader>
 
-        <form
-          className="grid grid-cols-1 md:grid-cols-2 gap-4"
-        >
+        <form className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <h2 className="col-span-2 text-center font-bold mb-4">
             Program Information
           </h2>
@@ -260,6 +289,8 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
               onChange={handleChange}
             />
           </div>
+
+          {/* Training Name */}
           <div className="flex flex-col gap-1">
             <Label>Training Name</Label>
             <Input
@@ -269,6 +300,8 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
               onChange={handleChange}
             />
           </div>
+
+          {/* Participant Category */}
           <div className="flex flex-col gap-1">
             <Label>Participant Category</Label>
             <div className="flex flex-row items-center gap-4">
@@ -298,6 +331,8 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
               </div>
             </div>
           </div>
+
+          {/* Apr Included */}
           <div className="flex flex-col gap-1">
             <Label>APR Included</Label>
             <div className="flex flex-row items-center gap-4">
@@ -321,6 +356,8 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
               </div>
             </div>
           </div>
+
+          {/* Training Modality */}
           <div className="flex flex-col gap-1">
             <Label>Training Modality</Label>
             <div className="flex flex-row items-center gap-4">
@@ -350,6 +387,8 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
               </div>
             </div>
           </div>
+
+          {/* Start Date */}
           <div className="flex flex-col gap-1">
             <Label>Start Date</Label>
             <Input
@@ -359,6 +398,8 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
               onChange={handleChange}
             />
           </div>
+
+          {/* End Date */}
           <div className="flex flex-col gap-1">
             <Label>End Date</Label>
             <Input
@@ -368,6 +409,7 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
               onChange={handleChange}
             />
           </div>
+
           {/* --- Chapter Section --- */}
           <div className="col-span-2 mt-6">
             <h2 className="text-center font-bold mb-4">Chapter Information</h2>
@@ -375,40 +417,62 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
             {!isReadOnly && (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Input
-                    name="topic"
-                    placeholder="Topic"
-                    value={chapter.topic}
-                    onChange={handleChapterChange}
-                  />
-                  <Input
-                    name="facilitatorName"
-                    placeholder="Facilitator"
-                    value={chapter.facilitatorName}
-                    onChange={handleChapterChange}
-                  />
-                  <Input
-                    name="facilitatorJobTitle"
-                    placeholder="Job Title"
-                    value={chapter.facilitatorJobTitle}
-                    onChange={handleChapterChange}
-                  />
-                  <Input
-                    type="date"
-                    name="startDate"
-                    value={chapter.startDate}
-                    onChange={handleChapterChange}
-                  />
-                  <Input
-                    type="date"
-                    name="endDate"
-                    value={chapter.endDate}
-                    onChange={handleChapterChange}
-                  />
+                  {/* Topic */}
+                  <div className="flex flex-col gap-2">
+                    <Label>Topic</Label>
+                    <Input
+                      name="topic"
+                      placeholder="Topic"
+                      value={chapter.topic}
+                      onChange={handleChapterChange}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <Label>Facilitator Name</Label>
+                    <Input
+                      name="facilitatorName"
+                      placeholder="Facilitator"
+                      value={chapter.facilitatorName}
+                      onChange={handleChapterChange}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <Label>Facilitator Job Title</Label>
+                    <Input
+                      name="facilitatorJobTitle"
+                      placeholder="Job Title"
+                      value={chapter.facilitatorJobTitle}
+                      onChange={handleChapterChange}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <Label>Start Date</Label>
+                    <Input
+                      type="date"
+                      name="startDate"
+                      value={chapter.startDate}
+                      onChange={handleChapterChange}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <Label>End Date</Label>
+                    <Input
+                      type="date"
+                      name="endDate"
+                      value={chapter.endDate}
+                      onChange={handleChapterChange}
+                    />
+                  </div>
                 </div>
-                <Button type="button" onClick={handleAddChapter} className="mt-4">
+                <div className="flex flex-row items-center justify-end w-full">
+                  <Button
+                  type="button"
+                  onClick={handleAddChapter}
+                  className="mt-4"
+                >
                   Add Chapter
                 </Button>
+                </div>
               </>
             )}
 
@@ -453,10 +517,18 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
           {/* --- Buttons --- */}
           <div className="col-span-2 mt-6">
             {IsNotShowMode(mode) ? (
-              <Button type="button" className="w-full" onClick={(e) => reqForConfirmationModelFunc(
-                (IsCreateMode(mode) ? TrainingCreationMessage : TrainingEditionMessage),
-                () => handleSubmit(e)
-              )}>
+              <Button
+                type="button"
+                className="w-full"
+                onClick={(e) =>
+                  reqForConfirmationModelFunc(
+                    IsCreateMode(mode)
+                      ? TrainingCreationMessage
+                      : TrainingEditionMessage,
+                    () => handleSubmit(e)
+                  )
+                }
+              >
                 {IsEditMode(mode) ? "Update" : "Submit"}
               </Button>
             ) : (

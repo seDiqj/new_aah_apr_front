@@ -1,4 +1,43 @@
 import { BeneficiaryForm } from "@/types/Types";
+import { ColumnDef } from "@tanstack/react-table";
+
+export interface DataTableInterface {
+  columns: ColumnDef<any>[];
+  indexUrl: string;
+  filterUrl?: string;
+  deleteUrl?: string;
+  searchableColumn: string;
+
+  // For Edit modal
+  idFeildForEditStateSetter?: React.Dispatch<
+    React.SetStateAction<number | null>
+  >;
+  editModelOpenerStateSetter?:
+    | React.Dispatch<React.SetStateAction<boolean>>
+    | VoidFunction;
+
+  // For Show modal
+  idFeildForShowStateSetter?: React.Dispatch<
+    React.SetStateAction<number | null>
+  >;
+  showModelOpenerStateSetter?:
+    | React.Dispatch<React.SetStateAction<boolean>>
+    | VoidFunction;
+
+  selectedRowsIdsStateSetter?: React.Dispatch<React.SetStateAction<{}>>;
+
+  // Injected element
+  injectedElement?: React.ReactNode;
+
+  // Filters List.
+  filtersList?: string[];
+
+  deleteBtnPermission?: string;
+
+  editBtnPermission?: string;
+
+  viewPermission?: string;
+}
 
 export interface PsychoeducationFormInterface {
   open: boolean;
@@ -101,6 +140,7 @@ export interface TrainingSelectorInterface {
   open: boolean;
   onOpenChange: (value: boolean) => void;
   ids: {};
+  trainingsData?: string;
 }
 
 export interface CommunityDialogueUpdateInterface {
@@ -210,6 +250,7 @@ export interface AssessmentScoreFormInterface {
   onOpenChange: (value: boolean) => void;
   mode: "create" | "edit" | "show";
   projectId?: number;
+  assessmentId?: number;
 }
 
 export interface ConfirmationModelInterface {
@@ -257,7 +298,7 @@ export interface MainDatabaseBeneficiaryProfileInterface {
 }
 
 export interface Isp3SubPageInterface {
-    mode: "create" | "edit" | "show",
+  mode: "create" | "edit" | "show";
 }
 
 export interface MonitoringTablePageInterface {
@@ -269,5 +310,71 @@ export interface AprFinalizationSubPageInterface {
 }
 
 export interface OutcomeFormInterface {
-    mode: "create" | "edit" | "show";
+  mode: "create" | "edit" | "show";
+}
+
+export interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  unread?: boolean;
+  time: string;
+  type:
+    | "project"
+    | "submittedDatabase"
+    | "approvedDatabase"
+    | "reviewdApr"
+    | "approvedApr";
+  database_id?: string;
+  project_id?: string;
+  apr_id?: string;
+}
+
+// Types
+export interface Navbar14Props extends React.HTMLAttributes<HTMLElement> {
+  searchPlaceholder?: string;
+  searchValue?: string;
+  testMode?: boolean;
+  showTestMode?: boolean;
+  notifications?: Array<{
+    id: string;
+    title: string;
+    message: string;
+    time: string;
+    unread?: boolean;
+  }>;
+  onSearchChange?: (value: string) => void;
+  onTestModeChange?: (enabled: boolean) => void;
+  onLayoutClick?: () => void;
+  onAddClick?: () => void;
+  onInfoItemClick?: (item: string) => void;
+  onNotificationClick?: (notificationId: string) => void;
+  onSettingsItemClick?: (item: string) => void;
+}
+
+export interface KitDatabaseProgramFormInterface {
+  open: boolean;
+  onOpenChange: (value: boolean) => void;
+  mode: "create" | "edit" | "show";
+  programId?: number;
+
+  // Only for creation mode, temp
+  createdProgramStateSetter?: any;
+
+  // temp
+  programsListStateSetter?: any;
+}
+
+export interface CdDatabaseBeneficiaryUpdateFormInterface {
+  open: boolean;
+  onOpenChange: (value: boolean) => void;
+  beneficiaryId: number;
+}
+
+export interface ProjectFormInterface {
+  mode: "create" | "edit" | "show";
+}
+
+export interface AprLogsSubPageInterface {
+  mode: "create" | "edit" | "show";
 }

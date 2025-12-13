@@ -18,9 +18,9 @@ import {
   CancelButtonMessage,
   OutcomeCreationMessage,
   OutcomeEditionMessage,
-} from "@/lib/ConfirmationModelsTexts";
+} from "@/constants/ConfirmationModelsTexts";
 import { Outcome } from "@/app/(main)/projects/types/Types";
-import { OutcomeDefault } from "@/lib/FormsDefaultValues";
+import { OutcomeDefault } from "@/constants/FormsDefaultValues";
 import { OutcomeInterface } from "@/interfaces/Interfaces";
 import {
   IsCreateMode,
@@ -32,7 +32,7 @@ import {
   IsShowMode,
   IsThereAnyOutcomeWithEnteredReferance,
   IsThereAnyOutcomeWithEnteredReferanceAndDefferentId,
-} from "@/lib/Constants";
+} from "@/constants/Constants";
 import { Textarea } from "../ui/textarea";
 
 const OutcomeModel: React.FC<OutcomeInterface> = ({
@@ -179,8 +179,8 @@ const OutcomeModel: React.FC<OutcomeInterface> = ({
       axiosInstance
         .get(`/projects/outcome/${outcomeId}`)
         .then((response: any) => {
-            setFormData(response.data.data);
-            setOutcomeBeforeEdit(response.data.data)
+          setFormData(response.data.data);
+          setOutcomeBeforeEdit(response.data.data);
         })
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)
@@ -191,12 +191,21 @@ const OutcomeModel: React.FC<OutcomeInterface> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={() => onOpenChange(false)}>
-      <DialogContent className="max-w-lg">
+      <DialogContent
+        className="sm:max-w-3xl border border-gray-300 dark:border-gray-600 rounded-lg ml-16 overflow-hidden"
+        style={{
+          minHeight: "60vh",
+          paddingTop: "10px",
+          paddingBottom: "10px",
+          paddingLeft: "16px",
+          paddingRight: "16px",
+        }}
+      >
         <DialogHeader>
           <DialogTitle>
-            {mode == "create"
+            {IsCreateMode(mode)
               ? "Create New Outcome"
-              : mode == "edit"
+              : IsEditMode(mode)
               ? "Edit Outcome"
               : "Show Outcome"}
           </DialogTitle>

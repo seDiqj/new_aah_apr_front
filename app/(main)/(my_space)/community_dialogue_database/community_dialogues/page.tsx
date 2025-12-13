@@ -8,7 +8,10 @@ import { Button } from "@/components/ui/button";
 import CreateCD from "@/components/ui/shadcn-io/CreateCD";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { communityDialoguesTableColumns } from "@/definitions/DataTableColumnsDefinitions";
-import { CommunityDialoguesFiltersList, CommunityDialoguesFilterUrl } from "@/lib/FiltersList";
+import {
+  CommunityDialoguesFiltersList,
+  CommunityDialoguesFilterUrl,
+} from "@/constants/FiltersList";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -36,11 +39,8 @@ const CommunityDialogDatabasePage = () => {
   const [reqForCommunityDialogueShowForm, setReqForCommunityDialogueShowForm] =
     useState<boolean>(false);
 
-
   const openCommunityDialogueProfile = (id: number) => {
-    router.push(
-      `community_dialogues/community_dialogue_profile/${id}`
-    );
+    router.push(`community_dialogues/community_dialogue_profile/${id}`);
   };
 
   useEffect(() => {

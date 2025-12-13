@@ -14,11 +14,12 @@ import { SingleSelect } from "../single-select";
 import { useEffect, useState } from "react";
 import { useParentContext } from "@/contexts/ParentContext";
 import { TrainingBenefeciaryForm } from "@/types/Types";
-import { TrainingDatabaseBenefeciaryForm } from "@/schemas/FormsSchema";
-import { TrainingBeneficiaryDefault } from "@/lib/FormsDefaultValues";
-import { TrainingBeneficiaryCreationMessage } from "@/lib/ConfirmationModelsTexts";
+import { TrainingDatabaseBenefeciaryFormSchema } from "@/schemas/FormsSchema";
+import { TrainingBeneficiaryDefault } from "@/constants/FormsDefaultValues";
+import { TrainingBeneficiaryCreationMessage } from "@/constants/ConfirmationModelsTexts";
 import { TrainingBeneficiaryFormInterface } from "@/interfaces/Interfaces";
-import { GenderOptions } from "@/lib/SingleAndMultiSelectOptionsList";
+import { GenderOptions } from "@/constants/SingleAndMultiSelectOptionsList";
+import { IsEditMode, IsNotANullOrUndefinedValue } from "@/constants/Constants";
 
 const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormInterface> = ({
   open,
@@ -27,16 +28,23 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormInterface> = ({
   mode,
   editId,
 }) => {
-  const { reqForToastAndSetMessage, axiosInstance, handleReload, reqForConfirmationModelFunc } = useParentContext();
+  const {
+    reqForToastAndSetMessage,
+    axiosInstance,
+    handleReload,
+    reqForConfirmationModelFunc,
+  } = useParentContext();
 
   const [loading, setLoading] = useState<boolean>(false);
 
-  const [formData, setFormData] = useState<TrainingBenefeciaryForm>(TrainingBeneficiaryDefault());
+  const [formData, setFormData] = useState<TrainingBenefeciaryForm>(
+    TrainingBeneficiaryDefault()
+  );
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
-    if (mode === "edit" && editId) {
+    if (IsEditMode(mode) && IsNotANullOrUndefinedValue(editId)) {
       setLoading(true);
       axiosInstance
         .get(`/training_db/beneficiary/${editId}`)
@@ -62,17 +70,19 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormInterface> = ({
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
-    const result = TrainingDatabaseBenefeciaryForm.safeParse(formData);
+    const result = TrainingDatabaseBenefeciaryFormSchema.safeParse(formData);
 
     if (!result.success) {
-    const errors: { [key: string]: string } = {};
-    result.error.issues.forEach((issue) => {
-      const field = issue.path[0];
-      if (field) errors[field as string] = issue.message;
-    });
+      const errors: { [key: string]: string } = {};
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0];
+        if (field) errors[field as string] = issue.message;
+      });
 
-    setFormErrors(errors);
-      reqForToastAndSetMessage("Please fix validation errors before submitting.");
+      setFormErrors(errors);
+      reqForToastAndSetMessage(
+        "Please fix validation errors before submitting."
+      );
       return;
     }
 
@@ -81,11 +91,10 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormInterface> = ({
     setLoading(true);
 
     try {
-      const url =
-        mode === "edit"
-          ? `/training_db/beneficiary/${editId}`
-          : "/training_db/beneficiary";
-      const method = mode === "edit" ? "put" : "post";
+      const url = IsEditMode(mode)
+        ? `/training_db/beneficiary/${editId}`
+        : "/training_db/beneficiary";
+      const method = IsEditMode(mode) ? "put" : "post";
 
       const response =
         method === "put"
@@ -93,7 +102,7 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormInterface> = ({
           : await axiosInstance.post(url, formData);
 
       reqForToastAndSetMessage(response.data.message);
-      handleReload()
+      handleReload();
       onOpenChange(false);
     } catch (error: any) {
       reqForToastAndSetMessage(
@@ -133,24 +142,26 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormInterface> = ({
                   placeholder="Client Name ..."
                   value={formData.name}
                   onChange={handleFormChange}
-                  className={`border p-2 rounded ${formErrors.name ? "!border-red-500" : ""}`}
+                  className={`border p-2 rounded ${
+                    formErrors.name ? "!border-red-500" : ""
+                  }`}
                   title={formErrors.name}
                 />
               </div>
 
               {/* Father / Husband Name */}
               <div className="flex flex-col gap-2">
-                <Label htmlFor="fatherHusbandName">
-                  Father / Husband Name
-                </Label>
+                <Label htmlFor="fatherHusbandName">Father / Husband Name</Label>
                 <Input
                   id="fatherHusbandName"
                   name="fatherHusbandName"
                   placeholder="Father / Husband Name ..."
                   value={formData.fatherHusbandName}
                   onChange={handleFormChange}
-                  className={`border p-2 rounded ${formErrors.fatherHusbandName ? "!border-red-500" : ""}`}
-                title={formErrors.fatherHusbandName}
+                  className={`border p-2 rounded ${
+                    formErrors.fatherHusbandName ? "!border-red-500" : ""
+                  }`}
+                  title={formErrors.fatherHusbandName}
                 />
               </div>
 
@@ -177,8 +188,10 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormInterface> = ({
                   placeholder="Age ..."
                   value={formData.age}
                   onChange={handleFormChange}
-                  className={`border p-2 rounded ${formErrors.age ? "!border-red-500" : ""}`}
-                title={formErrors.age}
+                  className={`border p-2 rounded ${
+                    formErrors.age ? "!border-red-500" : ""
+                  }`}
+                  title={formErrors.age}
                 />
               </div>
 
@@ -191,8 +204,10 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormInterface> = ({
                   placeholder="Phone ..."
                   value={formData.phone}
                   onChange={handleFormChange}
-                  className={`border p-2 rounded ${formErrors.phone ? "!border-red-500" : ""}`}
-                title={formErrors.phone}
+                  className={`border p-2 rounded ${
+                    formErrors.phone ? "!border-red-500" : ""
+                  }`}
+                  title={formErrors.phone}
                 />
               </div>
 
@@ -205,7 +220,9 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormInterface> = ({
                   placeholder="Email ..."
                   value={formData.email}
                   onChange={handleFormChange}
-                  className={`border p-2 rounded ${formErrors.email ? "!border-red-500" : ""}`}
+                  className={`border p-2 rounded ${
+                    formErrors.email ? "!border-red-500" : ""
+                  }`}
                   title={formErrors.email}
                 />
               </div>
@@ -221,7 +238,9 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormInterface> = ({
                   placeholder="Organization ..."
                   value={formData.participantOrganization}
                   onChange={handleFormChange}
-                  className={`border p-2 rounded ${formErrors.participantOrganization ? "!border-red-500" : ""}`}
+                  className={`border p-2 rounded ${
+                    formErrors.participantOrganization ? "!border-red-500" : ""
+                  }`}
                   title={formErrors.participantOrganization}
                 />
               </div>
@@ -235,7 +254,9 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormInterface> = ({
                   placeholder="Job Title ..."
                   value={formData.jobTitle}
                   onChange={handleFormChange}
-                  className={`border p-2 rounded ${formErrors.jobTitle ? "!border-red-500" : ""}`}
+                  className={`border p-2 rounded ${
+                    formErrors.jobTitle ? "!border-red-500" : ""
+                  }`}
                   title={formErrors.jobTitle}
                 />
               </div>
@@ -249,7 +270,9 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormInterface> = ({
                   type="date"
                   value={formData.dateOfRegistration}
                   onChange={handleFormChange}
-                  className={`border p-2 rounded ${formErrors.dateOfRegistration ? "!border-red-500" : ""}`}
+                  className={`border p-2 rounded ${
+                    formErrors.dateOfRegistration ? "!border-red-500" : ""
+                  }`}
                   title={formErrors.dateOfRegistration}
                 />
               </div>
@@ -261,10 +284,12 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormInterface> = ({
             type="button"
             disabled={loading}
             className="w-full mt-6"
-            onClick={(e) => reqForConfirmationModelFunc(
-              TrainingBeneficiaryCreationMessage,
-              () => handleSubmit(e)
-            )}
+            onClick={(e) =>
+              reqForConfirmationModelFunc(
+                TrainingBeneficiaryCreationMessage,
+                () => handleSubmit(e)
+              )
+            }
           >
             {loading
               ? "Please wait..."

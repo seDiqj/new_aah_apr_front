@@ -10,7 +10,10 @@ import {
 } from "@/components/ui/dialog";
 import { useParentContext } from "@/contexts/ParentContext";
 import { ChapterForm, TrainingForm } from "@/types/Types";
-import { ChapterDefault, TrainingDefault } from "@/lib/FormsDefaultValues";
+import {
+  ChapterDefault,
+  TrainingDefault,
+} from "@/constants/FormsDefaultValues";
 import { TrainingUpdateInterface } from "@/interfaces/Interfaces";
 
 const UpdateTrainingForm: React.FC<TrainingUpdateInterface> = ({
@@ -28,13 +31,18 @@ const UpdateTrainingForm: React.FC<TrainingUpdateInterface> = ({
   const [chapters, setChapters] = useState<ChapterForm[]>([]);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement> | { target: { name: string; value: string } }
+    e:
+      | React.ChangeEvent<HTMLInputElement>
+      | { target: { name: string; value: string } }
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleCheckboxChange = <T extends keyof TrainingForm>(field: T, value: any) => {
+  const handleCheckboxChange = <T extends keyof TrainingForm>(
+    field: T,
+    value: any
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -75,10 +83,18 @@ const UpdateTrainingForm: React.FC<TrainingUpdateInterface> = ({
   const [indicators, setIndicators] = useState<{ indicator: string }[]>([]);
 
   useEffect(() => {
-    axiosInstance.get("/global/districts").then((res: any) => setDistricts(Object.values(res.data.data)));
-    axiosInstance.get("/global/provinces").then((res: any) => setProvinces(Object.values(res.data.data)));
-    axiosInstance.get("/global/projects").then((res: any) => setProjects(Object.values(res.data.data)));
-    axiosInstance.get("/global/indicators/training_database").then((res: any) => setIndicators(Object.values(res.data.data)));
+    axiosInstance
+      .get("/global/districts")
+      .then((res: any) => setDistricts(Object.values(res.data.data)));
+    axiosInstance
+      .get("/global/provinces")
+      .then((res: any) => setProvinces(Object.values(res.data.data)));
+    axiosInstance
+      .get("/global/projects")
+      .then((res: any) => setProjects(Object.values(res.data.data)));
+    axiosInstance
+      .get("/global/indicators/training_database")
+      .then((res: any) => setIndicators(Object.values(res.data.data)));
   }, []);
 
   useEffect(() => {
@@ -103,23 +119,32 @@ const UpdateTrainingForm: React.FC<TrainingUpdateInterface> = ({
         });
         setChapters(data.chapters || []);
       })
-      .catch((error: any) => reqForToastAndSetMessage(error.response?.data?.message || "Error"));
+      .catch((error: any) =>
+        reqForToastAndSetMessage(error.response?.data?.message || "Error")
+      );
   }, [trainingId, open]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-4xl border border-gray-300 dark:border-gray-600 rounded-lg ml-16 overflow-y-auto" style={{ maxHeight: "85vh", padding: "16px" }}>
+      <DialogContent
+        className="sm:max-w-4xl border border-gray-300 dark:border-gray-600 rounded-lg ml-16 overflow-y-auto"
+        style={{ maxHeight: "85vh", padding: "16px" }}
+      >
         <DialogHeader>
           <DialogTitle className="text-lg">{title}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <h2 className="col-span-2 text-center font-bold mb-4">Program Information</h2>
+        <form
+          onSubmit={handleSubmit}
+          className="grid grid-cols-1 md:grid-cols-2 gap-4"
+        >
+          <h2 className="col-span-2 text-center font-bold mb-4">
+            Program Information
+          </h2>
 
           {/* مشابه Create: project, indicator, province, district, ... */}
           {/* بقیه فیلدها و chapter info و دکمه submit مثل Create است */}
           {/* می‌توانیم همان کد Create را اینجا با فرمData پر کنیم */}
-
         </form>
       </DialogContent>
     </Dialog>

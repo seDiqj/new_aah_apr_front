@@ -10,10 +10,18 @@ import { useEffect, useState } from "react";
 import { MainDatabaseProgram } from "@/types/Types";
 import { withPermission } from "@/lib/withPermission";
 import { MainDatabaseProgramFormSchema } from "@/schemas/FormsSchema";
-import { MainDatabaseProgramDefault } from "@/lib/FormsDefaultValues";
-import { MainDatabaseProgramCreationMessage, MainDatabaseProgramEditionMessage } from "@/lib/ConfirmationModelsTexts";
+import { MainDatabaseProgramDefault } from "@/constants/FormsDefaultValues";
+import {
+  MainDatabaseProgramCreationMessage,
+  MainDatabaseProgramEditionMessage,
+} from "@/constants/ConfirmationModelsTexts";
 import { MainDatabaseProgramFormInterface } from "@/interfaces/Interfaces";
-import { IsCreateMode, IsEditMode, IsShowMode } from "@/lib/Constants";
+import {
+  IsCreateMode,
+  IsEditMode,
+  IsNotShowMode,
+  IsShowMode,
+} from "@/constants/Constants";
 
 const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
   open,
@@ -21,11 +29,18 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
   mode,
   programId,
   createdProgramStateSetter,
-  programsListStateSetter
+  programsListStateSetter,
 }) => {
-  const { reqForToastAndSetMessage, axiosInstance, handleReload, reqForConfirmationModelFunc } = useParentContext();
+  const {
+    reqForToastAndSetMessage,
+    axiosInstance,
+    handleReload,
+    reqForConfirmationModelFunc,
+  } = useParentContext();
 
-  const [formData, setFormData] = useState<MainDatabaseProgram>(MainDatabaseProgramDefault());
+  const [formData, setFormData] = useState<MainDatabaseProgram>(
+    MainDatabaseProgramDefault()
+  );
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
@@ -57,58 +72,56 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
     const result = MainDatabaseProgramFormSchema.safeParse(formData);
 
     if (!result.success) {
-    const errors: { [key: string]: string } = {};
-    result.error.issues.forEach((issue) => {
-      const field = issue.path[0];
-      if (field) errors[field as string] = issue.message;
-    });
+      const errors: { [key: string]: string } = {};
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0];
+        if (field) errors[field as string] = issue.message;
+      });
 
-    setFormErrors(errors);
-      reqForToastAndSetMessage("Please fix validation errors before submitting.");
+      setFormErrors(errors);
+      reqForToastAndSetMessage(
+        "Please fix validation errors before submitting."
+      );
       return;
     }
 
     setFormErrors({});
 
-
     if (IsCreateMode(mode)) {
       axiosInstance
         .post("/global/program/main_database", formData)
-        .then((response: any) =>
-        {
+        .then((response: any) => {
           reqForToastAndSetMessage(response.data.message);
           if (createdProgramStateSetter)
             createdProgramStateSetter({
-            target: {
-              name: "program",
-              value: response.data.data.id
-              }
-            })
+              target: {
+                name: "program",
+                value: response.data.data.id,
+              },
+            });
 
           if (programsListStateSetter)
-            programsListStateSetter((prev: {focalPoint: number}[]) => [
+            programsListStateSetter((prev: { focalPoint: number }[]) => [
               ...prev,
               {
                 id: response.data.data.id,
-                focalPoint: formData.focalPoint,
-              }
-            ])
-
-            handleReload();
-        }
-        )
+                name: formData.name,
+              },
+            ]);
+          onOpenChange(false);
+          handleReload();
+        })
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)
         );
     } else if (IsEditMode(mode) && programId) {
       axiosInstance
         .put(`/global/program/${programId}`, formData)
-        .then((response: any) =>
-        {
+        .then((response: any) => {
           reqForToastAndSetMessage(response.data.message);
-          handleReload()
-        }
-        )
+          onOpenChange(false);
+          handleReload();
+        })
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)
         );
@@ -117,7 +130,9 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
 
   const [districts, setDistricts] = useState<{ name: string }[]>([]);
   const [provinces, setProvinces] = useState<{ name: string }[]>([]);
-  const [projects, setProjects] = useState<{ id: string; projectCode: string }[]>([]);
+  const [projects, setProjects] = useState<
+    { id: string; projectCode: string }[]
+  >([]);
 
   useEffect(() => {
     axiosInstance
@@ -129,7 +144,9 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
     axiosInstance
       .get("/projects/p/main_database")
       .then((res: any) => setProjects(Object.values(res.data.data)))
-      .catch((error: any) => reqForToastAndSetMessage(error.response.data.message));
+      .catch((error: any) =>
+        reqForToastAndSetMessage(error.response.data.message)
+      );
   }, []);
 
   const readOnly = IsShowMode(mode);
@@ -142,7 +159,7 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
           {IsEditMode(mode) && "Edit Program"}
           {IsShowMode(mode) && "Program Details"}
         </DialogTitle>
-        <form className="space-y-4 grid grid-cols-2 gap-4">
+        <form className="space-y-4 grid grid-cols-2 gap-4 overflow-auto">
           {/* Project code */}
           <div className="flex flex-col gap-2">
             <Label>Project Code</Label>
@@ -161,6 +178,20 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
               error={formErrors.project_id}
             />
           </div>
+          {/* Program name */}
+          <div className="flex flex-col gap-2">
+            <Label>Program Name</Label>
+            <Input
+              name="name"
+              value={formData.name}
+              onChange={handleFormChange}
+              disabled={readOnly}
+              className={`border p-2 rounded ${
+                formErrors.name ? "!border-red-500" : ""
+              }`}
+              title={formErrors.name ? formErrors["name"] : undefined}
+            />
+          </div>
           {/* Focal point */}
           <div className="flex flex-col gap-2">
             <Label>Focal Point</Label>
@@ -169,8 +200,12 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
               value={formData.focalPoint}
               onChange={handleFormChange}
               disabled={readOnly}
-              className={`border p-2 rounded ${formErrors.focalPoint ? "!border-red-500" : ""}`}
-              title={formErrors.focalPoint ? formErrors["focalPoint"] : undefined}
+              className={`border p-2 rounded ${
+                formErrors.focalPoint ? "!border-red-500" : ""
+              }`}
+              title={
+                formErrors.focalPoint ? formErrors["focalPoint"] : undefined
+              }
             />
           </div>
           {/* Province */}
@@ -217,7 +252,9 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
               value={formData.village}
               onChange={handleFormChange}
               disabled={readOnly}
-              className={`border p-2 rounded ${formErrors.village ? "!border-red-500" : ""}`}
+              className={`border p-2 rounded ${
+                formErrors.village ? "!border-red-500" : ""
+              }`}
               title={formErrors.village ? formErrors["village"] : undefined}
             />
           </div>
@@ -229,7 +266,9 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
               value={formData.siteCode}
               onChange={handleFormChange}
               disabled={readOnly}
-              className={`border p-2 rounded ${formErrors.siteCode ? "!border-red-500" : ""}`}
+              className={`border p-2 rounded ${
+                formErrors.siteCode ? "!border-red-500" : ""
+              }`}
               title={formErrors.siteCode ? formErrors["siteCode"] : undefined}
             />
           </div>
@@ -241,8 +280,16 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
               value={formData.healthFacilityName}
               onChange={handleFormChange}
               disabled={readOnly}
-              className={`border p-2 rounded ${formErrors.healthFacilityName ? "!border-red-500" : "!border-gray-300"}`}
-              title={formErrors.healthFacilityName ? formErrors["healthFacilityName"] : undefined}
+              className={`border p-2 rounded ${
+                formErrors.healthFacilityName
+                  ? "!border-red-500"
+                  : "!border-gray-300"
+              }`}
+              title={
+                formErrors.healthFacilityName
+                  ? formErrors["healthFacilityName"]
+                  : undefined
+              }
             />
           </div>
           {/* Intervention Modality */}
@@ -253,22 +300,40 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
               value={formData.interventionModality}
               onChange={handleFormChange}
               disabled={readOnly}
-              className={`border p-2 rounded ${formErrors.interventionModality ? "!border-red-500" : "!border-gray-300"}`}
-              title={formErrors.interventionModality ? formErrors["interventionModality"] : undefined}
+              className={`border p-2 rounded ${
+                formErrors.interventionModality
+                  ? "!border-red-500"
+                  : "!border-gray-300"
+              }`}
+              title={
+                formErrors.interventionModality
+                  ? formErrors["interventionModality"]
+                  : undefined
+              }
             />
           </div>
-          {/* Submit */}
-          {mode !== "show" && (
-            <div className="flex justify-end col-span-2">
-              <Button type="button" onClick={() => reqForConfirmationModelFunc(
-                (mode == "create" ? MainDatabaseProgramCreationMessage : MainDatabaseProgramEditionMessage),
-                () => {handleSubmit()}
-              )}>
-                {mode === "create" ? "Submit" : "Update"}
-              </Button>
-            </div>
-          )}
         </form>
+        {/* Submit */}
+        {IsNotShowMode(mode) && (
+          <div className="flex justify-end w-full col-span-2 fixed left-0 bottom-1">
+            <Button
+              className="mr-2"
+              type="button"
+              onClick={() =>
+                reqForConfirmationModelFunc(
+                  IsCreateMode(mode)
+                    ? MainDatabaseProgramCreationMessage
+                    : MainDatabaseProgramEditionMessage,
+                  () => {
+                    handleSubmit();
+                  }
+                )
+              }
+            >
+              {IsCreateMode(mode) ? "Submit" : "Update"}
+            </Button>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

@@ -11,12 +11,17 @@ import { Button } from "@/components/ui/button";
 import { useParentContext } from "@/contexts/ParentContext";
 import { ClipboardCheck, Eye, XCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
+import {
+  RejectSecondApprovedDatabaseMessage,
+  ReviewAprMessage,
+} from "@/constants/ConfirmationModelsTexts";
 
 const SubmittedDatabasesPage = () => {
   const {
     axiosInstance,
     reqForToastAndSetMessage,
-    reqForConfirmationModelFunc
+    reqForConfirmationModelFunc,
+    handleReload,
   } = useParentContext();
 
   const router = useRouter();
@@ -35,26 +40,40 @@ const SubmittedDatabasesPage = () => {
   };
 
   const markAprAsReviewed = () => {
-    axiosInstance.post(`/apr_management/mark_apr_as_reviewed/${idFeildForEditStateSetter}`)
-    .then((response: any) => reqForToastAndSetMessage(response.data.message))
-    .catch((error: any) => reqForToastAndSetMessage(error.response.data.message));
-  }
+    axiosInstance
+      .post(`/apr_management/mark_apr_as_reviewed/${idFeildForEditStateSetter}`)
+      .then((response: any) => {
+        reqForToastAndSetMessage(response.data.message);
+        handleReload();
+      })
+      .catch((error: any) =>
+        reqForToastAndSetMessage(error.response.data.message)
+      );
+  };
 
   const rejectApr = () => {
-    axiosInstance.post(`/apr_management/reject_in_review_stage/${idFeildForEditStateSetter}`)
-    .then((response: any) => reqForToastAndSetMessage(response.data.message))
-    .catch((error: any) => reqForToastAndSetMessage(error.response.data.message))
-  }
+    axiosInstance
+      .post(
+        `/apr_management/reject_in_review_stage/${idFeildForEditStateSetter}`
+      )
+      .then((response: any) => {
+        reqForToastAndSetMessage(response.data.message);
+        handleReload();
+      })
+      .catch((error: any) =>
+        reqForToastAndSetMessage(error.response.data.message)
+      );
+  };
 
   return (
     <>
       <Navbar14 />
       <SubHeader pageTitle={"Review Apr's"}></SubHeader>
-      <Cards/>
+      <Cards />
 
       <DataTableDemo
         columns={submittedAndFirstApprovedDatabasesTableColumn}
-        indexUrl="/db_management/first_approved_and_second_rejected_databases"
+        indexUrl="/apr_management/generated_aprs"
         deleteUrl="/db_management/deleted_first_approved_databases"
         searchableColumn="name"
         idFeildForShowStateSetter={setIdFeildForEditStateSetter}
@@ -75,33 +94,34 @@ const SubmittedDatabasesPage = () => {
               className="text-blue-600"
               variant={"outline"}
               onClick={() =>
-                reqForConfirmationModelFunc(
-                  "Are you compleatly sure ?",
-                  "This action will change the selected apr status as Reviewed !",
-                  markAprAsReviewed
-                )
+                reqForConfirmationModelFunc(ReviewAprMessage, markAprAsReviewed)
               }
             >
               <ClipboardCheck />
-              <Button
+            </Button>
+            <Button
               title="Reject"
               className="text-red-500"
               variant={"outline"}
               onClick={() =>
-              reqForConfirmationModelFunc(
-                "Are you compleatly sure ?",
-                "This action will mark the selected APR as rejected and notify the user who approved it at the first stage.",
-                rejectApr
-              )
+                reqForConfirmationModelFunc(
+                  RejectSecondApprovedDatabaseMessage,
+                  rejectApr
+                )
               }
             >
               <XCircle />
             </Button>
-            </Button>
           </div>
         }
         filterUrl="/filter/reviewed_aprs"
-        filtersList={["projectCode", "province", "database", "fromDate", "toDate"]}
+        filtersList={[
+          "projectCode",
+          "province",
+          "database",
+          "fromDate",
+          "toDate",
+        ]}
       ></DataTableDemo>
 
       {OpenSubmittedDatabaseSummaryModel && (

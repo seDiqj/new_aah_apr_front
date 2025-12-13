@@ -112,6 +112,7 @@ export const CdDatabaseBenefciaryFormSchema = z.object({
 
 export const CdFormSchema = z.object({
   project_id: z.number().min(1, "Select a valid project !"),
+  name: z.string().min(3, "Program name should be atleast 3 characters !"),
   province_id: z
     .number("Select a valid province !")
     .min(1, "Select a valid province !"),
@@ -148,14 +149,14 @@ export const TraininFormSchema = z.object({
     .min(3, "focal point should be at least 3 characters of 3 digits !"),
 });
 
-export const TrainingDatabaseBenefeciaryForm = z.object({
+export const TrainingDatabaseBenefeciaryFormSchema = z.object({
   dateOfRegistration: z.string("Select a valid date"),
   name: z.string().min(3, "Beneficiary name should be at least 3 characters !"),
   fatherHusbandName: z
     .string()
     .min(3, "Beneficiary father/husband name should be at least 3 characters"),
   gender: z.string().min(4, "Select a valid gender"),
-  age: z.number("Beneficiary age should be greather then or equal to 1"),
+  age: z.string("Beneficiary age should be greather then or equal to 1").min(1),
   phone: z
     .string()
     .min(
@@ -176,6 +177,7 @@ export const PsychoeducationFormSchema = z.object({
   indicator_id: z
     .string("Select a valid indicator !")
     .min(1, "Select a valid indicator !"),
+  name: z.string().min(3, "Program name should be at least 3 characters !"),
   focalPoint: z
     .string("Focal point must be at least 3 characters or 3 digits !")
     .min(3, "Focal point must be at least 3 characters or 3 digits !"),
@@ -255,7 +257,6 @@ export const UserEditFormSchema = z.object({
     .string("Title field should be at least 3 characters !")
     .min(3, "Title field should be at least 3 characters !"),
   email: z.email("Enter a valid email address !"),
-  department: z.string("Select a valid department !"),
   role: z.string("Select a valid role !"),
   status: z.string("Select a valid status"),
 });
@@ -352,6 +353,7 @@ export const IndicatorFormSchema = z.object({
 
 export const MainDatabaseProgramFormSchema = z.object({
   project_id: z.number().min(1, "Project code is required"),
+  name: z.string().min(3, "Program name should be at least 3 characters !"),
   focalPoint: z
     .string()
     .min(3, "Focal point must be at least 3 characters or 3 digits"),
@@ -365,6 +367,7 @@ export const MainDatabaseProgramFormSchema = z.object({
 
 export const KitDatabaseProgramFormSchema = z.object({
   project_id: z.number().min(1, "Project code is required"),
+  name: z.string().min(3, "Program name should be at least 3 characters !"),
   focalPoint: z
     .string()
     .min(3, "Focal point must be at least 3 characters or 3 digits"),

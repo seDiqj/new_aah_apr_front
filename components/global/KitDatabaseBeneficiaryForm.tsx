@@ -18,23 +18,35 @@ import { withPermission } from "@/lib/withPermission";
 import CreateNewProgramKit from "./CreateNewProgramKit";
 import { KitDatabaseBeneficiaryFormSchema } from "@/schemas/FormsSchema";
 import { KitDatabaseBeneficiaryFormType } from "@/types/Types";
-import { KitDatabaseBeneficiaryDefault } from "@/lib/FormsDefaultValues";
-import { KitDatabaseBeneficiaryCreationMessage } from "@/lib/ConfirmationModelsTexts";
+import { KitDatabaseBeneficiaryDefault } from "@/constants/FormsDefaultValues";
+import { KitDatabaseBeneficiaryCreationMessage } from "@/constants/ConfirmationModelsTexts";
 import { KitDatabaseBeneficiaryFormInterface } from "@/interfaces/Interfaces";
-import { DisabilityTypeOptions, GenderOptions, HousholdStatusOptions, MaritalStatusOptions, ReferredForProtectionOptions } from "@/lib/SingleAndMultiSelectOptionsList";
+import {
+  DisabilityTypeOptions,
+  GenderOptions,
+  HousholdStatusOptions,
+  MaritalStatusOptions,
+  ReferredForProtectionOptions,
+} from "@/constants/SingleAndMultiSelectOptionsList";
 
-const KitDatabaseBeneficiaryForm: React.FC<KitDatabaseBeneficiaryFormInterface> = ({
-  open,
-  onOpenChange,
-  title,
-}) => {
-  const { reqForToastAndSetMessage, axiosInstance, handleReload, reqForConfirmationModelFunc } = useParentContext();
+const KitDatabaseBeneficiaryForm: React.FC<
+  KitDatabaseBeneficiaryFormInterface
+> = ({ open, onOpenChange, title }) => {
+  const {
+    reqForToastAndSetMessage,
+    axiosInstance,
+    handleReload,
+    reqForConfirmationModelFunc,
+  } = useParentContext();
 
-  const [formData, setFormData] = useState<KitDatabaseBeneficiaryFormType>(KitDatabaseBeneficiaryDefault());
+  const [formData, setFormData] = useState<KitDatabaseBeneficiaryFormType>(
+    KitDatabaseBeneficiaryDefault()
+  );
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
-  const [reqForCreateNewProgram, setReqForCreateNewProgram] = useState<boolean>(false);
+  const [reqForCreateNewProgram, setReqForCreateNewProgram] =
+    useState<boolean>(false);
 
   const handleFormChange = (e: any) => {
     const name: string = e.target.name;
@@ -52,14 +64,16 @@ const KitDatabaseBeneficiaryForm: React.FC<KitDatabaseBeneficiaryFormInterface> 
     const result = KitDatabaseBeneficiaryFormSchema.safeParse(formData);
 
     if (!result.success) {
-    const errors: { [key: string]: string } = {};
-    result.error.issues.forEach((issue) => {
-      const field = issue.path[0];
-      if (field) errors[field as string] = issue.message;
-    });
+      const errors: { [key: string]: string } = {};
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0];
+        if (field) errors[field as string] = issue.message;
+      });
 
-    setFormErrors(errors);
-      reqForToastAndSetMessage("Please fix validation errors before submitting.");
+      setFormErrors(errors);
+      reqForToastAndSetMessage(
+        "Please fix validation errors before submitting."
+      );
       return;
     }
 
@@ -69,18 +83,19 @@ const KitDatabaseBeneficiaryForm: React.FC<KitDatabaseBeneficiaryFormInterface> 
       .post("/kit_db/beneficiary", formData)
       .then((response: any) => {
         reqForToastAndSetMessage(response.data.message);
+        onOpenChange(false);
         handleReload();
       })
-      .catch((error: any) =>
-        {
-          reqForToastAndSetMessage(error.response.data.message)
-        }
-      );
+      .catch((error: any) => {
+        reqForToastAndSetMessage(error.response.data.message);
+      });
   };
 
-  const [programs, setPrograms] = useState<{ id: string; focalPoint: number;}[]>([]);
+  const [programs, setPrograms] = useState<{ id: string; name: string }[]>([]);
 
-  const [indicators, setIndicators] = useState<{ id: string; indicatorRef: string;}[]>([]);
+  const [indicators, setIndicators] = useState<
+    { id: string; indicatorRef: string }[]
+  >([]);
 
   useEffect(() => {
     // Fetching kit database programs
@@ -102,7 +117,6 @@ const KitDatabaseBeneficiaryForm: React.FC<KitDatabaseBeneficiaryFormInterface> 
         reqForToastAndSetMessage(error.response.data.message)
       );
   }, [open]);
-
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -131,7 +145,7 @@ const KitDatabaseBeneficiaryForm: React.FC<KitDatabaseBeneficiaryFormInterface> 
               <SingleSelect
                 options={programs.map((program) => ({
                   value: program.id,
-                  label: program.focalPoint.toString().toUpperCase(),
+                  label: program.name.toString().toUpperCase(),
                 }))}
                 value={formData.program}
                 onValueChange={(value: string) => {
@@ -157,7 +171,14 @@ const KitDatabaseBeneficiaryForm: React.FC<KitDatabaseBeneficiaryFormInterface> 
 
             {/* Create New Program Button */}
             <div className="w-full border-2 rounded-2xl">
-              <Button onClick={() => setReqForCreateNewProgram(!reqForCreateNewProgram)} className="w-full">Create New Program</Button>
+              <Button
+                onClick={() =>
+                  setReqForCreateNewProgram(!reqForCreateNewProgram)
+                }
+                className="w-full"
+              >
+                Create New Program
+              </Button>
             </div>
           </div>
         </div>
@@ -200,9 +221,15 @@ const KitDatabaseBeneficiaryForm: React.FC<KitDatabaseBeneficiaryFormInterface> 
                   id="dateOfRegistration"
                   name="dateOfRegistration"
                   type="date"
-                  className={`border rounded-xl p-2 rounded ${formErrors.dateOfRegistration ? "!border-red-500" : ""} w-full`}
+                  className={`border rounded-xl p-2 rounded ${
+                    formErrors.dateOfRegistration ? "!border-red-500" : ""
+                  } w-full`}
                   onChange={handleFormChange}
-                  title={formErrors.dateOfRegistration ? formErrors["dateOfRegistration"] : undefined}
+                  title={
+                    formErrors.dateOfRegistration
+                      ? formErrors["dateOfRegistration"]
+                      : undefined
+                  }
                 />
               </div>
 
@@ -213,7 +240,9 @@ const KitDatabaseBeneficiaryForm: React.FC<KitDatabaseBeneficiaryFormInterface> 
                   id="code"
                   name="code"
                   placeholder="Code ..."
-                  className={`border rounded-xl p-2 rounded ${formErrors.code ? "!border-red-500" : ""} w-full`}
+                  className={`border rounded-xl p-2 rounded ${
+                    formErrors.code ? "!border-red-500" : ""
+                  } w-full`}
                   onChange={handleFormChange}
                   title={formErrors.code ? formErrors["code"] : undefined}
                 />
@@ -226,7 +255,9 @@ const KitDatabaseBeneficiaryForm: React.FC<KitDatabaseBeneficiaryFormInterface> 
                   id="name"
                   name="name"
                   placeholder="Client Name ..."
-                  className={`border rounded-xl p-2 rounded ${formErrors.name ? "!border-red-500" : ""} w-full`}
+                  className={`border rounded-xl p-2 rounded ${
+                    formErrors.name ? "!border-red-500" : ""
+                  } w-full`}
                   onChange={handleFormChange}
                   title={formErrors.name ? formErrors["name"] : undefined}
                 />
@@ -239,9 +270,15 @@ const KitDatabaseBeneficiaryForm: React.FC<KitDatabaseBeneficiaryFormInterface> 
                   id="fatherHusbandName"
                   name="fatherHusbandName"
                   placeholder="Father / Husbend Name ..."
-                  className={`border rounded-xl p-2 rounded ${formErrors.fatherHusbandName ? "!border-red-500" : ""} w-full`}
+                  className={`border rounded-xl p-2 rounded ${
+                    formErrors.fatherHusbandName ? "!border-red-500" : ""
+                  } w-full`}
                   onChange={handleFormChange}
-                  title={formErrors.fatherHusbandName ? formErrors["fatherHusbandName"] : undefined}
+                  title={
+                    formErrors.fatherHusbandName
+                      ? formErrors["fatherHusbandName"]
+                      : undefined
+                  }
                 />
               </div>
 
@@ -271,7 +308,9 @@ const KitDatabaseBeneficiaryForm: React.FC<KitDatabaseBeneficiaryFormInterface> 
                   name="age"
                   type="number"
                   placeholder="Age ..."
-                  className={`border rounded-xl p-2 rounded ${formErrors.age ? "!border-red-500" : ""} w-full`}
+                  className={`border rounded-xl p-2 rounded ${
+                    formErrors.age ? "!border-red-500" : ""
+                  } w-full`}
                   onChange={handleFormChange}
                   title={formErrors.age ? formErrors["age"] : undefined}
                 />
@@ -284,9 +323,13 @@ const KitDatabaseBeneficiaryForm: React.FC<KitDatabaseBeneficiaryFormInterface> 
                   id="childCode"
                   name="childCode"
                   placeholder="Child Code ..."
-                  className={`border rounded-xl p-2 rounded ${formErrors.childCode ? "!border-red-500" : ""} w-full`}
+                  className={`border rounded-xl p-2 rounded ${
+                    formErrors.childCode ? "!border-red-500" : ""
+                  } w-full`}
                   onChange={handleFormChange}
-                  title={formErrors.childCode ? formErrors["childCode"] : undefined}
+                  title={
+                    formErrors.childCode ? formErrors["childCode"] : undefined
+                  }
                 />
               </div>
 
@@ -298,7 +341,9 @@ const KitDatabaseBeneficiaryForm: React.FC<KitDatabaseBeneficiaryFormInterface> 
                   name="childAge"
                   type="number"
                   placeholder="Age Of Child ..."
-                  className={`border rounded-xl p-2 rounded ${formErrors.childAge ? "!border-red-500" : ""} w-full`}
+                  className={`border rounded-xl p-2 rounded ${
+                    formErrors.childAge ? "!border-red-500" : ""
+                  } w-full`}
                   onChange={handleFormChange}
                   title={formErrors.childAge}
                 />
@@ -312,7 +357,9 @@ const KitDatabaseBeneficiaryForm: React.FC<KitDatabaseBeneficiaryFormInterface> 
                   name="phone"
                   type="tel"
                   placeholder="Phone ..."
-                  className={`border rounded-xl p-2 rounded ${formErrors.phone ? "!border-red-500" : ""} w-full`}
+                  className={`border rounded-xl p-2 rounded ${
+                    formErrors.phone ? "!border-red-500" : ""
+                  } w-full`}
                   onChange={handleFormChange}
                   title={formErrors.phone ? formErrors["phone"] : undefined}
                 />
@@ -361,7 +408,9 @@ const KitDatabaseBeneficiaryForm: React.FC<KitDatabaseBeneficiaryFormInterface> 
                   id="literacyLevel"
                   name="literacyLevel"
                   placeholder="Literacy Level ..."
-                  className={`border rounded-xl p-2 rounded ${formErrors.literacyLevel ? "!border-red-500" : ""} w-full`}
+                  className={`border rounded-xl p-2 rounded ${
+                    formErrors.literacyLevel ? "!border-red-500" : ""
+                  } w-full`}
                   onChange={handleFormChange}
                   title={formErrors.literacyLevel}
                 />
@@ -410,21 +459,27 @@ const KitDatabaseBeneficiaryForm: React.FC<KitDatabaseBeneficiaryFormInterface> 
           {/* Program create form */}
           {reqForCreateNewProgram && (
             <CreateNewProgramKit
-            open={reqForCreateNewProgram}
-            onOpenChange={setReqForCreateNewProgram}
-            mode="create"
-            createdProgramStateSetter={handleFormChange}
-            programsListStateSetter={setPrograms}
-          ></CreateNewProgramKit>
+              open={reqForCreateNewProgram}
+              onOpenChange={setReqForCreateNewProgram}
+              mode="create"
+              createdProgramStateSetter={handleFormChange}
+              programsListStateSetter={setPrograms}
+            ></CreateNewProgramKit>
           )}
-
         </div>
 
         {/* Submit Button */}
-        <Button className="w-full mt-6" onClick={(e) => reqForConfirmationModelFunc(
-          KitDatabaseBeneficiaryCreationMessage,
-          () => handleSubmit(e)
-        )}>Submit</Button>
+        <Button
+          className="w-full mt-6"
+          onClick={(e) =>
+            reqForConfirmationModelFunc(
+              KitDatabaseBeneficiaryCreationMessage,
+              () => handleSubmit(e)
+            )
+          }
+        >
+          Submit
+        </Button>
       </DialogContent>
     </Dialog>
   );

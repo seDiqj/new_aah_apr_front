@@ -9,7 +9,7 @@ import { useState } from "react";
 import { roleColumns } from "@/definitions/DataTableColumnsDefinitions";
 import RoleForm from "@/components/global/RoleForm";
 import { Can } from "@/components/Can";
-import { RoleFiltersList, RoleFilterUrl } from "@/lib/FiltersList";
+import { RoleFiltersList, RoleFilterUrl } from "@/constants/FiltersList";
 
 const RolesPage = () => {
   let [reqForRoleShowForm, setReqForRoleShowForm] = useState<boolean>(false);

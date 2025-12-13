@@ -9,30 +9,22 @@ import { Label } from "../ui/label";
 import { useEffect, useState } from "react";
 import { KitDatabaseProgram, MainDatabaseProgram } from "@/types/Types";
 import { withPermission } from "@/lib/withPermission";
-import { z } from "zod";
-import { KitDatabaseProgramDefault } from "@/lib/FormsDefaultValues";
+import { KitDatabaseProgramDefault } from "@/constants/FormsDefaultValues";
 import { KitDatabaseProgramFormSchema } from "@/schemas/FormsSchema";
 import {
   KitDatabaseProgramCreationMessage,
   KitDatabaseProgramEditionMessage,
-} from "@/lib/ConfirmationModelsTexts";
-import { IsANullValue, IsCreateMode, IsEditMode, IsNotShowMode, IsShowMode } from "@/lib/Constants";
+} from "@/constants/ConfirmationModelsTexts";
+import {
+  IsCreateMode,
+  IsEditMode,
+  IsNotShowMode,
+  IsShowMode,
+} from "@/constants/Constants";
 import { AxiosError } from "axios";
+import { KitDatabaseProgramFormInterface } from "@/interfaces/Interfaces";
 
-interface ComponentProps {
-  open: boolean;
-  onOpenChange: (value: boolean) => void;
-  mode: "create" | "edit" | "show";
-  programId?: number;
-
-  // Only for creation mode, temp
-  createdProgramStateSetter?: any;
-
-  // temp
-  programsListStateSetter?: any;
-}
-
-const ProgramKitForm: React.FC<ComponentProps> = ({
+const ProgramKitForm: React.FC<KitDatabaseProgramFormInterface> = ({
   open,
   onOpenChange,
   mode,
@@ -119,6 +111,7 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
                 focalPoint: formData.focalPoint,
               },
             ]);
+          onOpenChange(false);
           handleReload();
         })
         .catch((error: any) =>
@@ -129,6 +122,7 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
         .put(`/global/program/${programId}`, formData)
         .then((response: any) => {
           reqForToastAndSetMessage(response.data.message);
+          onOpenChange(false);
           handleReload();
         })
         .catch((error: any) =>
@@ -137,12 +131,8 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
     }
   };
 
-  const [districts, setDistricts] = useState<{ name: string }[]>(
-    []
-  );
-  const [provinces, setProvinces] = useState<{ name: string }[]>(
-    []
-  );
+  const [districts, setDistricts] = useState<{ name: string }[]>([]);
+  const [provinces, setProvinces] = useState<{ name: string }[]>([]);
   const [projects, setProjects] = useState<
     { id: string; projectCode: string }[]
   >([]);
@@ -166,7 +156,9 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
     axiosInstance
       .get(`/global/project/provinces/${formData.project_id}`)
       .then((res: any) => setProvinces(Object.values(res.data.data)))
-      .catch((error: AxiosError<any, any>) => reqForToastAndSetMessage(error.response?.data.message));
+      .catch((error: AxiosError<any, any>) =>
+        reqForToastAndSetMessage(error.response?.data.message)
+      );
   }, [formData.project_id]);
 
   const readOnly = IsShowMode(mode);
@@ -179,7 +171,7 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
           {IsEditMode(mode) && "Edit Program"}
           {IsShowMode(mode) && "Program Details"}
         </DialogTitle>
-        <form className="space-y-4 grid grid-cols-2 gap-4">
+        <form className="space-y-4 grid grid-cols-2 gap-4 overflow-auto">
           {/* Project code */}
           <div className="flex flex-col gap-2">
             <Label>Project Code</Label>
@@ -196,6 +188,20 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
               }
               disabled={readOnly}
               error={formErrors.project_id}
+            />
+          </div>
+          {/* Program name */}
+          <div className="flex flex-col gap-2">
+            <Label>Program Name</Label>
+            <Input
+              name="name"
+              value={formData.name}
+              onChange={handleFormChange}
+              disabled={readOnly}
+              className={`border p-2 rounded ${
+                formErrors.name ? "!border-red-500" : ""
+              }`}
+              title={formErrors.name}
             />
           </div>
           {/* Focal point */}
@@ -304,25 +310,26 @@ const ProgramKitForm: React.FC<ComponentProps> = ({
               title={formErrors.interventionModality}
             />
           </div>
-          {/* Submit */}
-          {IsNotShowMode(mode) && (
-            <div className="flex justify-end col-span-2">
-              <Button
-                type="button"
-                onClick={(e) =>
-                  reqForConfirmationModelFunc(
-                    IsCreateMode(mode)
-                      ? KitDatabaseProgramCreationMessage
-                      : KitDatabaseProgramEditionMessage,
-                    () => handleSubmit(e)
-                  )
-                }
-              >
-                {IsCreateMode(mode) ? "Submit" : "Update"}
-              </Button>
-            </div>
-          )}
         </form>
+        {/* Submit */}
+        {IsNotShowMode(mode) && (
+          <div className="flex justify-end w-full col-span-2 fixed left-0 bottom-1">
+            <Button
+              className="mr-2"
+              type="button"
+              onClick={(e) =>
+                reqForConfirmationModelFunc(
+                  IsCreateMode(mode)
+                    ? KitDatabaseProgramCreationMessage
+                    : KitDatabaseProgramEditionMessage,
+                  () => handleSubmit(e)
+                )
+              }
+            >
+              {IsCreateMode(mode) ? "Submit" : "Update"}
+            </Button>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

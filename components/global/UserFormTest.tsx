@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import React, { useEffect, useState, useRef } from "react"
+import React, { useEffect, useState, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,35 +8,50 @@ import {
   DialogTitle,
   DialogDescription,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent } from "@/components/ui/card"
-import {  User } from "lucide-react"
-import Image from "next/image"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Skeleton } from "@/components/ui/skeleton"
-import { useParentContext } from "@/contexts/ParentContext"
-import { SingleSelect } from "../single-select"
-import { UserCreateFormSchema, UserEditFormSchema } from "@/schemas/FormsSchema"
-import { UserInterface } from "@/interfaces/Interfaces"
-import { steps } from "@/lib/SingleAndMultiSelectOptionsList"
-import { UserCreationMessage, UserEditionMessage } from "@/lib/ConfirmationModelsTexts"
-import { IsCreateMode, IsEditMode, IsEditOrShowMode, IsNotCreateMode, IsShowMode } from "@/lib/Constants"
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
+import { User } from "lucide-react";
+import Image from "next/image";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useParentContext } from "@/contexts/ParentContext";
+import { SingleSelect } from "../single-select";
+import {
+  UserCreateFormSchema,
+  UserEditFormSchema,
+} from "@/schemas/FormsSchema";
+import { UserInterface } from "@/interfaces/Interfaces";
+import { steps } from "@/constants/SingleAndMultiSelectOptionsList";
+import {
+  UserCreationMessage,
+  UserEditionMessage,
+} from "@/constants/ConfirmationModelsTexts";
+import {
+  IsCreateMode,
+  IsEditMode,
+  IsEditOrShowMode,
+  IsNotCreateMode,
+  IsShowMode,
+} from "@/constants/Constants";
 
 const ProfileModal: React.FC<UserInterface> = ({
   open,
   onOpenChange,
   mode = "create",
   userId,
-  reloader,
-  permission
 }) => {
-  const { axiosInstance, reqForToastAndSetMessage, reqForConfirmationModelFunc } = useParentContext()
-  const [step, setStep] = useState(1)
-  const [loading, setLoading] = useState(true)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const {
+    axiosInstance,
+    reqForToastAndSetMessage,
+    reqForConfirmationModelFunc,
+    handleReload
+  } = useParentContext();
+  const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -47,58 +62,56 @@ const ProfileModal: React.FC<UserInterface> = ({
     photo_path: "",
     // department: "",
     status: "active",
-    role: ""
-  })
+    role: "",
+  });
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
-  const [allPermissions, setAllPermissions] = useState<{ [key: string]: Record<string, string>[] }>({})
-  const [userPermissions, setUserPermissions] = useState<string[]>([])
+  const [allPermissions, setAllPermissions] = useState<{
+    [key: string]: Record<string, string>[];
+  }>({});
+  const [userPermissions, setUserPermissions] = useState<string[]>([]);
 
-  const isReadOnly = IsShowMode(mode)
+  const isReadOnly = IsShowMode(mode);
 
   const handlePermissionToggle = (permissionId: string) => {
-    if (isReadOnly) return
+    if (isReadOnly) return;
     setUserPermissions((prev) =>
       prev.includes(permissionId)
         ? prev.filter((p) => p !== permissionId)
         : [...prev, permissionId]
-    )
-  }
+    );
+  };
 
   const handleSelectRole = (role: any) => {
-    if (isReadOnly) return
-    setUserPermissions(role.permissions.map((p: any) => p.id))
-  }
+    if (isReadOnly) return;
+    setUserPermissions(role.permissions.map((p: any) => p.id));
+  };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
-  }
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return
-    const file = e.target.files[0]
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
     setSelectedFile(file);
-    const url = URL.createObjectURL(file)
-    setForm((prev) => ({ ...prev, photo_path: url }))
-  }
+    const url = URL.createObjectURL(file);
+    setForm((prev) => ({ ...prev, photo_path: url }));
+  };
 
-  const [allRoles, setAllRoles] = useState<{id: string, name: string}[]>([])
-  const [userRole, setUserRole] = useState<string>("")
-
+  const [allRoles, setAllRoles] = useState<{ id: string; name: string }[]>([]);
+  const [userRole, setUserRole] = useState<string>("");
 
   const handleSubmit = () => {
-
     let result;
 
-    if (IsCreateMode(mode))
-      result = UserCreateFormSchema.safeParse(form);
-
-    else 
-      result = UserEditFormSchema.safeParse(form);
-
+    if (IsCreateMode(mode)) result = UserCreateFormSchema.safeParse(form);
+    else result = UserEditFormSchema.safeParse(form);
 
     if (!result.success) {
       const errors: { [key: string]: string } = {};
@@ -108,44 +121,43 @@ const ProfileModal: React.FC<UserInterface> = ({
       });
 
       setFormErrors(errors);
-      reqForToastAndSetMessage("Please fix validation errors before submitting.");
+      reqForToastAndSetMessage(
+        "Please fix validation errors before submitting."
+      );
       return;
     }
 
     setFormErrors({});
 
-
-    const formData = new FormData()
-    formData.append("name", form.name)
-    formData.append("title", form.title)
-    formData.append("email", form.email)
-    formData.append("password", form.password)
+    const formData = new FormData();
+    formData.append("name", form.name);
+    formData.append("title", form.title);
+    formData.append("email", form.email);
+    formData.append("password", form.password);
     // formData.append("department", form.department)
-    formData.append("status", form.status)
+    formData.append("status", form.status);
     if (selectedFile) {
-      formData.append("photo_path", selectedFile)
+      formData.append("photo_path", selectedFile);
     }
 
-
-    formData.append("permissions", JSON.stringify(userPermissions))
+    formData.append("permissions", JSON.stringify(userPermissions));
     formData.append("role", userRole);
 
     const request =
-      mode === "create"
+      IsCreateMode(mode)
         ? axiosInstance.post("/user_mng/user", formData)
-        : axiosInstance.post(`/user_mng/edit_user/${userId}`, formData)
+        : axiosInstance.post(`/user_mng/edit_user/${userId}`, formData);
 
     request
       .then((response: any) => {
         reqForToastAndSetMessage(response.data.message);
         onOpenChange(false);
-        if (reloader) reloader();
+        handleReload()
       })
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response?.data?.message || "Error")
-      )
-}
-
+      );
+  };
 
   useEffect(() => {
     if (IsEditOrShowMode(mode)) {
@@ -154,27 +166,31 @@ const ProfileModal: React.FC<UserInterface> = ({
         axiosInstance.get(`/user_mng/permissions_&_roles`),
       ])
         .then(([userRes, rolePermRes]: any) => {
-          console.log(userRes)
+          console.log(userRes);
           const { permissions, role, ...rest } = userRes.data.data;
-          setForm(prev => ({ ...prev, ...rest }));
+          setForm((prev) => ({ ...prev, ...rest }));
           setAllPermissions(rolePermRes.data.data.permissions);
           setAllRoles(rolePermRes.data.data.roles);
-          setUserRole(userRes.data.data.roles.length > 0 ? userRes.data.data.roles[0] : "");
-          setUserPermissions(userRes.data.data.permissions.map((p: any) => p.id))
-          setLoading(false)
+          setUserRole(
+            userRes.data.data.roles.length > 0 ? userRes.data.data.roles[0] : ""
+          );
+          setUserPermissions(
+            userRes.data.data.permissions.map((p: any) => p.id)
+          );
+          setLoading(false);
         })
-        .catch(() => setLoading(false))
+        .catch(() => setLoading(false));
     } else {
       axiosInstance
         .get("/user_mng/permissions_&_roles")
         .then((response: any) => {
           setAllPermissions(response.data.data.permissions);
           setAllRoles(response.data.data.roles);
-          setLoading(false)
+          setLoading(false);
         })
-        .catch(() => setLoading(false))
+        .catch(() => setLoading(false));
     }
-  }, [mode, axiosInstance, userId])
+  }, [mode, axiosInstance, userId]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -198,7 +214,11 @@ const ProfileModal: React.FC<UserInterface> = ({
         {/* Sidebar */}
         <div className="w-[22%] p-8 border-r border-gray-800">
           <h2 className="text-xl font-semibold mb-10">
-            {IsShowMode(mode) ? "View User" : IsEditMode(mode) ? "Edit User" : "Create User"}
+            {IsShowMode(mode)
+              ? "View User"
+              : IsEditMode(mode)
+              ? "Edit User"
+              : "Create User"}
           </h2>
           <div className="space-y-8 sticky top-0">
             {steps.map((s) => (
@@ -211,7 +231,9 @@ const ProfileModal: React.FC<UserInterface> = ({
               >
                 <div
                   className={`w-10 h-10 flex items-center justify-center rounded-full ${
-                    step === s.id ? "bg-blue-600" : "border border-gray-600 bg-transparent"
+                    step === s.id
+                      ? "bg-blue-600"
+                      : "border border-gray-600 bg-transparent"
                   }`}
                 >
                   {s.icon}
@@ -290,38 +312,51 @@ const ProfileModal: React.FC<UserInterface> = ({
                   </div>
 
                   <div className="grid grid-cols-2 gap-6">
-                    {["name", "title", "email","password", "status"].map((field) => 
-                      {
-
-                        if (field === "password" && !IsCreateMode(mode)) 
+                    {["name", "title", "email", "password", "status"].map(
+                      (field) => {
+                        if (field === "password" && !IsCreateMode(mode))
                           return null;
-                      
-                      return <div key={field}>
-                        <Label>
-                          {field.replaceAll("_", " ").replace(/\b\w/g, (l) => l.toUpperCase())}
-                        </Label>
-                        <Input
-                          name={field}
-                          type={field == "password" ? "password" : "text"}
-                          value={(form as any)[field] || ""}
-                          onChange={handleChange}
-                          disabled={isReadOnly}
-                          className={`border p-2 rounded ${formErrors[field] ? "!border-red-500" : ""} disabled:opacity-70`}
-                          title={formErrors[field]}
-                        />
-                      </div>}
+
+                        return (
+                          <div key={field}>
+                            <Label>
+                              {field
+                                .replaceAll("_", " ")
+                                .replace(/\b\w/g, (l) => l.toUpperCase())}
+                            </Label>
+                            <Input
+                              name={field}
+                              type={field == "password" ? "password" : "text"}
+                              value={(form as any)[field] || ""}
+                              onChange={handleChange}
+                              disabled={isReadOnly}
+                              className={`border p-2 rounded ${
+                                formErrors[field] ? "!border-red-500" : ""
+                              } disabled:opacity-70`}
+                              title={formErrors[field]}
+                            />
+                          </div>
+                        );
+                      }
                     )}
                     <div>
                       <Label>Role</Label>
-                      <SingleSelect options={allRoles.map((role) => ({
-                        value: role.name,
-                        label: role.name
-                      }))} value={
-                        userRole
-                      } onValueChange={(value: string) => {setUserRole(value); handleSelectRole(allRoles.find(role => role.name === value)); setForm((prev) => ({...prev, role: value}))}} disabled={isReadOnly}
-                      error={formErrors.role}
-                      >
-                      </SingleSelect>
+                      <SingleSelect
+                        options={allRoles.map((role) => ({
+                          value: role.name,
+                          label: role.name,
+                        }))}
+                        value={userRole}
+                        onValueChange={(value: string) => {
+                          setUserRole(value);
+                          handleSelectRole(
+                            allRoles.find((role) => role.name === value)
+                          );
+                          setForm((prev) => ({ ...prev, role: value }));
+                        }}
+                        disabled={isReadOnly}
+                        error={formErrors.role}
+                      ></SingleSelect>
                     </div>
                   </div>
                 </div>
@@ -341,7 +376,9 @@ const ProfileModal: React.FC<UserInterface> = ({
                           >
                             <Checkbox
                               checked={userPermissions.includes(perm.id)}
-                              onCheckedChange={() => handlePermissionToggle(perm.id)}
+                              onCheckedChange={() =>
+                                handlePermissionToggle(perm.id)
+                              }
                               disabled={isReadOnly}
                               className="border-gray-500 data-[state=checked]:bg-blue-600"
                             />
@@ -355,14 +392,17 @@ const ProfileModal: React.FC<UserInterface> = ({
               )}
 
               {/* STEP 3 */}
-              {(step === 3 && mode != "show") && (
+              {step === 3 && mode != "show" && (
                 <div className="space-y-4">
                   <Card className="border-gray-700">
                     <CardContent className="p-6 space-y-2">
                       {Object.entries(form).map(([key, value]) => (
                         <p key={key}>
                           <strong>
-                            {key.replaceAll("_", " ").replace(/\b\w/g, (l) => l.toUpperCase())}:
+                            {key
+                              .replaceAll("_", " ")
+                              .replace(/\b\w/g, (l) => l.toUpperCase())}
+                            :
                           </strong>{" "}
                           {value}
                         </p>
@@ -402,10 +442,18 @@ const ProfileModal: React.FC<UserInterface> = ({
                   {step < 3 ? (
                     <Button onClick={() => setStep(step + 1)}>Next</Button>
                   ) : (
-                    <Button onClick={() => reqForConfirmationModelFunc(
-                      (IsCreateMode(mode) ? UserCreationMessage : UserEditionMessage),
-                      handleSubmit
-                    )}>Save</Button>
+                    <Button
+                      onClick={() =>
+                        reqForConfirmationModelFunc(
+                          IsCreateMode(mode)
+                            ? UserCreationMessage
+                            : UserEditionMessage,
+                          handleSubmit
+                        )
+                      }
+                    >
+                      Save
+                    </Button>
                   )}
                 </div>
               )}
@@ -414,9 +462,8 @@ const ProfileModal: React.FC<UserInterface> = ({
         </div>
       </DialogContent>
     </Dialog>
-  )
-}
-
+  );
+};
 
 // export default withPermission(ProfileModal, permission);
 

@@ -9,16 +9,23 @@ import { useState } from "react";
 import { submittedAndFirstApprovedDatabasesTableColumn } from "@/definitions/DataTableColumnsDefinitions";
 import { Button } from "@/components/ui/button";
 import { useParentContext } from "@/contexts/ParentContext";
-import { FileChartColumn } from "lucide-react";
-import { GenerateAprMessage } from "@/lib/ConfirmationModelsTexts";
-import { ApprovedDatabasesFiltersList, ApprovedDatabasesFilterUrl } from "@/lib/FiltersList";
-
+import { FileChartColumn, XCircle } from "lucide-react";
+import {
+  GenerateAprMessage,
+  RejectFirstApprovedDatabaseMessage,
+} from "@/constants/ConfirmationModelsTexts";
+import {
+  ApprovedDatabasesFiltersList,
+  ApprovedDatabasesFilterUrl,
+} from "@/constants/FiltersList";
+import { AxiosError, AxiosResponse } from "axios";
 
 const SubmittedDatabasesPage = () => {
   const {
     reqForToastAndSetMessage,
     reqForConfirmationModelFunc,
     axiosInstance,
+    handleReload,
   } = useParentContext();
 
   let [idFeildForEditStateSetter, setIdFeildForEditStateSetter] = useState<
@@ -34,10 +41,27 @@ const SubmittedDatabasesPage = () => {
     axiosInstance
       .post(`/apr_management/generate_apr/${idFeildForEditStateSetter}`)
       .then((response: any) => {
-        reqForToastAndSetMessage(response.data.message);
+        {
+          reqForToastAndSetMessage(response.data.message);
+          handleReload();
+        }
       })
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
+      );
+  };
+
+  const rejectDatabase = () => {
+    axiosInstance
+      .post(`/db_management/change_db_status/${idFeildForEditStateSetter}`, {
+        newStatus: "secondRejected",
+      })
+      .then((response: AxiosResponse<any, any, any>) => {
+        reqForToastAndSetMessage(response.data.message);
+        handleReload();
+      })
+      .catch((error: AxiosError<any, any>) =>
+        reqForToastAndSetMessage(error.response?.data.message)
       );
   };
 
@@ -45,7 +69,7 @@ const SubmittedDatabasesPage = () => {
     <>
       <Navbar14 />
       <SubHeader pageTitle={"Approved Databases"}></SubHeader>
-      <Cards/>
+      <Cards />
 
       <DataTableDemo
         columns={submittedAndFirstApprovedDatabasesTableColumn}
@@ -62,13 +86,23 @@ const SubmittedDatabasesPage = () => {
               className="text-blue-600"
               variant={"outline"}
               onClick={() =>
-                reqForConfirmationModelFunc(
-                  GenerateAprMessage,
-                  generateApr
-                )
+                reqForConfirmationModelFunc(GenerateAprMessage, generateApr)
               }
             >
               <FileChartColumn />
+            </Button>
+            <Button
+              title="Reject"
+              className="text-red-500"
+              variant={"outline"}
+              onClick={() =>
+                reqForConfirmationModelFunc(
+                  RejectFirstApprovedDatabaseMessage,
+                  rejectDatabase
+                )
+              }
+            >
+              <XCircle />
             </Button>
           </div>
         }

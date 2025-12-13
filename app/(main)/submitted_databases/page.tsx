@@ -11,14 +11,21 @@ import { submittedAndFirstApprovedDatabasesTableColumn } from "@/definitions/Dat
 import { Button } from "@/components/ui/button";
 import { useParentContext } from "@/contexts/ParentContext";
 import { Check, XCircle } from "lucide-react";
-import { SubmittedDatabasesFiltersList, SubmittedDatabasesFilterUrl } from "@/lib/FiltersList";
-import { ApproveDatabaseMessage, RejectDatabaseMessage } from "@/lib/ConfirmationModelsTexts";
+import {
+  SubmittedDatabasesFiltersList,
+  SubmittedDatabasesFilterUrl,
+} from "@/constants/FiltersList";
+import {
+  ApproveDatabaseMessage,
+  RejectDatabaseMessage,
+} from "@/constants/ConfirmationModelsTexts";
 
 const SubmittedDatabasesPage = () => {
   const {
     reqForToastAndSetMessage,
     reqForConfirmationModelFunc,
     axiosInstance,
+    handleReload
   } = useParentContext();
 
   let [idFeildForEditStateSetter, setIdFeildForEditStateSetter] = useState<
@@ -38,7 +45,10 @@ const SubmittedDatabasesPage = () => {
       .post(`/db_management/change_db_status/${idFeildForEditStateSetter}`, {
         newStatus: "firstApproved",
       })
-      .then((response: any) => reqForToastAndSetMessage(response.data.message))
+      .then((response: any) => {
+        reqForToastAndSetMessage(response.data.message);
+        handleReload();
+      })
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
       );
@@ -49,12 +59,14 @@ const SubmittedDatabasesPage = () => {
       .post(`/db_management/change_db_status/${idFeildForEditStateSetter}`, {
         newStatus: "firstRejected",
       })
-      .then((response: any) => reqForToastAndSetMessage(response.data.message))
+      .then((response: any) => {
+        reqForToastAndSetMessage(response.data.message);
+        handleReload();
+      })
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
       );
   };
-
 
   return (
     <>
@@ -64,7 +76,6 @@ const SubmittedDatabasesPage = () => {
         children={
           <div className="flex flex-row items-center gap-2">
             <Button
-              variant={"outline"}
               onClick={() => setOpenSubmitNewDatabase(!openSubmitNewDatabase)}
             >
               Submitt New
@@ -101,10 +112,10 @@ const SubmittedDatabasesPage = () => {
               className="text-red-500"
               variant={"outline"}
               onClick={() =>
-              reqForConfirmationModelFunc(
-                RejectDatabaseMessage,
-                rejectDatabase
-              )
+                reqForConfirmationModelFunc(
+                  RejectDatabaseMessage,
+                  rejectDatabase
+                )
               }
             >
               <XCircle />

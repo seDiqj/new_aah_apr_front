@@ -65,7 +65,6 @@ const ProjectsPage = () => {
           editModelOpenerStateSetter={() => router.push(`/projects/edit_project/${idFeildForEditStateSetter}`)}
           idFeildForShowStateSetter={setIdFeildForShowStateSetter}
           filtersList={["projectCode", "projectManager", "provinces", "thematicSector", "startDate", "endDate", "status"]}
-          loadingStateSetter={setIsLoading}
         ></DataTableDemo>
       </div>
 

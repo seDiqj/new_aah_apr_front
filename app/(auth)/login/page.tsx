@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useParentContext } from "@/contexts/ParentContext";
 import { useRouter } from "next/navigation";
+import { AxiosError, AxiosResponse } from "axios";
 
 const LoginPage = () => {
   const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
@@ -31,32 +32,22 @@ const LoginPage = () => {
     e.preventDefault();
     setError("");
     if (!email || !password) {
-      reqForToastAndSetMessage("somthign");
+      reqForToastAndSetMessage("Please fill all the fields !");
       return;
     }
-
-    try {
-      setLoading(true);
-      axiosInstance
-        .post("/authentication/login", {
-          email,
-          password,
-          remember,
-        })
-        .then((response: any) => {
-          reqForToastAndSetMessage(response.data.message);
-          document.cookie = `access_token=${response.data.access_token}; path=/; max-age=86400; secure; samesite=strict`;
-          router.push("/");
-        })
-        .catch((error: any) =>
-          reqForToastAndSetMessage(error.response.data.message)
-        );
-      setLoading(false);
-    } catch (err: any) {
-      console.log(err.response.data)
-      setError("Login failed. Try again.");
-      setLoading(false);
-    }
+    setLoading(true);
+    axiosInstance.post("/authentication/login", {
+      email,
+      password,
+      remember
+    })
+    .then((response: AxiosResponse<any, any, any>) => {
+      reqForToastAndSetMessage(response.data.message);
+      document.cookie = `access_token=${response.data.access_token}; path=/; max-age=86400; secure; samesite=strict`;
+      router.push("/");
+    })
+    .catch((error: AxiosError<any, any>) => reqForToastAndSetMessage(error.response?.data.message))
+    .finally(() => setLoading(false));
   };
 
   return (
@@ -69,7 +60,7 @@ const LoginPage = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form className="space-y-4">
             {error && <div className="text-sm text-destructive">{error}</div>}
 
             <div>
@@ -115,7 +106,7 @@ const LoginPage = () => {
               </a>
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="button" id="submitBtnProvider" className="w-full" disabled={loading} onClick={handleSubmit}>
               {loading ? "Signing in..." : "Sign in"}
             </Button>
           </form>

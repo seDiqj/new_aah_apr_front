@@ -25,7 +25,7 @@ import { CalendarIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParentContext } from "@/contexts/ParentContext";
 import { SubmittNewDatabaseFormSchema } from "@/schemas/FormsSchema";
-import { SubmitNewDatabaseMessage } from "@/lib/ConfirmationModelsTexts";
+import { SubmitNewDatabaseMessage } from "@/constants/ConfirmationModelsTexts";
 
 const months = [
   "January",
@@ -55,7 +55,12 @@ interface ComponentProps {
 }
 
 const SubmitNewDB: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
-  const { reqForToastAndSetMessage, axiosInstance, handleReload, reqForConfirmationModelFunc } = useParentContext();
+  const {
+    reqForToastAndSetMessage,
+    axiosInstance,
+    handleReload,
+    reqForConfirmationModelFunc,
+  } = useParentContext();
 
   const [fromMonth, setFromMonth] = React.useState<string | undefined>();
   const [fromYear, setFromYear] = React.useState<number | undefined>();
@@ -101,20 +106,20 @@ const SubmitNewDB: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
     name: string;
   } | null>(null);
 
-  const [managers, setManagers] = useState<{
-    id: string;
-    name: string;
-  }[]>([]);
+  const [managers, setManagers] = useState<
+    {
+      id: string;
+      name: string;
+    }[]
+  >([]);
 
   const [selectedManager, setSelectedManager] = useState<{
     id: string | null;
     name: string | null;
-  }>(
-    {
-      id: null,
-      name: null
-    }
-  )
+  }>({
+    id: null,
+    name: null,
+  });
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
@@ -142,13 +147,15 @@ const SubmitNewDB: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
   }, [selectedProject]);
 
   useEffect(() => {
-    axiosInstance.get("/global/managers")
-    .then((response: any) => setManagers(response.data.data))
-    .catch((error: any) => reqForToastAndSetMessage(error.response.data.message))
+    axiosInstance
+      .get("/global/managers")
+      .then((response: any) => setManagers(response.data.data))
+      .catch((error: any) =>
+        reqForToastAndSetMessage(error.response.data.message)
+      );
   }, []);
 
   const handleSubmit = () => {
-
     // const result = SubmittNewDatabaseFormSchema.safeParse({
     //   selectedProject,
     //   selectedDatabase,
@@ -183,8 +190,9 @@ const SubmitNewDB: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
         toDate: `${toYear}-${toMonth}`,
       })
       .then((response: any) => {
-        reqForToastAndSetMessage(response.data.message)
-        handleReload()
+        reqForToastAndSetMessage(response.data.message);
+        onOpenChange(false);
+        handleReload();
       })
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
@@ -407,10 +415,15 @@ const SubmitNewDB: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
 
           {/* Submit button */}
           <div className="flex flex-row items-center justify-end w-full px-2">
-            <Button onClick={() => reqForConfirmationModelFunc(
-              SubmitNewDatabaseMessage,
-              handleSubmit
-            )} className="mt-4 w-32">
+            <Button
+              onClick={() =>
+                reqForConfirmationModelFunc(
+                  SubmitNewDatabaseMessage,
+                  handleSubmit
+                )
+              }
+              className="mt-4 w-32"
+            >
               Submit
             </Button>
           </div>

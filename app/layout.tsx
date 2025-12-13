@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import AppSidebar from "@/components/app-sidebar";
 import { cookies } from "next/headers";
 import { Toaster } from "sonner";
 import Parent from "@/components/layout/Parent";
+import GlobaleListenersRegisterer from "@/providers/GlobalListeners";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,6 +34,7 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <GlobaleListenersRegisterer></GlobaleListenersRegisterer>
         <Parent>{children}</Parent>
         <Toaster />
       </body>

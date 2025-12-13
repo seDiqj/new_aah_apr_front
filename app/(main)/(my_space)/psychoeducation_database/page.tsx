@@ -6,10 +6,11 @@ import DataTableDemo from "@/components/global/MulitSelectTable";
 import SubHeader from "@/components/global/SubHeader";
 import { Button } from "@/components/ui/button";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
+import { psychoeducationTableListColumn } from "@/definitions/DataTableColumnsDefinitions";
 import {
-  psychoeducationTableListColumn,
-} from "@/definitions/DataTableColumnsDefinitions";
-import { PsychoeducationFilterUrl, PsychoeducationsFiltersList } from "@/lib/FiltersList";
+  PsychoeducationFilterUrl,
+  PsychoeducationsFiltersList,
+} from "@/constants/FiltersList";
 import { useState } from "react";
 
 const PsychoeducationDatabasePage = () => {

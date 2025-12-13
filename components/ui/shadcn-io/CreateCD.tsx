@@ -15,11 +15,11 @@ import { SingleSelect } from "@/components/single-select";
 import { useParentContext } from "@/contexts/ParentContext";
 import { CdFormSchema } from "@/schemas/FormsSchema";
 import { CommunityDialogueFormType } from "@/types/Types";
-import { CommunityDialogueFormDefault } from "@/lib/FormsDefaultValues";
+import { CommunityDialogueFormDefault } from "@/constants/FormsDefaultValues";
 import {
   CommunityDialogueCreationMessage,
   CommunityDialogueEditionMessage,
-} from "@/lib/ConfirmationModelsTexts";
+} from "@/constants/ConfirmationModelsTexts";
 import { CommunityDialogueFormInterface } from "@/interfaces/Interfaces";
 import {
   IsCreateMode,
@@ -27,7 +27,7 @@ import {
   IsEditOrShowMode,
   IsNotShowMode,
   IsShowMode,
-} from "@/lib/Constants";
+} from "@/constants/Constants";
 
 const inputClass = "border h-8 w-full text-base px-2 rounded-md";
 const labelClass = "block text-sm font-medium mb-1";
@@ -170,6 +170,7 @@ const CommunityDialogueFormComponent: React.FC<
         })
         .then((response: any) => {
           reqForToastAndSetMessage(response.data.message);
+          onOpenChange(false);
           handleReload();
         })
         .catch((error: any) =>
@@ -208,9 +209,9 @@ const CommunityDialogueFormComponent: React.FC<
       >
         <DialogHeader>
           <DialogTitle className="text-lg">
-            {mode === "create"
+            {IsCreateMode(mode)
               ? "Create Community Dialogue"
-              : mode === "update"
+              : IsEditMode(mode)
               ? "Update Community Dialogue"
               : "View Community Dialogue"}
           </DialogTitle>
@@ -241,6 +242,22 @@ const CommunityDialogueFormComponent: React.FC<
               }
               disabled={isReadOnly}
               error={formErrors.project_id}
+            />
+          </div>
+
+          {/* Program Name */}
+          <div>
+            <Label className={labelClass}>Program Name</Label>
+            <Input
+              name="name"
+              value={formData.name}
+              onChange={handleFormChange}
+              placeholder="Name"
+              disabled={isReadOnly}
+              className={`border p-2 rounded ${
+                formErrors.name ? "!border-red-500" : ""
+              }`}
+              title={formErrors.name}
             />
           </div>
 

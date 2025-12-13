@@ -24,6 +24,7 @@ import { IndicatorModel } from "@/components/global/IndicatorEditModel";
 import { Button } from "@/components/ui/button";
 import OutcomeModel from "@/components/global/OutcomeEditModel";
 import OutputModel from "@/components/global/OutputEditModel";
+import { Isp3Default } from "@/constants/FormsDefaultValues";
 
 const EditProjectPage = () => {
   const { id } = useParams();
@@ -58,12 +59,7 @@ const EditProjectPage = () => {
     []
   );
 
-  const [isp3, setIsp3] = useState<Isp3[]>(
-    isp3s.map((i) => ({
-      name: i,
-      indicators: [],
-    }))
-  );
+  const [isp3, setIsp3] = useState<Isp3[]>(Isp3Default());
 
   const [projectId, setProjectId] = useState<number | null>(null);
   const [projectProvinces, setProjectProvinces] = useState<string[]>(["kabul"]);
@@ -91,6 +87,7 @@ const EditProjectPage = () => {
     axiosInstance
       .get(`/projects/${id}`)
       .then((response: any) => {
+        console.log(response.data.data);
         const { outcomesInfo, ...project } = response.data.data;
         project["provinces"] = project.provinces.map(
           (province: { id: string; name: string; pivo: any }) => province.name
@@ -150,25 +147,29 @@ const EditProjectPage = () => {
         );
         setProjectAprStatus(project.aprStatus);
         setProjectId(project.id);
-        outcomesInfo.flatMap((outcome: any) => {
-          const isp3s = outcome.outputs.flatMap((output: any) =>
-            output.indicators.flatMap((indicator: any) =>
-              indicator.isp3.flatMap((isp: any) => {
-                setIsp3((prev) =>
-                  prev.map((i) =>
-                    i.name == isp.description
-                      ? {
-                          ...i,
-                          indicators: [...i.indicators, isp.pivot.indicator_id],
-                        }
-                      : i
-                  )
+        const newIsp3 = [...isp3];
+        outcomesInfo.forEach((outcome: any) => {
+          outcome.outputs.forEach((output: any) => {
+            output.indicators.forEach((indicator: any) => {
+              indicator.isp3.forEach((isp: any) => {
+                const index = newIsp3.findIndex(
+                  (i) => i.name === isp.description
                 );
-              })
-            )
-          );
-          return isp3s;
+                if (index !== -1) {
+                  newIsp3[index] = {
+                    ...newIsp3[index],
+                    indicators: [
+                      ...newIsp3[index].indicators,
+                      isp.pivot.indicator_id,
+                    ],
+                  };
+                }
+              });
+            });
+          });
         });
+
+        setIsp3(newIsp3);
       })
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
@@ -178,6 +179,17 @@ const EditProjectPage = () => {
   const [reqForOutcomeForm, setReqForOutcomeForm] = useState(false);
   const [reqForOutputForm, setReqForOutputForm] = useState(false);
   const [reqForIndicatorForm, setReqForIndicatorForm] = useState(false);
+
+  const handleDelete = (url: string, id: string | null) => {
+    if (!id) return;
+
+    axiosInstance
+      .delete(url + `/${id}`)
+      .then((response: any) => reqForToastAndSetMessage(response.data.message))
+      .catch((error: any) =>
+        reqForToastAndSetMessage(error.response.data.message)
+      );
+  };
 
   return (
     <>
@@ -209,6 +221,7 @@ const EditProjectPage = () => {
           setIsp3,
           actionLogs,
           setActionLogs,
+          handleDelete,
         }}
       >
         <div className="w-full h-full p-2">
@@ -265,7 +278,7 @@ const EditProjectPage = () => {
                 <TabsTrigger value="output">Output</TabsTrigger>
                 <TabsTrigger value="indicator">Indicator</TabsTrigger>
                 <TabsTrigger value="dessaggregation">
-                  Dessaggregation
+                  Disaggregation
                 </TabsTrigger>
                 {/* <TabsTrigger value="aprPreview">APR Preview</TabsTrigger> */}
                 <TabsTrigger value="isp3">ISP3</TabsTrigger>
@@ -297,11 +310,6 @@ const EditProjectPage = () => {
               <TabsContent value="dessaggregation" className="h-full">
                 <DessaggregationForm mode="edit"></DessaggregationForm>
               </TabsContent>
-
-              {/* APR preview */}
-              {/* <TabsContent value="aprPreview" className="h-full">
-                <MonitoringTablePage mode="edit"></MonitoringTablePage>
-              </TabsContent> */}
 
               {/* ISP3 */}
               <TabsContent value="isp3" className="h-full">

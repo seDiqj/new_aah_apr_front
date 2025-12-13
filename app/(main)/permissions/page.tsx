@@ -1,11 +1,14 @@
-"use client"
+"use client";
 
 import BreadcrumbWithCustomSeparator from "@/components/global/BreadCrumb";
 import DataTableDemo from "@/components/global/MulitSelectTable";
 import SubHeader from "@/components/global/SubHeader";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { permissionColumns } from "@/definitions/DataTableColumnsDefinitions";
-import { PermissionFiltersList, PermissionFilterUrl } from "@/lib/FiltersList";
+import {
+  PermissionFiltersList,
+  PermissionFilterUrl,
+} from "@/constants/FiltersList";
 import { withPermission } from "@/lib/withPermission";
 
 const PermissionsPage = () => {
@@ -24,7 +27,6 @@ const PermissionsPage = () => {
           filterUrl={PermissionFilterUrl}
           filtersList={PermissionFiltersList}
         ></DataTableDemo>
-        
       </div>
     </>
   );

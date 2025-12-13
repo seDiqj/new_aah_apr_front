@@ -14,7 +14,10 @@ import CommunityDialogueSelector from "@/components/global/CommunityDialogSelect
 import BeneficiaryUpdateCD from "@/components/global/BeneficiaryUpdateFormCd";
 import { withPermission } from "@/lib/withPermission";
 import { Can } from "@/components/Can";
-import { CommunityDialogueBeneficiariesFiltersList, CommunityDialogueBeneficiariesFilterUrl } from "@/lib/FiltersList";
+import {
+  CommunityDialogueBeneficiariesFiltersList,
+  CommunityDialogueBeneficiariesFilterUrl,
+} from "@/constants/FiltersList";
 
 const CommunityDialogDatabasePage = () => {
   const router = useRouter();
@@ -66,12 +69,14 @@ const CommunityDialogDatabasePage = () => {
             {
               <Can permission="Dialogue.create">
                 <Button
-              onClick={() =>
-                setReqForBeneficiaryCreationForm(!reqForBeneficiaryCreationForm)
-              }
-            >
-              Create New Benficiary
-            </Button>
+                  onClick={() =>
+                    setReqForBeneficiaryCreationForm(
+                      !reqForBeneficiaryCreationForm
+                    )
+                  }
+                >
+                  Create New Benficiary
+                </Button>
               </Can>
             }
           </div>
@@ -129,7 +134,6 @@ const CommunityDialogDatabasePage = () => {
             ids={Object.keys(selectedRowsIds)}
           ></CommunityDialogueSelector>
         )}
-        
       </div>
     </>
   );

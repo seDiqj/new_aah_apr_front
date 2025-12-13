@@ -17,41 +17,9 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent } from "../../card";
 import { useParentContext } from "@/contexts/ParentContext";
 import SubmitSummary from "../submitSummary";
-
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  unread?: boolean;
-  time: string;
-  type: "project" | "submittedDatabase" | "approvedDatabase" | "reviewdApr" | "approvedApr";
-  database_id?: string;
-  project_id?: string;
-  apr_id?: string;
-}
-
-
-// Types
-export interface Navbar14Props extends React.HTMLAttributes<HTMLElement> {
-  searchPlaceholder?: string;
-  searchValue?: string;
-  testMode?: boolean;
-  showTestMode?: boolean;
-  notifications?: Array<{
-    id: string;
-    title: string;
-    message: string;
-    time: string;
-    unread?: boolean;
-  }>;
-  onSearchChange?: (value: string) => void;
-  onTestModeChange?: (enabled: boolean) => void;
-  onLayoutClick?: () => void;
-  onAddClick?: () => void;
-  onInfoItemClick?: (item: string) => void;
-  onNotificationClick?: (notificationId: string) => void;
-  onSettingsItemClick?: (item: string) => void;
-}
+import { webSiteContentList } from "@/constants/SingleAndMultiSelectOptionsList";
+import { Navbar14Props, Notification } from "@/interfaces/Interfaces";
+import { SIDEBAR_OPEN_TOGGLER_PROVIDER } from "@/constants/System";
 
 export const Navbar14 = React.forwardRef<HTMLElement, Navbar14Props>(
   (
@@ -67,7 +35,12 @@ export const Navbar14 = React.forwardRef<HTMLElement, Navbar14Props>(
     },
     ref
   ) => {
-    const {notifications, setNotifications, axiosInstance,reqForToastAndSetMessage} = useParentContext();
+    const {
+      notifications,
+      setNotifications,
+      axiosInstance,
+      reqForToastAndSetMessage,
+    } = useParentContext();
     const router = useRouter();
     const id = useId();
     const { theme, setTheme } = useTheme();
@@ -79,30 +52,16 @@ export const Navbar14 = React.forwardRef<HTMLElement, Navbar14Props>(
       { contentTitle: string; contentUrl: string }[]
     >([]);
 
-    const [reqForSubmittedDatabaseSummary, setReqForSubmittedDatabaseSummary] = useState<boolean>(false);
+    const [reqForSubmittedDatabaseSummary, setReqForSubmittedDatabaseSummary] =
+      useState<boolean>(false);
 
-    const [databaseId, setDatabaseId] = useState<string | null>(null); 
+    const [databaseId, setDatabaseId] = useState<string | null>(null);
 
     useEffect(() => {
       setMounted(true);
     }, []);
 
     if (!mounted) return null;
-
-
-    const webSiteContentList = [
-      { contentTitle: "Dashboard", contentUrl: "/" },
-      { contentTitle: "Projects", contentUrl: "/projects" },
-      { contentTitle: "Create New Project", contentUrl: "/create_new_project" },
-      { contentTitle: "Main Database", contentUrl: "/main_db" },
-      { contentTitle: "Kit Distribution", contentUrl: "/kit" },
-      { contentTitle: "Psychoeducation", contentUrl: "/psychoeducation" },
-      { contentTitle: "Community Dialogue", contentUrl: "/community_dialogue" },
-      { contentTitle: "Training", contentUrl: "/training" },
-      { contentTitle: "Referral", contentUrl: "/referral" },
-      { contentTitle: "Settings", contentUrl: "/settings" },
-      { contentTitle: "Notifications", contentUrl: "/notifications" },
-    ];
 
     const handleGlobalSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
@@ -120,12 +79,19 @@ export const Navbar14 = React.forwardRef<HTMLElement, Navbar14Props>(
       onSearchChange?.(value);
     };
 
-
     const onNotificationClick = (notification: Notification) => {
-
-      axiosInstance.post(`/notification/mark_as_read/${notification.id}`)
-      .then((response: any) => setNotifications((prev: Notification[]) => prev.map((n) => n.id == notification.id ? {...n, unread: !n.unread} : {})))
-      .catch((error: any) => reqForToastAndSetMessage(error.response.data.message));
+      axiosInstance
+        .post(`/notification/mark_as_read/${notification.id}`)
+        .then((response: any) =>
+          setNotifications((prev: Notification[]) =>
+            prev.map((n) =>
+              n.id == notification.id ? { ...n, unread: !n.unread } : {}
+            )
+          )
+        )
+        .catch((error: any) =>
+          reqForToastAndSetMessage(error.response.data.message)
+        );
 
       switch (notification.type) {
         case "project":
@@ -139,23 +105,19 @@ export const Navbar14 = React.forwardRef<HTMLElement, Navbar14Props>(
           }
           break;
         case "approvedDatabase":
-          if (notification.apr_id)
-            setDatabaseId(notification.apr_id);
-            setReqForSubmittedDatabaseSummary(true);
+          if (notification.apr_id) setDatabaseId(notification.apr_id);
+          setReqForSubmittedDatabaseSummary(true);
           break;
         case "reviewdApr":
-          if (notification.apr_id)
-            setDatabaseId(notification.apr_id);
-            setReqForSubmittedDatabaseSummary(true);
+          if (notification.apr_id) setDatabaseId(notification.apr_id);
+          setReqForSubmittedDatabaseSummary(true);
           break;
         case "approvedApr":
-          if (notification.apr_id)
-            setDatabaseId(notification.apr_id);
-            setReqForSubmittedDatabaseSummary(true);
+          if (notification.apr_id) setDatabaseId(notification.apr_id);
+          setReqForSubmittedDatabaseSummary(true);
           break;
       }
     };
-
 
     return (
       <header
@@ -168,7 +130,7 @@ export const Navbar14 = React.forwardRef<HTMLElement, Navbar14Props>(
           <div className="relative flex-1">
             {/* Input + dropdown */}
             <div className="flex flex-row relative w-full max-w-xs">
-              <SidebarTrigger />
+              <SidebarTrigger id={SIDEBAR_OPEN_TOGGLER_PROVIDER} />
               <Input
                 id={`input-${id}`}
                 className="peer h-8 w-full ps-8 pe-2"
@@ -240,7 +202,8 @@ export const Navbar14 = React.forwardRef<HTMLElement, Navbar14Props>(
               open={reqForSubmittedDatabaseSummary}
               onOpenChange={setReqForSubmittedDatabaseSummary}
               databaseId={databaseId as unknown as string}
-            />)}
+            />
+          )}
         </div>
       </header>
     );

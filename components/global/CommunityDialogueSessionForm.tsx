@@ -14,12 +14,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useParentContext } from "@/contexts/ParentContext";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { CommunityDialogueSessionDefault } from "@/lib/FormsDefaultValues";
+import { CommunityDialogueSessionDefault } from "@/constants/FormsDefaultValues";
 import { CommunityDialogueSessionForm } from "@/types/Types";
-import { CommunityDialogueSessionSubmitMessage } from "@/lib/ConfirmationModelsTexts";
-import { IsCreateMode, IsEditMode, IsNotShowMode, IsShowMode } from "@/lib/Constants";
+import { CommunityDialogueSessionSubmitMessage } from "@/constants/ConfirmationModelsTexts";
+import {
+  IsCreateMode,
+  IsEditMode,
+  IsNotShowMode,
+  IsShowMode,
+} from "@/constants/Constants";
 import { CommunityDialogueSessionFormInterface } from "@/interfaces/Interfaces";
-
 
 const SessionForm: React.FC<CommunityDialogueSessionFormInterface> = ({
   open,
@@ -33,6 +37,7 @@ const SessionForm: React.FC<CommunityDialogueSessionFormInterface> = ({
     reqForToastAndSetMessage,
     axiosInstance,
     reqForConfirmationModelFunc,
+    handleReload
   } = useParentContext();
 
   const [formData, setFormData] = useState<CommunityDialogueSessionForm>(
@@ -48,25 +53,30 @@ const SessionForm: React.FC<CommunityDialogueSessionFormInterface> = ({
 
     setLoading(true);
 
-    const request =
-      mode === "create"
-        ? axiosInstance.post(
-            "/community_dialogue_db/community_dialogue/session",
-            formData
-          )
-        : axiosInstance.put(
-            `/community_dialogue_db/community_dialogue/session/${sessionId}`,
-            formData
-          );
+    const request = IsCreateMode(mode)
+      ? axiosInstance.post(
+          "/community_dialogue_db/community_dialogue/session",
+          formData
+        )
+      : axiosInstance.put(
+          `/community_dialogue_db/community_dialogue/session/${sessionId}`,
+          formData
+        );
 
     request
-      .then((response: any) => reqForToastAndSetMessage(response.data.message))
+      .then((response: any) => {
+        reqForToastAndSetMessage(response.data.message);
+        onOpenChange(false);
+        handleReload()
+      })
       .catch((error: any) =>
         reqForToastAndSetMessage(
           error.response?.data?.message || "Error occurred."
         )
       )
-      .finally(() => setLoading(false));
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   const handleFormChange = (e: any) => {

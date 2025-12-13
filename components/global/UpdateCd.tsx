@@ -16,18 +16,28 @@ import { useParentContext } from "@/contexts/ParentContext";
 import { SingleSelect } from "@/components/single-select";
 import { CommunityDialogBeneficiaryForm } from "@/types/Types";
 import { CommunityDialogueUpdateInterface } from "@/interfaces/Interfaces";
-import { CommunityDialogueBeneficiaryDefault } from "@/lib/FormsDefaultValues";
-import { GenderOptions, incentiveReceivedOptions, MaritalStatusOptions } from "@/lib/SingleAndMultiSelectOptionsList";
-import { CdDatabaseBenefciaryEditionMessage } from "@/lib/ConfirmationModelsTexts";
+import { CommunityDialogueBeneficiaryDefault } from "@/constants/FormsDefaultValues";
+import {
+  GenderOptions,
+  incentiveReceivedOptions,
+  MaritalStatusOptions,
+} from "@/constants/SingleAndMultiSelectOptionsList";
+import { CdDatabaseBenefciaryEditionMessage } from "@/constants/ConfirmationModelsTexts";
 
 const CommunityDialogueUpdateCD: React.FC<CommunityDialogueUpdateInterface> = ({
   open,
   onOpenChange,
   beneficiaryId,
 }) => {
-  const { axiosInstance, reqForToastAndSetMessage, reqForConfirmationModelFunc } = useParentContext();
+  const {
+    axiosInstance,
+    reqForToastAndSetMessage,
+    reqForConfirmationModelFunc,
+  } = useParentContext();
 
-  const [formData, setFormData] = useState<CommunityDialogBeneficiaryForm>(CommunityDialogueBeneficiaryDefault());
+  const [formData, setFormData] = useState<CommunityDialogBeneficiaryForm>(
+    CommunityDialogueBeneficiaryDefault()
+  );
 
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -50,11 +60,13 @@ const CommunityDialogueUpdateCD: React.FC<CommunityDialogueUpdateInterface> = ({
             jobTitle: data.jobTitle ?? "",
             incentiveReceived: data.incentiveReceived ?? false,
             incentiveAmount: data.incentiveAmount ?? "",
-            dateOfRegistration: data.dateOfRegistration ?? ""
+            dateOfRegistration: data.dateOfRegistration ?? "",
           });
         })
         .catch((err: any) => {
-          reqForToastAndSetMessage(err.response?.data?.message || "Error loading data");
+          reqForToastAndSetMessage(
+            err.response?.data?.message || "Error loading data"
+          );
         })
         .finally(() => setLoading(false));
     }
@@ -76,7 +88,9 @@ const CommunityDialogueUpdateCD: React.FC<CommunityDialogueUpdateInterface> = ({
         onOpenChange(false);
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response?.data?.message || "Update failed")
+        reqForToastAndSetMessage(
+          error.response?.data?.message || "Update failed"
+        )
       );
   };
 
@@ -234,10 +248,15 @@ const CommunityDialogueUpdateCD: React.FC<CommunityDialogueUpdateInterface> = ({
         )}
 
         {!loading && (
-          <Button className="w-full mt-6" onClick={() => reqForConfirmationModelFunc(
-            CdDatabaseBenefciaryEditionMessage,
-            handleSubmit
-          )}>
+          <Button
+            className="w-full mt-6"
+            onClick={() =>
+              reqForConfirmationModelFunc(
+                CdDatabaseBenefciaryEditionMessage,
+                handleSubmit
+              )
+            }
+          >
             Update
           </Button>
         )}

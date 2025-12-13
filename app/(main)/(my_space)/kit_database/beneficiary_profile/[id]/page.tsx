@@ -14,11 +14,11 @@ import { useParentContext } from "@/contexts/ParentContext";
 import { beneficiaryKitListColumns } from "@/definitions/DataTableColumnsDefinitions";
 import { KitDatabaseBeneficiaryProfileInterface } from "@/interfaces/Interfaces";
 import { createAxiosInstance } from "@/lib/axios";
-import { IsANullValue, IsIdFeild } from "@/lib/Constants";
+import { IsANullValue, IsIdFeild } from "@/constants/Constants";
 import {
   KitDatabaseBeneficiaryKitsTableFiltersList,
   KitDatabaseBeneficiaryKitsTableFilterUrl,
-} from "@/lib/FiltersList";
+} from "@/constants/FiltersList";
 import { withPermission } from "@/lib/withPermission";
 import {
   KitDatabaseBeneficiaryProfileInfoType,
@@ -44,6 +44,11 @@ const KitDbBeneficiaryProfilePage: React.FC<
 
   const [reqForKitCreationForm, setReqForKitCreationForm] =
     useState<boolean>(false);
+
+  const [reqForKitEditionForm, setReqForKitEditionForm] =
+    useState<boolean>(false);
+
+  const [reqForKitShowForm, setReqForKitShowForm] = useState<boolean>(false);
 
   const [beneficiaryInfo, setBeneficiaryInfo] =
     useState<KitDatabaseBeneficiaryProfileInfoType>();
@@ -73,6 +78,7 @@ const KitDbBeneficiaryProfilePage: React.FC<
         reqForToastAndSetMessage(error.response.data.message)
       );
   }, []);
+  9;
 
   return (
     <>
@@ -149,27 +155,29 @@ const KitDbBeneficiaryProfilePage: React.FC<
                     </div>
                     <div className="flex flex-col gap-2 w-full">
                       <Label>Program Information</Label>
-                      <div className="">
+                      <div>
                         {programInfo ? (
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {programInfo.map((programInfo) => Object.entries(programInfo).map(
-                              ([key, value], index) => {
-                                if (IsIdFeild(key)) return;
-                                return (
-                                  <div
-                                    key={index}
-                                    className="flex flex-col rounded-xl border p-3 transition-all hover:shadow-sm"
-                                  >
-                                    <span className="text-xs font-medium uppercase opacity-70 tracking-wide">
-                                      {key.replace(/([A-Z])/g, " $1")}
-                                    </span>
-                                    <span className="text-sm font-semibold truncate">
-                                      {value?.toString() || "-"}
-                                    </span>
-                                  </div>
-                                );
-                              }
-                            ))}
+                            {programInfo.map((programInfo) =>
+                              Object.entries(programInfo).map(
+                                ([key, value], index) => {
+                                  if (IsIdFeild(key)) return;
+                                  return (
+                                    <div
+                                      key={index}
+                                      className="flex flex-col rounded-xl border p-3 transition-all hover:shadow-sm"
+                                    >
+                                      <span className="text-xs font-medium uppercase opacity-70 tracking-wide">
+                                        {key.replace(/([A-Z])/g, " $1")}
+                                      </span>
+                                      <span className="text-sm font-semibold truncate">
+                                        {value?.toString() || "-"}
+                                      </span>
+                                    </div>
+                                  );
+                                }
+                              )
+                            )}
                           </div>
                         ) : (
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -198,8 +206,9 @@ const KitDbBeneficiaryProfilePage: React.FC<
                   deleteUrl={`kit_db/delete_kit_from_beneficiary/${id}`}
                   searchableColumn="kit"
                   idFeildForEditStateSetter={setIdFeildForEditStateSetter}
+                  editModelOpenerStateSetter={setReqForKitEditionForm}
                   idFeildForShowStateSetter={setIdFeildForShowStateSetter}
-                  showModelOpenerStateSetter={() => {}}
+                  showModelOpenerStateSetter={setReqForKitShowForm}
                   filterUrl={KitDatabaseBeneficiaryKitsTableFilterUrl}
                   filtersList={KitDatabaseBeneficiaryKitsTableFiltersList}
                 ></DataTableDemo>
@@ -214,6 +223,22 @@ const KitDbBeneficiaryProfilePage: React.FC<
             open={reqForKitCreationForm}
             onOpenChange={setReqForKitCreationForm}
             mode={"create"}
+          ></KitForm>
+        )}
+        {reqForKitEditionForm && idFeildForEditStateSetter && (
+          <KitForm
+            open={reqForKitEditionForm}
+            onOpenChange={setReqForKitEditionForm}
+            mode={"edit"}
+            kitId={idFeildForEditStateSetter as unknown as number}
+          ></KitForm>
+        )}
+        {reqForKitShowForm && idFeildForShowStateSetter && (
+          <KitForm
+            open={reqForKitShowForm}
+            onOpenChange={setReqForKitShowForm}
+            mode={"show"}
+            kitId={idFeildForShowStateSetter as unknown as number}
           ></KitForm>
         )}
       </div>

@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { SELECT_ALL_BUTTON_PROVIDER } from "@/constants/System";
 import {
   Role,
   User,
@@ -279,6 +280,7 @@ export const projectColumns: ColumnDef<Project>[] = [
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         onClick={(e) => e.stopPropagation()}
         aria-label="Select all"
+        id={SELECT_ALL_BUTTON_PROVIDER}
       />
     ),
     cell: ({ row }) => (
@@ -560,22 +562,17 @@ export const mainDatabaseAndKitDatabaseBeneficiaryColumns: ColumnDef<Beneficiary
       enableHiding: false,
     },
     {
-      accessorKey: "focalPoint",
+      accessorKey: "programName",
       header: "Program",
       cell: ({ row }) => (
         <div
           className="max-w-[100px] truncate"
-          title={row.getValue("focalPoint")}
+          title={row.getValue("programName")}
         >
-          {row.getValue("focalPoint")}
+          {row.getValue("programName")}
         </div>
       ),
     },
-    // {
-    //   accessorKey: "indicators",
-    //   header: "Indicators",
-    //   cell: ({ row }) => <div>{(row.getValue("indicators") as []).join(", ")}</div>,
-    // },
     {
       accessorKey: "dateOfRegistration",
       header: "Date of Registration",
@@ -729,7 +726,7 @@ export const mainDatabaseAndKitDatabaseBeneficiaryColumns: ColumnDef<Beneficiary
         </div>
       ),
     },
-  ];
+];
 
 export const beneficiaryKitListColumns: ColumnDef<KitFormType>[] = [
   {
@@ -1078,11 +1075,14 @@ export const psychoeducationTableListColumn: ColumnDef<any>[] = [
   },
 
   {
-    accessorKey: "program",
+    accessorKey: "programName",
     header: "Program",
     cell: ({ row }) => (
-      <div className="max-w-[100px] truncate" title={row.getValue("program")}>
-        {row.getValue("program")}
+      <div
+        className="max-w-[100px] truncate"
+        title={row.getValue("programName")}
+      >
+        {row.getValue("programName")}
       </div>
     ),
   },

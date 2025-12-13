@@ -10,16 +10,11 @@ import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AssessmentForm from "@/components/global/CreateNewAssessmentForm";
 import { useRouter } from "next/navigation";
-import { AssessmentsFiltersList, AssessmentsFilterUrl } from "@/lib/FiltersList";
+import {
+  AssessmentsFiltersList,
+  AssessmentsFilterUrl,
+} from "@/constants/FiltersList";
 
-// Will be used in version 2.
-const enactTabsList = [
-  "ENACT: FOUNDATIONAL HELPING SKILLS-ADULT",
-  "PROBLEUM MANAGEMENT PLUS (COMINED ENACT & PM+)",
-  "PROBLEUM MANAGEMENT PLUS (PM+) COMPETENCIES [LEGACY VERSION]",
-  "SELF HELP PLUS",
-  "BEHAVIORAL ACTIVATION COMPETENCIES",
-];
 
 
 const EnactDatabasePage = () => {

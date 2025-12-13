@@ -19,10 +19,10 @@ import {
 } from "@/types/Types";
 import { Plus } from "lucide-react";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import { TrainingBeneficiaryDefault } from "@/lib/FormsDefaultValues";
-import { BeneficiaryPresenceTogglerButtonMessage } from "@/lib/ConfirmationModelsTexts";
-import { IsIdFeild } from "@/lib/Constants";
+import { RefObject, useEffect, useRef, useState } from "react";
+import { TrainingBeneficiaryDefault } from "@/constants/FormsDefaultValues";
+import { BeneficiaryPresenceTogglerButtonMessage } from "@/constants/ConfirmationModelsTexts";
+import { IsIdFeild } from "@/constants/Constants";
 
 const TrainingBeneficiaryProfile = () => {
   const { id } = useParams<{
@@ -47,7 +47,11 @@ const TrainingBeneficiaryProfile = () => {
 
   const [selfChaptersData, setSelfChaptersData] = useState<SelfChapters>([]);
 
+  const isBeneficiaryTrainingsListFeched: RefObject<boolean> = useRef(false);
+
   useEffect(() => {
+    if (isBeneficiaryTrainingsListFeched.current) return;
+    isBeneficiaryTrainingsListFeched.current = true;
     axiosInstance
       .get(`/training_db/beneficiary/trainings/${id}`)
       .then((response: any) => {

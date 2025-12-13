@@ -15,18 +15,24 @@ import { SingleSelect } from "../single-select";
 import { useEffect, useState } from "react";
 import { useParentContext } from "@/contexts/ParentContext";
 import { PsychoeducationForm } from "@/types/Types";
-import { PsychoeducationDefault } from "@/lib/FormsDefaultValues";
+import { PsychoeducationDefault } from "@/constants/FormsDefaultValues";
 import { UpdatePsychoeducationInterface } from "@/interfaces/Interfaces";
-import { PsychoeducationEditionMessage } from "@/lib/ConfirmationModelsTexts";
+import { PsychoeducationEditionMessage } from "@/constants/ConfirmationModelsTexts";
 
 const UpdatePsychoeducation: React.FC<UpdatePsychoeducationInterface> = ({
   open,
   onOpenChange,
   psychoId,
 }) => {
-  const { reqForToastAndSetMessage, axiosInstance, reqForConfirmationModelFunc } = useParentContext();
+  const {
+    reqForToastAndSetMessage,
+    axiosInstance,
+    reqForConfirmationModelFunc,
+  } = useParentContext();
 
-  const [formData, setFormData] = useState<PsychoeducationForm>(PsychoeducationDefault());
+  const [formData, setFormData] = useState<PsychoeducationForm>(
+    PsychoeducationDefault()
+  );
 
   useEffect(() => {
     if (!open || !psychoId) return;
@@ -34,7 +40,9 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationInterface> = ({
       .get(`/psychoeducation_db/psychoeducation/${psychoId}`)
       .then((res: any) => setFormData(res.data.data))
       .catch((err: any) =>
-        reqForToastAndSetMessage(err.response?.data?.message || "Failed to load data.")
+        reqForToastAndSetMessage(
+          err.response?.data?.message || "Failed to load data."
+        )
       );
   }, [open, psychoId]);
 
@@ -69,10 +77,18 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationInterface> = ({
       );
   };
 
-  const [indicators, setIndicators] = useState<{ id: string; indicatorRef: string }[]>([]);
-  const [districts, setDistricts] = useState<{ id: string; name: string }[]>([]);
-  const [provinces, setProvinces] = useState<{ id: string; name: string }[]>([]);
-  const [projects, setProjects] = useState<{ id: string; projectCode: string }[]>([]);
+  const [indicators, setIndicators] = useState<
+    { id: string; indicatorRef: string }[]
+  >([]);
+  const [districts, setDistricts] = useState<{ id: string; name: string }[]>(
+    []
+  );
+  const [provinces, setProvinces] = useState<{ id: string; name: string }[]>(
+    []
+  );
+  const [projects, setProjects] = useState<
+    { id: string; projectCode: string }[]
+  >([]);
 
   useEffect(() => {
     axiosInstance
@@ -132,8 +148,9 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationInterface> = ({
                 label: project.projectCode.toUpperCase(),
               }))}
               value={
-                projects.find((p) => p.id == formData.programInformation.project_id)
-                  ?.projectCode ?? ""
+                projects.find(
+                  (p) => p.id == formData.programInformation.project_id
+                )?.projectCode ?? ""
               }
               onValueChange={(value: string) =>
                 handleFormChange(
@@ -157,15 +174,17 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationInterface> = ({
                 label: i.indicatorRef,
               }))}
               value={
-                indicators.find((i) => i.id === formData.programInformation.indicator_id)
-                  ?.indicatorRef ?? ""
+                indicators.find(
+                  (i) => i.id === formData.programInformation.indicator_id
+                )?.indicatorRef ?? ""
               }
               onValueChange={(value: string) =>
                 handleFormChange(
                   {
                     target: {
                       name: "indicator_id",
-                      value: indicators.find((i) => i.indicatorRef === value)?.id,
+                      value: indicators.find((i) => i.indicatorRef === value)
+                        ?.id,
                     },
                   },
                   "program"
@@ -191,8 +210,9 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationInterface> = ({
                 label: p.name.toUpperCase(),
               }))}
               value={
-                provinces.find((p) => p.id == formData.programInformation.province_id)
-                  ?.name ?? ""
+                provinces.find(
+                  (p) => p.id == formData.programInformation.province_id
+                )?.name ?? ""
               }
               onValueChange={(value: string) =>
                 handleFormChange(
@@ -228,10 +248,15 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationInterface> = ({
           />
         </div>
 
-        <Button className="w-full mt-6" onClick={() => reqForConfirmationModelFunc(
-          PsychoeducationEditionMessage,
-          handleUpdate
-        )}>
+        <Button
+          className="w-full mt-6"
+          onClick={() =>
+            reqForConfirmationModelFunc(
+              PsychoeducationEditionMessage,
+              handleUpdate
+            )
+          }
+        >
           Update
         </Button>
       </DialogContent>

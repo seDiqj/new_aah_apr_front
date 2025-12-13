@@ -6,16 +6,20 @@ import DataTableDemo from "@/components/global/MulitSelectTable";
 import SubHeader from "@/components/global/SubHeader";
 import { Button } from "@/components/ui/button";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
+import { mainDatabaseAndKitDatabaseProgramColumns } from "@/definitions/DataTableColumnsDefinitions";
 import {
-  mainDatabaseAndKitDatabaseProgramColumns,
-} from "@/definitions/DataTableColumnsDefinitions";
-import { MainDatabaseProgramsFilters, MainDatabaseProgramsFitlterUrl } from "@/lib/FiltersList";
+  MainDatabaseProgramsFilters,
+  MainDatabaseProgramsFitlterUrl,
+} from "@/constants/FiltersList";
 import { useState } from "react";
 
 const MainDatabaseProgramsPage = () => {
-  const [reqForProgramCreationForm, setReqForProgramCreationForm] = useState<boolean>(false);
-  const [reqForProgramEditionForm, setReqForProgramEditionForm] = useState<boolean>(false);
-  const [reqForProgramShowForm, setReqForProgramShowForm] = useState<boolean>(false);
+  const [reqForProgramCreationForm, setReqForProgramCreationForm] =
+    useState<boolean>(false);
+  const [reqForProgramEditionForm, setReqForProgramEditionForm] =
+    useState<boolean>(false);
+  const [reqForProgramShowForm, setReqForProgramShowForm] =
+    useState<boolean>(false);
 
   const [idFeildForEditStateSetter, setIdFeildForEditStateSetter] = useState<
     number | null
@@ -34,7 +38,13 @@ const MainDatabaseProgramsPage = () => {
         </div>
         <SubHeader pageTitle={"Main Database Programs"}>
           <div className="flex flex-row items-center justify-around gap-2">
-            <Button onClick={() => setReqForProgramCreationForm(!reqForProgramCreationForm)}>Create New Program</Button>
+            <Button
+              onClick={() =>
+                setReqForProgramCreationForm(!reqForProgramCreationForm)
+              }
+            >
+              Create New Program
+            </Button>
           </div>
         </SubHeader>
         <DataTableDemo
@@ -50,33 +60,32 @@ const MainDatabaseProgramsPage = () => {
           filtersList={MainDatabaseProgramsFilters}
         ></DataTableDemo>
 
-
         {/* Program create form */}
         {reqForProgramCreationForm && (
-            <CreateNewProgramMain
-              open={reqForProgramCreationForm}
-              onOpenChange={setReqForProgramCreationForm}
-              mode="create"
+          <CreateNewProgramMain
+            open={reqForProgramCreationForm}
+            onOpenChange={setReqForProgramCreationForm}
+            mode="create"
           ></CreateNewProgramMain>
-        )}        
+        )}
 
         {/* Program edit form */}
         {reqForProgramEditionForm && (
-            <CreateNewProgramMain
-              open={reqForProgramEditionForm}
-              onOpenChange={setReqForProgramEditionForm}
-              mode="edit"
-              programId={idFeildForEditStateSetter!}
+          <CreateNewProgramMain
+            open={reqForProgramEditionForm}
+            onOpenChange={setReqForProgramEditionForm}
+            mode="edit"
+            programId={idFeildForEditStateSetter!}
           ></CreateNewProgramMain>
         )}
 
         {/* Program show form */}
         {reqForProgramShowForm && (
-            <CreateNewProgramMain
-              open={reqForProgramShowForm}
-              onOpenChange={setReqForProgramShowForm}
-              mode="show"
-              programId={idFeildForShowStateSetter!}
+          <CreateNewProgramMain
+            open={reqForProgramShowForm}
+            onOpenChange={setReqForProgramShowForm}
+            mode="show"
+            programId={idFeildForShowStateSetter!}
           ></CreateNewProgramMain>
         )}
       </div>

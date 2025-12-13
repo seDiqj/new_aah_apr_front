@@ -34,7 +34,7 @@ export default function MonitoringTablePage() {
   const ws_data: any[][] = [];
   const merges: any[] = [];
 
-  let rowIndex = 1; // چون ردیف 0 عنوان است
+  let rowIndex = 1;
 
   data.outcomes.forEach((outcome: any, oIdx: number) => {
     outcome.outputs.forEach((output: any, opIdx: number) => {
@@ -300,7 +300,6 @@ export default function MonitoringTablePage() {
     axiosInstance
       .get(`/apr_management/show_apr/${id}`)
       .then((response: any) => {
-        console.log(response.data.data);
         setData(response.data.data);
       })
       .catch((error: any) =>

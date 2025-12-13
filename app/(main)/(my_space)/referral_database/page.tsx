@@ -7,7 +7,10 @@ import SubHeader from "@/components/global/SubHeader";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { useParentContext } from "@/contexts/ParentContext";
 import { mainDatabaseAndKitDatabaseBeneficiaryColumns } from "@/definitions/DataTableColumnsDefinitions";
-import { ReferralsFiltersList, ReferralsFilterUrl } from "@/lib/FiltersList";
+import {
+  ReferralsFiltersList,
+  ReferralsFilterUrl,
+} from "@/constants/FiltersList";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 

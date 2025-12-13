@@ -18,8 +18,8 @@ import { useParentContext } from "@/contexts/ParentContext";
 import { useParams } from "next/navigation";
 import { Evaluation } from "@/types/Types";
 import { TrainingEvaluationInterface } from "@/interfaces/Interfaces";
-import { EvaluationOptions } from "@/lib/SingleAndMultiSelectOptionsList";
-import { TrainingEvaluationSubmitMessage } from "@/lib/ConfirmationModelsTexts";
+import { EvaluationOptions } from "@/constants/SingleAndMultiSelectOptionsList";
+import { TrainingEvaluationSubmitMessage } from "@/constants/ConfirmationModelsTexts";
 
 const TrainingEvaluationForm: React.FC<TrainingEvaluationInterface> = ({
   previosTrainingEvaluations,
@@ -28,9 +28,15 @@ const TrainingEvaluationForm: React.FC<TrainingEvaluationInterface> = ({
     id: string;
   }>();
 
-  const { reqForToastAndSetMessage, axiosInstance, reqForConfirmationModelFunc } = useParentContext();
+  const {
+    reqForToastAndSetMessage,
+    axiosInstance,
+    reqForConfirmationModelFunc,
+  } = useParentContext();
 
-  const [evaluations, setEvaluations] = useState<Evaluation[]>([{ participant: 1, selected: "" },]);
+  const [evaluations, setEvaluations] = useState<Evaluation[]>([
+    { participant: 1, selected: "" },
+  ]);
 
   const [remark, setRemark] = useState<string>("");
 
@@ -195,10 +201,12 @@ const TrainingEvaluationForm: React.FC<TrainingEvaluationInterface> = ({
           </Button>
           <Button
             className="bg-blue-600 hover:bg-blue-700"
-            onClick={() => reqForConfirmationModelFunc(
-              TrainingEvaluationSubmitMessage,
-              handleSubmit
-            )}
+            onClick={() =>
+              reqForConfirmationModelFunc(
+                TrainingEvaluationSubmitMessage,
+                handleSubmit
+              )
+            }
           >
             Submit
           </Button>

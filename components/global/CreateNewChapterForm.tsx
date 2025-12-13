@@ -14,8 +14,8 @@ import {
 import { useParentContext } from "@/contexts/ParentContext";
 import { ChapterForm } from "@/types/Types";
 import { useParams } from "next/navigation";
-import { ChapterDefault } from "@/lib/FormsDefaultValues";
-import { ChapterCreationMessage } from "@/lib/ConfirmationModelsTexts";
+import { ChapterDefault } from "@/constants/FormsDefaultValues";
+import { ChapterCreationMessage } from "@/constants/ConfirmationModelsTexts";
 import { ChapterFormInterface } from "@/interfaces/Interfaces";
 
 const CreateNewChapterForm: React.FC<ChapterFormInterface> = ({
@@ -25,7 +25,11 @@ const CreateNewChapterForm: React.FC<ChapterFormInterface> = ({
 }) => {
   const { id } = useParams<{ id: string }>();
 
-  const { reqForToastAndSetMessage, axiosInstance, reqForConfirmationModelFunc } = useParentContext();
+  const {
+    reqForToastAndSetMessage,
+    axiosInstance,
+    reqForConfirmationModelFunc,
+  } = useParentContext();
 
   const [formData, setFormData] = useState<ChapterForm>(ChapterDefault());
 
@@ -108,10 +112,14 @@ const CreateNewChapterForm: React.FC<ChapterFormInterface> = ({
           </div>
 
           <div className="col-span-2">
-            <Button onClick={(e) => reqForConfirmationModelFunc(
-              ChapterCreationMessage,
-              () => handleSubmit(e)
-            )} className="w-full mt-6">
+            <Button
+              onClick={(e) =>
+                reqForConfirmationModelFunc(ChapterCreationMessage, () =>
+                  handleSubmit(e)
+                )
+              }
+              className="w-full mt-6"
+            >
               Submit
             </Button>
           </div>

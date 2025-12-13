@@ -17,15 +17,15 @@ import { withPermission } from "@/lib/withPermission";
 import CreateNewProgramMain from "./CreateNewProgramMain";
 import { MainDatabaseBeneficiaryFormSchema } from "@/schemas/FormsSchema";
 import { MainDatabaseBeneficiary } from "@/types/Types";
-import { MainDbBeneficiaryDefault } from "@/lib/FormsDefaultValues";
-import { MainDatabaseBeneficiaryCreationMessage } from "@/lib/ConfirmationModelsTexts";
+import { MainDbBeneficiaryDefault } from "@/constants/FormsDefaultValues";
+import { MainDatabaseBeneficiaryCreationMessage } from "@/constants/ConfirmationModelsTexts";
 import {
   DisabilityTypeOptions,
   GenderOptions,
   HousholdStatusOptions,
   MaritalStatusOptions,
   ReferredForProtectionOptions,
-} from "@/lib/SingleAndMultiSelectOptionsList";
+} from "@/constants/SingleAndMultiSelectOptionsList";
 import { MainDatabaseBeneficiaryCreation } from "@/interfaces/Interfaces";
 
 const MainDatabaseBeneficiaryForm: React.FC<
@@ -82,7 +82,7 @@ const MainDatabaseBeneficiaryForm: React.FC<
       .post("/main_db/beneficiary", formData)
       .then((response: any) => {
         reqForToastAndSetMessage(response.data.message);
-
+        onOpenChange(false);
         handleReload();
       })
       .catch((error: any) => {
@@ -93,7 +93,7 @@ const MainDatabaseBeneficiaryForm: React.FC<
   const [programs, setPrograms] = useState<
     {
       id: string;
-      focalPoint: number;
+      name: string;
     }[]
   >([]);
 
@@ -136,7 +136,7 @@ const MainDatabaseBeneficiaryForm: React.FC<
               <SingleSelect
                 options={programs.map((program) => ({
                   value: program.id,
-                  label: program.focalPoint.toString().toUpperCase(),
+                  label: program.name.toString().toUpperCase(),
                 }))}
                 value={formData.program}
                 onValueChange={(value: string) => {

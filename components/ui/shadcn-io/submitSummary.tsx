@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import DataTableDemo from "@/components/global/MulitSelectTable";
-import { permissionColumns } from "@/definitions/DataTableColumnsDefinitions";
+import { mainDatabaseAndKitDatabaseBeneficiaryColumns, permissionColumns } from "@/definitions/DataTableColumnsDefinitions";
 import { useEffect, useState } from "react";
 import { useParentContext } from "@/contexts/ParentContext";
 import { useRouter } from "next/navigation";
@@ -155,8 +155,8 @@ const SubmitSummary: React.FC<SubmitSummaryInterface> = ({
             {/* Table Section */}
             <div className="mt-2">
               <DataTableDemo
-                columns={permissionColumns}
-                indexUrl="user_mng/permissions"
+                columns={mainDatabaseAndKitDatabaseBeneficiaryColumns}
+                indexUrl={`/global/databaseBeneficiaries/${databaseId}`}
                 deleteUrl="user_mng/delete_permissions"
                 searchableColumn="name"
                 idFeildForEditStateSetter={setIdFeildForEditStateSetter}

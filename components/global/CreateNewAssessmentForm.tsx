@@ -10,16 +10,16 @@ import { useEffect, useState } from "react";
 import { AssessmentFormType } from "@/types/Types";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { AssessmentFormSchema } from "@/schemas/FormsSchema";
-import { AssessmentDefault } from "@/lib/FormsDefaultValues";
-import { AssessmentSubmitButtonMessage } from "@/lib/ConfirmationModelsTexts";
+import { AssessmentDefault } from "@/constants/FormsDefaultValues";
+import { AssessmentSubmitButtonMessage } from "@/constants/ConfirmationModelsTexts";
 import { AssessmentFormInterface } from "@/interfaces/Interfaces";
 import {
   IsCreateMode,
   IsEditMode,
   IsEditOrShowMode,
   IsShowMode,
-} from "@/lib/Constants";
-import { AssessmentTypeOptions } from "@/lib/SingleAndMultiSelectOptionsList";
+} from "@/constants/Constants";
+import { AssessmentTypeOptions } from "@/constants/SingleAndMultiSelectOptionsList";
 
 const AssessmentForm: React.FC<AssessmentFormInterface> = ({
   open,
@@ -88,6 +88,7 @@ const AssessmentForm: React.FC<AssessmentFormInterface> = ({
         .post("/enact_database/", formData)
         .then((response: any) => {
           reqForToastAndSetMessage(response.data.message);
+          onOpenChange(false);
           handleReload();
         })
         .catch((error: any) =>
@@ -96,9 +97,10 @@ const AssessmentForm: React.FC<AssessmentFormInterface> = ({
     } else if (IsEditMode(mode) && projectId) {
       axiosInstance
         .put(`/enact_database/${projectId}`, formData)
-        .then((response: any) =>
-          reqForToastAndSetMessage(response.data.message)
-        )
+        .then((response: any) => {
+          onOpenChange(false);
+          reqForToastAndSetMessage(response.data.message);
+        })
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)
         );

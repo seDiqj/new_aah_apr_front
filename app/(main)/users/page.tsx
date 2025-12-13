@@ -10,12 +10,9 @@ import { userColumns } from "@/definitions/DataTableColumnsDefinitions";
 import { Can } from "@/components/Can";
 import { withPermission } from "@/lib/withPermission";
 import ProfileModal from "@/components/global/UserFormTest";
-import { useParentContext } from "@/contexts/ParentContext";
-import { UserFiltersList, UserFilterUrl } from "@/lib/FiltersList";
+import { UserFiltersList, UserFilterUrl } from "@/constants/FiltersList";
 
 const UsersPage = () => {
-
-  const {handleReload} = useParentContext();
 
   let [reqForUserCreationForm, setReqForUserCreationForm] =
     useState<boolean>(false);
@@ -69,9 +66,7 @@ const UsersPage = () => {
           open={reqForUserCreationForm}
           onOpenChange={setReqForUserCreationForm}
           mode="create"
-          reloader={handleReload}
-          />
-          
+        />
       )}
       {reqForUserUpdateForm && (
         <ProfileModal
@@ -79,7 +74,6 @@ const UsersPage = () => {
           onOpenChange={setReqForUserUpdateForm}
           mode="edit"
           userId={Number(idFeildForEditStateSetter)}
-          reloader={handleReload}
         />
       )}
       {reqForUserShowForm && (

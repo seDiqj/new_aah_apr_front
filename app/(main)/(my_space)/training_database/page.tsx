@@ -8,7 +8,10 @@ import TrainingSelectorDialog from "@/components/global/TrainingSelectorDialog";
 import { Button } from "@/components/ui/button";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { trainingDatabaseBeneificiaryListColumn } from "@/definitions/DataTableColumnsDefinitions";
-import { TrainingDatabaseBeneficiaryFiltersList, TrainingDatabaseBeneficiaryFilterUrl } from "@/lib/FiltersList";
+import {
+  TrainingDatabaseBeneficiaryFiltersList,
+  TrainingDatabaseBeneficiaryFilterUrl,
+} from "@/constants/FiltersList";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -16,7 +19,8 @@ import { useEffect, useState } from "react";
 const TrainingDatabasePage = () => {
   const router = useRouter();
 
-  const [reqForBeneficiaryCreationForm, setReqForBeneficiaryCreationForm] = useState<boolean>(false);
+  const [reqForBeneficiaryCreationForm, setReqForBeneficiaryCreationForm] =
+    useState<boolean>(false);
 
   const [openTrainingSelectorDialog, setOpenTrainingSelectorDialog] =
     useState<boolean>(false);
@@ -54,7 +58,13 @@ const TrainingDatabasePage = () => {
           <Button onClick={() => router.push("/training_database/trainings")}>
             Trainings
           </Button>
-          <Button onClick={() => setReqForBeneficiaryCreationForm(!reqForBeneficiaryCreationForm)}>Create New Beneficiary</Button>
+          <Button
+            onClick={() =>
+              setReqForBeneficiaryCreationForm(!reqForBeneficiaryCreationForm)
+            }
+          >
+            Create New Beneficiary
+          </Button>
         </div>
       </SubHeader>
       <DataTableDemo

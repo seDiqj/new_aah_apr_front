@@ -1,12 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import {
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-  Tabs,
-} from "@/components/ui/tabs";
+import { TabsList, TabsTrigger, TabsContent, Tabs } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import DataTableDemo from "@/components/global/MulitSelectTable";
 import { beneficiarySessionsTableColumn } from "@/definitions/DataTableColumnsDefinitions";
@@ -15,13 +10,21 @@ import { useParentContext } from "@/contexts/ParentContext";
 import { CommunityDialogBeneficiaryForm } from "@/types/Types";
 import { Button } from "../button";
 import { ToggleRight } from "lucide-react";
+import { IsANullValue, IsIdFeild } from "@/constants/Constants";
+import { CommunityDialogueBeneficiaryFormDefault } from "@/constants/FormsDefaultValues";
+import { BeneficiarySessionPresenceTogglerButtonMessage } from "@/constants/ConfirmationModelsTexts";
 
 export default function BeneProfileTabs() {
   const { id } = useParams<{
     id: string;
   }>();
 
-  const { reqForToastAndSetMessage, reqForConfirmationModelFunc, axiosInstance, handleReload } = useParentContext();
+  const {
+    reqForToastAndSetMessage,
+    reqForConfirmationModelFunc,
+    axiosInstance,
+    handleReload,
+  } = useParentContext();
 
   let [reqForPermissionUpdateForm, setReqForPermissionUpdateForm] =
     useState<boolean>(false);
@@ -37,19 +40,9 @@ export default function BeneProfileTabs() {
   const hasRef = useRef(false);
 
   const [beneficiaryInfo, setBneficiaryInfo] =
-    useState<CommunityDialogBeneficiaryForm>({
-      name: "",
-      fatherHusbandName: "",
-      age: 0,
-      maritalStatus: "",
-      gender: "",
-      phone: "",
-      nationalId: "",
-      jobTitle: "",
-      incentiveReceived: false,
-      incentiveAmount: "",
-      dateOfRegistration: ""
-    });
+    useState<CommunityDialogBeneficiaryForm>(
+      CommunityDialogueBeneficiaryFormDefault()
+    );
 
   useEffect(() => {
     if (hasRef.current) return;
@@ -57,7 +50,9 @@ export default function BeneProfileTabs() {
 
     axiosInstance
       .get(`/community_dialogue_db/beneficiary/${id}`)
-      .then((response: any) => {setBneficiaryInfo(response.data.data)})
+      .then((response: any) => {
+        setBneficiaryInfo(response.data.data);
+      })
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
       );
@@ -66,12 +61,18 @@ export default function BeneProfileTabs() {
   const [selectedRows, setSelectedRows] = useState<any>();
 
   const togglePresence = () => {
-    axiosInstance.post(`/community_dialogue_db/beneficiaries/toggle_presence/${id}`, {
-      selectedRows: Object.keys(selectedRows)
-    })
-    .then((response: any) => {reqForToastAndSetMessage(response.data.message); handleReload()})
-    .catch((error: any) => reqForToastAndSetMessage(error.response.data.message))
-  }
+    axiosInstance
+      .post(`/community_dialogue_db/beneficiaries/toggle_presence/${id}`, {
+        selectedRows: Object.keys(selectedRows),
+      })
+      .then((response: any) => {
+        reqForToastAndSetMessage(response.data.message);
+        handleReload();
+      })
+      .catch((error: any) =>
+        reqForToastAndSetMessage(error.response.data.message)
+      );
+  };
 
   return (
     <div className="w-full px-4">
@@ -80,17 +81,14 @@ export default function BeneProfileTabs() {
         <div className="relative w-full border-b border-border mb-2">
           <TabsList className="flex justify-start gap-6 bg-transparent p-0 w-fit [&>*]:flex-none">
             {tabs.map((tab) => (
-              <TabsTrigger
-                key={tab}
-                value={tab}
-              >
+              <TabsTrigger key={tab} value={tab}>
                 {tab}
               </TabsTrigger>
             ))}
           </TabsList>
         </div>
 
-        {/* Tab 1 - Beneficiary Information */}
+        {/* Beneficiary Information */}
         <TabsContent value={tabs[0]} className="w-full">
           <Card className="shadow-sm border border-border w-full bg-background">
             <CardHeader>
@@ -101,13 +99,19 @@ export default function BeneProfileTabs() {
             <CardContent>
               <div className="grid grid-cols-2 gap-x-6 gap-y-4">
                 {Object.entries(beneficiaryInfo).map((entry, i) => {
-                  if (entry[0] == "id" || entry[1] == null) return;
+                  if (IsIdFeild(entry[0]) || IsANullValue(entry[1])) return;
                   return (
-                    <InfoItem
+                    <div
                       key={i}
-                      label={entry[0].toUpperCase()}
-                      value={entry[1].toString()}
-                    />
+                      className="flex flex-col rounded-xl border p-3 transition-all hover:shadow-sm"
+                    >
+                      <span className="text-xs font-medium uppercase opacity-70 tracking-wide">
+                        {entry[0].toUpperCase()}
+                      </span>
+                      <span className="text-sm font-semibold truncate">
+                        {entry[1]?.toString() || "-"}
+                      </span>
+                    </div>
                   );
                 })}
               </div>
@@ -115,7 +119,7 @@ export default function BeneProfileTabs() {
           </Card>
         </TabsContent>
 
-        {/* Tab 2 - DataTable */}
+        {/* Sessions */}
         <TabsContent value={tabs[1]} className="w-full">
           <Card className="shadow-sm border border-border w-full bg-background">
             <CardHeader>
@@ -127,20 +131,22 @@ export default function BeneProfileTabs() {
               <DataTableDemo
                 columns={beneficiarySessionsTableColumn}
                 indexUrl={`/community_dialogue_db/beneficiary/sessions/${id}`}
-                deleteUrl={`community_dialogue_db/delete_beneficiary_sessions/${id}`}
                 searchableColumn="name"
                 idFeildForEditStateSetter={setIdFeildForEditStateSetter}
-                editModelOpenerStateSetter={setReqForPermissionUpdateForm}
                 selectedRowsIdsStateSetter={setSelectedRows}
                 injectedElement={
                   <div className="flex flex-row items-center justify-end gap-2">
-                    <Button onClick={() => reqForConfirmationModelFunc(
-                      "Ary you compleatly sure ?",
-                      "This action will change the presence status of beneficiary for selected session !",
-                      togglePresence
-                    )} variant={"outline"} title="Toggle precence for selected sessions">
-                      <ToggleRight 
-                      />
+                    <Button
+                      onClick={() =>
+                        reqForConfirmationModelFunc(
+                          BeneficiarySessionPresenceTogglerButtonMessage,
+                          togglePresence
+                        )
+                      }
+                      variant={"outline"}
+                      title="Toggle precence for selected sessions"
+                    >
+                      <ToggleRight />
                     </Button>
                   </div>
                 }
@@ -149,16 +155,6 @@ export default function BeneProfileTabs() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
-  );
-}
-
-// Reusable info item component
-function InfoItem({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex flex-col">
-      <span className="text-sm font-medium text-muted-foreground">{label}</span>
-      <span className="text-base font-semibold text-foreground">{value}</span>
     </div>
   );
 }

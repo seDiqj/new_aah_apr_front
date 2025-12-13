@@ -13,9 +13,9 @@ import {
   CancelButtonMessage,
   OutputCreationMessage,
   OutputEditionMessage,
-} from "@/lib/ConfirmationModelsTexts";
+} from "@/constants/ConfirmationModelsTexts";
 import { useParentContext } from "@/contexts/ParentContext";
-import { OutputDefault } from "@/lib/FormsDefaultValues";
+import { OutputDefault } from "@/constants/FormsDefaultValues";
 import { Outcome, Output } from "@/app/(main)/projects/types/Types";
 import { useProjectContext } from "@/app/(main)/projects/create_new_project/page";
 import { useProjectEditContext } from "@/app/(main)/projects/edit_project/[id]/page";
@@ -33,7 +33,7 @@ import {
   IsShowMode,
   IsThereAnyOutputWithEnteredReferance,
   IsThereAnyOutputWithEnteredReferanceAndDefferentId,
-} from "@/lib/Constants";
+} from "@/constants/Constants";
 import { OutputFormSchema } from "@/schemas/FormsSchema";
 import { Textarea } from "../ui/textarea";
 
@@ -169,7 +169,7 @@ const OutputModel: React.FC<OutputInterface> = ({
         .get(`projects/output/${outputId}`)
         .then((response: any) => {
           setFormData(response.data.data);
-          setOutputBeforeEdite(response.data.data)
+          setOutputBeforeEdite(response.data.data);
         })
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)
@@ -180,7 +180,16 @@ const OutputModel: React.FC<OutputInterface> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent
+        className="sm:max-w-3xl border border-gray-300 dark:border-gray-600 rounded-lg ml-16 overflow-hidden"
+        style={{
+          minHeight: "60vh",
+          paddingTop: "10px",
+          paddingBottom: "10px",
+          paddingLeft: "16px",
+          paddingRight: "16px",
+        }}
+      >
         <DialogHeader>
           <DialogTitle>
             {IsCreateMode(mode)

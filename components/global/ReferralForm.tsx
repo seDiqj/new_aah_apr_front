@@ -12,10 +12,21 @@ import { MultiSelect } from "../multi-select";
 import { useParentContext } from "@/contexts/ParentContext";
 import { useParams } from "next/navigation";
 import { ReferralInterface } from "@/interfaces/Interfaces";
-import { ReferralFormPersonalInforType, ReferralReasonFormType, ReferredByAndReferredToFormType } from "@/types/Types";
-import { ReasoneOfReferralDefault, ReferralFormPersonalInfoDefault, ReferredByAndReferredToDefault } from "@/lib/FormsDefaultValues";
-import { LanguagesOptions, servicesOptions } from "@/lib/SingleAndMultiSelectOptionsList";
-import { ReferralSubmitButtonMessage } from "@/lib/ConfirmationModelsTexts";
+import {
+  ReferralFormPersonalInforType,
+  ReferralReasonFormType,
+  ReferredByAndReferredToFormType,
+} from "@/types/Types";
+import {
+  ReasoneOfReferralDefault,
+  ReferralFormPersonalInfoDefault,
+  ReferredByAndReferredToDefault,
+} from "@/constants/FormsDefaultValues";
+import {
+  LanguagesOptions,
+  servicesOptions,
+} from "@/constants/SingleAndMultiSelectOptionsList";
+import { ReferralSubmitButtonMessage } from "@/constants/ConfirmationModelsTexts";
 
 const ReferralForm: React.FC<ReferralInterface> = ({
   beneficiaryInfo,
@@ -24,7 +35,11 @@ const ReferralForm: React.FC<ReferralInterface> = ({
   const { id } = useParams<{
     id: string;
   }>();
-  const { reqForToastAndSetMessage, axiosInstance, reqForConfirmationModelFunc } = useParentContext();
+  const {
+    reqForToastAndSetMessage,
+    axiosInstance,
+    reqForConfirmationModelFunc,
+  } = useParentContext();
 
   // Question states
   const [q1Yes, setQ1Yes] = useState<boolean>(false);
@@ -36,20 +51,30 @@ const ReferralForm: React.FC<ReferralInterface> = ({
   // Referral table states
   const [caseNo, setCaseNo] = useState<string>("");
   const [dateOfReferral, setDateOfReferral] = useState<string>("");
-  const [referralTypeInternal, setReferralTypeInternal] = useState<boolean>(false);
-  const [referralTypeExternal, setReferralTypeExternal] = useState<boolean>(false);
+  const [referralTypeInternal, setReferralTypeInternal] =
+    useState<boolean>(false);
+  const [referralTypeExternal, setReferralTypeExternal] =
+    useState<boolean>(false);
   const [consentProvided, setConsentProvided] = useState<"yes" | "no" | "">("");
   const [consentReason, setConsentReason] = useState<string>("");
 
   // Referred By / To
-  const [referredBy, setReferredBy] = useState<ReferredByAndReferredToFormType>(ReferredByAndReferredToDefault());
-  const [referredTo, setReferredTo] = useState<ReferredByAndReferredToFormType>(ReferredByAndReferredToDefault());
+  const [referredBy, setReferredBy] = useState<ReferredByAndReferredToFormType>(
+    ReferredByAndReferredToDefault()
+  );
+  const [referredTo, setReferredTo] = useState<ReferredByAndReferredToFormType>(
+    ReferredByAndReferredToDefault()
+  );
 
   // Reason of referral
-  const [reasons, setReasons] = useState<ReferralReasonFormType>(ReasoneOfReferralDefault());
+  const [reasons, setReasons] = useState<ReferralReasonFormType>(
+    ReasoneOfReferralDefault()
+  );
 
   // Services requested
-  const [selectedServices, setSelectedServices] = useState<Record<string, boolean>>(() => servicesOptions.reduce((acc, s) => ({ ...acc, [s]: false }), {}));
+  const [selectedServices, setSelectedServices] = useState<
+    Record<string, boolean>
+  >(() => servicesOptions.reduce((acc, s) => ({ ...acc, [s]: false }), {}));
   const [otherServiceText, setOtherServiceText] = useState<string>("");
 
   // Expected outcome
@@ -61,7 +86,8 @@ const ReferralForm: React.FC<ReferralInterface> = ({
   const [notAcceptedReason, setNotAcceptedReason] = useState<string>("");
 
   // personal inforamtion.
-  const [personalInfo, setPersonalInfo] = useState<ReferralFormPersonalInforType>(ReferralFormPersonalInfoDefault());
+  const [personalInfo, setPersonalInfo] =
+    useState<ReferralFormPersonalInforType>(ReferralFormPersonalInfoDefault());
 
   function toggleService(name: string) {
     setSelectedServices((prev) => ({ ...prev, [name]: !prev[name] }));
@@ -738,10 +764,16 @@ const ReferralForm: React.FC<ReferralInterface> = ({
           </div>
 
           <div className="flex justify-end">
-            <Button type="button" onClick={(e) => reqForConfirmationModelFunc(
-              ReferralSubmitButtonMessage,
-              () => handleSubmit(e)
-            )}>Submit</Button>
+            <Button
+              type="button"
+              onClick={(e) =>
+                reqForConfirmationModelFunc(ReferralSubmitButtonMessage, () =>
+                  handleSubmit(e)
+                )
+              }
+            >
+              Submit
+            </Button>
           </div>
         </CardContent>
       </Card>

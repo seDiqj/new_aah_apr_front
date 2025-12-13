@@ -19,7 +19,7 @@ import { Output as OutputType } from "@/app/(main)/projects/types/Types";
 import { Indicator as IndicatorType } from "@/app/(main)/projects/types/Types";
 import { useProjectEditContext } from "@/app/(main)/projects/edit_project/[id]/page";
 import { useProjectShowContext } from "@/app/(main)/projects/project_show/[id]/page";
-import { IsCreateMode, IsShowMode } from "@/lib/Constants";
+import { IsCreateMode, IsShowMode } from "@/constants/Constants";
 import { MonitoringTablePageInterface } from "@/interfaces/Interfaces";
 
 type Output = { name: string; indicators: Indicator_[] };
@@ -27,7 +27,6 @@ type Output = { name: string; indicators: Indicator_[] };
 type Outcome = { name: string; outputs: Output[] };
 
 type Disaggregation = { name: string; target: number };
-
 
 type Indicator_ = {
   code: string;
@@ -39,53 +38,48 @@ type Indicator_ = {
 
 export type AprData = { impact: string; outcomes: Outcome[] };
 
-const MonitoringTablePage: React.FC<MonitoringTablePageInterface> = ({mode}) => {
-
-  const {outcomes, projectGoal, outputs, indicators, dessaggregations, projectProvinces}: {
-    outcomes: OutcomeType[],
-    outputs: OutputType[],
-    indicators: IndicatorType[],
-    dessaggregations: DessaggregationType[],
-    projectGoal: string,
-    projectProvinces: string[]
-  } = IsCreateMode(mode) ? useProjectContext() : IsShowMode(mode) ? useProjectShowContext() : useProjectEditContext();
+const MonitoringTablePage: React.FC<MonitoringTablePageInterface> = ({
+  mode,
+}) => {
+  const {
+    outcomes,
+    projectGoal,
+    outputs,
+    indicators,
+    dessaggregations,
+    projectProvinces,
+  }: {
+    outcomes: OutcomeType[];
+    outputs: OutputType[];
+    indicators: IndicatorType[];
+    dessaggregations: DessaggregationType[];
+    projectGoal: string;
+    projectProvinces: string[];
+  } = IsCreateMode(mode)
+    ? useProjectContext()
+    : IsShowMode(mode)
+    ? useProjectShowContext()
+    : useProjectEditContext();
 
   // Data for creating the preview of the final apr in apr preview TabContent.
   const finalDataForAprPreview: AprData = useMemo(() => {
-  return {
-    impact: projectGoal,
-    outcomes: outcomes.map((outcome) => ({
-      name: outcome.outcome,
-      outputs: outputs
-        .filter((output) => output.outcomeId === outcome.id)
-        .map((output) => ({
-          name: output.output,
-          indicators: indicators
-            .filter((indicator) => indicator.outputRef === output.outputRef)
-            .flatMap((indicator) => {
-              const main = {
-                code: indicator.indicatorRef,
-                name: indicator.indicator,
-                target: indicator.target,
-                disaggregation: dessaggregations
-                  .filter((d) => d.indicatorRef === indicator.indicatorRef)
-                  .map((d) => ({
-                    name: `${d.dessaggration}     (${d.province})`,
-                    target: d.target,
-                    province: d.province,
-                  })),
-              };
-
-              let sub = null;
-
-              if (indicator.subIndicator != null)
-                sub = {
+    return {
+      impact: projectGoal,
+      outcomes: outcomes.map((outcome) => ({
+        name: outcome.outcome,
+        outputs: outputs
+          .filter((output) => output.outcomeId === outcome.id)
+          .map((output) => ({
+            name: output.output,
+            indicators: indicators
+              .filter((indicator) => indicator.outputRef === output.outputRef)
+              .flatMap((indicator) => {
+                const main = {
                   code: indicator.indicatorRef,
-                  name: indicator.subIndicator.name,
-                  target: indicator.subIndicator.target,
-                  isSub: true,
+                  name: indicator.indicator,
+                  target: indicator.target,
                   disaggregation: dessaggregations
-                    .filter((d) => d.indicatorRef === `sub-${indicator.indicatorRef}`)
+                    .filter((d) => d.indicatorRef === indicator.indicatorRef)
                     .map((d) => ({
                       name: `${d.dessaggration}     (${d.province})`,
                       target: d.target,
@@ -93,14 +87,33 @@ const MonitoringTablePage: React.FC<MonitoringTablePageInterface> = ({mode}) => 
                     })),
                 };
 
-              if (sub) return [main, sub];
-              return [main];
-            }),
-        })),
-    })),
-  };
-}, [outcomes, outputs, indicators, dessaggregations, projectGoal]);
+                let sub = null;
 
+                if (indicator.subIndicator != null)
+                  sub = {
+                    code: indicator.indicatorRef,
+                    name: indicator.subIndicator.name,
+                    target: indicator.subIndicator.target,
+                    isSub: true,
+                    disaggregation: dessaggregations
+                      .filter(
+                        (d) =>
+                          d.indicatorRef === `sub-${indicator.indicatorRef}`
+                      )
+                      .map((d) => ({
+                        name: `${d.dessaggration}     (${d.province})`,
+                        target: d.target,
+                        province: d.province,
+                      })),
+                  };
+
+                if (sub) return [main, sub];
+                return [main];
+              }),
+          })),
+      })),
+    };
+  }, [outcomes, outputs, indicators, dessaggregations, projectGoal]);
 
   const [selectedProvince, setSelectedProvince] = useState<string>("Master");
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -143,7 +156,10 @@ const MonitoringTablePage: React.FC<MonitoringTablePageInterface> = ({mode}) => 
   const rowsPerOutcome = (oc: Outcome) =>
     oc.outputs.reduce((s, out) => s + rowsPerOutput(out), 0);
 
-  const totalRows = finalDataForAprPreview.outcomes.reduce((s, oc) => s + rowsPerOutcome(oc), 0);
+  const totalRows = finalDataForAprPreview.outcomes.reduce(
+    (s, oc) => s + rowsPerOutcome(oc),
+    0
+  );
 
   const rows: React.ReactNode[] = [];
 
@@ -179,7 +195,7 @@ const MonitoringTablePage: React.FC<MonitoringTablePageInterface> = ({mode}) => 
                   rowSpan={outcomeRowSpan}
                   className="text-sm whitespace-normal break-words border-r border-slate-300 align-middle text-center py-2 px-2"
                 >
-                  {outcome.name}
+                  {outcome.name == 'NO-OUTCOME' ? "" : outcome.name}
                 </TableCell>
               )}
 
@@ -229,13 +245,13 @@ const MonitoringTablePage: React.FC<MonitoringTablePageInterface> = ({mode}) => 
     });
   });
 
-  const readOnly = mode == "show";
+  const readOnly = IsShowMode(mode);
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-end">
         <Button variant="outline" onClick={toggleFullscreen}>
-          {isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+          Fullscreen
         </Button>
       </div>
 
@@ -293,7 +309,6 @@ const MonitoringTablePage: React.FC<MonitoringTablePageInterface> = ({mode}) => 
       </div>
     </div>
   );
-}
-
+};
 
 export default MonitoringTablePage;

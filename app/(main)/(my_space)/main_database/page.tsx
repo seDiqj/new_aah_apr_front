@@ -14,15 +14,21 @@ import { Share2, ToggleRight } from "lucide-react";
 import { Can } from "@/components/Can";
 import MainDatabaseBeneficiaryUpdateForm from "@/components/global/MainDatabaseBeneficiaryUpdateForm";
 import { withPermission } from "@/lib/withPermission";
-import { ChangeAprIncludedStatusButtonMessage, ReferrBeneficiaryButtonMessage } from "@/lib/ConfirmationModelsTexts";
-import {MainDatabaseBeneficiariesFilters, MainDatabaseBeneficiariesFilterUrl} from "@/lib/FiltersList";
+import {
+  ChangeAprIncludedStatusButtonMessage,
+  ReferrBeneficiaryButtonMessage,
+} from "@/constants/ConfirmationModelsTexts";
+import {
+  MainDatabaseBeneficiariesFilters,
+  MainDatabaseBeneficiariesFilterUrl,
+} from "@/constants/FiltersList";
 
 const MainDatabasePage = () => {
-  const { 
-    reqForToastAndSetMessage, 
-    axiosInstance, 
-    changeBeneficairyAprIncludedStatus, 
-    reqForConfirmationModelFunc
+  const {
+    reqForToastAndSetMessage,
+    axiosInstance,
+    changeBeneficairyAprIncludedStatus,
+    reqForConfirmationModelFunc,
   } = useParentContext();
 
   const router = useRouter();
@@ -79,7 +85,9 @@ const MainDatabasePage = () => {
             <Can permission="Maindatabase.create">
               <Button
                 onClick={() =>
-                  setReqForBeneficiaryCreationForm(!reqForBeneficiaryCreationForm)
+                  setReqForBeneficiaryCreationForm(
+                    !reqForBeneficiaryCreationForm
+                  )
                 }
               >
                 Create New Benficiary
@@ -104,18 +112,30 @@ const MainDatabasePage = () => {
             <div className="flex flex-row items-center justify-end gap-2">
               <Button
                 title="Send Beneficiary to referral"
-                onClick={() => reqForConfirmationModelFunc(
-                  ReferrBeneficiaryButtonMessage,
-                  referrBeneficiaies
-                )}
+                onClick={() =>
+                  reqForConfirmationModelFunc(
+                    ReferrBeneficiaryButtonMessage,
+                    referrBeneficiaies
+                  )
+                }
                 variant="outline"
               >
                 <Share2 />
               </Button>
-              <Button variant={"outline"} onClick={() => reqForConfirmationModelFunc(
-                  ChangeAprIncludedStatusButtonMessage,
-                  () => {changeBeneficairyAprIncludedStatus(idFeildForEditStateSetter)}
-                )} title="Change Apr Included">
+              <Button
+                variant={"outline"}
+                onClick={() =>
+                  reqForConfirmationModelFunc(
+                    ChangeAprIncludedStatusButtonMessage,
+                    () => {
+                      changeBeneficairyAprIncludedStatus(
+                        idFeildForEditStateSetter
+                      );
+                    }
+                  )
+                }
+                title="Change Apr Included"
+              >
                 <ToggleRight></ToggleRight>
               </Button>
             </div>
@@ -138,7 +158,6 @@ const MainDatabasePage = () => {
             beneficiaryId={idFeildForEditStateSetter as unknown as string}
           ></MainDatabaseBeneficiaryUpdateForm>
         )}
-
       </div>
     </>
   );

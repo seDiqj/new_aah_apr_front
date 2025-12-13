@@ -6,10 +6,11 @@ import DataTableDemo from "@/components/global/MulitSelectTable";
 import SubHeader from "@/components/global/SubHeader";
 import { Button } from "@/components/ui/button";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
+import { trainingsListColumns } from "@/definitions/DataTableColumnsDefinitions";
 import {
-  trainingsListColumns,
-} from "@/definitions/DataTableColumnsDefinitions";
-import { TrainingFiltersList, TrainingFilterUrl } from "@/lib/FiltersList";
+  TrainingFiltersList,
+  TrainingFilterUrl,
+} from "@/constants/FiltersList";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -48,7 +49,13 @@ const TrainingsPage = () => {
         </div>
         <SubHeader pageTitle={"Trainings"}>
           <div className="flex flex-row items-center justify-around gap-2">
-            <Button onClick={() => setReqForTrainingCreationForm(!reqForTrainingCreationForm)}>Create New Training</Button>
+            <Button
+              onClick={() =>
+                setReqForTrainingCreationForm(!reqForTrainingCreationForm)
+              }
+            >
+              Create New Training
+            </Button>
           </div>
         </SubHeader>
 

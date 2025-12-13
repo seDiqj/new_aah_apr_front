@@ -63,6 +63,7 @@ export type MainDatabaseBeneficiary = {
 
 export type MainDatabaseProgram = {
   project_id: string;
+  name: string;
   focalPoint: string;
   province: string;
   district: string;
@@ -74,6 +75,7 @@ export type MainDatabaseProgram = {
 
 export type KitDatabaseProgram = {
   project_id: string;
+  name: string;
   focalPoint: string;
   province: string;
   district: string;
@@ -115,10 +117,10 @@ export type TrainingBenefeciaryForm = {
 };
 
 export type KitFormType = {
-  kits: string[];
-  distributionDate: string;
+  kitId: string;
+  destribution_date: string;
   remark: string;
-  isReceived: boolean;
+  is_received: boolean;
 };
 
 export type PreAndPostTestFormType = {
@@ -209,6 +211,7 @@ export type PsychoeducationForm = {
   programInformation: {
     indicator_id: string;
     project_id: string;
+    name: string;
     focalPoint: string;
     province_id: string;
     district_id: string;
@@ -448,6 +451,7 @@ export type SelfChapters = {
 
 export type CommunityDialogueFormType = {
   project_id: string;
+  name: string;
   focalPoint: string;
   province_id: string;
   district_id: string;

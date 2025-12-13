@@ -4,25 +4,41 @@ import BreadcrumbWithCustomSeparator from "@/components/global/BreadCrumb";
 import SubHeader from "@/components/global/SubHeader";
 import { Button } from "@/components/ui/button";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AssessmentFormType } from "@/types/Types";
 import { useParentContext } from "@/contexts/ParentContext";
-import { InfoItem } from "../../../referral_database/beneficiary_profile/[id]/page";
 import { useParams } from "next/navigation";
 import AssessmentScoreForm from "@/components/global/AssessmentScoreForm";
-import { IsIdFeild } from "@/lib/Constants";
+import { IsIdFeild } from "@/constants/Constants";
+import { Edit, Eye, Trash } from "lucide-react";
+import { AxiosError, AxiosResponse } from "axios";
+import { AssessmentDeleteMessage } from "@/constants/ConfirmationModelsTexts";
 
 const MainDatabasePage = () => {
-  const { reqForToastAndSetMessage, axiosInstance, reloadFlag } =
-    useParentContext();
+  const {
+    reqForToastAndSetMessage,
+    reqForConfirmationModelFunc,
+    axiosInstance,
+    reloadFlag,
+    handleReload,
+  } = useParentContext();
 
   const { id } = useParams<{
     id: string;
   }>();
 
   const [reqForAddNewAssessment, setReqForAddNewAssessment] =
+    useState<boolean>(false);
+
+  const [selectedAssessmentId, setSelectedAssessmentId] = useState<
+    number | null
+  >(null);
+
+  const [reqForAssessmentEditModel, setReqForAssessmentEditModel] =
+    useState<boolean>(false);
+  const [reqForAssessmentShowModel, setReqForAssessmentShowModel] =
     useState<boolean>(false);
 
   const [assessmentInfo, setAssessmentInfo] =
@@ -34,6 +50,18 @@ const MainDatabasePage = () => {
       description: string;
     }[]
   >();
+
+  const handleDelete = (id: string) => {
+    axiosInstance
+      .delete(`/enact_database/delete_assessment/${id}`)
+      .then((response: AxiosResponse<any, any, any>) => {
+        reqForToastAndSetMessage(response.data.message);
+        handleReload();
+      })
+      .catch((error: AxiosError<any, any>) =>
+        reqForToastAndSetMessage(error.response?.data.message)
+      );
+  };
 
   useEffect(() => {
     axiosInstance
@@ -140,8 +168,44 @@ const MainDatabasePage = () => {
                             <div>
                               <span>{`Assessment ${i + 1}`}</span>
                             </div>
-                            <CardContent>
-                              <Button onClick={() => {}}>Assess</Button>
+                            <CardContent className="flex flex-row gap-4">
+                              <Edit
+                                className="cursor-pointer text-orange-500 hover:text-orange-700"
+                                onClick={() => {
+                                  setSelectedAssessmentId(
+                                    Number(assessment.id)
+                                  );
+                                  setReqForAssessmentEditModel(
+                                    !reqForAssessmentEditModel
+                                  );
+                                }}
+                                size={18}
+                              ></Edit>
+                              <Eye
+                                className="cursor-pointer text-orange-500 hover:text-orange-700"
+                                onClick={() => {
+                                  setSelectedAssessmentId(
+                                    Number(assessment.id)
+                                  );
+                                  setReqForAssessmentShowModel(
+                                    !reqForAssessmentShowModel
+                                  );
+                                }}
+                                size={18}
+                              ></Eye>
+                              <Trash
+                                onClick={() =>
+                                  reqForConfirmationModelFunc(
+                                    AssessmentDeleteMessage,
+                                    () =>
+                                      handleDelete(
+                                        assessment.id as unknown as string
+                                      )
+                                  )
+                                }
+                                className="cursor-pointer text-red-500 hover:text-red-700"
+                                size={18}
+                              />
                             </CardContent>
                           </Card>
                         );
@@ -156,6 +220,22 @@ const MainDatabasePage = () => {
               open={reqForAddNewAssessment}
               onOpenChange={setReqForAddNewAssessment}
               mode={"create"}
+            ></AssessmentScoreForm>
+          )}
+          {reqForAssessmentEditModel && selectedAssessmentId && (
+            <AssessmentScoreForm
+              open={reqForAssessmentEditModel}
+              onOpenChange={setReqForAssessmentEditModel}
+              mode={"edit"}
+              assessmentId={selectedAssessmentId}
+            ></AssessmentScoreForm>
+          )}
+          {reqForAssessmentShowModel && selectedAssessmentId && (
+            <AssessmentScoreForm
+              open={reqForAssessmentShowModel}
+              onOpenChange={setReqForAssessmentShowModel}
+              mode={"edit"}
+              assessmentId={selectedAssessmentId}
             ></AssessmentScoreForm>
           )}
         </div>

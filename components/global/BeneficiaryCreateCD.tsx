@@ -17,20 +17,26 @@ import { useParentContext } from "@/contexts/ParentContext";
 import { CommunityDialogBeneficiaryForm } from "@/types/Types";
 import { withPermission } from "@/lib/withPermission";
 import { CdDatabaseBenefciaryFormSchema } from "@/schemas/FormsSchema";
-import { CommunityDialogueBeneficiaryDefault } from "@/lib/FormsDefaultValues";
-import { CdDatabaseBeneficiaryCreationMessage } from "@/lib/ConfirmationModelsTexts";
+import { CommunityDialogueBeneficiaryDefault } from "@/constants/FormsDefaultValues";
+import { CdDatabaseBeneficiaryCreationMessage } from "@/constants/ConfirmationModelsTexts";
 import { CdDatabaseBeneficiaryCreationFormInterface } from "@/interfaces/Interfaces";
 
-const BeneficiaryCreateCD: React.FC<CdDatabaseBeneficiaryCreationFormInterface> = ({
-  open,
-  onOpenChange,
-}) => {
-  const { reqForToastAndSetMessage, axiosInstance, handleReload, reqForConfirmationModelFunc } = useParentContext();
+const BeneficiaryCreateCD: React.FC<
+  CdDatabaseBeneficiaryCreationFormInterface
+> = ({ open, onOpenChange }) => {
+  const {
+    reqForToastAndSetMessage,
+    axiosInstance,
+    handleReload,
+    reqForConfirmationModelFunc,
+  } = useParentContext();
 
-  const [formData, setFormData] = useState<CommunityDialogBeneficiaryForm>(CommunityDialogueBeneficiaryDefault());
+  const [formData, setFormData] = useState<CommunityDialogBeneficiaryForm>(
+    CommunityDialogueBeneficiaryDefault()
+  );
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
-  
+
   const handleFormChange = (e: any) => {
     const { name, value } = e.target;
 
@@ -41,18 +47,19 @@ const BeneficiaryCreateCD: React.FC<CdDatabaseBeneficiaryCreationFormInterface> 
   };
 
   const handleSubmit = () => {
-
     const result = CdDatabaseBenefciaryFormSchema.safeParse(formData);
 
     if (!result.success) {
-    const errors: { [key: string]: string } = {};
-    result.error.issues.forEach((issue) => {
-      const field = issue.path[0];
-      if (field) errors[field as string] = issue.message;
-    });
+      const errors: { [key: string]: string } = {};
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0];
+        if (field) errors[field as string] = issue.message;
+      });
 
-    setFormErrors(errors);
-      reqForToastAndSetMessage("Please fix validation errors before submitting.");
+      setFormErrors(errors);
+      reqForToastAndSetMessage(
+        "Please fix validation errors before submitting."
+      );
       return;
     }
 
@@ -62,6 +69,7 @@ const BeneficiaryCreateCD: React.FC<CdDatabaseBeneficiaryCreationFormInterface> 
       .post("/community_dialogue_db/beneficiary", formData)
       .then((response: any) => {
         reqForToastAndSetMessage(response.data.message);
+        onOpenChange(false)
         handleReload();
       })
       .catch((error: any) =>
@@ -109,7 +117,9 @@ const BeneficiaryCreateCD: React.FC<CdDatabaseBeneficiaryCreationFormInterface> 
               onChange={handleFormChange}
               id="clientName"
               placeholder="Client Name"
-              className={`border rounded-xl p-2 rounded ${formErrors.name ? "!border-red-500" : ""} w-full`}
+              className={`border rounded-xl p-2 rounded ${
+                formErrors.name ? "!border-red-500" : ""
+              } w-full`}
               title={formErrors.name}
             />
           </div>
@@ -122,7 +132,9 @@ const BeneficiaryCreateCD: React.FC<CdDatabaseBeneficiaryCreationFormInterface> 
               onChange={handleFormChange}
               id="fatherName"
               placeholder="Father/Husband Name"
-              className={`border rounded-xl p-2 rounded ${formErrors.fatherHusbandName ? "!border-red-500" : ""} w-full`}
+              className={`border rounded-xl p-2 rounded ${
+                formErrors.fatherHusbandName ? "!border-red-500" : ""
+              } w-full`}
               title={formErrors.fatherHusbandName}
             />
           </div>
@@ -136,7 +148,9 @@ const BeneficiaryCreateCD: React.FC<CdDatabaseBeneficiaryCreationFormInterface> 
               id="age"
               type="number"
               placeholder="Age"
-              className={`border rounded-xl p-2 rounded ${formErrors.age ? "!border-red-500" : ""} w-full`}
+              className={`border rounded-xl p-2 rounded ${
+                formErrors.age ? "!border-red-500" : ""
+              } w-full`}
               title={formErrors.age}
             />
           </div>
@@ -189,7 +203,9 @@ const BeneficiaryCreateCD: React.FC<CdDatabaseBeneficiaryCreationFormInterface> 
               id="phone"
               type="tel"
               placeholder="Phone"
-              className={`border rounded-xl p-2 rounded ${formErrors.phone ? "!border-red-500" : ""} w-full`}
+              className={`border rounded-xl p-2 rounded ${
+                formErrors.phone ? "!border-red-500" : ""
+              } w-full`}
               title={formErrors.phone}
             />
           </div>
@@ -202,7 +218,9 @@ const BeneficiaryCreateCD: React.FC<CdDatabaseBeneficiaryCreationFormInterface> 
               onChange={handleFormChange}
               id="nid"
               placeholder="NID Number"
-              className={`border rounded-xl p-2 rounded ${formErrors.nationalId ? "!border-red-500" : ""} w-full`}
+              className={`border rounded-xl p-2 rounded ${
+                formErrors.nationalId ? "!border-red-500" : ""
+              } w-full`}
               title={formErrors.nationalId}
             />
           </div>
@@ -215,7 +233,9 @@ const BeneficiaryCreateCD: React.FC<CdDatabaseBeneficiaryCreationFormInterface> 
               onChange={handleFormChange}
               id="jobTitle"
               placeholder="Job Title"
-              className={`border rounded-xl p-2 rounded ${formErrors.jobTitle ? "!border-red-500" : ""} w-full`}
+              className={`border rounded-xl p-2 rounded ${
+                formErrors.jobTitle ? "!border-red-500" : ""
+              } w-full`}
               title={formErrors.jobTitle}
             />
           </div>
@@ -249,11 +269,13 @@ const BeneficiaryCreateCD: React.FC<CdDatabaseBeneficiaryCreationFormInterface> 
               id="incentiveAmount"
               type="text"
               placeholder="Incentive Amount"
-              className={`border rounded-xl p-2 rounded ${formErrors.incentiveAmount ? "!border-red-500" : ""} w-full`}
+              className={`border rounded-xl p-2 rounded ${
+                formErrors.incentiveAmount ? "!border-red-500" : ""
+              } w-full`}
               title={formErrors.incentiveAmount}
             />
           </div>
-          
+
           <div className="flex flex-col gap-4">
             <Label htmlFor="dateOfRegistration">Date Of Registration</Label>
             <Input
@@ -261,17 +283,24 @@ const BeneficiaryCreateCD: React.FC<CdDatabaseBeneficiaryCreationFormInterface> 
               name="dateOfRegistration"
               type="date"
               onChange={handleFormChange}
-              className={`border rounded-xl p-2 rounded ${formErrors.dateOfRegistration ? "!border-red-500" : ""} w-full`}
+              className={`border rounded-xl p-2 rounded ${
+                formErrors.dateOfRegistration ? "!border-red-500" : ""
+              } w-full`}
               title={formErrors.dateOfRegistration}
             />
           </div>
         </div>
 
         {/* Submit Button */}
-        <Button className="w-full mt-6" onClick={() => reqForConfirmationModelFunc(
-          CdDatabaseBeneficiaryCreationMessage,
-          () => handleSubmit()
-        )}>
+        <Button
+          className="w-full mt-6"
+          onClick={() =>
+            reqForConfirmationModelFunc(
+              CdDatabaseBeneficiaryCreationMessage,
+              () => handleSubmit()
+            )
+          }
+        >
           Submit
         </Button>
       </DialogContent>

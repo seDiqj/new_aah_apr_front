@@ -11,7 +11,7 @@ import { mainDatabaseAndKitDatabaseProgramColumns } from "@/definitions/DataTabl
 import {
   KitDatabaseProgramsFiltersList,
   KitDatabaseProgramsFilterUrl,
-} from "@/lib/FiltersList";
+} from "@/constants/FiltersList";
 import { useState } from "react";
 
 const MainDatabaseProgramsPage = () => {

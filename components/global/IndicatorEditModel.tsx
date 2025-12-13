@@ -14,7 +14,7 @@ import { Textarea } from "../ui/textarea";
 import { Separator } from "../ui/separator";
 import calculateEachIndicatorProvinceTargetAccordingTONumberOFCouncilorCount, {
   calculateEachSubIndicatorProvinceTargetAccordingTONumberOFCouncilorCount,
-} from "@/lib/IndicatorProvincesTargetCalculator";
+} from "@/helpers/IndicatorProvincesTargetCalculator";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { useParentContext } from "@/contexts/ParentContext";
 import { Plus } from "lucide-react";
@@ -23,17 +23,17 @@ import { useProjectEditContext } from "@/app/(main)/projects/edit_project/[id]/p
 import { useProjectShowContext } from "@/app/(main)/projects/project_show/[id]/page";
 import { Indicator, Output } from "@/app/(main)/projects/types/Types";
 import { MultiSelect } from "../multi-select";
-import { IndicatorDefault } from "@/lib/FormsDefaultValues";
+import { IndicatorDefault } from "@/constants/FormsDefaultValues";
 import {
   CancelButtonMessage,
   IndicatorCreationMessage,
   IndicatorEditionMessage,
-} from "@/lib/ConfirmationModelsTexts";
+} from "@/constants/ConfirmationModelsTexts";
 import {
   databases,
   indicatorStatus,
   indicatorTypes,
-} from "@/lib/SingleAndMultiSelectOptionsList";
+} from "@/constants/SingleAndMultiSelectOptionsList";
 import { IndicatorModelInterface } from "@/interfaces/Interfaces";
 import {
   HasSubIndicator,
@@ -55,11 +55,10 @@ import {
   IsOutputSaved,
   IsShowMode,
   IsThereAndIndicatorWithEnteredReferanceAndDefferentId,
-} from "@/lib/Constants";
+} from "@/constants/Constants";
 import { stringToCapital } from "@/helpers/StringToCapital";
 import { getStructuredProvinces } from "@/helpers/IndicatorFormHelpers";
 import { AxiosError, AxiosResponse } from "axios";
-import { RemoveIdFielsFromObj } from "@/helpers/GlobalHelpers";
 
 export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
   isOpen,
@@ -115,6 +114,20 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
           ...prev.subIndicator!,
           target: Number(value),
         },
+      }));
+
+      return;
+    } else if (name == "dessaggregationType") {
+      setLocal((prev) => ({
+        ...prev,
+        dessaggregationType: value,
+        subIndicator: prev.subIndicator
+          ? {
+              ...prev.subIndicator,
+              dessaggregationType:
+                value == "session" ? "indevidual" : "session",
+            }
+          : null,
       }));
 
       return;
@@ -206,6 +219,19 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
   };
 
   const hundleSubmit = () => {
+    if (
+      IsThereAndIndicatorWithEnteredReferanceAndDefferentId(indicators, local)
+    ) {
+      reqForToastAndSetMessage(
+        "A project can not have two indicators with same referance !"
+      );
+      return;
+    } else if (!IsIndicatorEdited(indicatorBeforeEdit, local)) {
+      reqForToastAndSetMessage("No changes were made !");
+      onClose();
+      return;
+    }
+
     if (IsCreateMode(mode)) {
       axiosInstance
         .post("projects/i/indicator", { indicator: local })
@@ -256,19 +282,6 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
           reqForToastAndSetMessage(error.response.data.message);
         });
     } else if (IsEditMode(mode)) {
-      if (
-        IsThereAndIndicatorWithEnteredReferanceAndDefferentId(indicators, local)
-      ) {
-        reqForToastAndSetMessage(
-          "A project can not have two indicators with same referance !"
-        );
-        return;
-      } else if (!IsIndicatorEdited(indicatorBeforeEdit, local)) {
-        reqForToastAndSetMessage("No changes were made !");
-        onClose();
-        return;
-      }
-
       setIndicators((prev) =>
         prev.map((ind) =>
           ind.indicatorRef == local.indicatorRef ? local : ind
@@ -516,6 +529,22 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
         </DialogHeader>
 
         <div className="grid gap-4 overflow-auto h-[400px]">
+          {/* Indicator output */}
+          <div className="flex-1 flex flex-col gap-1">
+            <Label>Output</Label>
+            <SingleSelect
+              options={savedOuputs()}
+              value={local.outputId ?? "Unknown output"}
+              onValueChange={(value: string) =>
+                setLocal((prev) => ({
+                  ...prev,
+                  outputId: value,
+                }))
+              }
+              disabled={IsShowMode(mode)}
+            />
+          </div>
+
           <div className="flex flex-col gap-1">
             <Label htmlFor="indicator">Indicator</Label>
             <Textarea
@@ -600,22 +629,6 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
                 </div>
               )}
             </div>
-          </div>
-
-          {/* Indicator output */}
-          <div className="flex-1 flex flex-col gap-1">
-            <Label>Output</Label>
-            <SingleSelect
-              options={savedOuputs()}
-              value={local.outputId ?? "Unknown output"}
-              onValueChange={(value: string) =>
-                setLocal((prev) => ({
-                  ...prev,
-                  outputId: value,
-                }))
-              }
-              disabled={IsShowMode(mode)}
-            />
           </div>
 
           {/* provinces */}

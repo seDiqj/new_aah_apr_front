@@ -14,9 +14,13 @@ import { useParentContext } from "@/contexts/ParentContext";
 import { useParams } from "next/navigation";
 import { Button } from "../ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Loader2 } from "lucide-react";
+import { Loader2, Trash } from "lucide-react";
+import { BeneficiarySessionDeleteMessage } from "@/constants/ConfirmationModelsTexts";
+import { IsANullOrUndefinedValue } from "@/constants/Constants";
+import { AxiosError, AxiosResponse } from "axios";
 
 type Session = {
+  id: number | null;
   group: string | null;
   session: string;
   date: string;
@@ -38,7 +42,11 @@ type IndicatorState = {
 
 export default function SessionsPage() {
   const { id } = useParams<{ id: string }>();
-  const { reqForToastAndSetMessage, axiosInstance, reqForConfirmationModelFunc } = useParentContext();
+  const {
+    reqForToastAndSetMessage,
+    axiosInstance,
+    reqForConfirmationModelFunc,
+  } = useParentContext();
 
   const [indicators, setIndicators] = useState<IndicatorState[]>([]);
   const [loading, setLoading] = useState(true);
@@ -115,6 +123,38 @@ export default function SessionsPage() {
       .then((response: any) => reqForToastAndSetMessage(response.data.message))
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
+      );
+  };
+
+  const handleDeleteSession = (
+    indicatorId: number | null,
+    sessionId: number | null
+  ) => {
+    if (
+      IsANullOrUndefinedValue(indicatorId) ||
+      IsANullOrUndefinedValue(sessionId)
+    )
+      return;
+
+    axiosInstance
+      .delete(`/main_db/beneficiary/sessions/delete_session/${sessionId}`)
+      .then((response: AxiosResponse<any, any, any>) => {
+        setIndicators((prev: IndicatorState[]) =>
+          prev.map((indicator: IndicatorState) =>
+            indicator.id == indicatorId
+              ? {
+                  ...indicator,
+                  sessions: indicator.sessions.filter(
+                    (session: Session) => session.id != sessionId
+                  ),
+                }
+              : indicator
+          )
+        );
+        reqForToastAndSetMessage(response.data.message);
+      })
+      .catch((error: AxiosError<any, any>) =>
+        reqForToastAndSetMessage(error.response?.data.message)
       );
   };
 
@@ -225,6 +265,24 @@ export default function SessionsPage() {
                                 }
                               />
                             </TableCell>
+                            {session.id && (
+                              <TableCell>
+                                <Trash
+                                  onClick={() =>
+                                    reqForConfirmationModelFunc(
+                                      BeneficiarySessionDeleteMessage,
+                                      () =>
+                                        handleDeleteSession(
+                                          indicator.id,
+                                          session.id
+                                        )
+                                    )
+                                  }
+                                  className="cursor-pointer text-red-500 hover:text-red-700"
+                                  size={18}
+                                />
+                              </TableCell>
+                            )}
                           </TableRow>
                         );
                       })}
@@ -333,6 +391,24 @@ export default function SessionsPage() {
                                 }
                               />
                             </TableCell>
+                            {item.session.id && (
+                              <TableCell>
+                                <Trash
+                                  onClick={() =>
+                                    reqForConfirmationModelFunc(
+                                      BeneficiarySessionDeleteMessage,
+                                      () =>
+                                        handleDeleteSession(
+                                          indicator.id,
+                                          item.session.id
+                                        )
+                                    )
+                                  }
+                                  className="cursor-pointer text-red-500 hover:text-red-700"
+                                  size={18}
+                                />
+                              </TableCell>
+                            )}
                           </TableRow>
                         ))}
                       <TableRow>
@@ -355,14 +431,7 @@ export default function SessionsPage() {
       })}
 
       <div className="flex justify-end w-full pr-4 mt-6">
-        <Button
-          onClick={() =>
-            reqForConfirmationModelFunc(
-              "",
-              handleSubmit
-            )
-          }
-        >
+        <Button onClick={() => reqForConfirmationModelFunc("", handleSubmit)}>
           Submit
         </Button>
       </div>

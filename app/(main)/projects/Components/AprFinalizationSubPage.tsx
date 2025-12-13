@@ -1,240 +1,372 @@
-"use client"
+"use client";
 
-import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { aprFinalizationSteps, projectAprStatusList } from "../utils/OptionLists";
+import {
+  aprFinalizationSteps,
+  projectAprStatusList,
+} from "../utils/OptionLists";
 import { useEffect, useState } from "react";
 import { useParentContext } from "@/contexts/ParentContext";
 import { useProjectContext } from "../create_new_project/page";
 import { useProjectEditContext } from "../edit_project/[id]/page";
 import { useProjectShowContext } from "../project_show/[id]/page";
-import { IsEnteredStatusCallingToBeApproveAtLevelAboveTheAllowedLevel, IsEnteredStatusCallsToRejectAtTheLevelAboveTheCurrentLimit, IsEnteredStatusLocaltedAtTheLowerLevelThenTheCurrentStatus, IsValidAprStatus } from "@/lib/Constants";
+import {
+  IsCreateMode,
+  IsEnteredStatusCallingToBeApproveAtLevelAboveTheAllowedLevel,
+  IsEnteredStatusCallsToRejectAtTheLevelAboveTheCurrentLimit,
+  IsEnteredStatusLocaltedAtTheLowerLevelThenTheCurrentStatus,
+  IsShowMode,
+  IsValidAprStatus,
+} from "@/constants/Constants";
 import { AprFinalizationSubPageInterface } from "@/interfaces/Interfaces";
+import {
+  AcceptFinalizationMessage,
+  RejectFinalizationMessage,
+} from "@/constants/ConfirmationModelsTexts";
+import { usePermissions } from "@/contexts/PermissionContext";
 
+const AprFinalizationSubPage: React.FC<AprFinalizationSubPageInterface> = ({
+  mode,
+}) => {
+  const {
+    reqForToastAndSetMessage,
+    axiosInstance,
+    reqForConfirmationModelFunc,
+  } = useParentContext();
+  const {
+    projectId,
+    actionLogs,
+    setActionLogs,
+    projectAprStatus,
+    setProjectAprStatus,
+  } = IsCreateMode(mode)
+    ? useProjectContext()
+    : IsShowMode(mode)
+    ? useProjectShowContext()
+    : useProjectEditContext();
 
-const AprFinalizationSubPage: React.FC<AprFinalizationSubPageInterface> = ({mode}) => {
+  const { permissions } = usePermissions();
 
-    const {reqForToastAndSetMessage, axiosInstance} = useParentContext();
-    const {projectId, actionLogs, setActionLogs, projectAprStatus, setProjectAprStatus} = mode == "create" ? useProjectContext() : mode == "show" ? useProjectShowContext() : useProjectEditContext();
+  const [comment, setComment] = useState<string>("");
 
-    const [comment, setComment] = useState<string>("");
+  const [reqForCreationModel, setReqForCreationModel] =
+    useState<boolean>(false);
+  const [reqForSubmitionModel, setReqForSubmitionModel] =
+    useState<boolean>(false);
+  const [reqForGrantFinalizationModel, setReqForGrantFinalizationModel] =
+    useState<boolean>(false);
+  const [reqForHqFinalizationModel, setReqForHqFinalizationModel] =
+    useState<boolean>(false);
 
-    const changeProjectAprStatus = (status: string) => {
-        if (!IsValidAprStatus(status)) {
+  const changeProjectAprStatus = (status: string) => {
+    if (!IsValidAprStatus(status)) {
+      reqForToastAndSetMessage("Wronge status !");
+      return;
+    } else if (
+      IsEnteredStatusLocaltedAtTheLowerLevelThenTheCurrentStatus(
+        projectAprStatus,
+        status
+      )
+    ) {
+      reqForToastAndSetMessage(`You can not set the project status to ${status} while its ${projectAprStatus} ! 
+            Note: if you wanna to change the apr status of project to ${status} please before that reject it at the top level stages and then try agein.`);
+      return;
+    } else if (
+      IsEnteredStatusCallsToRejectAtTheLevelAboveTheCurrentLimit(
+        projectAprStatus,
+        status
+      )
+    ) {
+      reqForToastAndSetMessage(
+        `You can not reject a project at the ${status} stage while its on ${projectAprStatus} stage !`
+      );
+      return;
+    } else if (
+      IsEnteredStatusCallingToBeApproveAtLevelAboveTheAllowedLevel(
+        projectAprStatus,
+        status
+      )
+    ) {
+      reqForToastAndSetMessage(
+        `You can not change the apr status of a project to ${status} while not yet accepted at the previos levels !`
+      );
+      return;
+    }
 
-          reqForToastAndSetMessage("Wronge status !");
-          return;
+    axiosInstance
+      .post(`projects/status/change_apr_status/${projectId}`, {
+        newStatus: status,
+        comment: comment,
+      })
+      .then((response: any) => {
+        reqForToastAndSetMessage(response.data.message);
+        setProjectAprStatus(response.data.data);
+        [
+          setReqForCreationModel,
+          setReqForSubmitionModel,
+          setReqForGrantFinalizationModel,
+          setReqForHqFinalizationModel,
+        ].map((value) => value((prev) => (prev ? !prev : prev)));
+      })
+      .catch((error: any) =>
+        reqForToastAndSetMessage(error.response.data.message)
+      );
+  };
 
-        } else if (IsEnteredStatusLocaltedAtTheLowerLevelThenTheCurrentStatus(projectAprStatus, status)) {
-            reqForToastAndSetMessage(`You can not set the project status to ${status} while its ${projectAprStatus} ! 
-            Note: if you wanna to change the apr status of project to ${status} please before that reject it at the top level stages and then try agein.`); return
-          } else if (IsEnteredStatusCallsToRejectAtTheLevelAboveTheCurrentLimit(projectAprStatus, status)) {
-            reqForToastAndSetMessage(`You can not reject a project at the ${status} stage while its on ${projectAprStatus} stage !`);
-            return;
-          } else if (IsEnteredStatusCallingToBeApproveAtLevelAboveTheAllowedLevel(projectAprStatus, status)) {
-
-            reqForToastAndSetMessage(`You can not change the apr status of a project to ${status} while not yet accepted at the previos levels !`)
-            return;
-          }
-
-        axiosInstance
-          .post(`projects/status/change_apr_status/${projectId}`, {
-            newStatus: status,
-            comment: comment,
-          })
-          .then((response: any) => {
-            reqForToastAndSetMessage(response.data.message);
-            setProjectAprStatus(response.data.data)
-          })
-          .catch((error: any) =>
-            reqForToastAndSetMessage(error.response.data.message)
-          );
-    };
-
-    useEffect(() => {
-      if (actionLogs.length >= 1) return;
-      axiosInstance.get(`/projects/get_project_finalizers_details/${projectId}`)
+  useEffect(() => {
+    axiosInstance
+      .get(`/projects/get_project_finalizers_details/${projectId}`)
       .then((response: any) => setActionLogs(response.data.data))
-      .catch((error: any) => reqForToastAndSetMessage(error.response.data.message))
-    }, []);
+      .catch((error: any) =>
+        reqForToastAndSetMessage(error.response.data.message)
+      );
+  }, []);
 
-    const readOnly: boolean = mode == "show";
+  const readOnly: boolean = IsShowMode(mode);
 
-    return (
-        <>
-        
-            <Card className="h-full">
-                <CardHeader>
-                  <CardTitle>Apr Finalization</CardTitle>
-                </CardHeader>
+  return (
+    <>
+      <Card className="h-full">
+        <CardHeader>
+          <CardTitle>Apr Finalization</CardTitle>
+        </CardHeader>
 
-                <CardContent className="grid gap-6">
-                  {aprFinalizationSteps.map((step, index) => {
-                    const canReject = index !== 0;
-                    return (
-                      <div
-                        key={step.id}
-                        className="flex items-center justify-between gap-3"
-                      >
-                        <div className="flex items-center gap-3">
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Checkbox
-                                id={step.id}
-                                checked={(() => {
-                                  const currentIdx = projectAprStatusList.indexOf(projectAprStatus);
-                                  const stepIdx = projectAprStatusList.indexOf(step.acceptStatusValue!);
+        <CardContent className="grid gap-6">
+          {aprFinalizationSteps.filter((step) => permissions.includes(step.permission)).map((step, index) => {
+            const canReject = index !== 0;
+            return (
+              <div
+                key={step.id}
+                className="flex items-center justify-between gap-3"
+              >
+                <div className="flex items-center gap-3">
+                  <AlertDialog
+                    open={
+                      step.id == "create"
+                        ? reqForCreationModel
+                        : step.id == "submit"
+                        ? reqForSubmitionModel
+                        : step.id == "grantFinalize"
+                        ? reqForGrantFinalizationModel
+                        : reqForHqFinalizationModel
+                    }
+                  >
+                    <AlertDialogTrigger asChild>
+                      <Checkbox
+                        id={step.id}
+                        checked={
+                          (() => {
+                            const currentIdx =
+                              projectAprStatusList.indexOf(projectAprStatus);
+                            const stepIdx = projectAprStatusList.indexOf(
+                              step.acceptStatusValue!
+                            );
 
-                                  const isRejected = step.rejectStatusValue
-                                    ? projectAprStatus === step.rejectStatusValue
-                                    : false;
+                            const isRejected = step.rejectStatusValue
+                              ? projectAprStatus === step.rejectStatusValue
+                              : false;
 
-                                  return !isRejected && stepIdx !== -1 && currentIdx >= stepIdx;
-                                })() || projectAprStatus == step.acceptStatusValue}
-                                onCheckedChange={() => {}}
-                                disabled={readOnly}
-                              />
-                            </AlertDialogTrigger>
+                            return (
+                              !isRejected &&
+                              stepIdx !== -1 &&
+                              currentIdx >= stepIdx
+                            );
+                          })() || projectAprStatus == step.acceptStatusValue
+                        }
+                        onCheckedChange={() =>
+                          step.id == "create"
+                            ? setReqForCreationModel(true)
+                            : step.id == "submit"
+                            ? setReqForSubmitionModel(true)
+                            : step.id == "grantFinalize"
+                            ? setReqForGrantFinalizationModel(true)
+                            : setReqForHqFinalizationModel(true)
+                        }
+                        disabled={readOnly}
+                      />
+                    </AlertDialogTrigger>
 
-                            <AlertDialogContent className="space-y-4">
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                  {canReject ? (
-                                    <>
-                                      Do you want to{" "}
-                                      <span className="text-green-600">Accept</span> or{" "}
-                                      <span className="text-red-600">Reject</span> this step?
-                                    </>
-                                  ) : (
-                                    <>
-                                      Confirm <span className="text-green-600">{step.label}</span>?
-                                    </>
-                                  )}
-                                </AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  {step.description}
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-
-                              {/* Textarea for comment */}
-                              <div className="flex flex-col gap-2">
-                                <Label
-                                  htmlFor={`comment-${step.id}`}
-                                  className="text-sm font-medium"
-                                >
-                                  Enter your comment
-                                </Label>
-                                <Textarea
-                                  id={`comment-${step.id}`}
-                                  value={comment}
-                                  onChange={(e) => setComment(e.target.value)}
-                                  className="resize-none border rounded p-2 text-sm"
-                                  placeholder="Write your comment here..."
-                                  disabled={readOnly}
-                                />
-                              </div>
-
-                              <AlertDialogFooter className="flex justify-between">
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-
-                                {canReject ? (
-                                  <div className="flex gap-2">
-                                    <Button
-                                      variant="destructive"
-                                      onClick={() => {
-                                        if (comment.trim()) {
-                                          changeProjectAprStatus(step.rejectStatusValue!);
-                                        } else {
-                                          reqForToastAndSetMessage("Comment section is required !");
-                                        }
-                                      }}
-                                      disabled={readOnly}
-                                    >
-                                      Reject
-                                    </Button>
-
-                                    <Button
-                                      onClick={() => {
-                                        if (comment.trim()) {
-                                          changeProjectAprStatus(step.acceptStatusValue!);
-                                        } else {
-                                          reqForToastAndSetMessage("Comment section is required !");
-                                        }
-                                      }}
-                                      disabled={readOnly}
-                                    >
-                                      Accept
-                                    </Button>
-                                  </div>
-                                ) : (
-                                  <Button
-                                    onClick={() => {
-                                      if (comment.trim()) {
-                                        changeProjectAprStatus(step.acceptStatusValue!);
-                                      } else {
-                                        reqForToastAndSetMessage("Comment section is required !");
-                                      }
-                                    }}
-                                    disabled={readOnly}
-                                  >
-                                    Continue
-                                  </Button>
-                                )}
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-
-                          <Label htmlFor={step.id}>{step.label}</Label>
-                        </div>
-                      </div>
-                    );
-                  })}
-
-                  {/* Action Progress Bar */}
-                  <div className="mt-8 max-w-full overflow-auto">
-                    <h3 className="text-lg font-semibold mb-4">Action Progress</h3>
-
-                    <div className="flex items-center gap-4 overflow-x-auto p-3  rounded-xl shadow-inner">
-                      {actionLogs.map((log: any, i: number) => (
-                        <div
-                          key={log.id}
-                          className="flex items-center gap-2 shrink-0"
-                        >
-                          <div className="flex flex-col items-center text-center">
-                            <img
-                              src={log.avatar}
-                              alt={log.name}
-                              className="w-10 h-10 rounded-full border-2 border-gray-300 object-cover"
-                            />
-                            <span className="text-xs mt-1 font-medium">{log.name}</span>
-                            <span
-                              className={`text-xs px-2 py-1 rounded-full mt-1 ${
-                                log.action === "Accepted"
-                                  ? "bg-green-100 text-green-700"
-                                  : "bg-red-100 text-red-700"
-                              }`}
-                            >
-                              {log.action}
-                            </span>
-                          </div>
-
-                          {i < actionLogs.length - 1 && (
-                            <div className="w-10 h-[2px] bg-gray-300 mx-2"></div>
+                    <AlertDialogContent className="space-y-4">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          {canReject ? (
+                            <>
+                              Do you want to{" "}
+                              <span className="text-green-600">Accept</span> or{" "}
+                              <span className="text-red-600">Reject</span> this
+                              step?
+                            </>
+                          ) : (
+                            <>
+                              Confirm{" "}
+                              <span className="text-green-600">
+                                {step.label}
+                              </span>
+                              ?
+                            </>
                           )}
-                        </div>
-                      ))}
-                    </div>
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          {step.description}
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+
+                      {/* Textarea for comment */}
+                      <div className="flex flex-col gap-2">
+                        <Label
+                          htmlFor={`comment-${step.id}`}
+                          className="text-sm font-medium"
+                        >
+                          Enter your comment
+                        </Label>
+                        <Textarea
+                          id={`comment-${step.id}`}
+                          value={comment}
+                          onChange={(e) => setComment(e.target.value)}
+                          className="resize-none border rounded p-2 text-sm"
+                          placeholder="Write your comment here..."
+                          disabled={readOnly}
+                        />
+                      </div>
+
+                      <AlertDialogFooter className="flex justify-between">
+                        <AlertDialogCancel
+                          onClick={() =>
+                            step.id == "create"
+                              ? setReqForCreationModel(false)
+                              : step.id == "submit"
+                              ? setReqForSubmitionModel(false)
+                              : step.id == "grantFinalize"
+                              ? setReqForGrantFinalizationModel(false)
+                              : setReqForHqFinalizationModel(false)
+                          }
+                        >
+                          Cancel
+                        </AlertDialogCancel>
+
+                        {canReject ? (
+                          <div className="flex gap-2">
+                            <Button
+                              variant="destructive"
+                              onClick={() =>
+                                reqForConfirmationModelFunc(
+                                  RejectFinalizationMessage,
+                                  () => {
+                                    if (comment.trim()) {
+                                      changeProjectAprStatus(
+                                        step.rejectStatusValue!
+                                      );
+                                    } else {
+                                      reqForToastAndSetMessage(
+                                        "Comment section is required !"
+                                      );
+                                    }
+                                  }
+                                )
+                              }
+                              disabled={readOnly}
+                            >
+                              Reject
+                            </Button>
+
+                            <Button
+                              onClick={() =>
+                                reqForConfirmationModelFunc(
+                                  AcceptFinalizationMessage,
+                                  () => {
+                                    if (comment.trim()) {
+                                      changeProjectAprStatus(
+                                        step.acceptStatusValue!
+                                      );
+                                    } else {
+                                      reqForToastAndSetMessage(
+                                        "Comment section is required !"
+                                      );
+                                    }
+                                  }
+                                )
+                              }
+                              disabled={readOnly}
+                            >
+                              Accept
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button
+                            onClick={() => {
+                              if (comment.trim()) {
+                                changeProjectAprStatus(step.acceptStatusValue!);
+                              } else {
+                                reqForToastAndSetMessage(
+                                  "Comment section is required !"
+                                );
+                              }
+                            }}
+                            disabled={readOnly}
+                          >
+                            {step.buttonLabel}
+                          </Button>
+                        )}
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+
+                  <Label htmlFor={step.id}>{step.label}</Label>
+                </div>
+              </div>
+            );
+          })}
+
+          {/* Action Progress Bar */}
+          <div className="mt-8 max-w-full overflow-auto">
+            <h3 className="text-lg font-semibold mb-4">Action Progress</h3>
+
+            <div className="flex items-center gap-4 overflow-x-auto p-3  rounded-xl shadow-inner">
+              {actionLogs.map((log: any, i: number) => (
+                <div key={log.id} className="flex items-center gap-2 shrink-0">
+                  <div className="flex flex-col items-center text-center">
+                    <img
+                      src={log.avatar}
+                      alt={log.name}
+                      className="w-10 h-10 rounded-full border-2 border-gray-300 object-cover"
+                    />
+                    <span className="text-xs mt-1 font-medium">{log.name}</span>
+                    <span
+                      className={`text-xs px-2 py-1 rounded-full mt-1 ${
+                        log.action === "Accepted"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-700"
+                      }`}
+                    >
+                      {log.action}
+                    </span>
                   </div>
 
-                </CardContent>
-              </Card>
-
-        </>
-    )
-}
+                  {i < actionLogs.length - 1 && (
+                    <div className="w-10 h-[2px] bg-gray-300 mx-2"></div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </>
+  );
+};
 
 export default AprFinalizationSubPage;

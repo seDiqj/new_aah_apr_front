@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import {
-  ColumnDef,
   ColumnFiltersState,
   flexRender,
   getCoreRowModel,
@@ -40,47 +39,12 @@ import {
 import { useParentContext } from "@/contexts/ParentContext";
 import { ChevronDown, Edit, Filter, Trash } from "lucide-react";
 import { Can } from "../Can";
-import { DeleteButtonMessage } from "@/lib/ConfirmationModelsTexts";
+import { DeleteButtonMessage } from "@/constants/ConfirmationModelsTexts";
+import { DELETE_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { AxiosError, AxiosResponse } from "axios";
+import { DataTableInterface } from "@/interfaces/Interfaces";
 
-interface ComponentProps {
-  columns: ColumnDef<any>[];
-  indexUrl: string;
-  filterUrl?: string;
-  deleteUrl?: string;
-  searchableColumn: string;
-
-  // For Edit modal
-  idFeildForEditStateSetter?: React.Dispatch<
-    React.SetStateAction<number | null>
-  >;
-  editModelOpenerStateSetter?:
-    | React.Dispatch<React.SetStateAction<boolean>>
-    | VoidFunction;
-
-  // For Show modal
-  idFeildForShowStateSetter?: React.Dispatch<
-    React.SetStateAction<number | null>
-  >;
-  showModelOpenerStateSetter?:
-    | React.Dispatch<React.SetStateAction<boolean>>
-    | VoidFunction;
-
-  selectedRowsIdsStateSetter?: React.Dispatch<React.SetStateAction<{}>>;
-
-  // Injected element
-  injectedElement?: React.ReactNode;
-
-  // Filters List.
-  filtersList?: string[];
-
-  deleteBtnPermission?: string;
-
-  editBtnPermission?: string;
-
-  viewPermission?: string;
-}
-
-const DataTableDemo: React.FC<ComponentProps> = ({
+const DataTableDemo: React.FC<DataTableInterface> = ({
   columns,
   indexUrl,
   filterUrl,
@@ -143,15 +107,15 @@ const DataTableDemo: React.FC<ComponentProps> = ({
     setGloabalLoading(true);
     axiosInstance
       .get(indexUrl)
-      .then((response: any) => {
+      .then((response: AxiosResponse<any, any, any>) => {
         setData(response.data.data);
       })
-      .catch((err: any) => {
+      .catch((err: AxiosError<any, any>) => {
         reqForToastAndSetMessage(
           err.response?.data?.message || "Failed to fetch data"
         );
 
-        if (err.response.data.data) setData(err.response.data.data);
+        if (err.response?.data.data) setData(err.response?.data.data);
       })
       .finally(() => {
         setLoading(false);
@@ -211,7 +175,7 @@ const DataTableDemo: React.FC<ComponentProps> = ({
   });
 
   return (
-    <div className="w-full">
+    <div className="w-full min-h-[420px] relative">
       {/* Toolbar */}
       <div className="flex justify-between items-center py-4">
         <Input
@@ -246,6 +210,7 @@ const DataTableDemo: React.FC<ComponentProps> = ({
           {deleteUrl && Object.keys(rowSelection).length >= 1 && (
             <Can permission={deleteBtnPermission ?? "ok"}>
               <Button
+                id={DELETE_BUTTON_PROVIDER_ID}
                 onClick={() => {
                   reqForConfirmationModelFunc(
                     DeleteButtonMessage,
@@ -409,7 +374,7 @@ const DataTableDemo: React.FC<ComponentProps> = ({
       </div>
 
       {/* Pagination info */}
-      <div className="flex items-center justify-end space-x-2 py-4">
+      <div className="flex items-center justify-end space-x-2 py-4 absolute bottom-1 w-full">
         <div className="text-muted-foreground flex-1 text-sm">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}
           {table.getFilteredRowModel().rows.length} row(s) selected.

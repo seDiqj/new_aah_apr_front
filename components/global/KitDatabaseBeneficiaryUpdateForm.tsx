@@ -16,24 +16,37 @@ import { useEffect, useState } from "react";
 import { useParentContext } from "@/contexts/ParentContext";
 import { withPermission } from "@/lib/withPermission";
 import { KitDatabaseBeneficiaryUpdateFormType } from "@/types/Types";
-import { KitDatabaseBeneficiaryUpdateDefault } from "@/lib/FormsDefaultValues";
-import { KitDatabaseBeneficiaryEditionMessage } from "@/lib/ConfirmationModelsTexts";
-import { DisabilityTypeOptions, GenderOptions, HousholdStatusOptions, MaritalStatusOptions, ReferredForProtectionOptions } from "@/lib/SingleAndMultiSelectOptionsList";
+import { KitDatabaseBeneficiaryUpdateDefault } from "@/constants/FormsDefaultValues";
+import { KitDatabaseBeneficiaryEditionMessage } from "@/constants/ConfirmationModelsTexts";
+import {
+  DisabilityTypeOptions,
+  GenderOptions,
+  HousholdStatusOptions,
+  MaritalStatusOptions,
+  ReferredForProtectionOptions,
+} from "@/constants/SingleAndMultiSelectOptionsList";
 import { KitDatabaseBenficiaryUpdateForm } from "@/interfaces/Interfaces";
 
+const KitDatabaseBeneficiaryUpdateForm: React.FC<
+  KitDatabaseBenficiaryUpdateForm
+> = ({ open, onOpenChange, title, beneficiaryId }) => {
+  const {
+    reqForToastAndSetMessage,
+    axiosInstance,
+    reqForConfirmationModelFunc,
+  } = useParentContext();
 
-const KitDatabaseBeneficiaryUpdateForm: React.FC<KitDatabaseBenficiaryUpdateForm> = ({
-  open,
-  onOpenChange,
-  title,
-  beneficiaryId,
-}) => {
-  const { reqForToastAndSetMessage, axiosInstance, reqForConfirmationModelFunc } = useParentContext();
+  const [formData, setFormData] =
+    useState<KitDatabaseBeneficiaryUpdateFormType>(
+      KitDatabaseBeneficiaryUpdateDefault()
+    );
 
-  const [formData, setFormData] = useState<KitDatabaseBeneficiaryUpdateFormType>(KitDatabaseBeneficiaryUpdateDefault());
-
-  const [programs, setPrograms] = useState<{id: string; focalPoint: string}[]>([]);
-  const [indicators, setIndicators] = useState<{id: string, indicatorRef: string}[]>([]);
+  const [programs, setPrograms] = useState<
+    { id: string; focalPoint: string }[]
+  >([]);
+  const [indicators, setIndicators] = useState<
+    { id: string; indicatorRef: string }[]
+  >([]);
 
   // Fetch beneficiary data
   useEffect(() => {
@@ -348,10 +361,16 @@ const KitDatabaseBeneficiaryUpdateForm: React.FC<KitDatabaseBenficiaryUpdateForm
         </div>
 
         {/* Submit */}
-        <Button type="button" className="w-full mt-6" onClick={(e) => reqForConfirmationModelFunc(
-          KitDatabaseBeneficiaryEditionMessage,
-          () => handleSubmit(e)
-        )}>
+        <Button
+          type="button"
+          className="w-full mt-6"
+          onClick={(e) =>
+            reqForConfirmationModelFunc(
+              KitDatabaseBeneficiaryEditionMessage,
+              () => handleSubmit(e)
+            )
+          }
+        >
           Update
         </Button>
       </DialogContent>

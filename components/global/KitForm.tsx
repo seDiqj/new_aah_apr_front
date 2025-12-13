@@ -8,16 +8,25 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { useEffect, useState } from "react";
 import { KitFormType } from "@/types/Types";
-import { MultiSelect } from "../multi-select";
 import { useParams } from "next/navigation";
 import { withPermission } from "@/lib/withPermission";
-import { KitDefault } from "@/lib/FormsDefaultValues";
-import { KitCreationMessage, KitEditionMessage } from "@/lib/ConfirmationModelsTexts";
-import { KitRecievedOptions } from "@/lib/SingleAndMultiSelectOptionsList";
+import { KitDefault } from "@/constants/FormsDefaultValues";
+import {
+  KitCreationMessage,
+  KitEditionMessage,
+} from "@/constants/ConfirmationModelsTexts";
+import { KitRecievedOptions } from "@/constants/SingleAndMultiSelectOptionsList";
 import { KitFormInterface } from "@/interfaces/Interfaces";
-import { IsCreateMode, IsEditMode, IsEditOrShowMode, IsNotShowMode, IsShowMode } from "@/lib/Constants";
+import {
+  IsCreateMode,
+  IsEditMode,
+  IsEditOrShowMode,
+  IsNotShowMode,
+  IsShowMode,
+} from "@/constants/Constants";
+import { AxiosError, AxiosResponse } from "axios";
 
-let mode = ""
+let mode: "create" | "edit" | "show" = "create";
 
 const KitForm: React.FC<KitFormInterface> = ({
   open,
@@ -29,7 +38,12 @@ const KitForm: React.FC<KitFormInterface> = ({
 
   const { id } = useParams();
 
-  const { reqForToastAndSetMessage, axiosInstance, handleReload, reqForConfirmationModelFunc } = useParentContext();
+  const {
+    reqForToastAndSetMessage,
+    axiosInstance,
+    handleReload,
+    reqForConfirmationModelFunc,
+  } = useParentContext();
 
   const [formData, setFormData] = useState<KitFormType>(KitDefault());
 
@@ -49,41 +63,40 @@ const KitForm: React.FC<KitFormInterface> = ({
     if (IsCreateMode(mode)) {
       axiosInstance
         .post(`/kit_db/add_kit_to_bnf/${id}`, formData)
-        .then((response: any) =>
-        {
+        .then((response: any) => {
           reqForToastAndSetMessage(response.data.message);
+          onOpenChange(false);
           handleReload();
-        }
-        )
+        })
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)
         );
     } else if (IsEditMode(mode) && kitId) {
       axiosInstance
         .put(`/kit_db/kit/${kitId}`, formData)
-        .then((response: any) =>
-        {
+        .then((response: any) => {
           reqForToastAndSetMessage(response.data.message);
+          onOpenChange(false)
           handleReload();
-        }
-        )
+        })
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)
         );
     }
   };
 
-  const [kits, setKits] = useState<{id: string; name: string;}[]>();
+  const [kits, setKits] = useState<{ id: string; name: string }[]>();
 
   useEffect(() => {
     if (IsEditOrShowMode(mode) && kitId && open) {
       axiosInstance
         .get(`/kit_db/show_kit/${kitId}`)
-        .then((response: any) => {
+        .then((response: AxiosResponse<any, any, any>) => {
+          console.log(response.data.data);
           setFormData(response.data.data);
         })
-        .catch((error: any) => {
-          reqForToastAndSetMessage(error.response.data.message);
+        .catch((error: AxiosError<any, any>) => {
+          reqForToastAndSetMessage(error.response?.data.message);
         });
     }
 
@@ -112,7 +125,7 @@ const KitForm: React.FC<KitFormInterface> = ({
           {/* Kit Selector */}
           <div className="flex flex-col gap-2">
             <Label>Select Kit</Label>
-            <MultiSelect
+            <SingleSelect
               options={
                 kits
                   ? kits.map((kit) => ({
@@ -121,10 +134,10 @@ const KitForm: React.FC<KitFormInterface> = ({
                     }))
                   : []
               }
-              value={formData.kits}
-              onValueChange={(value: string[]) =>
+              value={formData.kitId}
+              onValueChange={(value: string) =>
                 handleFormChange({
-                  target: { name: "kits", value },
+                  target: { name: "kitId", value },
                 })
               }
             />
@@ -132,10 +145,10 @@ const KitForm: React.FC<KitFormInterface> = ({
 
           {/* Distribution Date */}
           <div className="flex flex-col gap-2">
-            <Label>Distribution Date</Label>
+            <Label>Destribution Date</Label>
             <Input
-              name="distributionDate"
-              value={formData.distributionDate}
+              name="destribution_date"
+              value={formData.destribution_date}
               onChange={handleFormChange}
               disabled={readOnly}
             />
@@ -157,11 +170,11 @@ const KitForm: React.FC<KitFormInterface> = ({
             <Label>Is Received</Label>
             <SingleSelect
               options={KitRecievedOptions}
-              value={formData.isReceived ? "true" : "false"}
+              value={formData.is_received ? "true" : "false"}
               onValueChange={(value: string) =>
                 handleFormChange({
                   target: {
-                    name: "isReceived",
+                    name: "is_received",
                     value: value == "true" ? true : false,
                   },
                 })
@@ -173,10 +186,15 @@ const KitForm: React.FC<KitFormInterface> = ({
           {/* Submit */}
           {IsNotShowMode(mode) && (
             <div className="flex justify-end col-span-2">
-              <Button type="button" onClick={(e) => reqForConfirmationModelFunc(
-                (IsCreateMode(mode) ? KitCreationMessage : KitEditionMessage),
-                () => handleSubmit(e)
-              )}>
+              <Button
+                type="button"
+                onClick={(e) =>
+                  reqForConfirmationModelFunc(
+                    IsCreateMode(mode) ? KitCreationMessage : KitEditionMessage,
+                    () => handleSubmit(e)
+                  )
+                }
+              >
                 {IsCreateMode(mode) ? "Submit" : "Update"}
               </Button>
             </div>
@@ -189,5 +207,5 @@ const KitForm: React.FC<KitFormInterface> = ({
 
 export default withPermission(
   KitForm,
-  mode == "create" ? "Kit.create" : mode == "edit" ? "Kit.edit" : "Kit.view"
+  IsCreateMode(mode) ? "Kit.create" : IsEditMode(mode) ? "Kit.edit" : "Kit.view"
 );

@@ -47,6 +47,7 @@ export type Indicator = {
   dessaggregationType: "session" | "indevidual" | "enact" | string;
   description: string;
   subIndicator: SubIndicator | null;
+  parent_indicator: string | undefined
 };
 
 export type SubIndicator = {

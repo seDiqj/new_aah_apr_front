@@ -49,7 +49,7 @@ import {
   IsTotalOfDessaggregationsOfProvinceBiggerThenTotalOfProvince,
   IsTotalOfDessaggregationsOfProvinceLessThenTotalOfProvince,
   WasIndexFound,
-} from "@/lib/Constants";
+} from "@/constants/Constants";
 import {
   getReliableDessaggregationOptionsAccordingToDessagregationType,
   getReliableDessaggregationOptionsForSubIndicatorAccordingToDessagregationType,
@@ -59,7 +59,7 @@ import {
   CancelButtonMessage,
   DoneButtonMessage,
   ResetButtonMessage,
-} from "@/lib/ConfirmationModelsTexts";
+} from "@/constants/ConfirmationModelsTexts";
 
 const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
   mode,
@@ -242,7 +242,7 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="grid gap-6">
+        <CardContent className="grid gap-6 overflow-auto h-[70%]">
           <div className="flex flex-col gap-3 w-full">
             {/* List all indicators */}
             {indicators
@@ -609,7 +609,7 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                   </div>
 
                   <DialogFooter className="z-50">
-                    <div className="flex flex-row items-center justify-end fixed bottom-0 gap-2">
+                    <div className="flex flex-row items-center justify-end fixed bottom-0 gap-4">
                       {IsNotShowMode(mode) && (
                         <Button
                           className="bg-blue-400"

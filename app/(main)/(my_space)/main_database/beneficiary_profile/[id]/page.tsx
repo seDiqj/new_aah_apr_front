@@ -11,7 +11,12 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,28 +26,42 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useParentContext } from "@/contexts/ParentContext";
 import { MainDatabaseBeneficiaryProfileInterface } from "@/interfaces/Interfaces";
-import { BeneficiaryEvaluationSubmitButtonMessage, MealToolDeleteButtonMessage } from "@/lib/ConfirmationModelsTexts";
-import { BeneficiaryEvaluationDefault } from "@/lib/FormsDefaultValues";
-import { clientSatisfactionOptions } from "@/lib/SingleAndMultiSelectOptionsList";
+import {
+  BeneficiaryEvaluationSubmitButtonMessage,
+  MealToolDeleteButtonMessage,
+} from "@/constants/ConfirmationModelsTexts";
+import { BeneficiaryEvaluationDefault } from "@/constants/FormsDefaultValues";
+import { clientSatisfactionOptions } from "@/constants/SingleAndMultiSelectOptionsList";
 import { withPermission } from "@/lib/withPermission";
-import { BeneficiaryEvaluationType, MainDatabaseBeneficiaryProfileInfoType, MainDatabaseProgram } from "@/types/Types";
+import {
+  BeneficiaryEvaluationType,
+  MainDatabaseBeneficiaryProfileInfoType,
+  MainDatabaseProgram,
+} from "@/types/Types";
 import { use, useEffect, useState } from "react";
 
-const BeneficiaryProfilePage: React.FC<MainDatabaseBeneficiaryProfileInterface> = (
-  params: MainDatabaseBeneficiaryProfileInterface
-) => {
+const BeneficiaryProfilePage: React.FC<
+  MainDatabaseBeneficiaryProfileInterface
+> = (params: MainDatabaseBeneficiaryProfileInterface) => {
   const { id } = use(params.params);
 
-  const { reqForToastAndSetMessage, axiosInstance, reqForConfirmationModelFunc } = useParentContext();
+  const {
+    reqForToastAndSetMessage,
+    axiosInstance,
+    reqForConfirmationModelFunc,
+  } = useParentContext();
 
-  const [beneficiaryInfo, setBeneficiaryInfo] = useState<MainDatabaseBeneficiaryProfileInfoType>();
-  const [evaluationForm, setEvaluationForm] = useState<BeneficiaryEvaluationType>(BeneficiaryEvaluationDefault());
+  const [beneficiaryInfo, setBeneficiaryInfo] =
+    useState<MainDatabaseBeneficiaryProfileInfoType>();
+  const [evaluationForm, setEvaluationForm] =
+    useState<BeneficiaryEvaluationType>(BeneficiaryEvaluationDefault());
   const [programInfo, setProgramInfo] = useState<MainDatabaseProgram[]>();
   const [mealTools, setMealTools] = useState<any[]>([]);
   const [reqForMealToolForm, setReqForMealToolForm] = useState<boolean>(false);
-  const [reqForMealToolEditForm, setReqForMealToolEditForm] = useState<boolean>(false);
+  const [reqForMealToolEditForm, setReqForMealToolEditForm] =
+    useState<boolean>(false);
   const [currentTab, setCurrentTab] = useState<string>("beneficiaryInfo");
-  
+
   const handleEvaluationFormChange = (e: any) => {
     const name: string = e.target.name;
     const value: string = e.target.value;
@@ -52,11 +71,14 @@ const BeneficiaryProfilePage: React.FC<MainDatabaseBeneficiaryProfileInterface> 
       [name]: value,
     }));
   };
-  
+
   const handleSubmitMealtoolForm = (mealTools: any) => {
     axiosInstance
       .post(`/main_db/beneficiary/mealtools/${id}`, { mealtools: mealTools })
-      .then((response: any) => reqForToastAndSetMessage(response.data.message))
+      .then((response: any) => {
+        reqForToastAndSetMessage(response.data.message);
+        setReqForMealToolForm(false);
+      })
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
       );
@@ -80,9 +102,9 @@ const BeneficiaryProfilePage: React.FC<MainDatabaseBeneficiaryProfileInterface> 
         .post(`main_db/beneficiary/evaluation/${id}`, {
           evaluation: evaluationForm,
         })
-        .then((response: any) =>
-          reqForToastAndSetMessage(response.data.message)
-        )
+        .then((response: any) => {
+          reqForToastAndSetMessage(response.data.message);
+        })
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)
         );
@@ -94,22 +116,26 @@ const BeneficiaryProfilePage: React.FC<MainDatabaseBeneficiaryProfileInterface> 
       setMealTools(mealTools.filter((_: any, i: number) => i !== index));
       return;
     }
-      
-    axiosInstance.delete(`/main_db/beneficiary/mealtool/${id}`)
-    .then((response: any) => {
-      reqForToastAndSetMessage(response.data.message);
-      setMealTools(mealTools.filter((_: any, i: number) => i !== index));
-    })
-    .catch((error: any) => reqForToastAndSetMessage(error.response.data.message))
 
-
+    axiosInstance
+      .delete(`/main_db/beneficiary/mealtool/${id}`)
+      .then((response: any) => {
+        reqForToastAndSetMessage(response.data.message);
+        setMealTools(mealTools.filter((_: any, i: number) => i !== index));
+      })
+      .catch((error: any) =>
+        reqForToastAndSetMessage(error.response.data.message)
+      );
   };
 
   const handleEditMealTool = (mealTool: any) => {
-    axiosInstance.put(`/main_db/beneficiary/mealtool/${mealTool.id}`, mealTool)
-    .then((response: any) => reqForToastAndSetMessage(response.data.message))
-    .catch((error: any) => reqForToastAndSetMessage(error.response.data.message))
-  }
+    axiosInstance
+      .put(`/main_db/beneficiary/mealtool/${mealTool.id}`, mealTool)
+      .then((response: any) => reqForToastAndSetMessage(response.data.message))
+      .catch((error: any) =>
+        reqForToastAndSetMessage(error.response.data.message)
+      );
+  };
 
   useEffect(() => {
     // Fitching Beneficiary info.
@@ -164,17 +190,15 @@ const BeneficiaryProfilePage: React.FC<MainDatabaseBeneficiaryProfileInterface> 
         <div className="flex flex-row items-center justify-start my-2">
           <BreadcrumbWithCustomSeparator></BreadcrumbWithCustomSeparator>
         </div>
-        <SubHeader pageTitle={"Benficiary Profile"}>
-          {currentTab == "mealtool" && (
-            <div className="flex flex-row items-center justify-end gap-2">
-            <Button onClick={() => setReqForMealToolForm(!reqForMealToolForm)}>Add MealTool</Button>
-          </div>
-          )}
-        </SubHeader>
+        <SubHeader pageTitle={"Benficiary Profile"}></SubHeader>
 
         {/* Main Content */}
         <div className="flex flex-1 h-[440px] w-full flex-col gap-6">
-          <Tabs onValueChange={(value: string) => setCurrentTab(value)} defaultValue="beneficiaryInfo" className="h-full">
+          <Tabs
+            onValueChange={(value: string) => setCurrentTab(value)}
+            defaultValue="beneficiaryInfo"
+            className="h-full"
+          >
             {/* List of tabs */}
             <TabsList className="w-full">
               <TabsTrigger value="beneficiaryInfo">Beneficiary</TabsTrigger>
@@ -195,19 +219,21 @@ const BeneficiaryProfilePage: React.FC<MainDatabaseBeneficiaryProfileInterface> 
 
                     {beneficiaryInfo ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {Object.entries(beneficiaryInfo).map(([key, value], index) => (
-                          <div
-                            key={index}
-                            className="flex flex-col rounded-xl border p-3 transition-all hover:shadow-sm"
-                          >
-                            <span className="text-xs font-medium uppercase opacity-70 tracking-wide">
-                              {key.replace(/([A-Z])/g, " $1")}
-                            </span>
-                            <span className="text-sm font-semibold truncate">
-                              {value?.toString() || "-"}
-                            </span>
-                          </div>
-                        ))}
+                        {Object.entries(beneficiaryInfo).map(
+                          ([key, value], index) => (
+                            <div
+                              key={index}
+                              className="flex flex-col rounded-xl border p-3 transition-all hover:shadow-sm"
+                            >
+                              <span className="text-xs font-medium uppercase opacity-70 tracking-wide">
+                                {key.replace(/([A-Z])/g, " $1")}
+                              </span>
+                              <span className="text-sm font-semibold truncate">
+                                {value?.toString() || "-"}
+                              </span>
+                            </div>
+                          )
+                        )}
                       </div>
                     ) : (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -260,7 +286,6 @@ const BeneficiaryProfilePage: React.FC<MainDatabaseBeneficiaryProfileInterface> 
               </Card>
             </TabsContent>
 
-
             {/* Activity */}
             <TabsContent value="activity" className="h-full">
               <Card className="relative min-h-[350px] h-full flex flex-col">
@@ -274,70 +299,86 @@ const BeneficiaryProfilePage: React.FC<MainDatabaseBeneficiaryProfileInterface> 
             {/* Meal tool */}
             <TabsContent value="mealtool" className="h-full">
               <Card className="min-h-[350px] h-full flex flex-col overflow-auto">
+                <CardHeader className="flex flex-row items-center justify-end w-full">
+                  <Button
+                    onClick={() => setReqForMealToolForm(!reqForMealToolForm)}
+                  >
+                    Add MealTool
+                  </Button>
+                </CardHeader>
                 <CardContent className="flex flex-col gap-6">
-                  <Accordion type="single" collapsible className="mt-4">
-                    {mealTools.map((tool, index) => (
-                      <AccordionItem key={index} value={`item-${index}`}>
-                        <AccordionTrigger>{tool.type}</AccordionTrigger>
-                        <AccordionContent>
-                          <div className="grid grid-cols-2 gap-4 p-4">
-                            <div>
-                              <Label>Date Of Baseline:</Label>
-                              <div>{tool.baselineDate}</div>
+                  {mealTools.length >= 1 ? (
+                    <Accordion type="single" collapsible className="mt-4">
+                      {mealTools.map((tool, index) => (
+                        <AccordionItem key={index} value={`item-${index}`}>
+                          <AccordionTrigger>{tool.type}</AccordionTrigger>
+                          <AccordionContent>
+                            <div className="grid grid-cols-2 gap-4 p-4">
+                              <div>
+                                <Label>Date Of Baseline:</Label>
+                                <div>{tool.baselineDate}</div>
+                              </div>
+                              <div>
+                                <Label>Date Of Endline:</Label>
+                                <div>{tool.endlineDate}</div>
+                              </div>
+                              <div>
+                                <Label>Baseline Score:</Label>
+                                <div>{tool.baselineTotalScore}</div>
+                              </div>
+                              <div>
+                                <Label>Endline Score:</Label>
+                                <div>{tool.endlineTotalScore}</div>
+                              </div>
+                              <div>
+                                <Label>Improvement %:</Label>
+                                <div>{tool.improvementPercentage}</div>
+                              </div>
+                              <div>
+                                <Label>Is Baseline Active :</Label>
+                                <div>{tool.isBaselineActive.toString()}</div>
+                              </div>
+                              <div>
+                                <Label>Is Endline Active :</Label>
+                                <div>{tool.isEndlineActive.toString()}</div>
+                              </div>
+                              <div>
+                                <Label>Baseline :</Label>
+                                <div>{tool.baseline}</div>
+                              </div>
+                              <div>
+                                <Label>Endline :</Label>
+                                <div>{tool.endline}</div>
+                              </div>
+                              <div>
+                                <Label>Evaluation:</Label>
+                                <div>{tool.evaluation}</div>
+                              </div>
                             </div>
-                            <div>
-                              <Label>Date Of Endline:</Label>
-                              <div>{tool.endlineDate}</div>
+                            <div className="flex justify-end gap-2 p-2">
+                              <Button
+                                variant="destructive"
+                                onClick={() =>
+                                  reqForConfirmationModelFunc(
+                                    MealToolDeleteButtonMessage,
+                                    () => {
+                                      handleDeleteMealtool(index, tool.id);
+                                    }
+                                  )
+                                }
+                              >
+                                Delete
+                              </Button>
                             </div>
-                            <div>
-                              <Label>Baseline Score:</Label>
-                              <div>{tool.baselineTotalScore}</div>
-                            </div>
-                            <div>
-                              <Label>Endline Score:</Label>
-                              <div>{tool.endlineTotalScore}</div>
-                            </div>
-                            <div>
-                              <Label>Improvement %:</Label>
-                              <div>{tool.improvementPercentage}</div>
-                            </div>
-                            <div>
-                              <Label>Is Baseline Active :</Label>
-                              <div>{tool.isBaselineActive.toString()}</div>
-                            </div>
-                            <div>
-                              <Label>Is Endline Active :</Label>
-                              <div>{tool.isEndlineActive.toString()}</div>
-                            </div>
-                            <div>
-                              <Label>Baseline :</Label>
-                              <div>{tool.baseline}</div>
-                            </div>
-                            <div>
-                              <Label>Endline :</Label>
-                              <div>{tool.endline}</div>
-                            </div>
-                            <div>
-                              <Label>Evaluation:</Label>
-                              <div>{tool.evaluation}</div>
-                            </div>
-                          </div>
-                          <div className="flex justify-end gap-2 p-2">
-                            <Button
-                              variant="destructive"
-                              onClick={() => reqForConfirmationModelFunc(
-                                MealToolDeleteButtonMessage,
-                                () => {handleDeleteMealtool(index, tool.id)}
-                              )}
-                            >
-                              Delete
-                            </Button>
-                            <Button onClick={() => setReqForMealToolEditForm(!reqForMealToolEditForm)}>Add MealTool</Button>
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    ))}
-                  </Accordion>
+                          </AccordionContent>
+                        </AccordionItem>
+                      ))}
+                    </Accordion>
+                  ) : (
+                    <div className="flex flex-row items-center justify-center text-center text-sm text-muted-foreground">
+                      No meal tool added yet !
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -561,10 +602,18 @@ const BeneficiaryProfilePage: React.FC<MainDatabaseBeneficiaryProfileInterface> 
                 </CardContent>
 
                 <CardFooter className="flex flex-row items-center justify-end">
-                  <Button onClick={(e) => reqForConfirmationModelFunc(
-                    BeneficiaryEvaluationSubmitButtonMessage,
-                    () => {handleSubmitEvaluationForm(e)}
-                  )}>Save</Button>
+                  <Button
+                    onClick={(e) =>
+                      reqForConfirmationModelFunc(
+                        BeneficiaryEvaluationSubmitButtonMessage,
+                        () => {
+                          handleSubmitEvaluationForm(e);
+                        }
+                      )
+                    }
+                  >
+                    Save
+                  </Button>
                 </CardFooter>
               </Card>
             </TabsContent>
@@ -572,12 +621,25 @@ const BeneficiaryProfilePage: React.FC<MainDatabaseBeneficiaryProfileInterface> 
         </div>
 
         {reqForMealToolForm && (
-          <MealToolForm open={reqForMealToolForm} onOpenChange={setReqForMealToolForm} onSubmit={handleSubmitMealtoolForm} mealToolsStateSetter={setMealTools} mealToolsState={mealTools} mode={"create"}></MealToolForm>
+          <MealToolForm
+            open={reqForMealToolForm}
+            onOpenChange={setReqForMealToolForm}
+            onSubmit={handleSubmitMealtoolForm}
+            mealToolsStateSetter={setMealTools}
+            mealToolsState={mealTools}
+            mode={"create"}
+          ></MealToolForm>
         )}
         {reqForMealToolEditForm && (
-          <MealToolForm open={reqForMealToolEditForm} onOpenChange={setReqForMealToolEditForm} onSubmit={handleSubmitMealtoolForm} mealToolsStateSetter={setMealTools} mealToolsState={mealTools} mode={"create"}></MealToolForm>
+          <MealToolForm
+            open={reqForMealToolEditForm}
+            onOpenChange={setReqForMealToolEditForm}
+            onSubmit={handleSubmitMealtoolForm}
+            mealToolsStateSetter={setMealTools}
+            mealToolsState={mealTools}
+            mode={"create"}
+          ></MealToolForm>
         )}
-        
       </div>
     </>
   );
