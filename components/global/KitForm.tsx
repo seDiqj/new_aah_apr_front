@@ -25,6 +25,7 @@ import {
   IsShowMode,
 } from "@/constants/Constants";
 import { AxiosError, AxiosResponse } from "axios";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
 
 let mode: "create" | "edit" | "show" = "create";
 
@@ -57,8 +58,12 @@ const KitForm: React.FC<KitFormInterface> = ({
     }));
   };
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const handleSubmit = (e: any) => {
     e.preventDefault();
+
+    setIsLoading(true);
 
     if (IsCreateMode(mode)) {
       axiosInstance
@@ -70,18 +75,20 @@ const KitForm: React.FC<KitFormInterface> = ({
         })
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)
-        );
+        )
+        .finally(() => setIsLoading(false));
     } else if (IsEditMode(mode) && kitId) {
       axiosInstance
         .put(`/kit_db/kit/${kitId}`, formData)
         .then((response: any) => {
           reqForToastAndSetMessage(response.data.message);
-          onOpenChange(false)
+          onOpenChange(false);
           handleReload();
         })
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)
-        );
+        )
+        .finally(() => setIsLoading(false));
     }
   };
 
@@ -187,6 +194,8 @@ const KitForm: React.FC<KitFormInterface> = ({
           {IsNotShowMode(mode) && (
             <div className="flex justify-end col-span-2">
               <Button
+                id={SUBMIT_BUTTON_PROVIDER_ID}
+                disabled={isLoading}
                 type="button"
                 onClick={(e) =>
                   reqForConfirmationModelFunc(
@@ -195,7 +204,13 @@ const KitForm: React.FC<KitFormInterface> = ({
                   )
                 }
               >
-                {IsCreateMode(mode) ? "Submit" : "Update"}
+                {isLoading
+                  ? IsCreateMode(mode)
+                    ? "Saving ..."
+                    : "Updating ..."
+                  : IsCreateMode(mode)
+                  ? "Save"
+                  : "Update"}
               </Button>
             </div>
           )}

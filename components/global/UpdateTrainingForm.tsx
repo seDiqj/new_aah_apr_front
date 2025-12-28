@@ -67,14 +67,18 @@ const UpdateTrainingForm: React.FC<TrainingUpdateInterface> = ({
     setChapters((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     axiosInstance
       .put(`/training_db/training/${trainingId}`, { ...formData, chapters })
       .then((response: any) => reqForToastAndSetMessage(response.data.message))
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response?.data?.message || "Error")
-      );
+      )
+      .finally(() => setIsLoading(false));
   };
 
   const [districts, setDistricts] = useState<{ name: string }[]>([]);
@@ -105,9 +109,9 @@ const UpdateTrainingForm: React.FC<TrainingUpdateInterface> = ({
       .then((res: any) => {
         const data = res.data.data;
         setFormData({
-          projectCode: data.projectCode,
-          province: data.province,
-          district: data.district,
+          project_id: data.project_id,
+          province_id: data.province,
+          district_id: data.district,
           trainingLocation: data.trainingLocation,
           name: data.name,
           participantCatagory: data.participantCatagory,
@@ -115,7 +119,7 @@ const UpdateTrainingForm: React.FC<TrainingUpdateInterface> = ({
           trainingModality: data.trainingModality,
           startDate: data.startDate,
           endDate: data.endDate,
-          indicator: data.indicator,
+          indicator_id: data.indicator,
         });
         setChapters(data.chapters || []);
       })
@@ -141,10 +145,6 @@ const UpdateTrainingForm: React.FC<TrainingUpdateInterface> = ({
           <h2 className="col-span-2 text-center font-bold mb-4">
             Program Information
           </h2>
-
-          {/* مشابه Create: project, indicator, province, district, ... */}
-          {/* بقیه فیلدها و chapter info و دکمه submit مثل Create است */}
-          {/* می‌توانیم همان کد Create را اینجا با فرمData پر کنیم */}
         </form>
       </DialogContent>
     </Dialog>

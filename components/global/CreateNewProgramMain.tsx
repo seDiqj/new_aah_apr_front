@@ -22,6 +22,7 @@ import {
   IsNotShowMode,
   IsShowMode,
 } from "@/constants/Constants";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
 
 const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
   open,
@@ -44,20 +45,6 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
-  // Fetch program data from backend in edit and show mode.
-  useEffect(() => {
-    if ((IsEditMode(mode) || IsShowMode(mode)) && programId && open) {
-      axiosInstance
-        .get(`/global/program/${programId}`)
-        .then((response: any) => {
-          setFormData(response.data.data);
-        })
-        .catch((error: any) => {
-          reqForToastAndSetMessage(error.response.data.message);
-        });
-    }
-  }, [mode, programId, open]);
-
   const handleFormChange = (e: any) => {
     const name: string = e.target.name;
     const value: string = e.target.value;
@@ -67,6 +54,8 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
       [name]: value,
     }));
   };
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleSubmit = () => {
     const result = MainDatabaseProgramFormSchema.safeParse(formData);
@@ -86,6 +75,8 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
     }
 
     setFormErrors({});
+
+    setIsLoading(true);
 
     if (IsCreateMode(mode)) {
       axiosInstance
@@ -113,7 +104,8 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
         })
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)
-        );
+        )
+        .finally(() => setIsLoading(false));
     } else if (IsEditMode(mode) && programId) {
       axiosInstance
         .put(`/global/program/${programId}`, formData)
@@ -124,7 +116,8 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
         })
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)
-        );
+        )
+        .finally(() => setIsLoading(false));
     }
   };
 
@@ -139,15 +132,36 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
       .get("/global/districts")
       .then((res: any) => setDistricts(Object.values(res.data.data)));
     axiosInstance
-      .get("/global/provinces")
-      .then((res: any) => setProvinces(Object.values(res.data.data)));
-    axiosInstance
       .get("/projects/p/main_database")
       .then((res: any) => setProjects(Object.values(res.data.data)))
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
       );
   }, []);
+
+  useEffect(() => {
+    if (!formData.project_id) return;
+    axiosInstance
+      .get(`/global/project/provinces/${formData.project_id}`)
+      .then((res: any) => {
+        setProvinces(Object.values(res.data.data));
+      });
+  }, [formData.project_id]);
+
+  // Fetch program data from backend in edit and show mode.
+  useEffect(() => {
+    if ((IsEditMode(mode) || IsShowMode(mode)) && programId && open) {
+      axiosInstance
+        .get(`/global/program/${programId}`)
+        .then((response: any) => {
+          console.log(response.data.data)
+          setFormData(response.data.data);
+        })
+        .catch((error: any) => {
+          reqForToastAndSetMessage(error.response.data.message);
+        });
+    }
+  }, [mode, programId, open]);
 
   const readOnly = IsShowMode(mode);
 
@@ -317,6 +331,8 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
         {IsNotShowMode(mode) && (
           <div className="flex justify-end w-full col-span-2 fixed left-0 bottom-1">
             <Button
+              id={SUBMIT_BUTTON_PROVIDER_ID}
+              disabled={isLoading}
               className="mr-2"
               type="button"
               onClick={() =>
@@ -330,7 +346,13 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
                 )
               }
             >
-              {IsCreateMode(mode) ? "Submit" : "Update"}
+              {isLoading
+                ? IsCreateMode(mode)
+                  ? "Saving ..."
+                  : "Updating ..."
+                : IsCreateMode(mode)
+                ? "Save"
+                : "Update"}
             </Button>
           </div>
         )}

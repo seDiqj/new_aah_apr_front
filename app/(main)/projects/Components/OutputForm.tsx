@@ -187,6 +187,7 @@ const OutputForm: React.FC<OutputFormInterface> = ({ mode }) => {
             setCurrentTab,
             "outcome",
             undefined,
+            false,
             setCurrentTab,
             "indicator"
           )}

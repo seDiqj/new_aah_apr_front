@@ -30,6 +30,7 @@ import {
   IsNotShowMode,
   IsShowMode,
 } from "@/constants/Constants";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
 
 const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
   open,
@@ -48,7 +49,10 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
     PsychoeducationDefault()
   );
 
-  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+  const [formErrors, setFormErrors] = useState<{
+    programInformation: { [key: string]: string };
+    psychoeducationInformation: { [key: string]: string };
+  }>({ programInformation: {}, psychoeducationInformation: {} });
 
   const [indicators, setIndicators] = useState<
     { id: string; indicatorRef: string }[]
@@ -87,22 +91,47 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
     PsychoeducationFormSchema.safeParse(formData);
   };
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  useEffect(() => console.log(formErrors), [formErrors]);
+
   const handleSubmit = () => {
-    // const result = PsychoeducationFormSchema.safeParse(formData);
+    const result = PsychoeducationFormSchema.safeParse(formData);
 
-    // if (!result.success) {
-    //   const errors: { [key: string]: string } = {};
-    //   result.error.issues.forEach((issue) => {
-    //     const field = issue.path[0];
-    //     if (field) errors[field as string] = issue.message;
-    //   });
+    if (!result.success) {
+      const errors: { [key: string]: { [key: string]: string } } = {};
 
-    //   setFormErrors(errors);
-    //     reqForToastAndSetMessage("Please fix validation errors before submitting.");
-    //     return;
-    // }
+      result.error.issues.forEach((issue) => {
+        if (issue.path.length === 2) {
+          const [parent, child] = issue.path;
+          if (!errors[parent as string]) errors[parent as string] = {};
+          errors[parent as string][child as string] = issue.message;
+        } else if (issue.path.length === 1) {
+          const [field] = issue.path;
+          errors[field as string] = { general: issue.message }; // fallback
+        }
+      });
 
-    // setFormErrors({});
+      if (!errors.programInformation) errors.programInformation = {};
+      if (!errors.psychoeducationInformation)
+        errors.psychoeducationInformation = {};
+
+      setFormErrors(errors);
+
+      console.log(errors);
+
+      reqForToastAndSetMessage(
+        "Please fix validation errors before submitting."
+      );
+      return;
+    }
+
+    setFormErrors({
+      programInformation: {},
+      psychoeducationInformation: {},
+    });
+
+    setIsLoading(true);
 
     if (IsCreateMode(mode)) {
       axiosInstance
@@ -114,7 +143,8 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
         })
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)
-        );
+        )
+        .finally(() => setIsLoading(false));
     } else if (IsEditMode(mode)) {
       axiosInstance
         .put(
@@ -128,7 +158,8 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
         })
         .catch((error: any) => {
           reqForToastAndSetMessage(error.response.data.message);
-        });
+        })
+        .finally(() => setIsLoading(false));
     }
   };
 
@@ -243,7 +274,7 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
                 )
               }
               disabled={readOnly}
-              error={formErrors.project_id}
+              error={formErrors.programInformation.project_id}
             ></SingleSelect>
           </div>
 
@@ -267,7 +298,7 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
                 )
               }
               disabled={readOnly}
-              error={formErrors.indicator_id}
+              error={formErrors.programInformation.indicator_id}
             ></SingleSelect>
           </div>
 
@@ -280,9 +311,13 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
               placeholder="Program Name"
               disabled={readOnly}
               className={`border p-2 rounded ${
-                formErrors.name ? "!border-red-500" : ""
+                formErrors.programInformation.name ? "!border-red-500" : ""
               }`}
-              title={formErrors.name ? formErrors["name"] : undefined}
+              title={
+                formErrors.programInformation.name
+                  ? formErrors.programInformation.name
+                  : undefined
+              }
             />
           </div>
 
@@ -295,10 +330,14 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
               placeholder="Focal Point"
               disabled={readOnly}
               className={`border p-2 rounded ${
-                formErrors.focalPoint ? "!border-red-500" : ""
+                formErrors.programInformation.focalPoint
+                  ? "!border-red-500"
+                  : ""
               }`}
               title={
-                formErrors.focalPoint ? formErrors["focalPoint"] : undefined
+                formErrors.programInformation.focalPoint
+                  ? formErrors.programInformation.focalPoint
+                  : undefined
               }
             />
           </div>
@@ -323,7 +362,7 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
                 )
               }
               disabled={readOnly}
-              error={formErrors.province_id}
+              error={formErrors.programInformation.province_id}
             ></SingleSelect>
           </div>
 
@@ -347,7 +386,7 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
                 )
               }
               disabled={readOnly}
-              error={formErrors.district_id}
+              error={formErrors.programInformation.district_id}
             ></SingleSelect>
           </div>
 
@@ -360,9 +399,13 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
               placeholder="Village"
               disabled={readOnly}
               className={`border p-2 rounded ${
-                formErrors.village ? "!border-red-500" : ""
+                formErrors.programInformation.village ? "!border-red-500" : ""
               }`}
-              title={formErrors.village ? formErrors["village"] : undefined}
+              title={
+                formErrors.programInformation.village
+                  ? formErrors.programInformation.village
+                  : undefined
+              }
             />
           </div>
 
@@ -375,9 +418,13 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
               placeholder="Sit Code"
               disabled={readOnly}
               className={`border p-2 rounded ${
-                formErrors.siteCode ? "!border-red-500" : ""
+                formErrors.programInformation.siteCode ? "!border-red-500" : ""
               }`}
-              title={formErrors.siteCode ? formErrors["siteCode"] : undefined}
+              title={
+                formErrors.programInformation.siteCode
+                  ? formErrors.programInformation.siteCode
+                  : undefined
+              }
             />
           </div>
 
@@ -390,11 +437,13 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
               placeholder="Health Facility Name"
               disabled={readOnly}
               className={`border p-2 rounded ${
-                formErrors.healthFacilityName ? "!border-red-500" : ""
+                formErrors.programInformation.healthFacilityName
+                  ? "!border-red-500"
+                  : ""
               }`}
               title={
-                formErrors.healthFacilityName
-                  ? formErrors["healthFacilityName"]
+                formErrors.programInformation.healthFacilityName
+                  ? formErrors.programInformation.healthFacilityName
                   : undefined
               }
             />
@@ -409,11 +458,13 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
               placeholder="Intervention Modality"
               disabled={readOnly}
               className={`border p-2 rounded ${
-                formErrors.interventionModality ? "!border-red-500" : ""
+                formErrors.programInformation.interventionModality
+                  ? "!border-red-500"
+                  : ""
               }`}
               title={
-                formErrors.interventionModality
-                  ? formErrors["interventionModality"]
+                formErrors.programInformation.interventionModality
+                  ? formErrors.programInformation.interventionModality
                   : undefined
               }
             />
@@ -430,11 +481,13 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
               onChange={(e) => handleFormChange(e, "psychoeducation")}
               disabled={readOnly}
               className={`border p-2 rounded ${
-                formErrors.awarenessTopic ? "!border-red-500" : ""
+                formErrors.programInformation.awarenessTopic
+                  ? "!border-red-500"
+                  : ""
               }`}
               title={
-                formErrors.awarenessTopic
-                  ? formErrors["awarenessTopic"]
+                formErrors.psychoeducationInformation.awarenessTopic
+                  ? formErrors.psychoeducationInformation.awarenessTopic
                   : undefined
               }
             />
@@ -449,11 +502,13 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
               onChange={(e) => handleFormChange(e, "psychoeducation")}
               disabled={readOnly}
               className={`border p-2 rounded ${
-                formErrors.awarenessDate ? "!border-red-500" : ""
+                formErrors.programInformation.awarenessDate
+                  ? "!border-red-500"
+                  : ""
               }`}
               title={
-                formErrors.awarenessDate
-                  ? formErrors["awarenessDate"]
+                formErrors.psychoeducationInformation.awarenessDate
+                  ? formErrors.psychoeducationInformation.awarenessDate
                   : undefined
               }
             ></Input>
@@ -506,17 +561,19 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
         {/* Submit Button */}
         {IsNotShowMode(mode) && (
           <Button
+            id={SUBMIT_BUTTON_PROVIDER_ID}
+            disabled={isLoading}
             className="w-full mt-6"
             onClick={(e) =>
               reqForConfirmationModelFunc(
-                mode == "create"
+                IsCreateMode(mode)
                   ? PsychoeducationCreationMessage
                   : PsychoeducationEditionMessage,
                 () => handleSubmit()
               )
             }
           >
-            Submit
+            {isLoading ? "Saving ..." : "Save"}
           </Button>
         )}
       </DialogContent>

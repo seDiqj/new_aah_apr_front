@@ -10,8 +10,7 @@ import {
 } from "@/components/ui/card";
 import { MultiSelect } from "@/components/multi-select";
 import { Label } from "@/components/ui/label";
-import { isp3s } from "../utils/OptionLists";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Indicator, Isp3 } from "../types/Types";
 import { useParentContext } from "@/contexts/ParentContext";
 import { useProjectEditContext } from "../edit_project/[id]/page";
@@ -44,7 +43,10 @@ const Isp3SubPage: React.FC<Isp3SubPageInterface> = ({ mode }) => {
     ? useProjectShowContext()
     : useProjectEditContext();
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const hundleSubmit = () => {
+    setIsLoading(true);
     if (readOnly) return;
     axiosInstance
       .post("/projects/is/isp3", {
@@ -55,12 +57,11 @@ const Isp3SubPage: React.FC<Isp3SubPageInterface> = ({ mode }) => {
       })
       .catch((error: any) => {
         reqForToastAndSetMessage(error.response.data.message);
-      });
+      })
+      .finally(() => setIsLoading(false));
   };
 
   const readOnly = IsShowMode(mode);
-
-  useEffect(() => console.log(isp3), [isp3]);
 
   return (
     <>
@@ -109,6 +110,7 @@ const Isp3SubPage: React.FC<Isp3SubPageInterface> = ({ mode }) => {
             setCurrentTab,
             "aprPreview",
             readOnly ? undefined : hundleSubmit,
+            isLoading,
             setCurrentTab,
             "finalization",
             "isp3"

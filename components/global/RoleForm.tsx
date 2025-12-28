@@ -34,6 +34,7 @@ import {
 } from "@/constants/ConfirmationModelsTexts";
 import { IsCreateMode, IsEditMode } from "@/constants/Constants";
 import { AxiosError, AxiosResponse } from "axios";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
 
 type Permission = {
   id: number;
@@ -113,6 +114,8 @@ const RoleForm: React.FC<RoleInterface> = ({
     );
   }, [mode, idFeildForEditStateSetter]);
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const onSubmit = () => {
     const result = RoleFormSchema.safeParse({ name: name });
 
@@ -131,6 +134,7 @@ const RoleForm: React.FC<RoleInterface> = ({
     }
 
     setFormErrors({});
+    setIsLoading(true);
 
     const url = IsCreateMode(mode)
       ? "user_mng/role"
@@ -154,7 +158,8 @@ const RoleForm: React.FC<RoleInterface> = ({
       })
       .catch((error: AxiosError<any, any>) =>
         reqForToastAndSetMessage(error.response?.data?.message || "Error")
-      );
+      )
+      .finally(() => setIsLoading(false));
   };
 
   return (
@@ -330,6 +335,8 @@ const RoleForm: React.FC<RoleInterface> = ({
               <Button variant="outline">Cancel</Button>
             </DialogClose>
             <Button
+              id={SUBMIT_BUTTON_PROVIDER_ID}
+              disabled={isLoading}
               type="button"
               onClick={() =>
                 reqForConfirmationModelFunc(
@@ -338,7 +345,13 @@ const RoleForm: React.FC<RoleInterface> = ({
                 )
               }
             >
-              {IsCreateMode(mode) ? "Create" : "Update"}
+              {isLoading
+                ? IsCreateMode(mode)
+                  ? "Creating ..."
+                  : "Updating ..."
+                : IsCreateMode(mode)
+                ? "Create"
+                : "Update"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -349,5 +362,9 @@ const RoleForm: React.FC<RoleInterface> = ({
 
 export default withPermission(
   RoleForm,
-  mode == "create" ? "Create Role" : mode == "edit" ? "Edit Role" : "View Role"
+  IsCreateMode(mode as "create" | "edit" | "show")
+    ? "Create Role"
+    : IsEditMode(mode as "create" | "edit" | "show")
+    ? "Edit Role"
+    : "View Role"
 );

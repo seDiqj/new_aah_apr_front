@@ -7,7 +7,6 @@ import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { permissionColumns } from "@/definitions/DataTableColumnsDefinitions";
 import {
   PermissionFiltersList,
-  PermissionFilterUrl,
 } from "@/constants/FiltersList";
 import { withPermission } from "@/lib/withPermission";
 
@@ -22,9 +21,8 @@ const PermissionsPage = () => {
         <SubHeader pageTitle={"Permissions"}></SubHeader>
         <DataTableDemo
           columns={permissionColumns}
-          indexUrl="user_mng/table_permissions"
-          searchableColumn="name"
-          filterUrl={PermissionFilterUrl}
+          indexUrl="/user_mng/table_permissions"
+          searchableColumn="Name"
           filtersList={PermissionFiltersList}
         ></DataTableDemo>
       </div>

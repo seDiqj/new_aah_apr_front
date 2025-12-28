@@ -20,6 +20,7 @@ import { TrainingBeneficiaryCreationMessage } from "@/constants/ConfirmationMode
 import { TrainingBeneficiaryFormInterface } from "@/interfaces/Interfaces";
 import { GenderOptions } from "@/constants/SingleAndMultiSelectOptionsList";
 import { IsEditMode, IsNotANullOrUndefinedValue } from "@/constants/Constants";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
 
 const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormInterface> = ({
   open,
@@ -281,6 +282,7 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormInterface> = ({
 
           {/* Submit */}
           <Button
+            id={SUBMIT_BUTTON_PROVIDER_ID}
             type="button"
             disabled={loading}
             className="w-full mt-6"
@@ -293,7 +295,7 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormInterface> = ({
           >
             {loading
               ? "Please wait..."
-              : mode === "edit"
+              : IsEditMode(mode)
               ? "Update Beneficiary"
               : "Create Beneficiary"}
           </Button>

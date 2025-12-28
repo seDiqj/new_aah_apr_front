@@ -18,6 +18,7 @@ import { PsychoeducationForm } from "@/types/Types";
 import { PsychoeducationDefault } from "@/constants/FormsDefaultValues";
 import { UpdatePsychoeducationInterface } from "@/interfaces/Interfaces";
 import { PsychoeducationEditionMessage } from "@/constants/ConfirmationModelsTexts";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
 
 const UpdatePsychoeducation: React.FC<UpdatePsychoeducationInterface> = ({
   open,
@@ -65,7 +66,10 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationInterface> = ({
         }));
   };
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const handleUpdate = () => {
+    setIsLoading(true);
     axiosInstance
       .put(`/psychoeducation_db/psychoeducation/${psychoId}`, formData)
       .then((response: any) => {
@@ -74,7 +78,8 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationInterface> = ({
       })
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
-      );
+      )
+      .finally(() => setIsLoading(false));
   };
 
   const [indicators, setIndicators] = useState<
@@ -249,6 +254,8 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationInterface> = ({
         </div>
 
         <Button
+          id={SUBMIT_BUTTON_PROVIDER_ID}
+          disabled={isLoading}
           className="w-full mt-6"
           onClick={() =>
             reqForConfirmationModelFunc(
@@ -257,7 +264,7 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationInterface> = ({
             )
           }
         >
-          Update
+          {isLoading ? "Updating ..." : "Update"}
         </Button>
       </DialogContent>
     </Dialog>

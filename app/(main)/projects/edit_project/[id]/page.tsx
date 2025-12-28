@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import OutcomeModel from "@/components/global/OutcomeEditModel";
 import OutputModel from "@/components/global/OutputEditModel";
 import { Isp3Default } from "@/constants/FormsDefaultValues";
+import ChromeTabs from "../../Components/ChromeTab";
 
 const EditProjectPage = () => {
   const { id } = useParams();
@@ -123,6 +124,22 @@ const EditProjectPage = () => {
 
                 indicatorInfo["outputId"] = output.id;
                 indicatorInfo["outputRef"] = output.outputRef;
+                const subIndicator = output.indicators.find(
+                  (indicator: Indicator) =>
+                    indicator.parent_indicator == indicatorInfo.id
+                );
+
+                if (subIndicator) {
+                  indicatorInfo.subIndicator = {
+                    id: subIndicator.id,
+                    indicatorRef: subIndicator.indicatorRef,
+                    name: subIndicator.indicator,
+                    target: subIndicator.target,
+                    dessaggregationType: subIndicator.dessaggregationType,
+                    type: subIndicator.type,
+                    provinces: subIndicator.provinces,
+                  };
+                }
 
                 return indicatorInfo;
               })
@@ -229,41 +246,7 @@ const EditProjectPage = () => {
           <div className="flex flex-row items-center justify-start my-2">
             <BreadcrumbWithCustomSeparator></BreadcrumbWithCustomSeparator>
           </div>
-          <SubHeader pageTitle={"Edit Project"}>
-            <div className="flex flex-row items-center justify-end gap-2">
-              {(currentTab == "outcome" ||
-                currentTab == "output" ||
-                currentTab == "indicator") && (
-                <Button
-                  onClick={() => {
-                    switch (currentTab) {
-                      case "outcome":
-                        setReqForOutcomeForm(true);
-                        break;
-                      case "output":
-                        setReqForOutputForm(true);
-                        break;
-                      case "indicator":
-                        if (outputs.length == 0) {
-                          reqForToastAndSetMessage(
-                            "Please add at least one ouptut !"
-                          );
-                          return;
-                        }
-                        setReqForIndicatorForm(true);
-                        break;
-                    }
-                  }}
-                >
-                  {currentTab == "outcome"
-                    ? "New Outcome"
-                    : currentTab == "output"
-                    ? "New Output"
-                    : "New Indicator"}
-                </Button>
-              )}
-            </div>
-          </SubHeader>
+          <SubHeader pageTitle={"Edit Project"}></SubHeader>
           <div className="flex flex-1 h-[440px] w-full flex-col gap-6">
             <Tabs
               defaultValue="project"
@@ -271,20 +254,50 @@ const EditProjectPage = () => {
               value={currentTab}
               className="h-full"
             >
-              {/* List of tabs */}
-              <TabsList className="w-full">
-                <TabsTrigger value="project">Project</TabsTrigger>
-                <TabsTrigger value="outcome">OutCome</TabsTrigger>
-                <TabsTrigger value="output">Output</TabsTrigger>
-                <TabsTrigger value="indicator">Indicator</TabsTrigger>
-                <TabsTrigger value="dessaggregation">
-                  Disaggregation
-                </TabsTrigger>
-                {/* <TabsTrigger value="aprPreview">APR Preview</TabsTrigger> */}
-                <TabsTrigger value="isp3">ISP3</TabsTrigger>
-                <TabsTrigger value="finalization">APR Finalization</TabsTrigger>
-                <TabsTrigger value="logs">Logs</TabsTrigger>
-              </TabsList>
+              <ChromeTabs
+                initialTabs={[
+                  {
+                    value: "project",
+                    title: "Project",
+                    stateSetter: setCurrentTab,
+                  },
+                  {
+                    value: "outcome",
+                    title: "Outcome",
+                    stateSetter: setCurrentTab,
+                  },
+                  {
+                    value: "output",
+                    title: "Output",
+                    stateSetter: setCurrentTab,
+                  },
+                  {
+                    value: "indicator",
+                    title: "Indicator",
+                    stateSetter: setCurrentTab,
+                  },
+                  {
+                    value: "dessaggregation",
+                    title: "Disaggregation",
+                    stateSetter: setCurrentTab,
+                  },
+                  {
+                    value: "isp3",
+                    title: "ISP3",
+                    stateSetter: setCurrentTab,
+                  },
+                  {
+                    value: "finalization",
+                    title: "APR Finalization",
+                    stateSetter: setCurrentTab,
+                  },
+                  {
+                    value: "logs",
+                    title: "Activity Logs",
+                    stateSetter: setCurrentTab,
+                  },
+                ]}
+              />
 
               {/* Project */}
               <TabsContent value="project" className="h-full">

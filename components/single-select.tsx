@@ -18,6 +18,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
+import { useParentContext } from "@/contexts/ParentContext";
+import { AxiosError, AxiosResponse } from "axios";
 
 type Option = {
   value: string;
@@ -31,6 +33,7 @@ interface SingleSelectProps {
   placeholder?: string;
   disabled?: boolean;
   error?: string | undefined;
+  searchURL?: string | undefined;
 }
 
 export function SingleSelect({
@@ -40,13 +43,48 @@ export function SingleSelect({
   placeholder = "Select...",
   disabled,
   error,
+  searchURL,
 }: SingleSelectProps) {
+  const { axiosInstance, reqForToastAndSetMessage } = useParentContext();
+
+  const [componentOptions, setComponentOptions] =
+    React.useState<Option[]>(options);
+
   const [open, setOpen] = React.useState(false);
 
   const toggleOption = (val: string) => {
     if (value === val) onValueChange("");
     else onValueChange(val);
   };
+
+  const [searchInput, setSearchInput] = React.useState<string>("");
+  const [lockSearch, setLockSearch] = React.useState<boolean>(false);
+
+  const handleSearch = () => {
+    setLockSearch(true);
+    axiosInstance
+      .get(`${searchURL}?search=${searchInput}`)
+      .then((response: AxiosResponse<any, any>) =>
+        setComponentOptions(
+          response.data.data.data.map(
+            (option: { id: string; name: string }) => ({
+              value: option.id,
+              label: option.name.toString().toUpperCase(),
+            })
+          )
+        )
+      )
+      .catch((error: AxiosError<any, any>) =>
+        reqForToastAndSetMessage(error.response?.data.message)
+      )
+      .finally(() => setLockSearch(false));
+  };
+
+  React.useEffect(() => {
+    if (searchInput && searchURL) handleSearch();
+  }, [searchInput]);
+
+  React.useEffect(() => setComponentOptions(options), [options]);
 
   return (
     <div className="w-full">
@@ -86,11 +124,12 @@ export function SingleSelect({
             <CommandInput
               className="border-0 outline-none focus:ring-0"
               placeholder="Search..."
-              disabled={disabled}
+              disabled={disabled || lockSearch}
+              onValueChange={(search) => setSearchInput(search)}
             />
             <CommandEmpty>No results found.</CommandEmpty>
             <CommandGroup>
-              {options.map((opt) => {
+              {componentOptions.map((opt) => {
                 const isSelected = value === opt.value;
                 return (
                   <CommandItem

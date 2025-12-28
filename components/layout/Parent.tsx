@@ -9,15 +9,11 @@ import { AxiosInstance } from "axios";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import ConfirmationAlertDialogue from "../global/ConfirmationDialog";
-import ProfileModal from "../global/UserFormTest";
+import ProfileModal from "../global/UserForm";
 import { Folder, Clock, CheckCircle, XCircle } from "lucide-react";
-import Preloader from "../global/Preloader";
+import { ParentInterface } from "@/interfaces/Interfaces";
 
-interface ComponentProps {
-  children: React.ReactNode;
-}
-
-const Parent: React.FC<ComponentProps> = ({ children }) => {
+const Parent: React.FC<ParentInterface> = ({ children }) => {
   const axiosInstance: AxiosInstance = createAxiosInstance();
 
   const reqForToastAndSetMessage = (
@@ -54,6 +50,12 @@ const Parent: React.FC<ComponentProps> = ({ children }) => {
 
   const handleReload = () => {
     setReloadFlag((prev) => prev + 1);
+  };
+
+  const [aprReloadFlag, setAprReladFlag] = useState<number>(0);
+
+  const handleAprReload = () => {
+    setAprReladFlag((prev) => prev++);
   };
 
   const [myProfileDetails, setMyProfileDetails] = useState<User | null>(null);
@@ -167,7 +169,7 @@ const Parent: React.FC<ComponentProps> = ({ children }) => {
       .catch((error: any) => {
         reqForToastAndSetMessage(error.response.data.message);
       });
-  }, []);
+  }, [aprReloadFlag]);
 
   const changeBeneficairyAprIncludedStatus = (id: string) => {
     axiosInstance
@@ -193,6 +195,8 @@ const Parent: React.FC<ComponentProps> = ({ children }) => {
         notifications,
         setNotifications,
         setGloabalLoading,
+        aprReloadFlag,
+        handleAprReload,
       }}
     >
       <div className="w-full h-full">{children}</div>
@@ -206,7 +210,7 @@ const Parent: React.FC<ComponentProps> = ({ children }) => {
         ></ProfileModal>
       )}
 
-      {globalLoading && <Preloader reqForLoading={globalLoading} />}
+      {/* {globalLoading && <Preloader reqForLoading={globalLoading} />} */}
 
       <ConfirmationAlertDialogue
         open={reqForConfirmationModel}

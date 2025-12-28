@@ -1,5 +1,3 @@
-export const MainDatabaseBeneficiariesFilterUrl: string =
-  "/filter/main_database/beneficiaries";
 export const MainDatabaseBeneficiariesFilters: string[] = [
   "projectCode",
   "indicator",
@@ -15,8 +13,6 @@ export const MainDatabaseBeneficiariesFilters: string[] = [
   "endlineDate",
 ];
 
-export const MainDatabaseProgramsFitlterUrl: string =
-  "/filter/main_database/program";
 export const MainDatabaseProgramsFilters: string[] = [
   "projectCode",
   "focalPoint",
@@ -28,8 +24,6 @@ export const MainDatabaseProgramsFilters: string[] = [
   "interventionModality",
 ];
 
-export const KitDatabaseBeneficiaryFiltersUrl: string =
-  "/filter/kit_database/beneficiaries";
 export const KitDatabaseBeneficiaryFiltersList: string[] = [
   "projectCode",
   "indicator",
@@ -41,12 +35,8 @@ export const KitDatabaseBeneficiaryFiltersList: string[] = [
   "age",
   "maritalStatus",
   "householdStatus",
-  "baselineDate",
-  "endlineDate",
 ];
 
-export const KitDatabaseProgramsFilterUrl: string =
-  "/filter/kit_database/program";
 export const KitDatabaseProgramsFiltersList: string[] = [
   "projectCode",
   "focalPoint",
@@ -58,23 +48,18 @@ export const KitDatabaseProgramsFiltersList: string[] = [
   "interventionModality",
 ];
 
-export const KitDatabaseBeneficiaryKitsTableFilterUrl: string = "";
 export const KitDatabaseBeneficiaryKitsTableFiltersList: string[] = [
   "kit",
   "distributionDate",
   "isReceived",
 ];
 
-export const PsychoeducationFilterUrl: string =
-  "filter/psychoeducation_db/psychoeducations";
 export const PsychoeducationsFiltersList: string[] = [
   "indicator",
   "awarenessTopic",
   "awarenessDate",
 ];
 
-export const TrainingDatabaseBeneficiaryFilterUrl: string =
-  "/filter/training_database/beneficiaries";
 export const TrainingDatabaseBeneficiaryFiltersList: string[] = [
   "projectCode",
   "indicator",
@@ -83,15 +68,17 @@ export const TrainingDatabaseBeneficiaryFiltersList: string[] = [
   "gender",
 ];
 
-export const TrainingFilterUrl: string = "/filter/training_database/trainings";
+export const TrainingBeneficiariesFiltersList: string[] = [
+  "age",
+  "gender",
+];
+
 export const TrainingFiltersList: string[] = [
   "projectCode",
   "indicatorRef",
   "province",
 ];
 
-export const ReferralsFilterUrl: string =
-  "/filter/refferal_database/beneficiaries";
 export const ReferralsFiltersList: string[] = [
   "projectCode",
   "province",
@@ -100,8 +87,6 @@ export const ReferralsFiltersList: string[] = [
   "dateOfRegistration",
 ];
 
-export const CommunityDialogueBeneficiariesFilterUrl: string =
-  "/filter/cd_database/beneficiaries";
 export const CommunityDialogueBeneficiariesFiltersList: string[] = [
   "projectCode",
   "province",
@@ -111,7 +96,6 @@ export const CommunityDialogueBeneficiariesFiltersList: string[] = [
   "dateOfRegistration",
 ];
 
-export const CommunityDialoguesFilterUrl: string = "/filter/cd_database/cds";
 export const CommunityDialoguesFiltersList: string[] = [
   "projectCode",
   "focalPoint",
@@ -119,7 +103,6 @@ export const CommunityDialoguesFiltersList: string[] = [
   "indicator",
 ];
 
-export const AssessmentsFilterUrl: string = "/filter/enact_database/enacts";
 export const AssessmentsFiltersList: string[] = [
   "projectCode",
   "province",
@@ -127,7 +110,6 @@ export const AssessmentsFiltersList: string[] = [
   "date",
 ];
 
-export const UserFilterUrl: string = "/filter/users";
 export const UserFiltersList: string[] = [
   "name",
   "email",
@@ -136,13 +118,10 @@ export const UserFiltersList: string[] = [
   "create_at",
 ];
 
-export const RoleFilterUrl: string = "/filter/roles";
 export const RoleFiltersList: string[] = ["name", "status"];
 
-export const PermissionFilterUrl: string = "/filter/permissions";
 export const PermissionFiltersList: string[] = ["group_name"];
 
-export const ApprovedAprsFilterUrl: string = "/filter/aprroved_aprs";
 export const ApprovedAprsFiltersList: string[] = [
   "projectCode",
   "province",
@@ -150,9 +129,26 @@ export const ApprovedAprsFiltersList: string[] = [
   "fromDate",
   "toDate",
 ];
+export const ApprovedDatabasesFiltersList: string[] = [
+  "projectCode",
+  "province",
+  "database",
+  "fromDate",
+  "toDate",
+];
 
-export const ApprovedDatabasesFilterUrl: string = "/filter/approved_databases";
-export const ApprovedDatabasesFiltersList: string[] = ["projectCode", "province", "database", "fromDate", "toDate"];
+export const SubmittedDatabasesFiltersList: string[] = [
+  "projectCode",
+  "province",
+  "database",
+  "fromDate",
+  "toDate",
+];
 
-export const SubmittedDatabasesFilterUrl: string = "/filter/submitted_databases";
-export const SubmittedDatabasesFiltersList: string[] = ["projectCode", "province", "database", "fromDate", "toDate"];
+export const ReviewAprFiltersList: string[] = [
+  "projectCode",
+  "province",
+  "database",
+  "fromDate",
+  "toDate",
+];

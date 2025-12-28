@@ -726,7 +726,7 @@ export const mainDatabaseAndKitDatabaseBeneficiaryColumns: ColumnDef<Beneficiary
         </div>
       ),
     },
-];
+  ];
 
 export const beneficiaryKitListColumns: ColumnDef<KitFormType>[] = [
   {
@@ -1531,6 +1531,61 @@ export const communityDialoguesTableColumns: ColumnDef<any>[] = [
     cell: ({ row }) => (
       <div className="max-w-[100px] truncate" title={row.getValue("indicator")}>
         {row.getValue("indicator")}
+      </div>
+    ),
+  },
+];
+
+export const KitTableColumns: ColumnDef<any>[] = [
+  {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    accessorKey: "name",
+    header: "Name",
+    cell: ({ row }) => (
+      <div className="max-w-[100px] truncate" title={row.getValue("name")}>
+        {row.getValue("name")}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "description",
+    header: "Description",
+    cell: ({ row }) => (
+      <div
+        className="max-w-[100px] truncate"
+        title={row.getValue("description")}
+      >
+        {row.getValue("description")}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => (
+      <div className="max-w-[100px] truncate" title={row.getValue("status")}>
+        {row.getValue("status")}
       </div>
     ),
   },

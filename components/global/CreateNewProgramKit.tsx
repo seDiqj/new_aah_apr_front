@@ -23,6 +23,7 @@ import {
 } from "@/constants/Constants";
 import { AxiosError } from "axios";
 import { KitDatabaseProgramFormInterface } from "@/interfaces/Interfaces";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
 
 const ProgramKitForm: React.FC<KitDatabaseProgramFormInterface> = ({
   open,
@@ -69,6 +70,8 @@ const ProgramKitForm: React.FC<KitDatabaseProgramFormInterface> = ({
     }));
   };
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const handleSubmit = (e: any) => {
     e.preventDefault();
 
@@ -89,6 +92,8 @@ const ProgramKitForm: React.FC<KitDatabaseProgramFormInterface> = ({
     }
 
     setFormErrors({});
+
+    setIsLoading(true);
 
     if (IsCreateMode(mode)) {
       axiosInstance
@@ -116,7 +121,8 @@ const ProgramKitForm: React.FC<KitDatabaseProgramFormInterface> = ({
         })
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)
-        );
+        )
+        .finally(() => setIsLoading(false));
     } else if (IsEditMode(mode) && programId) {
       axiosInstance
         .put(`/global/program/${programId}`, formData)
@@ -127,7 +133,8 @@ const ProgramKitForm: React.FC<KitDatabaseProgramFormInterface> = ({
         })
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)
-        );
+        )
+        .finally(() => setIsLoading(false));
     }
   };
 
@@ -315,6 +322,8 @@ const ProgramKitForm: React.FC<KitDatabaseProgramFormInterface> = ({
         {IsNotShowMode(mode) && (
           <div className="flex justify-end w-full col-span-2 fixed left-0 bottom-1">
             <Button
+              id={SUBMIT_BUTTON_PROVIDER_ID}
+              disabled={isLoading}
               className="mr-2"
               type="button"
               onClick={(e) =>
@@ -326,7 +335,13 @@ const ProgramKitForm: React.FC<KitDatabaseProgramFormInterface> = ({
                 )
               }
             >
-              {IsCreateMode(mode) ? "Submit" : "Update"}
+              {isLoading
+                ? IsCreateMode(mode)
+                  ? "Saving ..."
+                  : "Updating ..."
+                : IsCreateMode(mode)
+                ? "Save"
+                : "Update"}
             </Button>
           </div>
         )}

@@ -9,11 +9,10 @@ import { useState } from "react";
 import { userColumns } from "@/definitions/DataTableColumnsDefinitions";
 import { Can } from "@/components/Can";
 import { withPermission } from "@/lib/withPermission";
-import ProfileModal from "@/components/global/UserFormTest";
-import { UserFiltersList, UserFilterUrl } from "@/constants/FiltersList";
+import ProfileModal from "@/components/global/UserForm";
+import { UserFiltersList } from "@/constants/FiltersList";
 
 const UsersPage = () => {
-
   let [reqForUserCreationForm, setReqForUserCreationForm] =
     useState<boolean>(false);
 
@@ -46,9 +45,9 @@ const UsersPage = () => {
         </SubHeader>
         <DataTableDemo
           columns={userColumns}
-          indexUrl="user_mng/users"
-          deleteUrl="user_mng/delete_users"
-          searchableColumn="email"
+          indexUrl="/user_mng/users"
+          deleteUrl="/user_mng/delete_users"
+          searchableColumn="Name"
           deleteBtnPermission="Delete User"
           editBtnPermission="Edit User"
           viewPermission="View User"
@@ -56,7 +55,6 @@ const UsersPage = () => {
           editModelOpenerStateSetter={setReqForUserUpdateForm}
           idFeildForShowStateSetter={setIdFeildForShowStateSetter}
           showModelOpenerStateSetter={setReqForUserShowForm}
-          filterUrl={UserFilterUrl}
           filtersList={UserFiltersList}
         ></DataTableDemo>
       </div>

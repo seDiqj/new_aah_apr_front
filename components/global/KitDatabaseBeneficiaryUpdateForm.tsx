@@ -26,6 +26,9 @@ import {
   ReferredForProtectionOptions,
 } from "@/constants/SingleAndMultiSelectOptionsList";
 import { KitDatabaseBenficiaryUpdateForm } from "@/interfaces/Interfaces";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { AxiosError, AxiosResponse } from "axios";
+import { KitDatabaseBeneficiaryFormSchema } from "@/schemas/FormsSchema";
 
 const KitDatabaseBeneficiaryUpdateForm: React.FC<
   KitDatabaseBenficiaryUpdateForm
@@ -34,6 +37,7 @@ const KitDatabaseBeneficiaryUpdateForm: React.FC<
     reqForToastAndSetMessage,
     axiosInstance,
     reqForConfirmationModelFunc,
+    handleReload,
   } = useParentContext();
 
   const [formData, setFormData] =
@@ -41,12 +45,13 @@ const KitDatabaseBeneficiaryUpdateForm: React.FC<
       KitDatabaseBeneficiaryUpdateDefault()
     );
 
-  const [programs, setPrograms] = useState<
-    { id: string; focalPoint: string }[]
-  >([]);
+  const [programs, setPrograms] = useState<{ id: string; name: string }[]>([]);
   const [indicators, setIndicators] = useState<
     { id: string; indicatorRef: string }[]
   >([]);
+  const [reqForCreateNewProgram, setReqForCreateNewProgram] =
+    useState<boolean>(false);
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
   // Fetch beneficiary data
   useEffect(() => {
@@ -87,20 +92,25 @@ const KitDatabaseBeneficiaryUpdateForm: React.FC<
   useEffect(() => {
     if (open) {
       axiosInstance
-        .get(`global/programs/kit_database`)
-        .then((res: any) => setPrograms(res.data.data))
-        .catch((err: any) =>
-          reqForToastAndSetMessage(err.response?.data?.message)
-        );
-
-      axiosInstance
-        .get(`global/indicators/kit_database`)
-        .then((res: any) => setIndicators(res.data.data))
-        .catch((err: any) =>
+        .get(`global/programs_for_selection/kit_database`)
+        .then((res: AxiosResponse<any, any>) => setPrograms(res.data.data.data))
+        .catch((err: AxiosError<any, any>) =>
           reqForToastAndSetMessage(err.response?.data?.message)
         );
     }
   }, [open]);
+
+  useEffect(() => {
+    if (!formData.program) return;
+    axiosInstance
+      .get(`/global/indicators/${formData.program}/kit_database`)
+      .then((response: any) => {
+        setIndicators(response.data.data);
+      })
+      .catch((error: any) =>
+        reqForToastAndSetMessage(error.response.data.message)
+      );
+  }, [formData.program]);
 
   const handleFormChange = (e: any) => {
     const name: string = e.target.name;
@@ -115,20 +125,42 @@ const KitDatabaseBeneficiaryUpdateForm: React.FC<
     }));
   };
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const handleSubmit = (e: any) => {
     e.preventDefault();
+
+    const result = KitDatabaseBeneficiaryFormSchema.safeParse(formData);
+
+    if (!result.success) {
+      const errors: { [key: string]: string } = {};
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0];
+        if (field) errors[field as string] = issue.message;
+      });
+
+      setFormErrors(errors);
+      reqForToastAndSetMessage("Please fix validation errors before updating.");
+      return;
+    }
+
+    setFormErrors({});
+
+    setIsLoading(true);
 
     axiosInstance
       .put(`/kit_db/beneficiary/${beneficiaryId}`, formData)
       .then((response: any) => {
         reqForToastAndSetMessage(response.data.message);
         onOpenChange(false);
+        handleReload();
       })
       .catch((error: any) => {
         reqForToastAndSetMessage(
           error.response?.data?.message || "Update failed"
         );
-      });
+      })
+      .finally(() => setIsLoading(false));
   };
 
   return (
@@ -140,6 +172,56 @@ const KitDatabaseBeneficiaryUpdateForm: React.FC<
         <DialogHeader>
           <DialogTitle className="text-lg">{title}</DialogTitle>
         </DialogHeader>
+
+        <div className="w-full">
+          <div className="bg-white-200 text-black-800 font-bold text-base text-center px-6 py-2 rounded-xl mb-6 shadow-sm max-w-fit mx-auto">
+            Program Information
+          </div>
+
+          <div className="flex flex-col gap-2">
+            {/* Program Selector */}
+            <div className="flex flex-col w-full border-2 rounded-2xl">
+              <SingleSelect
+                options={programs.map((program) => ({
+                  value: program.id,
+                  label: program.name.toString().toUpperCase(),
+                }))}
+                value={formData.program}
+                onValueChange={(value: string) => {
+                  handleFormChange({
+                    target: {
+                      name: "program",
+                      value: value,
+                    },
+                  });
+                }}
+                placeholder="Select Exising Program"
+                error={formErrors.program}
+                searchURL="global/programs_for_selection/kit_database"
+              ></SingleSelect>
+            </div>
+            {/* Seperator */}
+            <div>
+              <div className="flex items-center my-6">
+                <div className="flex-1 border-t border-gray-300"></div>
+                <span className="px-3 text-gray-500 text-sm">OR</span>
+                <div className="flex-1 border-t border-gray-300"></div>
+              </div>
+            </div>
+
+            {/* Create New Program Button */}
+            <div className="w-full border-2 rounded-2xl">
+              <Button
+                onClick={() =>
+                  setReqForCreateNewProgram(!reqForCreateNewProgram)
+                }
+                className="w-full"
+              >
+                Create New Program
+              </Button>
+            </div>
+          </div>
+        </div>
 
         <div className="w-full mt-4">
           <div className="bg-white-200 text-black-800 font-bold text-base text-center px-6 py-2 rounded-xl mb-6 shadow-sm max-w-fit mx-auto">
@@ -362,6 +444,8 @@ const KitDatabaseBeneficiaryUpdateForm: React.FC<
 
         {/* Submit */}
         <Button
+          id={SUBMIT_BUTTON_PROVIDER_ID}
+          disabled={isLoading}
           type="button"
           className="w-full mt-6"
           onClick={(e) =>
@@ -371,7 +455,7 @@ const KitDatabaseBeneficiaryUpdateForm: React.FC<
             )
           }
         >
-          Update
+          {isLoading ? "Updating ..." : "Update"}
         </Button>
       </DialogContent>
     </Dialog>

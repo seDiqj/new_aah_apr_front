@@ -27,6 +27,7 @@ import {
 } from "@/constants/SingleAndMultiSelectOptionsList";
 import { MealToolInterface } from "@/interfaces/Interfaces";
 import { IsEditMode, IsShowMode } from "@/constants/Constants";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
 
 const MealToolForm: React.FC<MealToolInterface> = ({
   open,
@@ -257,6 +258,8 @@ const MealToolForm: React.FC<MealToolInterface> = ({
 
         <div className="flex justify-end">
           <Button
+            id={SUBMIT_BUTTON_PROVIDER_ID}
+            disabled={loading}
             className="w-full mt-6"
             onClick={(e) => {
               reqForConfirmationModelFunc(
@@ -270,7 +273,7 @@ const MealToolForm: React.FC<MealToolInterface> = ({
               );
             }}
           >
-            Save
+            {loading ? "Saving ..." : "Save"}
           </Button>
         </div>
       </DialogContent>

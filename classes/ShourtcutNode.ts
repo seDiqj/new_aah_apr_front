@@ -1,13 +1,9 @@
 class ShourtcutNode {
   private type: string;
-  private value: string;
-  private childNodes: ShourtcutNode[];
+  public value: string;
+  public childNodes: ShourtcutNode[];
 
-  constructor(
-    type: string,
-    value: string,
-    childNodes?: ShourtcutNode[]
-  ) {
+  constructor(type: string, value: string, childNodes?: ShourtcutNode[]) {
     this.type = type;
     this.value = value;
     this.childNodes = childNodes ?? [];
@@ -15,6 +11,10 @@ class ShourtcutNode {
 
   public addChild(child: ShourtcutNode): void {
     this.childNodes.push(child);
+  }
+
+  public addChilds(childList: ShourtcutNode[]): void {
+    this.childNodes = [...this.childNodes, ...childList];
   }
 
   public removeLatestChild(): void {

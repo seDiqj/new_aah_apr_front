@@ -15,16 +15,14 @@ import { beneficiaryKitListColumns } from "@/definitions/DataTableColumnsDefinit
 import { KitDatabaseBeneficiaryProfileInterface } from "@/interfaces/Interfaces";
 import { createAxiosInstance } from "@/lib/axios";
 import { IsANullValue, IsIdFeild } from "@/constants/Constants";
-import {
-  KitDatabaseBeneficiaryKitsTableFiltersList,
-  KitDatabaseBeneficiaryKitsTableFilterUrl,
-} from "@/constants/FiltersList";
+import { KitDatabaseBeneficiaryKitsTableFiltersList } from "@/constants/FiltersList";
 import { withPermission } from "@/lib/withPermission";
 import {
   KitDatabaseBeneficiaryProfileInfoType,
   MainDatabaseProgram,
 } from "@/types/Types";
 import { use, useEffect, useState } from "react";
+import ChromeTabs from "@/app/(main)/projects/Components/ChromeTab";
 
 const KitDbBeneficiaryProfilePage: React.FC<
   KitDatabaseBeneficiaryProfileInterface
@@ -33,6 +31,8 @@ const KitDbBeneficiaryProfilePage: React.FC<
 
   const axiosInstance = createAxiosInstance();
   const { reqForToastAndSetMessage } = useParentContext();
+
+  const [currentTab, setCurrentTab] = useState<string>("beneficiaryInfo");
 
   let [idFeildForEditStateSetter, setIdFeildForEditStateSetter] = useState<
     number | null
@@ -78,7 +78,6 @@ const KitDbBeneficiaryProfilePage: React.FC<
         reqForToastAndSetMessage(error.response.data.message)
       );
   }, []);
-  9;
 
   return (
     <>
@@ -101,14 +100,25 @@ const KitDbBeneficiaryProfilePage: React.FC<
 
         {/* Main Content */}
         <div className="flex flex-1 h-[440px] w-full flex-col gap-6">
-          <Tabs defaultValue="beneficiaryInfo" className="h-full">
-            {/* List of tabs */}
-            <TabsList className="w-full">
-              <TabsTrigger value="beneficiaryInfo">
-                Beneficiary Info
-              </TabsTrigger>
-              <TabsTrigger value="kit">Kit</TabsTrigger>
-            </TabsList>
+          <Tabs
+            defaultValue="beneficiaryInfo"
+            value={currentTab}
+            className="h-full"
+          >
+            <ChromeTabs
+              initialTabs={[
+                {
+                  value: "kit",
+                  title: "Kit",
+                  stateSetter: setCurrentTab,
+                },
+                {
+                  value: "beneficiaryInfo",
+                  title: "Beneficiary Info",
+                  stateSetter: setCurrentTab,
+                },
+              ]}
+            ></ChromeTabs>
 
             {/* Beneficiary Info */}
             <TabsContent value="beneficiaryInfo" className="h-full">
@@ -209,7 +219,6 @@ const KitDbBeneficiaryProfilePage: React.FC<
                   editModelOpenerStateSetter={setReqForKitEditionForm}
                   idFeildForShowStateSetter={setIdFeildForShowStateSetter}
                   showModelOpenerStateSetter={setReqForKitShowForm}
-                  filterUrl={KitDatabaseBeneficiaryKitsTableFilterUrl}
                   filtersList={KitDatabaseBeneficiaryKitsTableFiltersList}
                 ></DataTableDemo>
                 <CardFooter className="flex flex-row w-full gap-2 items-center justify-end"></CardFooter>
@@ -225,6 +234,7 @@ const KitDbBeneficiaryProfilePage: React.FC<
             mode={"create"}
           ></KitForm>
         )}
+
         {reqForKitEditionForm && idFeildForEditStateSetter && (
           <KitForm
             open={reqForKitEditionForm}
@@ -233,6 +243,7 @@ const KitDbBeneficiaryProfilePage: React.FC<
             kitId={idFeildForEditStateSetter as unknown as number}
           ></KitForm>
         )}
+
         {reqForKitShowForm && idFeildForShowStateSetter && (
           <KitForm
             open={reqForKitShowForm}

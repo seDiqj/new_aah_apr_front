@@ -97,6 +97,9 @@ export const TrainingSelectorMessage: string =
 export const BeneficiaryPresenceTogglerButtonMessage: string =
   "This action will change the precense status of beneficiary for selected chapter !";
 
+export const RemoveTrainingFromBeneficiaryButtonMessage: string =
+  "This action will remove the current training from current beneficiary !";
+
 // COMMUNITY DIALOGUE DATABASE
 
 export const CdDatabaseBeneficiaryCreationMessage: string =
@@ -240,4 +243,5 @@ export const Isp3CreationMessage: string =
 export const BeneficiarySessionPresenceTogglerButtonMessage: string =
   "This action will change the presence status of beneficiary for selected session !";
 
-export const AssessmentDeleteMessage: string = "This action will delete the current assessment !";
+export const AssessmentDeleteMessage: string =
+  "This action will delete the current assessment !";

@@ -15,6 +15,7 @@ import {
   RejectSecondApprovedDatabaseMessage,
   ReviewAprMessage,
 } from "@/constants/ConfirmationModelsTexts";
+import { ReviewAprFiltersList } from "@/constants/FiltersList";
 
 const SubmittedDatabasesPage = () => {
   const {
@@ -22,6 +23,7 @@ const SubmittedDatabasesPage = () => {
     reqForToastAndSetMessage,
     reqForConfirmationModelFunc,
     handleReload,
+    handleAprReload,
   } = useParentContext();
 
   const router = useRouter();
@@ -36,7 +38,7 @@ const SubmittedDatabasesPage = () => {
   ] = useState<boolean>(false);
 
   const previewApr = () => {
-    router.push(`/test/${idFeildForEditStateSetter}`);
+    router.push(`/apr_preview/${idFeildForEditStateSetter}`);
   };
 
   const markAprAsReviewed = () => {
@@ -44,6 +46,7 @@ const SubmittedDatabasesPage = () => {
       .post(`/apr_management/mark_apr_as_reviewed/${idFeildForEditStateSetter}`)
       .then((response: any) => {
         reqForToastAndSetMessage(response.data.message);
+        handleAprReload();
         handleReload();
       })
       .catch((error: any) =>
@@ -58,6 +61,7 @@ const SubmittedDatabasesPage = () => {
       )
       .then((response: any) => {
         reqForToastAndSetMessage(response.data.message);
+        handleAprReload();
         handleReload();
       })
       .catch((error: any) =>
@@ -114,14 +118,7 @@ const SubmittedDatabasesPage = () => {
             </Button>
           </div>
         }
-        filterUrl="/filter/reviewed_aprs"
-        filtersList={[
-          "projectCode",
-          "province",
-          "database",
-          "fromDate",
-          "toDate",
-        ]}
+        filtersList={ReviewAprFiltersList}
       ></DataTableDemo>
 
       {OpenSubmittedDatabaseSummaryModel && (

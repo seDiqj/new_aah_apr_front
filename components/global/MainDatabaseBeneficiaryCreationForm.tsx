@@ -27,6 +27,7 @@ import {
   ReferredForProtectionOptions,
 } from "@/constants/SingleAndMultiSelectOptionsList";
 import { MainDatabaseBeneficiaryCreation } from "@/interfaces/Interfaces";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
 
 const MainDatabaseBeneficiaryForm: React.FC<
   MainDatabaseBeneficiaryCreation
@@ -57,6 +58,8 @@ const MainDatabaseBeneficiaryForm: React.FC<
     }));
   };
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const handleSubmit = (e: any) => {
     e.preventDefault();
 
@@ -77,6 +80,7 @@ const MainDatabaseBeneficiaryForm: React.FC<
     }
 
     setFormErrors({});
+    setIsLoading(true);
 
     axiosInstance
       .post("/main_db/beneficiary", formData)
@@ -87,7 +91,8 @@ const MainDatabaseBeneficiaryForm: React.FC<
       })
       .catch((error: any) => {
         reqForToastAndSetMessage(error.response.data.message);
-      });
+      })
+      .finally(() => setIsLoading(false));
   };
 
   const [programs, setPrograms] = useState<
@@ -98,11 +103,10 @@ const MainDatabaseBeneficiaryForm: React.FC<
   >([]);
 
   useEffect(() => {
-    // Fetching kit database programs
     axiosInstance
-      .get(`global/programs/main_database`)
+      .get(`global/programs_for_selection/main_database`)
       .then((response: any) => {
-        setPrograms(response.data.data);
+        setPrograms(response.data.data.data);
       })
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
@@ -149,6 +153,7 @@ const MainDatabaseBeneficiaryForm: React.FC<
                 }}
                 placeholder="Select Exising Program"
                 error={formErrors.program}
+                searchURL="global/programs_for_selection/main_database"
               ></SingleSelect>
             </div>
             {/* Seperator */}
@@ -207,13 +212,13 @@ const MainDatabaseBeneficiaryForm: React.FC<
               <div className="flex flex-col gap-4">
                 <Label htmlFor="code">Beneficiary Code</Label>
                 <Input
-                  title={formErrors.code ? formErrors["code"] : undefined}
                   id="code"
                   name="code"
                   placeholder="Code ..."
                   className={`border p-2 rounded ${
                     formErrors.code ? "!border-red-500" : ""
                   } w-full`}
+                  title={formErrors.code ? formErrors["code"] : undefined}
                   onChange={handleFormChange}
                 />
               </div>
@@ -222,13 +227,13 @@ const MainDatabaseBeneficiaryForm: React.FC<
               <div className="flex flex-col gap-4">
                 <Label htmlFor="clientName">Client Name</Label>
                 <Input
-                  title={formErrors.name ? formErrors["name"] : undefined}
                   id="name"
                   name="name"
                   placeholder="Client Name ..."
                   className={`border p-2 rounded ${
                     formErrors.name ? "!border-red-500" : ""
                   } w-full`}
+                  title={formErrors.name ? formErrors["name"] : undefined}
                   onChange={handleFormChange}
                 />
               </div>
@@ -237,17 +242,17 @@ const MainDatabaseBeneficiaryForm: React.FC<
               <div className="flex flex-col gap-4">
                 <Label htmlFor="fatherHusbandName">Father / Husbend Name</Label>
                 <Input
-                  title={
-                    formErrors.fatherHusbandName
-                      ? formErrors["fatherHusbandName"]
-                      : undefined
-                  }
                   id="fatherHusbandName"
                   name="fatherHusbandName"
                   placeholder="Father / Husbend Name ..."
                   className={`border p-2 rounded ${
                     formErrors.fatherHusbandName ? "!border-red-500" : ""
                   } w-full`}
+                  title={
+                    formErrors.fatherHusbandName
+                      ? formErrors["fatherHusbandName"]
+                      : undefined
+                  }
                   onChange={handleFormChange}
                 />
               </div>
@@ -274,7 +279,6 @@ const MainDatabaseBeneficiaryForm: React.FC<
               <div className="flex flex-col gap-4">
                 <Label htmlFor="age">Age</Label>
                 <Input
-                  title={formErrors.age ? formErrors["age"] : undefined}
                   id="age"
                   name="age"
                   type="number"
@@ -282,6 +286,7 @@ const MainDatabaseBeneficiaryForm: React.FC<
                   className={`border p-2 rounded ${
                     formErrors.age ? "!border-red-500" : ""
                   } w-full`}
+                  title={formErrors.age ? formErrors["age"] : undefined}
                   onChange={handleFormChange}
                 />
               </div>
@@ -290,15 +295,15 @@ const MainDatabaseBeneficiaryForm: React.FC<
               <div className="flex flex-col gap-4">
                 <Label htmlFor="childCode">Child Of BNF Code</Label>
                 <Input
-                  title={
-                    formErrors.childCode ? formErrors["childCode"] : undefined
-                  }
                   id="childCode"
                   name="childCode"
                   placeholder="Child Code ..."
                   className={`border p-2 rounded ${
                     formErrors.childCode ? "!border-red-500" : ""
                   } w-full`}
+                  title={
+                    formErrors.childCode ? formErrors["childCode"] : undefined
+                  }
                   onChange={handleFormChange}
                 />
               </div>
@@ -307,9 +312,6 @@ const MainDatabaseBeneficiaryForm: React.FC<
               <div className="flex flex-col gap-4">
                 <Label htmlFor="childAge">Age Of Child OF BNF</Label>
                 <Input
-                  title={
-                    formErrors.childAge ? formErrors["childAge"] : undefined
-                  }
                   id="childAge"
                   name="childAge"
                   type="number"
@@ -317,6 +319,9 @@ const MainDatabaseBeneficiaryForm: React.FC<
                   className={`border p-2 rounded ${
                     formErrors.childAge ? "!border-red-500" : ""
                   } w-full`}
+                  title={
+                    formErrors.childAge ? formErrors["childAge"] : undefined
+                  }
                   onChange={handleFormChange}
                 />
               </div>
@@ -325,7 +330,6 @@ const MainDatabaseBeneficiaryForm: React.FC<
               <div className="flex flex-col gap-4">
                 <Label htmlFor="phone">Client Phone</Label>
                 <Input
-                  title={formErrors.phone ? formErrors["phone"] : undefined}
                   id="phone"
                   name="phone"
                   type="tel"
@@ -333,6 +337,7 @@ const MainDatabaseBeneficiaryForm: React.FC<
                   className={`border p-2 rounded ${
                     formErrors.phone ? "!border-red-500" : ""
                   } w-full`}
+                  title={formErrors.phone ? formErrors["phone"] : undefined}
                   onChange={handleFormChange}
                 />
               </div>
@@ -377,17 +382,17 @@ const MainDatabaseBeneficiaryForm: React.FC<
               <div className="flex flex-col gap-4">
                 <Label htmlFor="literacyLevel">Literacy Level Of BNF</Label>
                 <Input
-                  title={
-                    formErrors.literacyLevel
-                      ? formErrors["literacyLevel"]
-                      : undefined
-                  }
                   id="literacyLevel"
                   name="literacyLevel"
                   placeholder="Literacy Level ..."
                   className={`border p-2 rounded ${
                     formErrors.literacyLevel ? "!border-red-500" : ""
                   } w-full`}
+                  title={
+                    formErrors.literacyLevel
+                      ? formErrors["literacyLevel"]
+                      : undefined
+                  }
                   onChange={handleFormChange}
                 />
               </div>
@@ -446,6 +451,8 @@ const MainDatabaseBeneficiaryForm: React.FC<
 
         {/* Submit Button */}
         <Button
+          id={SUBMIT_BUTTON_PROVIDER_ID}
+          disabled={isLoading}
           type="button"
           onClick={(e) =>
             reqForConfirmationModelFunc(
@@ -455,7 +462,7 @@ const MainDatabaseBeneficiaryForm: React.FC<
           }
           className="w-full mt-6"
         >
-          Submit
+          {isLoading ? "Saving ..." : "Save"}
         </Button>
       </DialogContent>
     </Dialog>

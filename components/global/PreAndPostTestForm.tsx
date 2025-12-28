@@ -12,6 +12,7 @@ import { PreAndPostTestsDefault } from "@/constants/FormsDefaultValues";
 import { PreAndPostTestFormType } from "@/types/Types";
 import { PreAndPostTestCreationMessage } from "@/constants/ConfirmationModelsTexts";
 import { PreAndPostTestsInterface } from "@/interfaces/Interfaces";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
 
 const PreAndPostTestForm: React.FC<PreAndPostTestsInterface> = ({
   open,
@@ -45,6 +46,7 @@ const PreAndPostTestForm: React.FC<PreAndPostTestsInterface> = ({
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
+    setLoading(true);
     axiosInstance
       .put(
         `training_db/beneficiary/chapter/setPreAndPostTest/${id}/${chapterId}`,
@@ -53,7 +55,8 @@ const PreAndPostTestForm: React.FC<PreAndPostTestsInterface> = ({
       .then((response: any) => reqForToastAndSetMessage(response.data.message))
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
-      );
+      )
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
@@ -106,6 +109,8 @@ const PreAndPostTestForm: React.FC<PreAndPostTestsInterface> = ({
 
           <div className="flex justify-end mt-4">
             <Button
+              id={SUBMIT_BUTTON_PROVIDER_ID}
+              disabled={loading}
               type="submit"
               onClick={() =>
                 reqForConfirmationModelFunc(
@@ -114,7 +119,7 @@ const PreAndPostTestForm: React.FC<PreAndPostTestsInterface> = ({
                 )
               }
             >
-              {loading ? "Submiting..." : "Submit"}
+              {loading ? "Saving..." : "Save"}
             </Button>
           </div>
         </form>

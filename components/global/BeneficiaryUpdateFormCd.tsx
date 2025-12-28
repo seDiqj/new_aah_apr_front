@@ -20,13 +20,16 @@ import { CdDatabaseBenefciaryFormSchema } from "@/schemas/FormsSchema";
 import { CommunityDialogueBeneficiaryDefault } from "@/constants/FormsDefaultValues";
 import { CdDatabaseBenefciaryEditionMessage } from "@/constants/ConfirmationModelsTexts";
 import { CdDatabaseBeneficiaryUpdateFormInterface } from "@/interfaces/Interfaces";
+import {
+  GenderOptions,
+  incentiveReceivedOptions,
+  MaritalStatusOptions,
+} from "@/constants/SingleAndMultiSelectOptionsList";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
 
-
-const BeneficiaryUpdateCD: React.FC<CdDatabaseBeneficiaryUpdateFormInterface> = ({
-  open,
-  onOpenChange,
-  beneficiaryId,
-}) => {
+const BeneficiaryUpdateCD: React.FC<
+  CdDatabaseBeneficiaryUpdateFormInterface
+> = ({ open, onOpenChange, beneficiaryId }) => {
   const {
     reqForToastAndSetMessage,
     axiosInstance,
@@ -63,6 +66,8 @@ const BeneficiaryUpdateCD: React.FC<CdDatabaseBeneficiaryUpdateFormInterface> = 
     }));
   };
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const handleUpdate = () => {
     const result = CdDatabaseBenefciaryFormSchema.safeParse(formData);
 
@@ -81,6 +86,7 @@ const BeneficiaryUpdateCD: React.FC<CdDatabaseBeneficiaryUpdateFormInterface> = 
     }
 
     setFormErrors({});
+    setIsLoading(true);
 
     axiosInstance
       .put(`/community_dialogue_db/beneficiary/${beneficiaryId}`, formData)
@@ -95,7 +101,8 @@ const BeneficiaryUpdateCD: React.FC<CdDatabaseBeneficiaryUpdateFormInterface> = 
         reqForToastAndSetMessage(
           error.response?.data?.message || "Update failed"
         )
-      );
+      )
+      .finally(() => setIsLoading(false));
   };
 
   return (
@@ -172,14 +179,7 @@ const BeneficiaryUpdateCD: React.FC<CdDatabaseBeneficiaryUpdateFormInterface> = 
           <div className="flex flex-col gap-4">
             <Label htmlFor="maritalStatus">Marital Status</Label>
             <SingleSelect
-              options={[
-                { value: "single", label: "Single" },
-                { value: "married", label: "Married" },
-                { value: "divorced", label: "Divorced" },
-                { value: "widowed", label: "Widowed" },
-                { value: "widower", label: "Widower" },
-                { value: "separated", label: "Separated" },
-              ]}
+              options={MaritalStatusOptions}
               value={formData.maritalStatus}
               onValueChange={(value: string) => {
                 handleFormChange({
@@ -193,11 +193,7 @@ const BeneficiaryUpdateCD: React.FC<CdDatabaseBeneficiaryUpdateFormInterface> = 
           <div className="flex flex-col gap-4">
             <Label htmlFor="gender">Gender</Label>
             <SingleSelect
-              options={[
-                { value: "male", label: "Male" },
-                { value: "female", label: "Female" },
-                { value: "other", label: "Other" },
-              ]}
+              options={GenderOptions}
               value={formData.gender}
               onValueChange={(value: string) => {
                 handleFormChange({
@@ -257,10 +253,7 @@ const BeneficiaryUpdateCD: React.FC<CdDatabaseBeneficiaryUpdateFormInterface> = 
           <div className="flex flex-col gap-4">
             <Label htmlFor="incentiveReceived">Incentive Received</Label>
             <SingleSelect
-              options={[
-                { value: "true", label: "Yes" },
-                { value: "false", label: "No" },
-              ]}
+              options={incentiveReceivedOptions}
               value={formData.incentiveReceived.toString()}
               onValueChange={(value: string) => {
                 handleFormChange({
@@ -306,6 +299,8 @@ const BeneficiaryUpdateCD: React.FC<CdDatabaseBeneficiaryUpdateFormInterface> = 
         </div>
 
         <Button
+          id={SUBMIT_BUTTON_PROVIDER_ID}
+          disabled={isLoading}
           className="w-full mt-6"
           onClick={() =>
             reqForConfirmationModelFunc(
@@ -314,7 +309,7 @@ const BeneficiaryUpdateCD: React.FC<CdDatabaseBeneficiaryUpdateFormInterface> = 
             )
           }
         >
-          Update
+          {isLoading ? "Updating ..." : "Update"}
         </Button>
       </DialogContent>
     </Dialog>

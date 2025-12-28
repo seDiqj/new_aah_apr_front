@@ -130,23 +130,31 @@ export const CdFormSchema = z.object({
     .min(3, "focal point should be at least 3 characters of 3 digits !"),
 });
 
-export const TraininFormSchema = z.object({
-  project_id: z.number().min(1, "Select a valid project !"),
-  province_id: z
-    .number("Select a valid province !")
-    .min(1, "Select a valid province !"),
-  district_id: z
-    .number("select a valid district !")
-    .min(1, "select a valid district !"),
-  indicator_id: z
-    .number("Select a valid indicator !")
-    .min(1, "Select a valid indicator !"),
-  village: z
-    .string("Vlillage name should be at least 2 characters !")
-    .min(1, "Vlillage name should be at least 2 characters !"),
-  focalPoint: z
+export const TrainingFormSchema = z.object({
+  
+  project_id: z.number().min(1, "Select a valid project!"),
+
+  province_id: z.number().min(1, "Select a valid province!"),
+
+  district_id: z.number().min(1, "Select a valid district!"),
+
+  indicator_id: z.number().min(1, "Select a valid indicator!"),
+
+  trainingLocation: z
     .string()
-    .min(3, "focal point should be at least 3 characters of 3 digits !"),
+    .min(2, "Training location must be at least 2 characters"),
+
+  name: z.string().min(2, "Training name must be at least 2 characters"),
+
+  participantCatagory: z.string().min(1, "Select participant category"),
+
+  aprIncluded: z.boolean(),
+
+  trainingModality: z.string().min(1, "Select training modality"),
+
+  startDate: z.string().min(1, "Start date is required"),
+
+  endDate: z.string().min(1, "End date is required"),
 });
 
 export const TrainingDatabaseBenefeciaryFormSchema = z.object({
@@ -173,46 +181,32 @@ export const TrainingDatabaseBenefeciaryFormSchema = z.object({
 });
 
 export const PsychoeducationFormSchema = z.object({
-  project_id: z.string("Select a valid project"),
-  indicator_id: z
-    .string("Select a valid indicator !")
-    .min(1, "Select a valid indicator !"),
-  name: z.string().min(3, "Program name should be at least 3 characters !"),
-  focalPoint: z
-    .string("Focal point must be at least 3 characters or 3 digits !")
-    .min(3, "Focal point must be at least 3 characters or 3 digits !"),
-  province_id: z
-    .string("Select a valid province !")
-    .min(3, "Select a valid province !"),
-  district_id: z
-    .string("Select a valid district !")
-    .min(4, "Select a valid district !"),
-  siteCode: z
-    .number("Site code should be at least 1 character or 1 digit !")
-    .min(1, "Site code should be at least 1 character or 1 digit !"),
-  village: z
-    .string("Village name should be at least 2 characters !")
-    .min(2, "Village name should be at least 2 characters !"),
-  code: z
-    .string(
-      "Beneficiary code should be at least one character or more then or equal to 1 digit !"
-    )
-    .min(
-      1,
-      "Beneficiary code should be at least one character or more then or equal to 1 digit !"
-    ),
-  healthFacilityName: z
-    .string("Health facility name is required !")
-    .min(1, "Health facility name is required !"),
-  interventionModality: z
-    .string("Intervention modality is required !")
-    .min(1, "Intervention modality is required !"),
-  awarenessTopic: z
-    .string("Awareness topic is required !")
-    .min(1, "Awareness topic is required !"),
-  awarenessDate: z
-    .string("Awareness date is required !")
-    .min(1, "Awareness date is required !"),
+  programInformation: z.object({
+    project_id: z.number("Select a valid project"),
+    indicator_id: z.number("Select a valid indicator !"),
+    name: z.string().min(3, "Program name should be at least 3 characters !"),
+    focalPoint: z
+      .string("Focal point must be at least 3 characters or 3 digits !")
+      .min(3, "Focal point must be at least 3 characters or 3 digits !"),
+    province_id: z.number("Select a valid province !"),
+    district_id: z.number("Select a valid district !"),
+    siteCode: z
+      .string("Site code should be at least 1 character or 1 digit !")
+      .min(1, "Site code should be at least 1 character or 1 digit !"),
+    village: z
+      .string("Village name should be at least 2 characters !")
+      .min(2, "Village name should be at least 2 characters !"),
+    healthFacilityName: z
+      .string("Health facility name is required !")
+      .min(1, "Health facility name is required !"),
+    interventionModality: z
+      .string("Intervention modality is required !")
+      .min(1, "Intervention modality is required !"),
+  }),
+  psychoeducationInformation: z.object({
+    awarenessTopic: z.string().min(1, "Awareness topic is required !"),
+    awarenessDate: z.string().min(1, "Awareness date is required !"),
+  }),
 });
 
 export const AssessmentFormSchema = z.object({
@@ -309,22 +303,22 @@ export const OutputFormSchema = z.object({
   outputRef: z.string().min(1, "Output referance is required!"),
 });
 
-export const ProvinceSchema = z.object({
-  province: z.string().min(1, "Province name is required!"),
-  target: z.number().min(0, "Target must be non-negative!"),
-  councilorCount: z.number().min(0, "Councilor count must be non-negative!"),
+const ProvinceSchema = z.object({
+  province: z.string().min(1, "Province name is required"),
+  target: z.number().min(0, "Target must be non-negative"),
+  councilorCount: z.number().min(0, "Councilor count must be non-negative"),
 });
 
-export const SubIndicatorSchema = z.object({
+const SubIndicatorSchema = z.object({
   id: z.string().nullable(),
-  indicatorRef: z.string().min(1, "Indicator reference is required!"),
-  name: z.string().min(1, "Sub indicator name is required!"),
-  target: z
-    .number()
-    .min(0, "Sub indicator target must be a non-negative number!"),
-  dessaggregationType: z.enum(["session", "indevidual", "enact"]),
+  indicatorRef: z.string().min(1, "Indicator reference is required"),
+  name: z.string().min(1, "SubIndicator name is required"),
+  target: z.number().min(0, "Target must be non-negative"),
+  dessaggregationType: z.enum(["session", "indevidual"]).or(z.string()),
   type: z.string().nullable(),
-  provinces: z.array(ProvinceSchema).min(1, "Select at least one province!"),
+  provinces: z
+    .array(ProvinceSchema)
+    .min(1, "At least one province is required"),
 });
 
 export const IndicatorFormSchema = z.object({
@@ -377,4 +371,53 @@ export const KitDatabaseProgramFormSchema = z.object({
   siteCode: z.string().min(1, "Site code should be at least 1 characters !"),
   healthFacilityName: z.string().min(3, "Health facility name is required"),
   interventionModality: z.string().min(1, "Intervention modality is required"),
+});
+
+export const IndicatorSchema = z
+  .object({
+    id: z.string().nullable(),
+    outputId: z.number(),
+    indicator: z.string().min(1, "Indicator name is required"),
+    indicatorRef: z.string().min(1, "Indicator reference is required"),
+    target: z.number().min(0, "Target must be non-negative"),
+    status: z.string().min(1, "Status is required"),
+    database: z.string().min(1, "Database name is required"),
+    type: z.string().nullable(),
+    provinces: z
+      .array(ProvinceSchema)
+      .min(1, "At least one province is required"),
+    dessaggregationType: z
+      .enum(["session", "indevidual", "enact"])
+      .or(z.string()),
+    description: z.string().min(1, "Description is required"),
+    subIndicator: SubIndicatorSchema.nullable(),
+    parent_indicator: z.string().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (
+      data.database === "main_database" &&
+      (!data.type || data.type.trim() === "")
+    ) {
+      ctx.addIssue({
+        path: ["type"],
+        code: z.ZodIssueCode.custom,
+        message: "Type is required when database is 'main_database'",
+      });
+    }
+  });
+
+// Dessaggregation Schema
+export const DessaggregationSchema = z.object({
+  id: z.string().nullable(),
+  indicatorId: z.string().nullable(),
+  indicatorRef: z.string().min(1, "Indicator reference is required"),
+  dessaggration: z.string().min(1, "Dessaggregation type is required"),
+  province: z.string().min(1, "Province name is required"),
+  target: z.number().min(0, "Target must be non-negative"),
+});
+
+// Isp3 Schema
+export const Isp3Schema = z.object({
+  name: z.string().min(1, "Name is required"),
+  indicators: z.array(z.string()).min(1, "At least one indicator is required"),
 });

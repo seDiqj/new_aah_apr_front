@@ -26,6 +26,7 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
   const [error, setError] = useState("");
 
   const handleSubmit = async (e: any) => {
@@ -36,18 +37,22 @@ const LoginPage = () => {
       return;
     }
     setLoading(true);
-    axiosInstance.post("/authentication/login", {
-      email,
-      password,
-      remember
-    })
-    .then((response: AxiosResponse<any, any, any>) => {
-      reqForToastAndSetMessage(response.data.message);
-      document.cookie = `access_token=${response.data.access_token}; path=/; max-age=86400; secure; samesite=strict`;
-      router.push("/");
-    })
-    .catch((error: AxiosError<any, any>) => reqForToastAndSetMessage(error.response?.data.message))
-    .finally(() => setLoading(false));
+    axiosInstance
+      .post("/authentication/login", {
+        email,
+        password,
+        remember,
+      })
+      .then((response: AxiosResponse<any, any, any>) => {
+        reqForToastAndSetMessage(response.data.message);
+        document.cookie = `access_token=${response.data.access_token}; path=/; max-age=86400; secure; samesite=strict`;
+        setRedirecting(true);
+        router.push("/");
+      })
+      .catch((error: AxiosError<any, any>) =>
+        reqForToastAndSetMessage(error.response?.data.message)
+      )
+      .finally(() => setLoading(false));
   };
 
   return (
@@ -106,8 +111,18 @@ const LoginPage = () => {
               </a>
             </div>
 
-            <Button type="button" id="submitBtnProvider" className="w-full" disabled={loading} onClick={handleSubmit}>
-              {loading ? "Signing in..." : "Sign in"}
+            <Button
+              type="button"
+              id="submitBtnProvider"
+              className="w-full"
+              disabled={loading || redirecting}
+              onClick={handleSubmit}
+            >
+              {loading
+                ? "Signing in..."
+                : redirecting
+                ? "Redirecting ..."
+                : "Sign in"}
             </Button>
           </form>
         </CardContent>

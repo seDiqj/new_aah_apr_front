@@ -17,6 +17,7 @@ import { useParams } from "next/navigation";
 import { ChapterDefault } from "@/constants/FormsDefaultValues";
 import { ChapterCreationMessage } from "@/constants/ConfirmationModelsTexts";
 import { ChapterFormInterface } from "@/interfaces/Interfaces";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
 
 const CreateNewChapterForm: React.FC<ChapterFormInterface> = ({
   open,
@@ -38,14 +39,18 @@ const CreateNewChapterForm: React.FC<ChapterFormInterface> = ({
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     axiosInstance
       .post(`/training_db/training/chapter/${id}`, formData)
       .then((response: any) => reqForToastAndSetMessage(response.data.message))
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response?.data?.message || "Error")
-      );
+      )
+      .finally(() => setIsLoading(false));
   };
 
   return (
@@ -113,6 +118,8 @@ const CreateNewChapterForm: React.FC<ChapterFormInterface> = ({
 
           <div className="col-span-2">
             <Button
+              id={SUBMIT_BUTTON_PROVIDER_ID}
+              disabled={isLoading}
               onClick={(e) =>
                 reqForConfirmationModelFunc(ChapterCreationMessage, () =>
                   handleSubmit(e)
@@ -120,7 +127,7 @@ const CreateNewChapterForm: React.FC<ChapterFormInterface> = ({
               }
               className="w-full mt-6"
             >
-              Submit
+              {isLoading ? "Saving ..." : "Save"}
             </Button>
           </div>
         </form>

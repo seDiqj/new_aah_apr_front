@@ -47,6 +47,7 @@ const AprFinalizationSubPage: React.FC<AprFinalizationSubPageInterface> = ({
     axiosInstance,
     reqForConfirmationModelFunc,
   } = useParentContext();
+
   const {
     projectId,
     actionLogs,
@@ -63,14 +64,14 @@ const AprFinalizationSubPage: React.FC<AprFinalizationSubPageInterface> = ({
 
   const [comment, setComment] = useState<string>("");
 
-  const [reqForCreationModel, setReqForCreationModel] =
-    useState<boolean>(false);
-  const [reqForSubmitionModel, setReqForSubmitionModel] =
-    useState<boolean>(false);
+  const [reqForCreationModel, setReqForCreationModel] = useState(false);
+  const [reqForSubmitionModel, setReqForSubmitionModel] = useState(false);
   const [reqForGrantFinalizationModel, setReqForGrantFinalizationModel] =
-    useState<boolean>(false);
+    useState(false);
   const [reqForHqFinalizationModel, setReqForHqFinalizationModel] =
-    useState<boolean>(false);
+    useState(false);
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const changeProjectAprStatus = (status: string) => {
     if (!IsValidAprStatus(status)) {
@@ -82,8 +83,9 @@ const AprFinalizationSubPage: React.FC<AprFinalizationSubPageInterface> = ({
         status
       )
     ) {
-      reqForToastAndSetMessage(`You can not set the project status to ${status} while its ${projectAprStatus} ! 
-            Note: if you wanna to change the apr status of project to ${status} please before that reject it at the top level stages and then try agein.`);
+      reqForToastAndSetMessage(
+        `You can not set the project status to ${status} while its ${projectAprStatus}!`
+      );
       return;
     } else if (
       IsEnteredStatusCallsToRejectAtTheLevelAboveTheCurrentLimit(
@@ -92,7 +94,7 @@ const AprFinalizationSubPage: React.FC<AprFinalizationSubPageInterface> = ({
       )
     ) {
       reqForToastAndSetMessage(
-        `You can not reject a project at the ${status} stage while its on ${projectAprStatus} stage !`
+        `You can not reject a project at the ${status} stage while its on ${projectAprStatus}!`
       );
       return;
     } else if (
@@ -102,15 +104,17 @@ const AprFinalizationSubPage: React.FC<AprFinalizationSubPageInterface> = ({
       )
     ) {
       reqForToastAndSetMessage(
-        `You can not change the apr status of a project to ${status} while not yet accepted at the previos levels !`
+        `You can not approve this step before previous levels!`
       );
       return;
     }
 
+    setIsLoading(true);
+
     axiosInstance
       .post(`projects/status/change_apr_status/${projectId}`, {
         newStatus: status,
-        comment: comment,
+        comment,
       })
       .then((response: any) => {
         reqForToastAndSetMessage(response.data.message);
@@ -120,11 +124,12 @@ const AprFinalizationSubPage: React.FC<AprFinalizationSubPageInterface> = ({
           setReqForSubmitionModel,
           setReqForGrantFinalizationModel,
           setReqForHqFinalizationModel,
-        ].map((value) => value((prev) => (prev ? !prev : prev)));
+        ].forEach((fn) => fn(false));
       })
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
-      );
+      )
+      .finally(() => setIsLoading(false));
   };
 
   useEffect(() => {
@@ -136,260 +141,209 @@ const AprFinalizationSubPage: React.FC<AprFinalizationSubPageInterface> = ({
       );
   }, [projectAprStatus]);
 
-  const readOnly: boolean = IsShowMode(mode);
+  const readOnly = IsShowMode(mode);
 
   return (
-    <>
-      <Card className="h-full">
-        <CardHeader>
-          <CardTitle>Apr Finalization</CardTitle>
-        </CardHeader>
+    <Card className="h-full w-full max-w-full overflow-hidden flex flex-col">
+      {/* ================= Header ================= */}
+      <CardHeader className="border-b">
+        <CardTitle className="text-lg font-semibold">
+          APR Finalization Workflow
+        </CardTitle>
+      </CardHeader>
 
-        <CardContent className="grid gap-6">
-          {aprFinalizationSteps
-            .filter((step) => permissions.includes(step.permission))
-            .map((step, index) => {
-              const canReject = index !== 0;
-              return (
-                <div
-                  key={step.id}
-                  className="flex items-center justify-between gap-3"
-                >
-                  <div className="flex items-center gap-3 w-full">
-                    <AlertDialog
-                      open={
-                        step.id == "create"
-                          ? reqForCreationModel
-                          : step.id == "submit"
-                          ? reqForSubmitionModel
-                          : step.id == "grantFinalize"
-                          ? reqForGrantFinalizationModel
-                          : reqForHqFinalizationModel
-                      }
-                    >
-                      <div>
-                        <AlertDialogTrigger asChild>
-                          <Checkbox
-                            id={step.id}
-                            checked={
-                              (() => {
-                                const currentIdx =
-                                  projectAprStatusList.indexOf(
-                                    projectAprStatus
-                                  );
-                                const stepIdx = projectAprStatusList.indexOf(
-                                  step.acceptStatusValue!
-                                );
+      {/* ================= Content ================= */}
+      <CardContent className="flex flex-col gap-6 overflow-auto max-w-full">
+        {aprFinalizationSteps
+          .filter((step) => permissions.includes(step.permission))
+          .map((step, index) => {
+            const canReject = index !== 0;
 
-                                const isRejected = step.rejectStatusValue
-                                  ? projectAprStatus === step.rejectStatusValue
-                                  : false;
+            return (
+              <div
+                key={step.id}
+                className="rounded-xl border bg-muted/30 p-4 hover:bg-muted/40 transition"
+              >
+                <div className="flex items-center gap-4">
+                  <AlertDialog
+                    open={
+                      step.id === "create"
+                        ? reqForCreationModel
+                        : step.id === "submit"
+                        ? reqForSubmitionModel
+                        : step.id === "grantFinalize"
+                        ? reqForGrantFinalizationModel
+                        : reqForHqFinalizationModel
+                    }
+                  >
+                    <AlertDialogTrigger asChild>
+                      <Checkbox
+                        id={step.id}
+                        checked={
+                          (() => {
+                            const currentIdx =
+                              projectAprStatusList.indexOf(projectAprStatus);
+                            const stepIdx = projectAprStatusList.indexOf(
+                              step.acceptStatusValue!
+                            );
+                            const isRejected = step.rejectStatusValue
+                              ? projectAprStatus === step.rejectStatusValue
+                              : false;
 
-                                return (
-                                  !isRejected &&
-                                  stepIdx !== -1 &&
-                                  currentIdx >= stepIdx
-                                );
-                              })() || projectAprStatus == step.acceptStatusValue
-                            }
-                            onCheckedChange={() =>
-                              step.id == "create"
-                                ? setReqForCreationModel(true)
-                                : step.id == "submit"
-                                ? setReqForSubmitionModel(true)
-                                : step.id == "grantFinalize"
-                                ? setReqForGrantFinalizationModel(true)
-                                : setReqForHqFinalizationModel(true)
-                            }
-                            disabled={readOnly}
-                          />
-                        </AlertDialogTrigger>
+                            return (
+                              !isRejected &&
+                              stepIdx !== -1 &&
+                              currentIdx >= stepIdx
+                            );
+                          })() || projectAprStatus === step.acceptStatusValue
+                        }
+                        onCheckedChange={() =>
+                          step.id === "create"
+                            ? setReqForCreationModel(true)
+                            : step.id === "submit"
+                            ? setReqForSubmitionModel(true)
+                            : step.id === "grantFinalize"
+                            ? setReqForGrantFinalizationModel(true)
+                            : setReqForHqFinalizationModel(true)
+                        }
+                        disabled={readOnly}
+                      />
+                    </AlertDialogTrigger>
+
+                    <AlertDialogContent className="space-y-4">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          {canReject
+                            ? "Accept or Reject this step?"
+                            : `Confirm ${step.label}?`}
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          {step.description}
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+
+                      <div className="space-y-2">
+                        <Label>Comment</Label>
+                        <Textarea
+                          value={comment}
+                          onChange={(e) => setComment(e.target.value)}
+                          placeholder="Write your comment..."
+                          disabled={readOnly}
+                        />
                       </div>
 
-                      <AlertDialogContent className="space-y-4">
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>
-                            {canReject ? (
-                              <>
-                                Do you want to{" "}
-                                <span className="text-green-600">Accept</span>{" "}
-                                or <span className="text-red-600">Reject</span>{" "}
-                                this step?
-                              </>
-                            ) : (
-                              <>
-                                Confirm{" "}
-                                <span className="text-green-600">
-                                  {step.label}
-                                </span>
-                                ?
-                              </>
-                            )}
-                          </AlertDialogTitle>
-                          <AlertDialogDescription>
-                            {step.description}
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
+                      <AlertDialogFooter className="justify-between">
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
 
-                        {/* Textarea for comment */}
-                        <div className="flex flex-col gap-2">
-                          <Label
-                            htmlFor={`comment-${step.id}`}
-                            className="text-sm font-medium"
-                          >
-                            Enter your comment
-                          </Label>
-                          <Textarea
-                            id={`comment-${step.id}`}
-                            value={comment}
-                            onChange={(e) => setComment(e.target.value)}
-                            className="resize-none border rounded p-2 text-sm"
-                            placeholder="Write your comment here..."
-                            disabled={readOnly}
-                          />
-                        </div>
-
-                        <AlertDialogFooter className="flex justify-between">
-                          <AlertDialogCancel
-                            onClick={() =>
-                              step.id == "create"
-                                ? setReqForCreationModel(false)
-                                : step.id == "submit"
-                                ? setReqForSubmitionModel(false)
-                                : step.id == "grantFinalize"
-                                ? setReqForGrantFinalizationModel(false)
-                                : setReqForHqFinalizationModel(false)
-                            }
-                          >
-                            Cancel
-                          </AlertDialogCancel>
-
-                          {canReject ? (
-                            <div className="flex gap-2">
-                              <Button
-                                variant="destructive"
-                                onClick={() =>
-                                  reqForConfirmationModelFunc(
-                                    RejectFinalizationMessage,
-                                    () => {
-                                      if (comment.trim()) {
-                                        changeProjectAprStatus(
-                                          step.rejectStatusValue!
-                                        );
-                                      } else {
-                                        reqForToastAndSetMessage(
-                                          "Comment section is required !"
-                                        );
-                                      }
-                                    }
-                                  )
-                                }
-                                disabled={readOnly}
-                              >
-                                Reject
-                              </Button>
-
-                              <Button
-                                onClick={() =>
-                                  reqForConfirmationModelFunc(
-                                    AcceptFinalizationMessage,
-                                    () => {
-                                      if (comment.trim()) {
-                                        changeProjectAprStatus(
-                                          step.acceptStatusValue!
-                                        );
-                                      } else {
-                                        reqForToastAndSetMessage(
-                                          "Comment section is required !"
-                                        );
-                                      }
-                                    }
-                                  )
-                                }
-                                disabled={readOnly}
-                              >
-                                Accept
-                              </Button>
-                            </div>
-                          ) : (
+                        {canReject ? (
+                          <div className="flex gap-2">
                             <Button
-                              onClick={() => {
-                                if (comment.trim()) {
-                                  changeProjectAprStatus(
-                                    step.acceptStatusValue!
-                                  );
-                                } else {
-                                  reqForToastAndSetMessage(
-                                    "Comment section is required !"
-                                  );
-                                }
-                              }}
-                              disabled={readOnly}
+                              variant="destructive"
+                              disabled={readOnly || isLoading}
+                              onClick={() =>
+                                reqForConfirmationModelFunc(
+                                  RejectFinalizationMessage,
+                                  () =>
+                                    comment.trim()
+                                      ? changeProjectAprStatus(
+                                          step.rejectStatusValue!
+                                        )
+                                      : reqForToastAndSetMessage(
+                                          "Comment is required!"
+                                        )
+                                )
+                              }
                             >
-                              {step.buttonLabel}
+                              Reject
                             </Button>
-                          )}
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
 
-                    <div className="flex flex-row items-center justify-between w-full">
-                      <Label htmlFor={step.id}>{step.label}</Label>
+                            <Button
+                              disabled={readOnly || isLoading}
+                              onClick={() =>
+                                reqForConfirmationModelFunc(
+                                  AcceptFinalizationMessage,
+                                  () =>
+                                    comment.trim()
+                                      ? changeProjectAprStatus(
+                                          step.acceptStatusValue!
+                                        )
+                                      : reqForToastAndSetMessage(
+                                          "Comment is required!"
+                                        )
+                                )
+                              }
+                            >
+                              Accept
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button
+                            disabled={readOnly || isLoading}
+                            onClick={() =>
+                              comment.trim()
+                                ? changeProjectAprStatus(
+                                    step.acceptStatusValue!
+                                  )
+                                : reqForToastAndSetMessage(
+                                    "Comment is required!"
+                                  )
+                            }
+                          >
+                            {step.buttonLabel}
+                          </Button>
+                        )}
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
 
-                      <div>
-                        <span>
-                          {`${
-                            actionLogs.find(
-                              (log: any) => log.action === step.id
-                            ).name
-                          } - ${
-                            actionLogs.find(
-                              (log: any) => log.action === step.id
-                            ).date
-                          }`}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-
-          {/* Action Progress Bar */}
-          <div className="mt-8 max-w-full overflow-auto">
-            <h3 className="text-lg font-semibold mb-4">Action Progress</h3>
-
-            <div className="flex items-center gap-4 overflow-x-auto p-3  rounded-xl shadow-inner">
-              {actionLogs.map((log: any, i: number) => (
-                <div key={log.id} className="flex items-center gap-2 shrink-0">
-                  <div className="flex flex-col items-center text-center">
-                    <img
-                      src={log.avatar}
-                      alt={log.name}
-                      className="w-10 h-10 rounded-full border-2 border-gray-300 object-cover"
-                    />
-                    <span className="text-xs mt-1 font-medium">{log.name}</span>
-                    <span
-                      className={`text-xs px-2 py-1 rounded-full mt-1 ${
-                        log.action === "Accepted"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
-                      }`}
-                    >
-                      {log.action}
+                  <div className="flex justify-between w-full">
+                    <Label>{step.label}</Label>
+                    <span className="text-sm text-muted-foreground">
+                      {actionLogs.find((log: any) => log.action === step.id)
+                        ?.name ?? "Pending"}{" "}
+                      •{" "}
+                      {actionLogs.find((log: any) => log.action === step.id)
+                        ?.date ?? "N/A"}
                     </span>
                   </div>
-
-                  {i < actionLogs.length - 1 && (
-                    <div className="w-10 h-[2px] bg-gray-300 mx-2"></div>
-                  )}
                 </div>
-              ))}
-            </div>
+              </div>
+            );
+          })}
+
+        {/* ================= Timeline ================= */}
+        <div className="pt-6">
+          <h3 className="text-sm font-semibold mb-3">Action Timeline</h3>
+
+          <div className="flex gap-6 overflow-x-auto p-4 rounded-xl bg-muted/40">
+            {actionLogs.map((log: any, i: number) => (
+              <div key={log.id} className="flex items-center gap-4 shrink-0">
+                <div className="flex flex-col items-center text-center">
+                  <img
+                    src={log.avatar}
+                    className="w-10 h-10 rounded-full border"
+                  />
+                  <span className="text-xs font-medium mt-1">{log.name}</span>
+                  <span
+                    className={`text-xs px-2 py-0.5 rounded-full mt-1 ${
+                      log.action === "Accepted"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
+                    }`}
+                  >
+                    {log.action}
+                  </span>
+                </div>
+
+                {i < actionLogs.length - 1 && (
+                  <div className="w-12 h-px bg-border" />
+                )}
+              </div>
+            ))}
           </div>
-        </CardContent>
-      </Card>
-    </>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

@@ -23,6 +23,7 @@ import {
   MaritalStatusOptions,
 } from "@/constants/SingleAndMultiSelectOptionsList";
 import { CdDatabaseBenefciaryEditionMessage } from "@/constants/ConfirmationModelsTexts";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
 
 const CommunityDialogueUpdateCD: React.FC<CommunityDialogueUpdateInterface> = ({
   open,
@@ -80,7 +81,10 @@ const CommunityDialogueUpdateCD: React.FC<CommunityDialogueUpdateInterface> = ({
     }));
   };
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const handleSubmit = () => {
+    setIsLoading(true);
     axiosInstance
       .put(`/community_dialogue_db/beneficiary/${beneficiaryId}`, formData)
       .then((response: any) => {
@@ -91,7 +95,8 @@ const CommunityDialogueUpdateCD: React.FC<CommunityDialogueUpdateInterface> = ({
         reqForToastAndSetMessage(
           error.response?.data?.message || "Update failed"
         )
-      );
+      )
+      .finally(() => setIsLoading(false));
   };
 
   return (
@@ -249,6 +254,8 @@ const CommunityDialogueUpdateCD: React.FC<CommunityDialogueUpdateInterface> = ({
 
         {!loading && (
           <Button
+            id={SUBMIT_BUTTON_PROVIDER_ID}
+            disabled={isLoading}
             className="w-full mt-6"
             onClick={() =>
               reqForConfirmationModelFunc(
@@ -257,7 +264,7 @@ const CommunityDialogueUpdateCD: React.FC<CommunityDialogueUpdateInterface> = ({
               )
             }
           >
-            Update
+            {isLoading ? "Updating ..." : "Update"}
           </Button>
         )}
       </DialogContent>

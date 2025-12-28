@@ -46,6 +46,7 @@ const ProjectForm: React.FC<ProjectFormInterface> = ({ mode }) => {
     : useProjectEditContext();
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const hundleFormChange = (e: any) => {
     const name: string = e.target.name;
@@ -75,6 +76,7 @@ const ProjectForm: React.FC<ProjectFormInterface> = ({ mode }) => {
     }
 
     setFormErrors({});
+    setIsLoading(true);
 
     if (IsCreateMode(mode)) {
       axiosInstance
@@ -85,7 +87,8 @@ const ProjectForm: React.FC<ProjectFormInterface> = ({ mode }) => {
         })
         .catch((error: any) => {
           reqForToastAndSetMessage(error.response.data.message);
-        });
+        })
+        .finally(() => setIsLoading(false));
       return;
     }
 
@@ -94,7 +97,8 @@ const ProjectForm: React.FC<ProjectFormInterface> = ({ mode }) => {
       .then((response: any) => reqForToastAndSetMessage(response.data.message))
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
-      );
+      )
+      .finally(() => setIsLoading(false));
   };
 
   const readOnly = IsShowMode(mode);
@@ -338,6 +342,7 @@ const ProjectForm: React.FC<ProjectFormInterface> = ({ mode }) => {
             setCurrentTab,
             "project",
             readOnly ? undefined : hundleSubmit,
+            isLoading,
             setCurrentTab,
             "outcome",
             "project",

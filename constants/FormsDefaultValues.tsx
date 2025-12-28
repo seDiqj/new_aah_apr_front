@@ -25,6 +25,7 @@ import {
   BeneficiaryEvaluationType,
   CommunityDialogueFormType,
   KitDatabaseProgram,
+  KitType,
 } from "@/types/Types";
 
 export const ProjectDefault: () => Project = () => ({
@@ -292,6 +293,12 @@ export const KitDefault: () => KitFormType = () => ({
   is_received: false,
 });
 
+export const KitFormDefault: () => KitType = () => ({
+  name: "",
+  description: "",
+  status: "active",
+});
+
 export const MainDatabaseBeneficiaryUpdateDefault: () => MainDatabaseBeneficiaryUpdateType =
   () => ({
     id: "",
@@ -304,7 +311,7 @@ export const MainDatabaseBeneficiaryUpdateDefault: () => MainDatabaseBeneficiary
     age: 0,
     maritalStatus: "",
     childCode: "",
-    ageOfChild: 0,
+    childAge: 0,
     phone: "",
     householdStatus: "",
     literacyLevel: "",
@@ -396,3 +403,14 @@ export const CommunityDialogueBeneficiaryFormDefault: () => CommunityDialogBenef
     incentiveAmount: "",
     dateOfRegistration: "",
   });
+
+export const UserFormDefault: () => UserType = () => ({
+  name: "",
+  title: "",
+  email: "",
+  password: "",
+  email_verified_at: "",
+  photo_path: "",
+  status: "active",
+  role: "",
+});

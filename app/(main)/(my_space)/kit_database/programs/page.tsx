@@ -10,7 +10,6 @@ import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { mainDatabaseAndKitDatabaseProgramColumns } from "@/definitions/DataTableColumnsDefinitions";
 import {
   KitDatabaseProgramsFiltersList,
-  KitDatabaseProgramsFilterUrl,
 } from "@/constants/FiltersList";
 import { useState } from "react";
 
@@ -50,7 +49,7 @@ const MainDatabaseProgramsPage = () => {
           columns={mainDatabaseAndKitDatabaseProgramColumns}
           indexUrl="/global/programs/kit_database"
           deleteUrl="/global/delete_programs"
-          searchableColumn="name"
+          searchableColumn="Program Name"
           deleteBtnPermission="Kit.delete"
           editBtnPermission="Kit.edit"
           viewPermission="Kit.view"
@@ -58,7 +57,6 @@ const MainDatabaseProgramsPage = () => {
           editModelOpenerStateSetter={setOpenEditMode}
           idFeildForShowStateSetter={setIdFeildForShowStateSetter}
           showModelOpenerStateSetter={setOpenShowMode}
-          filterUrl={KitDatabaseProgramsFilterUrl}
           filtersList={KitDatabaseProgramsFiltersList}
         ></DataTableDemo>
 

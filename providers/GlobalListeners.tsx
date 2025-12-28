@@ -6,41 +6,23 @@
 
 import { useEventProvider } from "@/contexts/EventContext";
 import KeyboardEventHundler from "@/core/KeyboardEventHundlers";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 const GlobaleListenersRegisterer = () => {
-  const { KeyboardManager, Events } = useEventProvider();
+  const { KeyboardManager } = useEventProvider();
+
+  const hasRef = useRef(false);
 
   useEffect(() => {
+    if (hasRef.current) return;
+    hasRef.current = true;
+
     const KEH = new KeyboardEventHundler();
 
-    KeyboardManager.registerKey(
-      Events.ShourtcutifyKeyboardEvents.KeyDownEvent.KeyDownEnter,
-      KEH.onEnterPressed
-    );
-    KeyboardManager.registerKey(
-      Events.ShourtcutifyKeyboardEvents.KeyDownEvent.KeyDownDelete,
-      KEH.onDeletePressed
-    );
-    KeyboardManager.registerKey(
-      Events.ShourtcutifyKeyboardEvents.KeyDownEvent.KeyDownCtrlA,
-      KEH.onCtrlPlusAPressed
-    );
-    KeyboardManager.registerKey(
-      Events.ShourtcutifyKeyboardEvents.KeyDownEvent.KeyDownCtrlB,
-      KEH.onCtrlPlusBPressed
-    );
-
-    KeyboardManager.registerKey(
-      Events.ShourtcutifyKeyboardEvents.KeyDownEvent.KeyDownArrowLeft,
-      KEH.onArrowLeftPressed
-    );
-
-    KeyboardManager.registerKey(
-      Events.ShourtcutifyKeyboardEvents.KeyDownEvent.KeyDownArrowRight,
-      KEH.onArrowRightPressed
-    );
-
+    KeyboardManager.registerKey("enter", KEH.onEnterPressed);
+    KeyboardManager.registerKey("delete", KEH.onDeletePressed);
+    KeyboardManager.registerKey("control->a", KEH.onCtrlPlusAPressed);
+    
     return () => {
       KeyboardManager.destroy();
     };

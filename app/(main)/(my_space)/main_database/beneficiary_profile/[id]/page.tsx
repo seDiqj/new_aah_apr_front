@@ -39,6 +39,7 @@ import {
   MainDatabaseProgram,
 } from "@/types/Types";
 import { use, useEffect, useState } from "react";
+import ChromeTabs from "@/app/(main)/projects/Components/ChromeTab";
 
 const BeneficiaryProfilePage: React.FC<
   MainDatabaseBeneficiaryProfileInterface
@@ -196,17 +197,35 @@ const BeneficiaryProfilePage: React.FC<
         <div className="flex flex-1 h-[440px] w-full flex-col gap-6">
           <Tabs
             onValueChange={(value: string) => setCurrentTab(value)}
+            value={currentTab}
             defaultValue="beneficiaryInfo"
             className="h-full"
           >
             {/* List of tabs */}
-            <TabsList className="w-full">
-              <TabsTrigger value="beneficiaryInfo">Beneficiary</TabsTrigger>
-              <TabsTrigger value="activity">Activity</TabsTrigger>
-              <TabsTrigger value="mealtool">Meal Tools</TabsTrigger>
-              <TabsTrigger value="evaluation">Evaluation</TabsTrigger>
-            </TabsList>
-
+            <ChromeTabs
+              initialTabs={[
+                {
+                  value: "beneficiaryInfo",
+                  title: "Beneficiary",
+                  stateSetter: setCurrentTab,
+                },
+                {
+                  value: "activity",
+                  title: "Activity",
+                  stateSetter: setCurrentTab,
+                },
+                {
+                  value: "mealtool",
+                  title: "Meal Tools",
+                  stateSetter: setCurrentTab,
+                },
+                {
+                  value: "evaluation",
+                  title: "Evaluation",
+                  stateSetter: setCurrentTab,
+                },
+              ]}
+            ></ChromeTabs>
             {/* Beneficiary Info */}
             <TabsContent value="beneficiaryInfo" className="h-full">
               <Card className="h-full flex flex-col shadow-sm border rounded-2xl">

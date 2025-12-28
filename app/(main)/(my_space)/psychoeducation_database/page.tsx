@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { psychoeducationTableListColumn } from "@/definitions/DataTableColumnsDefinitions";
 import {
-  PsychoeducationFilterUrl,
   PsychoeducationsFiltersList,
 } from "@/constants/FiltersList";
 import { useState } from "react";
@@ -59,14 +58,13 @@ const PsychoeducationDatabasePage = () => {
           columns={psychoeducationTableListColumn}
           indexUrl="/psychoeducation_db/psychoeducations"
           deleteUrl="/psychoeducation_db/delete_psychoeducations"
-          searchableColumn="name"
+          searchableColumn="Awareness Topic"
           idFeildForEditStateSetter={setIdFeildForEditStateSetter}
           editModelOpenerStateSetter={setReqForPsychoeducationEditionForm}
           idFeildForShowStateSetter={setIdFeildForShowStateSetter}
           showModelOpenerStateSetter={setReqForPsychoeducationShowForm}
           editBtnPermission="Psychoeducation.edit"
           deleteBtnPermission="Psychoeducation.delete"
-          filterUrl={PsychoeducationFilterUrl}
           filtersList={PsychoeducationsFiltersList}
         ></DataTableDemo>
 

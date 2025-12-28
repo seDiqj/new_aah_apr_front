@@ -37,17 +37,20 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useParentContext } from "@/contexts/ParentContext";
-import { ChevronDown, Edit, Filter, Trash } from "lucide-react";
+import { ChevronDown, Edit, Filter, Search, Trash } from "lucide-react";
 import { Can } from "../Can";
 import { DeleteButtonMessage } from "@/constants/ConfirmationModelsTexts";
-import { DELETE_BUTTON_PROVIDER_ID } from "@/constants/System";
+import {
+  DELETE_BUTTON_PROVIDER_ID,
+  SUBMIT_BUTTON_PROVIDER_ID,
+} from "@/constants/System";
 import { AxiosError, AxiosResponse } from "axios";
 import { DataTableInterface } from "@/interfaces/Interfaces";
+import { useEffect } from "react";
 
 const DataTableDemo: React.FC<DataTableInterface> = ({
   columns,
   indexUrl,
-  filterUrl,
   deleteUrl,
   searchableColumn,
   idFeildForEditStateSetter,
@@ -78,8 +81,13 @@ const DataTableDemo: React.FC<DataTableInterface> = ({
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const [data, setData] = React.useState<any[]>([]);
+  const [searchInput, setSearchInput] = React.useState<string>("");
 
   const [filters, setFilters] = React.useState<Record<string, string>>({});
+
+  const [page, setPage] = React.useState(1);
+  const [canNext, setCanNext] = React.useState<boolean>(false);
+  const [canPrev, setCanPrev] = React.useState<boolean>(false);
 
   const handleFilterChange = (field: string, value: string) => {
     const newFilters = { ...filters, [field]: value };
@@ -87,21 +95,10 @@ const DataTableDemo: React.FC<DataTableInterface> = ({
   };
 
   const applyFilters = () => {
-    setLoading(true);
-    axiosInstance
-      .post(filterUrl, filters)
-      .then((response: any) => {
-        setData(response.data.data);
-        setLoading(false);
-      })
-      .catch((error: any) => {
-        reqForToastAndSetMessage(error.response.data.message);
-        setData([]);
-        setLoading(false);
-      });
+    setPage(1);
+    handleFetch();
   };
 
-  // Fetch table data
   const fetchTableData = () => {
     setLoading(true);
     setGloabalLoading(true);
@@ -123,7 +120,6 @@ const DataTableDemo: React.FC<DataTableInterface> = ({
       });
   };
 
-  // Delete selected rows
   const handleDelete = () => {
     const ids = Object.keys(rowSelection).map(Number);
     axiosInstance
@@ -138,9 +134,70 @@ const DataTableDemo: React.FC<DataTableInterface> = ({
     setRowSelection({});
   };
 
-  React.useEffect(() => {
-    fetchTableData();
-  }, [reloadFlag]);
+  const handleSearch = () => {
+    setPage(1);
+    handleFetch();
+  };
+
+  const getUrl = (): string => {
+    const params = new URLSearchParams();
+
+    if (searchInput) {
+      params.append("search", searchInput);
+    }
+
+    for (const key in filters) {
+      if (filters[key] !== undefined && filters[key] !== null) {
+        params.append(key, String(filters[key]));
+      }
+    }
+
+    params.append("page", String(page));
+
+    return `${indexUrl}?${params.toString()}`;
+  };
+
+  const handleFetch = () => {
+    setLoading(true);
+    setGloabalLoading(true);
+    axiosInstance
+      .get(getUrl())
+      .then((response: AxiosResponse<any, any>) => {
+        setData(response.data.data.data);
+        console.log(response.data.data);
+        
+        if (response.data.data.next_page_url) setCanNext(true);
+        else setCanNext(false);
+
+        if (response.data.data.prev_page_url) setCanPrev(true);
+        else setCanPrev(false);
+      })
+      .catch((error: AxiosError<any, any>) => {
+        if (error.response?.data.data) setData(error.response.data.data);
+        reqForToastAndSetMessage(
+          error.response?.data.message || "Failed to fetch data"
+        );
+      })
+      .finally(() => {
+        setLoading(false);
+        setGloabalLoading(false);
+      });
+  };
+
+  const onNext = () => {
+    setPage(page + 1);
+    handleFetch();
+  };
+
+  const onPrev = () => {
+    setPage(page - 1);
+    handleFetch();
+  };
+
+  // fetch data
+  useEffect(() => {
+    handleFetch();
+  }, [page, reloadFlag]);
 
   // Sync selected row id for edit
   React.useEffect(() => {
@@ -178,21 +235,22 @@ const DataTableDemo: React.FC<DataTableInterface> = ({
     <div className="w-full min-h-[420px] relative">
       {/* Toolbar */}
       <div className="flex justify-between items-center py-4">
-        <Input
-          placeholder={`Search By ${searchableColumn}`}
-          value={
-            (table.getColumn(searchableColumn)?.getFilterValue() as string) ??
-            ""
-          }
-          onChange={(e) =>
-            table.getColumn(searchableColumn)?.setFilterValue(e.target.value)
-          }
-          className="max-w-sm"
-        />
+        <div className="flex flex-row gap-2 w-1/3">
+          <Input
+            placeholder={`Search By ${searchableColumn}`}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            className="max-w-sm"
+            type="search"
+          />
+          <Button variant={"secondary"} onClick={handleSearch} title="Search">
+            <Search />
+          </Button>
+        </div>
 
         <div className="flex flex-row items-center gap-2">
           {injectedElement &&
-            Object.keys(rowSelection).length == 1 &&
+            Object.keys(rowSelection).length >= 1 &&
             injectedElement}
 
           {Object.keys(rowSelection).length === 1 &&
@@ -225,44 +283,51 @@ const DataTableDemo: React.FC<DataTableInterface> = ({
           )}
 
           {/* Filter Popover */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline">
-                <Filter />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80 max-h-[350px] overflow-auto">
-              <div className="grid gap-4">
-                <div className="space-y-2">
-                  <h4 className="leading-none font-medium">Dimensions</h4>
-                  <p className="text-muted-foreground text-sm">
-                    Filter Projects.
-                  </p>
-                </div>
-                <div className="grid gap-2">
-                  {filtersList?.map((filter, i) => (
-                    <div
-                      key={i}
-                      className="grid grid-cols-3 items-center gap-4"
-                    >
-                      <Label htmlFor={filter}>{filter}</Label>
-                      <Input
-                        id={filter}
-                        name={filter}
-                        className="col-span-2 h-8"
-                        onChange={(e) =>
-                          handleFilterChange(e.target.name, e.target.value)
-                        }
-                      />
+          {filtersList && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline">
+                  <Filter />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 max-h-[350px] overflow-auto">
+                <div className="grid gap-4">
+                  <div className="space-y-2">
+                    <h4 className="leading-none font-medium">Filters</h4>
+                    {/* <p className="text-muted-foreground text-sm">
+                      Filter Projects.
+                    </p> */}
+                  </div>
+                  <div className="grid gap-2">
+                    {filtersList?.map((filter, i) => (
+                      <div
+                        key={i}
+                        className="grid grid-cols-3 items-center gap-4"
+                      >
+                        <Label htmlFor={filter}>{filter}</Label>
+                        <Input
+                          id={filter}
+                          name={filter}
+                          className="col-span-2 h-8"
+                          onChange={(e) =>
+                            handleFilterChange(e.target.name, e.target.value)
+                          }
+                        />
+                      </div>
+                    ))}
+                    <div className="grid grid-cols-3 items-center gap-4">
+                      <Button
+                        id={SUBMIT_BUTTON_PROVIDER_ID}
+                        onClick={applyFilters}
+                      >
+                        Apply
+                      </Button>
                     </div>
-                  ))}
-                  <div className="grid grid-cols-3 items-center gap-4">
-                    <Button onClick={applyFilters}>Apply</Button>
                   </div>
                 </div>
-              </div>
-            </PopoverContent>
-          </Popover>
+              </PopoverContent>
+            </Popover>
+          )}
 
           {/* Column visibility */}
           <DropdownMenu>
@@ -334,7 +399,8 @@ const DataTableDemo: React.FC<DataTableInterface> = ({
                     ))}
                   </TableRow>
                 ))
-              : table.getRowModel().rows.map((row) => (
+              : table.getRowModel().rows.length >= 1 &&
+                table.getRowModel().rows.map((row) => (
                   <TableRow
                     key={row.id}
                     className="cursor-pointer"
@@ -371,6 +437,12 @@ const DataTableDemo: React.FC<DataTableInterface> = ({
                 ))}
           </TableBody>
         </Table>
+
+        {table.getRowModel().rows.length == 0 && (
+          <div className="flex flex-row items-center justify-center h-[250px] text-gray-400">
+            No Records
+          </div>
+        )}
       </div>
 
       {/* Pagination info */}
@@ -383,16 +455,16 @@ const DataTableDemo: React.FC<DataTableInterface> = ({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
+            onClick={onPrev}
+            disabled={!canPrev}
           >
             Previous
           </Button>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
+            onClick={onNext}
+            disabled={!canNext}
           >
             Next
           </Button>

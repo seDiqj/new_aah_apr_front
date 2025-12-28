@@ -9,7 +9,6 @@ import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { trainingsListColumns } from "@/definitions/DataTableColumnsDefinitions";
 import {
   TrainingFiltersList,
-  TrainingFilterUrl,
 } from "@/constants/FiltersList";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -62,13 +61,12 @@ const TrainingsPage = () => {
         <DataTableDemo
           columns={trainingsListColumns}
           indexUrl="/training_db/trainings"
-          deleteUrl="training_db/delete_trainings"
-          searchableColumn="name"
+          deleteUrl="/training_db/delete_trainings"
+          searchableColumn="Project Code"
           idFeildForEditStateSetter={setIdFeildForEditStateSetter}
           editModelOpenerStateSetter={setReqForTrainingEditionForm}
           idFeildForShowStateSetter={setIdFeildForShowStateSetter}
           showModelOpenerStateSetter={() => {}}
-          filterUrl={TrainingFilterUrl}
           filtersList={TrainingFiltersList}
         ></DataTableDemo>
 

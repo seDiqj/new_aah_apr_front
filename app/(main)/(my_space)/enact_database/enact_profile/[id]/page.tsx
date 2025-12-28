@@ -15,6 +15,7 @@ import { IsIdFeild } from "@/constants/Constants";
 import { Edit, Eye, Trash } from "lucide-react";
 import { AxiosError, AxiosResponse } from "axios";
 import { AssessmentDeleteMessage } from "@/constants/ConfirmationModelsTexts";
+import ChromeTabs from "@/app/(main)/projects/Components/ChromeTab";
 
 const MainDatabasePage = () => {
   const {
@@ -35,6 +36,8 @@ const MainDatabasePage = () => {
   const [selectedAssessmentId, setSelectedAssessmentId] = useState<
     number | null
   >(null);
+
+  const [currentTab, setCurrentTab] = useState<string>("assessmentDetails");
 
   const [reqForAssessmentEditModel, setReqForAssessmentEditModel] =
     useState<boolean>(false);
@@ -96,15 +99,24 @@ const MainDatabasePage = () => {
         <div className="w-full ">
           <Tabs
             defaultValue="assessmentDetails"
+            value={currentTab}
+            onValueChange={setCurrentTab}
             className="h-full max-w-full w-full overflow-auto"
           >
-            {/* List of tabs */}
-            <TabsList className="max-w-full overflow-auto">
-              <TabsTrigger value="assessmentDetails">
-                Assessment Details
-              </TabsTrigger>
-              <TabsTrigger value="assessments">Assessments</TabsTrigger>
-            </TabsList>
+            <ChromeTabs
+              initialTabs={[
+                {
+                  value: "assessmentDetails",
+                  title: "Assessment Details",
+                  stateSetter: setCurrentTab,
+                },
+                {
+                  value: "assessments",
+                  title: "Assessments",
+                  stateSetter: setCurrentTab,
+                },
+              ]}
+            ></ChromeTabs>
 
             <TabsContent value="assessmentDetails" className="h-full">
               <Card className="min-h-[400px] shadow-sm border border-border w-full">

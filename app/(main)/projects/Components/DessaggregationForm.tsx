@@ -43,6 +43,7 @@ import {
   IsCreateMode,
   IsIndicatorSaved,
   IsNotShowMode,
+  IsNotSubIndicator,
   IsShowMode,
   IsTheDessaggregationOfThisIndicatorAndProvince,
   isTheTotalTargetOfDessaggregationsEqualToTotalTargetOfIndicator,
@@ -98,15 +99,22 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
     Dessaggregation[]
   >([]);
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const hundleSubmit = () => {
+    setIsLoading(true);
     axiosInstance
       .post("/projects/d/disaggregation", {
         dessaggregations: dessaggregations,
       })
-      .then((response: any) => reqForToastAndSetMessage(response.data.message))
+      .then((response: any) => {
+        setSelectedIndicator(null);
+        reqForToastAndSetMessage(response.data.message);
+      })
       .catch((error: any) => {
         reqForToastAndSetMessage(error.response.data.message);
-      });
+      })
+      .finally(() => setIsLoading(false));
   };
 
   const handleUpdateDessaggregation = () => {
@@ -246,7 +254,10 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
           <div className="flex flex-col gap-3 w-full">
             {/* List all indicators */}
             {indicators
-              .filter((indicator) => IsIndicatorSaved(indicator))
+              .filter(
+                (indicator) =>
+                  IsIndicatorSaved(indicator) && IsNotSubIndicator(indicator)
+              )
               .map((item, index) => (
                 <Card key={index} className="w-full">
                   <CardContent className="flex items-center justify-between ">
@@ -635,10 +646,12 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                         <Button
                           type="button"
                           className="bg-green-400"
-                          disabled={isTheTotalTargetOfDessaggregationsEqualToTotalTargetOfIndicator(
-                            selectedIndicator,
-                            dessaggregations
-                          )}
+                          disabled={
+                            isTheTotalTargetOfDessaggregationsEqualToTotalTargetOfIndicator(
+                              selectedIndicator,
+                              dessaggregations
+                            ) || isLoading
+                          }
                           onClick={(e) => {
                             if (
                               isTheTotalTargetOfDessaggregationsEqualToTotalTargetOfIndicator(
@@ -654,13 +667,12 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                             reqForConfirmationModelFunc(
                               DoneButtonMessage,
                               () => {
-                                setSelectedIndicator(null);
                                 hundleSubmit();
                               }
                             );
                           }}
                         >
-                          Done
+                          {isLoading ? "Saving ..." : "Save"}
                         </Button>
                       )}
                     </div>
@@ -676,6 +688,7 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
             setCurrentTab,
             "indicator",
             undefined,
+            false,
             setCurrentTab,
             "aprPreview"
           )}

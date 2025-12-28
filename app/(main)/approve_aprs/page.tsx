@@ -15,10 +15,7 @@ import {
   ApproveAprMessage,
   RejectAprMessage,
 } from "@/constants/ConfirmationModelsTexts";
-import {
-  ApprovedAprsFiltersList,
-  ApprovedAprsFilterUrl,
-} from "@/constants/FiltersList";
+import { ApprovedAprsFiltersList } from "@/constants/FiltersList";
 
 const SubmittedDatabasesPage = () => {
   const {
@@ -26,6 +23,7 @@ const SubmittedDatabasesPage = () => {
     reqForConfirmationModelFunc,
     axiosInstance,
     handleReload,
+    handleAprReload,
   } = useParentContext();
 
   const router = useRouter();
@@ -48,6 +46,7 @@ const SubmittedDatabasesPage = () => {
       })
       .then((response: any) => {
         reqForToastAndSetMessage(response.data.message);
+        handleAprReload();
         handleReload();
       })
       .catch((error: any) =>
@@ -64,6 +63,7 @@ const SubmittedDatabasesPage = () => {
       })
       .then((response: any) => {
         reqForToastAndSetMessage(response.data.message);
+        handleAprReload();
         handleReload();
       })
       .catch((error: any) =>
@@ -72,7 +72,7 @@ const SubmittedDatabasesPage = () => {
   };
 
   const previewApr = () => {
-    router.push(`/test/${idFeildForEditStateSetter}`);
+    router.push(`/apr_preview/${idFeildForEditStateSetter}`);
   };
 
   return (
@@ -120,7 +120,6 @@ const SubmittedDatabasesPage = () => {
             </Button>
           </div>
         }
-        filterUrl={ApprovedAprsFilterUrl}
         filtersList={ApprovedAprsFiltersList}
       ></DataTableDemo>
 

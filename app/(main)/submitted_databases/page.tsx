@@ -11,10 +11,7 @@ import { submittedAndFirstApprovedDatabasesTableColumn } from "@/definitions/Dat
 import { Button } from "@/components/ui/button";
 import { useParentContext } from "@/contexts/ParentContext";
 import { Check, XCircle } from "lucide-react";
-import {
-  SubmittedDatabasesFiltersList,
-  SubmittedDatabasesFilterUrl,
-} from "@/constants/FiltersList";
+import { SubmittedDatabasesFiltersList } from "@/constants/FiltersList";
 import {
   ApproveDatabaseMessage,
   RejectDatabaseMessage,
@@ -25,7 +22,8 @@ const SubmittedDatabasesPage = () => {
     reqForToastAndSetMessage,
     reqForConfirmationModelFunc,
     axiosInstance,
-    handleReload
+    handleReload,
+    handleAprReload,
   } = useParentContext();
 
   let [idFeildForEditStateSetter, setIdFeildForEditStateSetter] = useState<
@@ -47,6 +45,7 @@ const SubmittedDatabasesPage = () => {
       })
       .then((response: any) => {
         reqForToastAndSetMessage(response.data.message);
+        handleAprReload();
         handleReload();
       })
       .catch((error: any) =>
@@ -61,6 +60,7 @@ const SubmittedDatabasesPage = () => {
       })
       .then((response: any) => {
         reqForToastAndSetMessage(response.data.message);
+        handleAprReload();
         handleReload();
       })
       .catch((error: any) =>
@@ -122,7 +122,6 @@ const SubmittedDatabasesPage = () => {
             </Button>
           </div>
         }
-        filterUrl={SubmittedDatabasesFilterUrl}
         filtersList={SubmittedDatabasesFiltersList}
       ></DataTableDemo>
 

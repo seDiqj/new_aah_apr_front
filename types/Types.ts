@@ -123,6 +123,12 @@ export type KitFormType = {
   is_received: boolean;
 };
 
+export type KitType = {
+  name: string;
+  description: string;
+  status: "active" | "inactive";
+};
+
 export type PreAndPostTestFormType = {
   preTestScore: number;
   postTestScore: number;
@@ -130,6 +136,7 @@ export type PreAndPostTestFormType = {
 };
 
 export type TrainingForm = {
+  id: string | null;
   project_id: string;
   province_id: string;
   district_id: string;
@@ -306,7 +313,7 @@ export type MainDatabaseBeneficiaryUpdateType = {
   age: number;
   maritalStatus: string;
   childCode: string;
-  ageOfChild: number;
+  childAge: number;
   phone: string;
   householdStatus: string;
   literacyLevel: string;
@@ -354,15 +361,14 @@ export type Evaluation = {
 };
 
 export type UserType = {
-  name: "";
+  name: string;
   title: "";
   email: "";
-  password: "";
-  email_verified_at: "";
-  photo_path: "";
-  department: "";
-  status: "active";
-  role: "";
+  password: string;
+  email_verified_at: string;
+  photo_path: string;
+  status: "active" | "deactive";
+  role: string;
 };
 
 export type Logs = {
@@ -430,6 +436,7 @@ export type Evaluations = {
 } | null;
 
 export type Chapters = {
+  trainingId: string | null;
   trainingName: string;
   chapters: {
     id: number;

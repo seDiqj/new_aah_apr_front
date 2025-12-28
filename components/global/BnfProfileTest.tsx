@@ -18,6 +18,7 @@ import { Loader2, Trash } from "lucide-react";
 import { BeneficiarySessionDeleteMessage } from "@/constants/ConfirmationModelsTexts";
 import { IsANullOrUndefinedValue } from "@/constants/Constants";
 import { AxiosError, AxiosResponse } from "axios";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
 
 type Session = {
   id: number | null;
@@ -431,7 +432,7 @@ export default function SessionsPage() {
       })}
 
       <div className="flex justify-end w-full pr-4 mt-6">
-        <Button onClick={() => reqForConfirmationModelFunc("", handleSubmit)}>
+        <Button id={SUBMIT_BUTTON_PROVIDER_ID} onClick={() => reqForConfirmationModelFunc("", handleSubmit)}>
           Submit
         </Button>
       </div>

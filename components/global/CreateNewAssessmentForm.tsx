@@ -20,6 +20,7 @@ import {
   IsShowMode,
 } from "@/constants/Constants";
 import { AssessmentTypeOptions } from "@/constants/SingleAndMultiSelectOptionsList";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
 
 const AssessmentForm: React.FC<AssessmentFormInterface> = ({
   open,
@@ -62,6 +63,8 @@ const AssessmentForm: React.FC<AssessmentFormInterface> = ({
     }));
   };
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const handleSubmit = (e: any) => {
     e.preventDefault();
 
@@ -82,6 +85,7 @@ const AssessmentForm: React.FC<AssessmentFormInterface> = ({
     }
 
     setFormErrors({});
+    setIsLoading(true);
 
     if (IsCreateMode(mode)) {
       axiosInstance
@@ -93,7 +97,8 @@ const AssessmentForm: React.FC<AssessmentFormInterface> = ({
         })
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)
-        );
+        )
+        .finally(() => setIsLoading(false));
     } else if (IsEditMode(mode) && projectId) {
       axiosInstance
         .put(`/enact_database/${projectId}`, formData)
@@ -103,7 +108,8 @@ const AssessmentForm: React.FC<AssessmentFormInterface> = ({
         })
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)
-        );
+        )
+        .finally(() => setIsLoading(false));
     }
   };
 
@@ -316,6 +322,8 @@ const AssessmentForm: React.FC<AssessmentFormInterface> = ({
           {mode !== "show" && (
             <div className="flex justify-end col-span-2">
               <Button
+                id={SUBMIT_BUTTON_PROVIDER_ID}
+                disabled={isLoading}
                 type="button"
                 onClick={(e) =>
                   reqForConfirmationModelFunc(
@@ -324,7 +332,13 @@ const AssessmentForm: React.FC<AssessmentFormInterface> = ({
                   )
                 }
               >
-                {IsCreateMode(mode) ? "Submit" : "Update"}
+                {isLoading
+                  ? IsCreateMode(mode)
+                    ? "Saving ..."
+                    : "Updating ..."
+                  : IsCreateMode(mode)
+                  ? "Save"
+                  : "Update"}
               </Button>
             </div>
           )}

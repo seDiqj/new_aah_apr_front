@@ -20,6 +20,12 @@ import { CdDatabaseBenefciaryFormSchema } from "@/schemas/FormsSchema";
 import { CommunityDialogueBeneficiaryDefault } from "@/constants/FormsDefaultValues";
 import { CdDatabaseBeneficiaryCreationMessage } from "@/constants/ConfirmationModelsTexts";
 import { CdDatabaseBeneficiaryCreationFormInterface } from "@/interfaces/Interfaces";
+import {
+  GenderOptions,
+  incentiveReceivedOptions,
+  MaritalStatusOptions,
+} from "@/constants/SingleAndMultiSelectOptionsList";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
 
 const BeneficiaryCreateCD: React.FC<
   CdDatabaseBeneficiaryCreationFormInterface
@@ -46,6 +52,8 @@ const BeneficiaryCreateCD: React.FC<
     }));
   };
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const handleSubmit = () => {
     const result = CdDatabaseBenefciaryFormSchema.safeParse(formData);
 
@@ -65,16 +73,19 @@ const BeneficiaryCreateCD: React.FC<
 
     setFormErrors({});
 
+    setIsLoading(true);
+
     axiosInstance
       .post("/community_dialogue_db/beneficiary", formData)
       .then((response: any) => {
         reqForToastAndSetMessage(response.data.message);
-        onOpenChange(false)
+        onOpenChange(false);
         handleReload();
       })
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
-      );
+      )
+      .finally(() => setIsLoading(false));
   };
 
   return (
@@ -158,14 +169,7 @@ const BeneficiaryCreateCD: React.FC<
           <div className="flex flex-col gap-4">
             <Label htmlFor="maritalStatus">Marital Status</Label>
             <SingleSelect
-              options={[
-                { value: "single", label: "Single" },
-                { value: "married", label: "Married" },
-                { value: "divorced", label: "Divorced" },
-                { value: "widowed", label: "Widowed" },
-                { value: "widower", label: "Widower" },
-                { value: "separated", label: "Separated" },
-              ]}
+              options={MaritalStatusOptions}
               value={formData.maritalStatus}
               onValueChange={(value: string) => {
                 handleFormChange({
@@ -179,11 +183,7 @@ const BeneficiaryCreateCD: React.FC<
           <div className="flex flex-col gap-4">
             <Label htmlFor="gender">Gender</Label>
             <SingleSelect
-              options={[
-                { value: "male", label: "Male" },
-                { value: "female", label: "Female" },
-                { value: "other", label: "Other" },
-              ]}
+              options={GenderOptions}
               value={formData.gender}
               onValueChange={(value: string) => {
                 handleFormChange({
@@ -243,10 +243,7 @@ const BeneficiaryCreateCD: React.FC<
           <div className="flex flex-col gap-4">
             <Label htmlFor="incentiveReceived">Incentive Received</Label>
             <SingleSelect
-              options={[
-                { value: "true", label: "Yes" },
-                { value: "false", label: "No" },
-              ]}
+              options={incentiveReceivedOptions}
               value={formData.incentiveReceived.toString()}
               onValueChange={(value: string) => {
                 handleFormChange({
@@ -293,6 +290,8 @@ const BeneficiaryCreateCD: React.FC<
 
         {/* Submit Button */}
         <Button
+          id={SUBMIT_BUTTON_PROVIDER_ID}
+          disabled={isLoading}
           className="w-full mt-6"
           onClick={() =>
             reqForConfirmationModelFunc(
@@ -301,7 +300,7 @@ const BeneficiaryCreateCD: React.FC<
             )
           }
         >
-          Submit
+          {isLoading ? "Saving ..." : "Save"}
         </Button>
       </DialogContent>
     </Dialog>

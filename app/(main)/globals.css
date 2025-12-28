@@ -1,4 +1,5 @@
 /* globals.css (ready-to-use) */
+@import url("https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -13,49 +14,47 @@
   --radius: 0.625rem;
 
   /* core backgrounds / text */
-  --background: #FFFFFF;
-  --foreground: #1E1E1E;
+  --background: #ffffff;
+  --foreground: #1e1e1e;
 
   /* sidebar */
-  --sidebar-bg: #005FB6;
-  --sidebar-option-bg: #A36568;
-  --sidebar-option-fg: #FFFFFF;
+  --sidebar-bg: #005fb6;
+  --sidebar-option-bg: #a36568;
+  --sidebar-option-fg: #ffffff;
 
   /* surfaces */
-  --card: #FFFFFF;
+  --card: #ffffff;
   --card-foreground: var(--foreground);
-  --popover: #FFFFFF;
+  --popover: #ffffff;
   --popover-foreground: var(--foreground);
 
   /* brand colours */
-  --primary: #52AE32;
-  --primary-alt: #005FB6;
-  --primary-foreground: #FFFFFF;
+  --primary: #52ae32;
+  --primary-alt: #005fb6;
+  --primary-foreground: #ffffff;
 
-  --secondary: #005FB6;
-  --secondary-foreground: #FFFFFF;
+  --secondary: #005fb6;
+  --secondary-foreground: #ffffff;
 
-  --accent: #EE7203;
-  --accent-foreground: #FFFFFF;
+  --accent: #ee7203;
+  --accent-foreground: #ffffff;
 
   /* muted / grey */
-  --muted: #F3F4F6;
+  --muted: #f3f4f6;
   --muted-foreground: #707070;
 
   /* destructive */
-  --destructive: #E53935;
+  --destructive: #e53935;
 
-  /* 👇 اصلاح مهم‌ها برای دید بهتر در حالت Light */
-  --border: #D0D7DE;          /* مرز مشخص‌تر و خاکستری مایل به آبی (مثل GitHub) */
-  --input: #F9FAFB;           /* کمی تیره‌تر از سفید برای جدا شدن از پس‌زمینه */
-  --ring: rgba(0, 95, 182, 0.25); /* حلقه فوکوس با ته‌مایه آبی */
-
+  --border: #d0d7de;
+  --input: #f9fafb;
+  --ring: rgba(0, 95, 182, 0.25);
   /* charts */
-  --chart-1: #52AE32;
-  --chart-2: #005FB6;
+  --chart-1: #52ae32;
+  --chart-2: #005fb6;
   --chart-3: #707070;
-  --chart-4: #EE7203;
-  --chart-5: #1E1E1E;
+  --chart-4: #ee7203;
+  --chart-5: #1e1e1e;
 
   /* sidebar specifics */
   --sidebar: var(--sidebar-bg);
@@ -66,8 +65,10 @@
   --sidebar-accent-foreground: var(--accent-foreground);
 
   /* fonts */
-  --font-geist-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  --font-geist-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Helvetica Neue", monospace;
+  --font-geist-sans: system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial;
+  --font-geist-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono",
+    "Helvetica Neue", monospace;
 }
 
 /* map to @theme properties used by some components */
@@ -116,33 +117,33 @@
    ========================== */
 .dark {
   /* page */
-  --background: #0f1117;           /* deeper neutral dark */
-  --foreground: #e8ecf2;           /* soft white text */
+  --background: #0f1117; /* deeper neutral dark */
+  --foreground: #e8ecf2; /* soft white text */
 
   /* sidebar */
-  --sidebar-bg: #151821;           /* blends with background */
-  --sidebar-option-bg: #1d212b;    /* slightly lifted for hover/active */
+  --sidebar-bg: #151821; /* blends with background */
+  --sidebar-option-bg: #1d212b; /* slightly lifted for hover/active */
   --sidebar-option-fg: #e8ecf2;
 
   /* surfaces */
-  --card: #1a1e27;                 /* dark neutral card */
+  --card: #1a1e27; /* dark neutral card */
   --card-foreground: var(--foreground);
   --popover: #1d212b;
   --popover-foreground: var(--foreground);
 
   /* brand (primary / secondary / accent) */
-  --primary: #3d63ff;              /* elegant blue */
-  --primary-alt: #3355e8;          /* darker hover variant */
+  --primary: #3d63ff; /* elegant blue */
+  --primary-alt: #3355e8; /* darker hover variant */
   --primary-foreground: #ffffff;
 
   --secondary: #181b23;
   --secondary-foreground: #e8ecf2;
 
-  --accent: #4ac1ff;               /* cyan accent for highlights */
+  --accent: #4ac1ff; /* cyan accent for highlights */
   --accent-foreground: #0f1117;
 
   /* muted / greys */
-  --muted: #242a36;                /* neutral section background */
+  --muted: #242a36; /* neutral section background */
   --muted-foreground: #a0a8b5;
 
   /* destructive */
@@ -180,7 +181,7 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-sans);
+    font-family: "Lato", sans-serif;
   }
 }
 
@@ -206,13 +207,11 @@ div::-webkit-scrollbar {
   color: var(--accent-foreground);
 }
 
-
-
 input {
   border: 1px solid var(--border);
   background-color: var(--input);
   transition: border-color 0.2s ease;
-} 
+}
 
 input:hover {
   border-color: var(--input-border-hover);
@@ -225,15 +224,15 @@ input:focus {
 }
 
 input[type="date"] {
-  direction: ltr;           
-  text-align: left;          
-  padding-right: 30px;       
+  direction: ltr;
+  text-align: left;
+  padding-right: 30px;
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator {
   position: absolute;
-  right: 5px;                
-  left: auto;                
+  right: 5px;
+  left: auto;
   cursor: pointer;
 }
 

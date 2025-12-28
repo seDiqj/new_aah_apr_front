@@ -16,12 +16,22 @@ const BreadcrumbWithCustomSeparator = () => {
   const currentPathName = usePathname();
   const pathSegments = currentPathName.split("/").filter(Boolean);
 
-  const breadcrumbs = pathSegments.map((segment, index) => {
-    const href = "/" + pathSegments.slice(0, index + 1).join("/");
-    let label = segment.replace("_", " ");
-    label = label.toUpperCase();
-    return { href, label };
-  });
+  const breadcrumbs = pathSegments
+    .map((segment, index) => {
+      if (Number.parseInt(pathSegments[index])) {
+        return null;
+      }
+      const href =
+        "/" +
+        (Number.parseInt(pathSegments[index + 1])
+          ? pathSegments.slice(0)
+          : pathSegments.slice(0, index + 1)
+        ).join("/");
+      let label = segment.replace("_", " ");
+      label = label.toUpperCase();
+      return { href, label };
+    })
+    .filter((b) => b != null);
 
   return (
     <Breadcrumb>
@@ -31,6 +41,10 @@ const BreadcrumbWithCustomSeparator = () => {
             <BreadcrumbLink asChild>
               <Link href={crumb.href}>{crumb.label}</Link>
             </BreadcrumbLink>
+            <BreadcrumbPage></BreadcrumbPage>
+            {breadcrumbs.length - 1 != i ? (
+              <BreadcrumbSeparator></BreadcrumbSeparator>
+            ) : null}
           </BreadcrumbItem>
         ))}
       </BreadcrumbList>

@@ -37,6 +37,8 @@ import {
   IsNotShowMode,
   IsShowMode,
 } from "@/constants/Constants";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { TrainingFormSchema } from "@/schemas/FormsSchema";
 
 const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
   open,
@@ -57,6 +59,8 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState<TrainingForm>(TrainingDefault());
+
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
   const [chapters, setChapters] = useState<ChapterForm[]>([]);
 
@@ -102,9 +106,33 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
     setChapters((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const result = TrainingFormSchema.safeParse(formData);
+
+    if (!result.success) {
+      const errors: { [key: string]: string } = {};
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0];
+        if (field) errors[field as string] = issue.message;
+      });
+
+      setFormErrors(errors);
+      console.log(errors)
+      reqForToastAndSetMessage(
+        "Please fix validation errors before submitting."
+      );
+      return;
+    }
+
+    setFormErrors({});
+
     const payload = { ...formData, chapters };
+
+    setIsLoading(true);
 
     try {
       let res;
@@ -119,6 +147,8 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
       onOpenChange(false);
     } catch (err: any) {
       reqForToastAndSetMessage(err.response?.data?.message || "Error");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -138,6 +168,7 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
         .then((response: any) => {
           const data = response.data.data;
           setFormData({
+            id: data.id || null,
             project_id: data.project_id || "",
             province_id: data.province_id || "",
             district_id: data.district_id || "",
@@ -228,6 +259,7 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
               onValueChange={(value: string) =>
                 handleChange({ target: { name: "project_id", value } })
               }
+              error={formErrors.project_id}
             />
           </div>
 
@@ -244,6 +276,7 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
               onValueChange={(value: string) =>
                 handleChange({ target: { name: "indicator_id", value } })
               }
+              error={formErrors.indicator_id}
             />
           </div>
 
@@ -260,6 +293,7 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
               onValueChange={(value: string) =>
                 handleChange({ target: { name: "province_id", value } })
               }
+              error={formErrors.province_id}
             />
           </div>
 
@@ -276,6 +310,7 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
               onValueChange={(value: string) =>
                 handleChange({ target: { name: "district_id", value } })
               }
+              error={formErrors.district_id}
             />
           </div>
 
@@ -287,6 +322,10 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
               disabled={isReadOnly}
               value={formData.trainingLocation}
               onChange={handleChange}
+              className={`border p-2 rounded ${
+                formErrors.trainingLocation ? "!border-red-500" : ""
+              }`}
+              title={formErrors.trainingLocation}
             />
           </div>
 
@@ -298,6 +337,10 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
               disabled={isReadOnly}
               value={formData.name}
               onChange={handleChange}
+              className={`border p-2 rounded ${
+                formErrors.name ? "!border-red-500" : ""
+              }`}
+              title={formErrors.name}
             />
           </div>
 
@@ -314,6 +357,10 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
                       val ? "acf-staff" : ""
                     )
                   }
+                  className={`border p-2 rounded ${
+                    formErrors.participantCatagory ? "!border-red-500" : ""
+                  }`}
+                  title={formErrors.participantCatagory}
                 />
                 <Label>ACF Staff</Label>
               </div>
@@ -326,6 +373,10 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
                       val ? "stakeholder" : ""
                     )
                   }
+                  className={`border p-2 rounded ${
+                    formErrors.participantCatagory ? "!border-red-500" : ""
+                  }`}
+                  title={formErrors.participantCatagory}
                 />
                 <Label>Stakeholder</Label>
               </div>
@@ -342,6 +393,10 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
                   onCheckedChange={(val) =>
                     val && handleCheckboxChange("aprIncluded", true)
                   }
+                  className={`border p-2 rounded ${
+                    formErrors.aprIncluded ? "!border-red-500" : ""
+                  }`}
+                  title={formErrors.aprIncluded}
                 />
                 <Label>Yes</Label>
               </div>
@@ -351,6 +406,10 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
                   onCheckedChange={(val) =>
                     val && handleCheckboxChange("aprIncluded", false)
                   }
+                  className={`border p-2 rounded ${
+                    formErrors.aprIncluded ? "!border-red-500" : ""
+                  }`}
+                  title={formErrors.aprIncluded}
                 />
                 <Label>No</Label>
               </div>
@@ -370,6 +429,10 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
                       val ? "face-to-face" : ""
                     )
                   }
+                  className={`border p-2 rounded ${
+                    formErrors.trainingModality ? "!border-red-500" : ""
+                  }`}
+                  title={formErrors.trainingModality}
                 />
                 <Label>Face-to-Face</Label>
               </div>
@@ -382,6 +445,10 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
                       val ? "online" : ""
                     )
                   }
+                  className={`border p-2 rounded ${
+                    formErrors.trainingModality ? "!border-red-500" : ""
+                  }`}
+                  title={formErrors.trainingModality}
                 />
                 <Label>Online</Label>
               </div>
@@ -396,6 +463,10 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
               type="date"
               value={formData.startDate}
               onChange={handleChange}
+              className={`border p-2 rounded ${
+                formErrors.startDate ? "!border-red-500" : ""
+              }`}
+              title={formErrors.startDate}
             />
           </div>
 
@@ -407,6 +478,10 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
               type="date"
               value={formData.endDate}
               onChange={handleChange}
+              className={`border p-2 rounded ${
+                formErrors.endDate ? "!border-red-500" : ""
+              }`}
+              title={formErrors.endDate}
             />
           </div>
 
@@ -466,12 +541,12 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
                 </div>
                 <div className="flex flex-row items-center justify-end w-full">
                   <Button
-                  type="button"
-                  onClick={handleAddChapter}
-                  className="mt-4"
-                >
-                  Add Chapter
-                </Button>
+                    type="button"
+                    onClick={handleAddChapter}
+                    className="mt-4"
+                  >
+                    Add Chapter
+                  </Button>
                 </div>
               </>
             )}
@@ -518,6 +593,8 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
           <div className="col-span-2 mt-6">
             {IsNotShowMode(mode) ? (
               <Button
+                id={SUBMIT_BUTTON_PROVIDER_ID}
+                disabled={isLoading}
                 type="button"
                 className="w-full"
                 onClick={(e) =>
@@ -529,7 +606,13 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
                   )
                 }
               >
-                {IsEditMode(mode) ? "Update" : "Submit"}
+                {isLoading
+                  ? IsEditMode(mode)
+                    ? "Updating ..."
+                    : "Saving ..."
+                  : IsEditMode(mode)
+                  ? "Update"
+                  : "Save"}
               </Button>
             ) : (
               <Button

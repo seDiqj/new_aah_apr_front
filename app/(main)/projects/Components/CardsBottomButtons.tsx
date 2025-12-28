@@ -14,6 +14,7 @@ export const cardsBottomButtons = (
   backBtnOnClick: any,
   backBtnOnClickFuncInput: string,
   saveBtnOnClick: (() => void) | undefined,
+  isLoading: boolean,
   nextBtnOnClick: any,
   nextBtnOnClickFuncInput: string,
   section?: "project" | "isp3",
@@ -42,7 +43,7 @@ export const cardsBottomButtons = (
             )
           }
         >
-          Save
+          {isLoading ? "Saving ..." : "Save"}
         </Button>
       )}
       <Button

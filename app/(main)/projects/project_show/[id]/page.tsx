@@ -20,6 +20,7 @@ import { isp3s } from "../../utils/OptionLists";
 import AprLogsSubPage from "../../Components/AprLogsSubPage";
 import IndicatorForm from "../../Components/IndicatorForm";
 import Isp3SubPage from "../../Components/Isp3SubPage";
+import ChromeTabs from "../../Components/ChromeTab";
 
 const ShowProjectPage = () => {
   const { id } = useParams();
@@ -173,7 +174,6 @@ const ShowProjectPage = () => {
   }, []);
 
   const handleDelete = (url: string, id: string | null) => {
-
     if (!id) return;
 
     axiosInstance
@@ -214,7 +214,7 @@ const ShowProjectPage = () => {
           setIsp3,
           actionLogs,
           setActionLogs,
-          handleDelete
+          handleDelete,
         }}
       >
         <div className="w-full h-full p-2">
@@ -230,20 +230,55 @@ const ShowProjectPage = () => {
               value={currentTab}
               className="h-full"
             >
-              {/* List of tabs */}
-              <TabsList className="w-full">
-                <TabsTrigger value="project">Project</TabsTrigger>
-                <TabsTrigger value="outcome">OutCome</TabsTrigger>
-                <TabsTrigger value="output">Output</TabsTrigger>
-                <TabsTrigger value="indicator">Indicator</TabsTrigger>
-                <TabsTrigger value="dessaggregation">
-                  Disaggregation
-                </TabsTrigger>
-                <TabsTrigger value="aprPreview">APR Preview</TabsTrigger>
-                <TabsTrigger value="isp3">ISP3</TabsTrigger>
-                <TabsTrigger value="finalization">APR Finalization</TabsTrigger>
-                <TabsTrigger value="logs">Logs</TabsTrigger>
-              </TabsList>
+              <ChromeTabs
+                initialTabs={[
+                  {
+                    value: "project",
+                    title: "Project",
+                    stateSetter: setCurrentTab,
+                  },
+                  {
+                    value: "outcome",
+                    title: "Outcome",
+                    stateSetter: setCurrentTab,
+                  },
+                  {
+                    value: "output",
+                    title: "Output",
+                    stateSetter: setCurrentTab,
+                  },
+                  {
+                    value: "indicator",
+                    title: "Indicator",
+                    stateSetter: setCurrentTab,
+                  },
+                  {
+                    value: "dessaggregation",
+                    title: "Disaggregation",
+                    stateSetter: setCurrentTab,
+                  },
+                  {
+                    value: "aprPreview",
+                    title: "APR Preview",
+                    stateSetter: setCurrentTab,
+                  },
+                  {
+                    value: "isp3",
+                    title: "ISP3",
+                    stateSetter: setCurrentTab,
+                  },
+                  {
+                    value: "finalization",
+                    title: "APR Finalization",
+                    stateSetter: setCurrentTab,
+                  },
+                  {
+                    value: "logs",
+                    title: "Activity Logs",
+                    stateSetter: setCurrentTab,
+                  },
+                ]}
+              />
 
               {/* Project */}
               <TabsContent value="project" className="h-full">

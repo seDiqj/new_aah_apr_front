@@ -9,7 +9,6 @@ import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { mainDatabaseAndKitDatabaseProgramColumns } from "@/definitions/DataTableColumnsDefinitions";
 import {
   MainDatabaseProgramsFilters,
-  MainDatabaseProgramsFitlterUrl,
 } from "@/constants/FiltersList";
 import { useState } from "react";
 
@@ -51,12 +50,11 @@ const MainDatabaseProgramsPage = () => {
           columns={mainDatabaseAndKitDatabaseProgramColumns}
           indexUrl="/global/programs/main_database"
           deleteUrl="/global/delete_programs"
-          searchableColumn="focalPoint"
+          searchableColumn="Program Name"
           idFeildForEditStateSetter={setIdFeildForEditStateSetter}
           editModelOpenerStateSetter={setReqForProgramEditionForm}
           idFeildForShowStateSetter={setIdFeildForShowStateSetter}
           showModelOpenerStateSetter={setReqForProgramShowForm}
-          filterUrl={MainDatabaseProgramsFitlterUrl}
           filtersList={MainDatabaseProgramsFilters}
         ></DataTableDemo>
 

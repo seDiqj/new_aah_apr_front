@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { Toaster } from "sonner";
 import Parent from "@/components/layout/Parent";
 import GlobaleListenersRegisterer from "@/providers/GlobalListeners";
+import TopProgressBar from "@/components/preloaders/TopProgressBar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +35,7 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <TopProgressBar></TopProgressBar>
         <GlobaleListenersRegisterer></GlobaleListenersRegisterer>
         <Parent>{children}</Parent>
         <Toaster />

@@ -5,14 +5,11 @@ import DataTableDemo from "@/components/global/MulitSelectTable";
 import SubHeader from "@/components/global/SubHeader";
 import { Button } from "@/components/ui/button";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
-import {
-  projectColumns,
-} from "@/definitions/DataTableColumnsDefinitions";
+import { projectColumns } from "@/definitions/DataTableColumnsDefinitions";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { withPermission } from "@/lib/withPermission";
 import { Can } from "@/components/Can";
-import Preloader from "@/components/global/Preloader";
 
 const ProjectsPage = () => {
   const router = useRouter();
@@ -56,19 +53,26 @@ const ProjectsPage = () => {
         <DataTableDemo
           columns={projectColumns}
           indexUrl="projects"
-          filterUrl="/filter/projects"
           deleteUrl="/projects/d/delete_projects"
-          searchableColumn="projectTitle"
+          searchableColumn="Project Code"
           deleteBtnPermission="Project.delete"
           editBtnPermission="Project.edit"
           idFeildForEditStateSetter={setIdFeildForEditStateSetter}
-          editModelOpenerStateSetter={() => router.push(`/projects/edit_project/${idFeildForEditStateSetter}`)}
+          editModelOpenerStateSetter={() =>
+            router.push(`/projects/edit_project/${idFeildForEditStateSetter}`)
+          }
           idFeildForShowStateSetter={setIdFeildForShowStateSetter}
-          filtersList={["projectCode", "projectManager", "provinces", "thematicSector", "startDate", "endDate", "status"]}
+          filtersList={[
+            "projectCode",
+            "projectManager",
+            "provinces",
+            "thematicSector",
+            "startDate",
+            "endDate",
+            "status",
+          ]}
         ></DataTableDemo>
       </div>
-
-      {isLoading && <Preloader reqForLoading={isLoading} />}
     </>
   );
 };

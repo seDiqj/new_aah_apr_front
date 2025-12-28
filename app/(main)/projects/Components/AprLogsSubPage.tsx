@@ -24,6 +24,7 @@ import { useProjectContext } from "../create_new_project/page";
 import { Logs } from "@/types/Types";
 import { AprLogsSubPageInterface } from "@/interfaces/Interfaces";
 import { IsCreateMode, IsShowMode } from "@/constants/Constants";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const AprLogsSubPage: React.FC<AprLogsSubPageInterface> = ({ mode }) => {
   const { axiosInstance, reqForToastAndSetMessage } = useParentContext();
@@ -34,16 +35,19 @@ const AprLogsSubPage: React.FC<AprLogsSubPageInterface> = ({ mode }) => {
     : useProjectEditContext();
   const [selectedComment, setSelectedComment] = useState<string>("");
   const [open, setOpen] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const [logs, setLogs] = useState<Logs>([]);
 
   useEffect(() => {
+    setLoading(true);
     axiosInstance
       .get(`/projects/logs/${projectId}`)
       .then((response: any) => setLogs(response.data.data))
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
-      );
+      )
+      .finally(() => setLoading(false));
   }, []);
 
   return (
@@ -63,28 +67,48 @@ const AprLogsSubPage: React.FC<AprLogsSubPageInterface> = ({ mode }) => {
                   <TableHead className="w-[120px]">Date</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
-                {logs.map((item, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{item.action}</TableCell>
-                    <TableCell>{item.userName}</TableCell>
-                    <TableCell>
-                      <button
-                        onClick={() => {
-                          setSelectedComment(item.comment);
-                          setOpen(true);
-                        }}
-                        className="block max-w-[220px] truncate text-left hover:underline"
-                        title={"Click for check full comment"}
-                      >
-                        {item.comment}
-                      </button>
-                    </TableCell>
-                    <TableCell>{item.date}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
+              {loading
+                ? Array.from({ length: 10 }).map((_, rowIndex) => (
+                    <TableRow key={rowIndex}>
+                      {Array.from("something")
+                        .slice(0, 8)
+                        .map((col, colIndex) => (
+                          <TableCell key={colIndex}>
+                            <Skeleton className="h-4 w-full" />
+                          </TableCell>
+                        ))}
+                    </TableRow>
+                  ))
+                : logs.length >= 1 && (
+                    <TableBody>
+                      {logs.map((item, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{item.action}</TableCell>
+                          <TableCell>{item.userName}</TableCell>
+                          <TableCell>
+                            <button
+                              onClick={() => {
+                                setSelectedComment(item.comment);
+                                setOpen(true);
+                              }}
+                              className="block max-w-[220px] truncate text-left hover:underline"
+                              title={"Click for check full comment"}
+                            >
+                              {item.comment}
+                            </button>
+                          </TableCell>
+                          <TableCell>{item.date}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  )}
             </Table>
+
+            {!loading && logs.length == 0 && (
+              <div className="flex flex-row items-center justify-center min-h-[100px] text-gray-400">
+                No Records
+              </div>
+            )}
 
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogContent className="max-w-lg">

@@ -4,7 +4,6 @@ import { ColumnDef } from "@tanstack/react-table";
 export interface DataTableInterface {
   columns: ColumnDef<any>[];
   indexUrl: string;
-  filterUrl?: string;
   deleteUrl?: string;
   searchableColumn: string;
 
@@ -377,4 +376,8 @@ export interface ProjectFormInterface {
 
 export interface AprLogsSubPageInterface {
   mode: "create" | "edit" | "show";
+}
+
+export interface ParentInterface {
+  children: React.ReactNode;
 }

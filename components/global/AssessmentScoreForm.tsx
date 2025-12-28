@@ -15,6 +15,7 @@ import { AssessmentScoreFormInterface } from "@/interfaces/Interfaces";
 import { Assessments } from "@/types/Types";
 import { IsCreateMode, IsEditMode, IsShowMode } from "@/constants/Constants";
 import { AxiosError, AxiosResponse } from "axios";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
 
 const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
   open,
@@ -41,6 +42,8 @@ const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
   const [assessmentDate, setAssessmentData] = useState<string>("");
   const [assessmentsList, setAssessmentsList] = useState<Assessments>({});
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   useEffect(() => {
     axiosInstance
       .get("/enact_database/assessments_list")
@@ -65,6 +68,7 @@ const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
+    setIsLoading(true);
     const request = IsCreateMode(mode)
       ? axiosInstance.post("/enact_database/assess_assessment", {
           enactId: id,
@@ -81,7 +85,8 @@ const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
       })
       .catch((err: any) =>
         reqForToastAndSetMessage(err.response?.data?.message)
-      );
+      )
+      .finally(() => setIsLoading(false));
   };
 
   const readOnly = IsShowMode(mode);
@@ -210,6 +215,7 @@ const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
                 Reset
               </Button>
               <Button
+                id={SUBMIT_BUTTON_PROVIDER_ID}
                 type="button"
                 className="px-8 py-3 bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg"
                 onClick={(e) =>
@@ -218,7 +224,13 @@ const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
                   )
                 }
               >
-                {IsCreateMode(mode) ? "Save" : "Update"}
+                {isLoading
+                  ? IsCreateMode(mode)
+                    ? "Saveing ..."
+                    : "Updating ..."
+                  : IsCreateMode(mode)
+                  ? "Save"
+                  : "Update"}
               </Button>
             </div>
           )}

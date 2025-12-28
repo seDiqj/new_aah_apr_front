@@ -252,6 +252,25 @@ const AppSidebar = () => {
         },
       ],
     },
+    {
+      title: "Catagory Management",
+      url: "/catagory_management",
+      icon: FileBarChart,
+      subOptions: [
+        {
+          title: "Kit Management",
+          url: "/kit_management",
+          icon: FileSearch,
+          permission: ["Apr.review", "Apr.view/list", "Apr.mark_as_reviewed"],
+        },
+        // {
+        //   title: "Approve APR",
+        //   url: "/approve_aprs",
+        //   icon: FileCheck2,
+        //   permission: ["Apr.validate"],
+        // },
+      ],
+    },
   ];
 
   const router = useRouter();
@@ -288,7 +307,7 @@ const AppSidebar = () => {
                 <Link href={"/"} />
                 <Image
                   className="rounded-full"
-                  src={"/logo.jpg"}
+                  src={"/AAHLogo.png"}
                   alt={"Componey Logo"}
                   width={50}
                   height={50}
@@ -308,57 +327,54 @@ const AppSidebar = () => {
             <SidebarGroupLabel>Main</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {items
-                  .map((item) => {
-                    if (
-                      item.subOptions != null
-                    ) {
-                      return (
-                        <>
-                          <Collapsible
-                            key={item.title}
-                            defaultOpen
-                            className="group/collapsible"
-                          >
-                            <SidebarGroup>
-                              <SidebarGroupLabel asChild>
-                                <CollapsibleTrigger>
-                                  <SidebarMenuButton>
-                                    <item.icon />
-                                    {item.title}
-                                  </SidebarMenuButton>
-                                  <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
-                                </CollapsibleTrigger>
-                              </SidebarGroupLabel>
-                              <CollapsibleContent className="pl-10">
-                                {item.subOptions.map((item, indx) => (
-                                  <SidebarMenuItem key={indx}>
-                                    <SidebarMenuButton asChild>
-                                      <Link href={item.url}>
-                                        <item.icon />
-                                        <span>{item.title}</span>
-                                      </Link>
-                                    </SidebarMenuButton>
-                                  </SidebarMenuItem>
-                                ))}
-                              </CollapsibleContent>
-                            </SidebarGroup>
-                          </Collapsible>
-                        </>
-                      );
-                    }
-
+                {items.map((item) => {
+                  if (item.subOptions != null) {
                     return (
-                      <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton asChild>
-                          <Link href={item.url!}>
-                            <item.icon />
-                            <span>{item.title}</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
+                      <>
+                        <Collapsible
+                          key={item.title}
+                          defaultOpen
+                          className="group/collapsible"
+                        >
+                          <SidebarGroup>
+                            <SidebarGroupLabel asChild>
+                              <CollapsibleTrigger>
+                                <SidebarMenuButton>
+                                  <item.icon />
+                                  {item.title}
+                                </SidebarMenuButton>
+                                <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
+                              </CollapsibleTrigger>
+                            </SidebarGroupLabel>
+                            <CollapsibleContent className="pl-10">
+                              {item.subOptions.map((item, indx) => (
+                                <SidebarMenuItem key={indx}>
+                                  <SidebarMenuButton asChild>
+                                    <Link href={item.url}>
+                                      <item.icon />
+                                      <span>{item.title}</span>
+                                    </Link>
+                                  </SidebarMenuButton>
+                                </SidebarMenuItem>
+                              ))}
+                            </CollapsibleContent>
+                          </SidebarGroup>
+                        </Collapsible>
+                      </>
                     );
-                  })}
+                  }
+
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton asChild>
+                        <Link href={item.url!}>
+                          <item.icon />
+                          <span>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

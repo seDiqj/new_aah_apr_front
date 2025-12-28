@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Can } from "@/components/Can";
 import { withPermission } from "@/lib/withPermission";
 import { IsIdFeild } from "@/constants/Constants";
+import ChromeTabs from "@/app/(main)/projects/Components/ChromeTab";
 
 const CommunityDialogueProfilePage = () => {
   const { id } = useParams<{
@@ -109,21 +110,31 @@ const CommunityDialogueProfilePage = () => {
           <div className="w-full overflow-x-auto">
             <Tabs
               defaultValue="programInfo"
+              value={selectedTab}
               onValueChange={handleTabChange}
               className="h-full"
             >
               {/* List of tabs */}
-              <TabsList className="w-full">
-                <TabsTrigger value="programInfo">Program Info</TabsTrigger>
-                <TabsTrigger value="cdSessions">Sessions</TabsTrigger>
+              <ChromeTabs
+                initialTabs={[
+                  {
+                    value: "programInfo",
+                    title: "Program Info",
+                    stateSetter: handleTabChange,
+                  },
+                  {
+                    value: "cdSessions",
+                    title: "Sessions",
+                    stateSetter: handleTabChange,
+                  },
 
-                {/* Community Dialogue groups tabs */}
-                {communityDialogue?.groups.map((group) => (
-                  <TabsTrigger key={group.id} value={group.name}>
-                    {group.name.toUpperCase()}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
+                  ...(communityDialogue?.groups.map((group) => ({
+                    value: group.name,
+                    title: group.name.toUpperCase(),
+                    stateSetter: handleTabChange,
+                  })) ?? []),
+                ]}
+              ></ChromeTabs>
 
               {/* Program information */}
               <TabsContent

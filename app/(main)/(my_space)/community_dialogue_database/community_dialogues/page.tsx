@@ -10,7 +10,6 @@ import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { communityDialoguesTableColumns } from "@/definitions/DataTableColumnsDefinitions";
 import {
   CommunityDialoguesFiltersList,
-  CommunityDialoguesFilterUrl,
 } from "@/constants/FiltersList";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -76,14 +75,13 @@ const CommunityDialogDatabasePage = () => {
           columns={communityDialoguesTableColumns}
           indexUrl="/community_dialogue_db/community_dialogues"
           deleteUrl="community_dialogue_db/delete_cds"
-          searchableColumn="name"
+          searchableColumn="Project Code"
           idFeildForEditStateSetter={setIdFeildForEditStateSetter}
           editModelOpenerStateSetter={setReqForCommunityDialogueEditionForm}
           idFeildForShowStateSetter={setIdFeildForShowStateSetter}
           showModelOpenerStateSetter={() => {}}
           editBtnPermission="Dialogue.edit"
           deleteBtnPermission="Dialogue.delete"
-          filterUrl={CommunityDialoguesFilterUrl}
           filtersList={CommunityDialoguesFiltersList}
         ></DataTableDemo>
 

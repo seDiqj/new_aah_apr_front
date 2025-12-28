@@ -26,6 +26,10 @@ import {
 } from "@/constants/SingleAndMultiSelectOptionsList";
 import { MainDatabaseBeneficiaryEditionMessage } from "@/constants/ConfirmationModelsTexts";
 import { MainDatabaseBeneficiaryUpdate } from "@/interfaces/Interfaces";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { AxiosError, AxiosResponse } from "axios";
+import { MainDatabaseBeneficiaryFormSchema } from "@/schemas/FormsSchema";
+import { error } from "console";
 
 const MainDatabaseBeneficiaryUpdateForm: React.FC<
   MainDatabaseBeneficiaryUpdate
@@ -41,8 +45,9 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
     MainDatabaseBeneficiaryUpdateDefault()
   );
   const [program, setProgram] = useState<string>("");
-  const [programs, setPrograms] = useState<any[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [programs, setPrograms] = useState<{ id: string; name: string }[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
   // Fetch beneficiary data
   useEffect(() => {
@@ -62,12 +67,12 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
             age: data.age || 0,
             maritalStatus: data.maritalStatus || "",
             childCode: data.childCode || "",
-            ageOfChild: data.childAge || 0, // map backend field
+            childAge: data.childAge || 0,
             phone: data.phone || "",
             householdStatus: data.householdStatus || "",
             literacyLevel: data.literacyLevel || "",
             disabilityType: data.disabilityType || "",
-            referredForProtection: data.protectionServices || false, // map backend field
+            referredForProtection: data.protectionServices || false,
           });
           setProgram(data.programs[0].id || "");
         })
@@ -76,19 +81,18 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
             error.response?.data?.message || "Error loading beneficiary"
           );
         })
-        .finally(() => setLoading(false));
+        .finally(() => setIsLoading(false));
     }
   }, [open, beneficiaryId]);
 
-  // Fetch programs & indicators
   useEffect(() => {
     if (open) {
       axiosInstance
-        .get(`global/programs/main_database`)
-        .then((res: any) => {
-          setPrograms(res.data.data);
+        .get(`global/programs_for_selection/main_database`)
+        .then((res: AxiosResponse<any, any>) => {
+          setPrograms(res.data.data.data);
         })
-        .catch((err: any) =>
+        .catch((err: AxiosError<any, any>) =>
           reqForToastAndSetMessage(err.response?.data?.message)
         );
     }
@@ -96,9 +100,7 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
 
   const handleFormChange = (e: any) => {
     const name: string = e.target.name;
-    let value: any = e.target.value;
-
-    if (e.target.type === "number") value = Number(value);
+    let value: string = e.target.value;
 
     setFormData((prev) => ({
       ...prev,
@@ -108,7 +110,27 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
-    setLoading(true);
+
+    const result = MainDatabaseBeneficiaryFormSchema.safeParse(formData);
+
+    if (!result.success) {
+      const errors: { [key: string]: string } = {};
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0];
+        if (field) errors[field as string] = issue.message;
+      });
+
+      setFormErrors(errors);
+      reqForToastAndSetMessage(
+        "Please fix validation errors before submitting."
+      );
+      return;
+    }
+
+    setFormErrors({});
+    setIsLoading(true);
+
+    setIsLoading(true);
     axiosInstance
       .put(`/main_db/beneficiary/${beneficiaryId}`, {
         bnfData: formData,
@@ -123,7 +145,8 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
         reqForToastAndSetMessage(
           error.response?.data?.message || "Update failed"
         );
-      });
+      })
+      .finally(() => setIsLoading(false));
   };
 
   const renderSkeletonInput = () => (
@@ -140,7 +163,7 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
           <DialogTitle className="text-lg">{"Edit Beneficiary"}</DialogTitle>
         </DialogHeader>
 
-        {loading ? (
+        {isLoading ? (
           Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="flex flex-col gap-2">
               <Skeleton className="h-4 w-24 rounded-md" />{" "}
@@ -161,7 +184,7 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
                 <SingleSelect
                   options={programs.map((program) => ({
                     value: program?.id,
-                    label: program?.focalPoint,
+                    label: program?.name,
                   }))}
                   value={formData.program}
                   onValueChange={(value: string) =>
@@ -184,9 +207,16 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
                     id="dateOfRegistration"
                     name="dateOfRegistration"
                     type="date"
-                    className="border w-full"
                     value={formData.dateOfRegistration}
                     onChange={handleFormChange}
+                    className={`border rounded-xl p-2 rounded ${
+                      formErrors.dateOfRegistration ? "!border-red-500" : ""
+                    } w-full`}
+                    title={
+                      formErrors.dateOfRegistration
+                        ? formErrors["dateOfRegistration"]
+                        : undefined
+                    }
                   />
                 </div>
 
@@ -197,9 +227,12 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
                     id="code"
                     name="code"
                     placeholder="Code ..."
-                    className="border w-full"
                     value={formData.code}
                     onChange={handleFormChange}
+                    className={`border p-2 rounded ${
+                      formErrors.code ? "!border-red-500" : ""
+                    } w-full`}
+                    title={formErrors.code ? formErrors["code"] : undefined}
                   />
                 </div>
 
@@ -210,9 +243,12 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
                     id="name"
                     name="name"
                     placeholder="Client Name ..."
-                    className="border w-full"
                     value={formData.name}
                     onChange={handleFormChange}
+                    className={`border p-2 rounded ${
+                      formErrors.name ? "!border-red-500" : ""
+                    } w-full`}
+                    title={formErrors.name ? formErrors["name"] : undefined}
                   />
                 </div>
 
@@ -225,9 +261,16 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
                     id="fatherHusbandName"
                     name="fatherHusbandName"
                     placeholder="Father / Husbend Name ..."
-                    className="border w-full"
                     value={formData.fatherHusbandName}
                     onChange={handleFormChange}
+                    className={`border p-2 rounded ${
+                      formErrors.fatherHusbandName ? "!border-red-500" : ""
+                    } w-full`}
+                    title={
+                      formErrors.fatherHusbandName
+                        ? formErrors["fatherHusbandName"]
+                        : undefined
+                    }
                   />
                 </div>
 
@@ -242,6 +285,7 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
                         target: { name: "gender", value },
                       })
                     }
+                    error={formErrors.gender}
                   />
                 </div>
 
@@ -253,9 +297,12 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
                     name="age"
                     type="number"
                     placeholder="Age ..."
-                    className="border w-full"
                     value={formData.age}
                     onChange={handleFormChange}
+                    className={`border p-2 rounded ${
+                      formErrors.age ? "!border-red-500" : ""
+                    } w-full`}
+                    title={formErrors.age ? formErrors["age"] : undefined}
                   />
                 </div>
 
@@ -266,23 +313,33 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
                     id="childCode"
                     name="childCode"
                     placeholder="Child Code ..."
-                    className="border w-full"
                     value={formData.childCode}
                     onChange={handleFormChange}
+                    className={`border p-2 rounded ${
+                      formErrors.childCode ? "!border-red-500" : ""
+                    } w-full`}
+                    title={
+                      formErrors.childCode ? formErrors["childCode"] : undefined
+                    }
                   />
                 </div>
 
                 {/* Age Of Child */}
                 <div className="flex flex-col gap-4">
-                  <Label htmlFor="ageOfChild">Age Of Child OF BNF</Label>
+                  <Label htmlFor="childAge">Age Of Child OF BNF</Label>
                   <Input
-                    id="ageOfChild"
-                    name="ageOfChild"
+                    id="childAge"
+                    name="childAge"
                     type="number"
                     placeholder="Age Of Child ..."
-                    className="border w-full"
-                    value={formData.ageOfChild}
+                    value={formData.childAge}
                     onChange={handleFormChange}
+                    className={`border p-2 rounded ${
+                      formErrors.childAge ? "!border-red-500" : ""
+                    } w-full`}
+                    title={
+                      formErrors.childAge ? formErrors["childAge"] : undefined
+                    }
                   />
                 </div>
 
@@ -294,9 +351,12 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
                     name="phone"
                     type="tel"
                     placeholder="Phone ..."
-                    className="border w-full"
                     value={formData.phone}
                     onChange={handleFormChange}
+                    className={`border p-2 rounded ${
+                      formErrors.phone ? "!border-red-500" : ""
+                    } w-full`}
+                    title={formErrors.phone ? formErrors["phone"] : undefined}
                   />
                 </div>
 
@@ -311,6 +371,7 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
                         target: { name: "maritalStatus", value },
                       })
                     }
+                    error={formErrors.maritalStatus}
                   />
                 </div>
 
@@ -327,6 +388,7 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
                         target: { name: "householdStatus", value },
                       })
                     }
+                    error={formErrors.householdStatus}
                   />
                 </div>
 
@@ -337,9 +399,16 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
                     id="literacyLevel"
                     name="literacyLevel"
                     placeholder="Literacy Level ..."
-                    className="border w-full"
                     value={formData.literacyLevel}
                     onChange={handleFormChange}
+                    className={`border p-2 rounded ${
+                      formErrors.literacyLevel ? "!border-red-500" : ""
+                    } w-full`}
+                    title={
+                      formErrors.literacyLevel
+                        ? formErrors["literacyLevel"]
+                        : undefined
+                    }
                   />
                 </div>
 
@@ -354,6 +423,7 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
                         target: { name: "disabilityType", value },
                       })
                     }
+                    error={formErrors.disabilityType}
                   />
                 </div>
 
@@ -373,6 +443,7 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
                         },
                       })
                     }
+                    error={formErrors.referredForProtection}
                   />
                 </div>
               </div>
@@ -382,6 +453,8 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
 
         {/* Submit */}
         <Button
+          id={SUBMIT_BUTTON_PROVIDER_ID}
+          disabled={isLoading}
           className="w-full mt-6"
           type="button"
           onClick={(e) =>
@@ -391,7 +464,7 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
             )
           }
         >
-          {loading ? "Loading ..." : "Update"}
+          {isLoading ? "Updating ..." : "Update"}
         </Button>
       </DialogContent>
     </Dialog>

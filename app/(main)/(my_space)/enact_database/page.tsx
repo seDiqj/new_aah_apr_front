@@ -10,12 +10,7 @@ import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AssessmentForm from "@/components/global/CreateNewAssessmentForm";
 import { useRouter } from "next/navigation";
-import {
-  AssessmentsFiltersList,
-  AssessmentsFilterUrl,
-} from "@/constants/FiltersList";
-
-
+import { AssessmentsFiltersList } from "@/constants/FiltersList";
 
 const EnactDatabasePage = () => {
   const router = useRouter();
@@ -93,13 +88,12 @@ const EnactDatabasePage = () => {
               <DataTableDemo
                 columns={enactTableColumn}
                 indexUrl="/enact_database/"
-                deleteUrl="enact_database/delete_enacts"
-                searchableColumn="name"
+                deleteUrl="/enact_database/delete_enacts"
+                searchableColumn="Project Code"
                 idFeildForEditStateSetter={setIdFeildForEditStateSetter}
                 editModelOpenerStateSetter={setReqForAssessmentUpdateForm}
                 idFeildForShowStateSetter={setIdFeildForShowStateSetter}
                 showModelOpenerStateSetter={setReqForAssessmentShowForm}
-                filterUrl={AssessmentsFilterUrl}
                 filtersList={AssessmentsFiltersList}
               ></DataTableDemo>
             </TabsContent>

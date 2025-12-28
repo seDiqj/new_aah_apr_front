@@ -46,6 +46,11 @@ export const KitRecievedOptions: SingleAndMultiSelectOptionsListType[] = [
   { value: "false", label: "No" },
 ];
 
+export const KitStatusOptions: SingleAndMultiSelectOptionsListType[] = [
+  {value: "active", "label" : "Active"},
+  {value: "inactive", "label" : "Inactive"},
+]
+
 export const indicatorStatus: SingleAndMultiSelectOptionsListType[] = [
   { value: "notStarted", label: "Not Started" },
   { value: "inProgress", label: "In Progress" },

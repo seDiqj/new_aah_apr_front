@@ -14,10 +14,7 @@ import CommunityDialogueSelector from "@/components/global/CommunityDialogSelect
 import BeneficiaryUpdateCD from "@/components/global/BeneficiaryUpdateFormCd";
 import { withPermission } from "@/lib/withPermission";
 import { Can } from "@/components/Can";
-import {
-  CommunityDialogueBeneficiariesFiltersList,
-  CommunityDialogueBeneficiariesFilterUrl,
-} from "@/constants/FiltersList";
+import { CommunityDialogueBeneficiariesFiltersList } from "@/constants/FiltersList";
 
 const CommunityDialogDatabasePage = () => {
   const router = useRouter();
@@ -85,7 +82,7 @@ const CommunityDialogDatabasePage = () => {
           columns={mainDatabaseAndKitDatabaseBeneficiaryColumns}
           indexUrl="/community_dialogue_db/beneficiaries"
           deleteUrl="community_dialogue_db/delete_beneficiaries"
-          searchableColumn="name"
+          searchableColumn="Name"
           idFeildForEditStateSetter={setIdFeildForEditStateSetter}
           editModelOpenerStateSetter={setReqForBeneficiaryEditionForm}
           idFeildForShowStateSetter={setIdFeildForShowStateSetter}
@@ -108,7 +105,6 @@ const CommunityDialogDatabasePage = () => {
           }
           editBtnPermission="Dialogue.edit"
           deleteBtnPermission="Dialogue.delete"
-          filterUrl={CommunityDialogueBeneficiariesFilterUrl}
           filtersList={CommunityDialogueBeneficiariesFiltersList}
         ></DataTableDemo>
 

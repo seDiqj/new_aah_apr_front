@@ -28,6 +28,7 @@ import {
   MaritalStatusOptions,
   ReferredForProtectionOptions,
 } from "@/constants/SingleAndMultiSelectOptionsList";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
 
 const KitDatabaseBeneficiaryForm: React.FC<
   KitDatabaseBeneficiaryFormInterface
@@ -58,6 +59,8 @@ const KitDatabaseBeneficiaryForm: React.FC<
     }));
   };
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const handleSubmit = (e: any) => {
     e.preventDefault();
 
@@ -78,6 +81,7 @@ const KitDatabaseBeneficiaryForm: React.FC<
     }
 
     setFormErrors({});
+    setIsLoading(true);
 
     axiosInstance
       .post("/kit_db/beneficiary", formData)
@@ -88,7 +92,8 @@ const KitDatabaseBeneficiaryForm: React.FC<
       })
       .catch((error: any) => {
         reqForToastAndSetMessage(error.response.data.message);
-      });
+      })
+      .finally(() => setIsLoading(false));
   };
 
   const [programs, setPrograms] = useState<{ id: string; name: string }[]>([]);
@@ -100,23 +105,26 @@ const KitDatabaseBeneficiaryForm: React.FC<
   useEffect(() => {
     // Fetching kit database programs
     axiosInstance
-      .get(`global/programs/kit_database`)
+      .get(`global/programs_for_selection/kit_database`)
       .then((response: any) => {
-        setPrograms(response.data.data);
+        setPrograms(response.data.data.data);
       })
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
       );
-    // Fetching kit database indicators
+  }, [open]);
+
+  useEffect(() => {
+    if (!formData.program) return;
     axiosInstance
-      .get(`global/indicators/kit_database`)
+      .get(`/global/indicators/${formData.program}/kit_database`)
       .then((response: any) => {
         setIndicators(response.data.data);
       })
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
       );
-  }, [open]);
+  }, [formData.program]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -158,6 +166,7 @@ const KitDatabaseBeneficiaryForm: React.FC<
                 }}
                 placeholder="Select Exising Program"
                 error={formErrors.program}
+                searchURL="global/programs_for_selection/kit_database"
               ></SingleSelect>
             </div>
             {/* Seperator */}
@@ -470,6 +479,8 @@ const KitDatabaseBeneficiaryForm: React.FC<
 
         {/* Submit Button */}
         <Button
+          id={SUBMIT_BUTTON_PROVIDER_ID}
+          disabled={isLoading}
           className="w-full mt-6"
           onClick={(e) =>
             reqForConfirmationModelFunc(
@@ -478,7 +489,7 @@ const KitDatabaseBeneficiaryForm: React.FC<
             )
           }
         >
-          Submit
+          {isLoading ? "Saving ..." : "Save"}
         </Button>
       </DialogContent>
     </Dialog>

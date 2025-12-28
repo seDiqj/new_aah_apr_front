@@ -20,6 +20,7 @@ import { Evaluation } from "@/types/Types";
 import { TrainingEvaluationInterface } from "@/interfaces/Interfaces";
 import { EvaluationOptions } from "@/constants/SingleAndMultiSelectOptionsList";
 import { TrainingEvaluationSubmitMessage } from "@/constants/ConfirmationModelsTexts";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
 
 const TrainingEvaluationForm: React.FC<TrainingEvaluationInterface> = ({
   previosTrainingEvaluations,
@@ -79,7 +80,10 @@ const TrainingEvaluationForm: React.FC<TrainingEvaluationInterface> = ({
       ? ((summary.informative / totalSelections) * 100).toFixed(1)
       : "0";
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const handleSubmit = () => {
+    setIsLoading(true);
     axiosInstance
       .post(`/training_db/training/evaluation/${id}`, {
         evaluations: summary,
@@ -88,7 +92,8 @@ const TrainingEvaluationForm: React.FC<TrainingEvaluationInterface> = ({
       .then((response: any) => reqForToastAndSetMessage(response.data.message))
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
-      );
+      )
+      .finally(() => setIsLoading(false));
   };
 
   const hasRun = useRef(false);
@@ -105,6 +110,7 @@ const TrainingEvaluationForm: React.FC<TrainingEvaluationInterface> = ({
             { participant: i, selected: entry[0] },
           ]);
       });
+      setRemark(previosTrainingEvaluations.remark);
     }
   }, []);
 
@@ -200,6 +206,8 @@ const TrainingEvaluationForm: React.FC<TrainingEvaluationInterface> = ({
             <PlusCircle className="w-4 h-4" /> Add Evaluation
           </Button>
           <Button
+            id={SUBMIT_BUTTON_PROVIDER_ID}
+            disabled={isLoading}
             className="bg-blue-600 hover:bg-blue-700"
             onClick={() =>
               reqForConfirmationModelFunc(
@@ -208,7 +216,7 @@ const TrainingEvaluationForm: React.FC<TrainingEvaluationInterface> = ({
               )
             }
           >
-            Submit
+            {isLoading ? "Saving ..." : "Save"}
           </Button>
         </div>
       </CardContent>

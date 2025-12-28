@@ -28,12 +28,14 @@ import {
   IsEditMode,
   IsEditOrShowMode,
   IsEditPage,
+  IsNotShowMode,
   IsOutcomeEdited,
   IsShowMode,
   IsThereAnyOutcomeWithEnteredReferance,
   IsThereAnyOutcomeWithEnteredReferanceAndDefferentId,
 } from "@/constants/Constants";
 import { Textarea } from "../ui/textarea";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
 
 const OutcomeModel: React.FC<OutcomeInterface> = ({
   isOpen,
@@ -133,7 +135,8 @@ const OutcomeModel: React.FC<OutcomeInterface> = ({
         })
         .catch((error: any) => {
           reqForToastAndSetMessage(error.response.data.message);
-        });
+        })
+        .finally(() => setIsLoading(false));
     } else if (IsEditMode(mode))
       axiosInstance
         .put(`projects/outcome/${outcomeId}`, {
@@ -220,8 +223,8 @@ const OutcomeModel: React.FC<OutcomeInterface> = ({
               name="outcome"
               value={formData.outcome}
               onChange={handleFormChange}
-              disabled={mode == "show"}
-              className={`border p-2 rounded ${
+              disabled={IsShowMode(mode)}
+              className={`border p-2 rounded  ${
                 formErrors.outcome ? "!border-red-500" : ""
               }`}
               title={formErrors.projectCode}
@@ -235,7 +238,7 @@ const OutcomeModel: React.FC<OutcomeInterface> = ({
               name="outcomeRef"
               value={formData.outcomeRef}
               onChange={handleFormChange}
-              disabled={mode == "show"}
+              disabled={IsShowMode(mode)}
               className={`border p-2 rounded ${
                 formErrors.outcomeRef ? "!border-red-500" : ""
               }`}
@@ -244,23 +247,25 @@ const OutcomeModel: React.FC<OutcomeInterface> = ({
           </div>
         </div>
 
-        {mode != "show" && (
+        {IsNotShowMode(mode) && (
           <DialogFooter>
             <div className="flex gap-2 w-full justify-end">
               <Button variant="outline" onClick={handleCancel}>
                 Cancel
               </Button>
               <Button
+                id={SUBMIT_BUTTON_PROVIDER_ID}
+                disabled={isLoading}
                 onClick={() =>
                   reqForConfirmationModelFunc(
-                    mode == "create"
+                    IsCreateMode(mode)
                       ? OutcomeCreationMessage
                       : OutcomeEditionMessage,
                     handleSubmit
                   )
                 }
               >
-                Save
+                {isLoading ? "Saving ..." : "Save"}
               </Button>
             </div>
           </DialogFooter>

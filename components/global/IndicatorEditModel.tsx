@@ -59,6 +59,8 @@ import {
 import { stringToCapital } from "@/helpers/StringToCapital";
 import { getStructuredProvinces } from "@/helpers/IndicatorFormHelpers";
 import { AxiosError, AxiosResponse } from "axios";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { IndicatorSchema } from "@/schemas/FormsSchema";
 
 export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
   isOpen,
@@ -93,6 +95,7 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
     IndicatorDefault()
   );
   const [reqForSubIndicator, setReqForSubIndicator] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleChange = (e: any) => {
     const { name, value } = e.target;
@@ -218,6 +221,8 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
     }
   };
 
+  const [formErrors, setFormErrors] = useState<{ [key: string]: any }>({});
+
   const hundleSubmit = () => {
     if (
       IsThereAndIndicatorWithEnteredReferanceAndDefferentId(indicators, local)
@@ -226,11 +231,42 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
         "A project can not have two indicators with same referance !"
       );
       return;
-    } else if (!IsIndicatorEdited(indicatorBeforeEdit, local)) {
+    } else if (
+      IsEditMode(mode) &&
+      !IsIndicatorEdited(indicatorBeforeEdit, local)
+    ) {
       reqForToastAndSetMessage("No changes were made !");
       onClose();
       return;
     }
+
+    const result = IndicatorSchema.safeParse(local);
+
+    if (!result.success) {
+      const errors: any = {};
+
+      result.error.issues.forEach((issue) => {
+        let current = errors;
+        issue.path.forEach((p, index) => {
+          if (index === issue.path.length - 1) {
+            current[p] = issue.message;
+          } else {
+            if (!current[p]) current[p] = {};
+            current = current[p];
+          }
+        });
+      });
+
+      setFormErrors(errors);
+
+      reqForToastAndSetMessage(
+        "Please fix validation errors before submitting."
+      );
+      return;
+    }
+
+    setFormErrors({});
+    setIsLoading(true);
 
     if (IsCreateMode(mode)) {
       axiosInstance
@@ -280,7 +316,8 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
         })
         .catch((error: any) => {
           reqForToastAndSetMessage(error.response.data.message);
-        });
+        })
+        .finally(() => setIsLoading(false));
     } else if (IsEditMode(mode)) {
       setIndicators((prev) =>
         prev.map((ind) =>
@@ -296,7 +333,8 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
         })
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message)
-        );
+        )
+        .finally(() => setIsLoading(false));
     }
   };
 
@@ -542,6 +580,7 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
                 }))
               }
               disabled={IsShowMode(mode)}
+              error={formErrors.outputId}
             />
           </div>
 
@@ -554,6 +593,10 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
               onChange={handleChange}
               placeholder="Indicator name"
               disabled={IsShowMode(mode)}
+              className={`border p-2 rounded ${
+                formErrors.indicator ? "!border-red-500" : ""
+              }`}
+              title={formErrors.indicator}
             />
           </div>
 
@@ -566,6 +609,10 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
               onChange={handleChange}
               placeholder="Indicator reference"
               disabled={IsShowMode(mode)}
+              className={`border p-2 rounded ${
+                formErrors.indicatorRef ? "!border-red-500" : ""
+              }`}
+              title={formErrors.indicatorRef}
             />
           </div>
 
@@ -576,10 +623,14 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
                 id="target"
                 name="target"
                 type="number"
-                value={local.target ?? 0}
+                value={local.target}
                 onChange={handleChange}
                 placeholder="Target"
                 disabled={IsShowMode(mode)}
+                className={`border p-2 rounded ${
+                  formErrors.target ? "!border-red-500" : ""
+                }`}
+                title={formErrors.target}
               />
             </div>
 
@@ -593,6 +644,7 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
                 options={indicatorStatus}
                 placeholder="Select status"
                 disabled={IsShowMode(mode)}
+                error={formErrors.status}
               />
             </div>
           </div>
@@ -610,6 +662,7 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
                   }))
                 }
                 disabled={IsShowMode(mode)}
+                error={formErrors.database}
               />
 
               {IsMainDatabase(local) && (
@@ -625,6 +678,7 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
                       }))
                     }
                     disabled={IsShowMode(mode)}
+                    error={formErrors.type}
                   />
                 </div>
               )}
@@ -642,6 +696,7 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
               }
               // error={indicatorFormErrors.provinces}
               disabled={IsShowMode(mode)}
+              error={formErrors.provinces}
             />
           </div>
 
@@ -855,6 +910,8 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
                   : "Add Sub Indicator"}
               </Button>
               <Button
+                id={SUBMIT_BUTTON_PROVIDER_ID}
+                disabled={isLoading}
                 onClick={() => {
                   reqForConfirmationModelFunc(
                     IsCreateMode(mode)
@@ -864,7 +921,7 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
                   );
                 }}
               >
-                Save
+                {isLoading ? "Saving ..." : "Save"}
               </Button>
             </div>
           </DialogFooter>

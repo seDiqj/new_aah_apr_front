@@ -1,0 +1,44 @@
+// components/TopProgressBar.tsx
+"use client";
+
+import { useEffect, useRef } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import NProgress from "nprogress";
+import "nprogress/nprogress.css";
+
+export default function TopProgressBar() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    NProgress.configure({
+      showSpinner: false,
+      trickleSpeed: 200,
+      minimum: 0.3,
+    });
+  }, []);
+
+  useEffect(() => {
+    // شروع لودر
+    NProgress.start();
+
+    // اگر تایمر قبلی بود پاکش کن
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    // پایان لودر (بعد از اینکه route settle شد)
+    timeoutRef.current = setTimeout(() => {
+      NProgress.done(true);
+    }, 400); // عدد UX-friendly
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [pathname, searchParams]);
+
+  return null;
+}

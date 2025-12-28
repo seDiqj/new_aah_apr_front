@@ -2,20 +2,16 @@
 
 import BreadcrumbWithCustomSeparator from "@/components/global/BreadCrumb";
 import DataTableDemo from "@/components/global/MulitSelectTable";
-import Preloader from "@/components/global/Preloader";
 import SubHeader from "@/components/global/SubHeader";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
-import { useParentContext } from "@/contexts/ParentContext";
 import { mainDatabaseAndKitDatabaseBeneficiaryColumns } from "@/definitions/DataTableColumnsDefinitions";
 import {
   ReferralsFiltersList,
-  ReferralsFilterUrl,
 } from "@/constants/FiltersList";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const MainDatabasePage = () => {
-  const { reqForToastAndSetMessage } = useParentContext();
   const router = useRouter();
 
   let [idFeildForEditStateSetter, setIdFeildForEditStateSetter] = useState<
@@ -47,9 +43,8 @@ const MainDatabasePage = () => {
           columns={mainDatabaseAndKitDatabaseBeneficiaryColumns}
           indexUrl="/referral_db/beneficiaries"
           deleteUrl="/referral_db/delete_beneficiaries"
-          searchableColumn="name"
+          searchableColumn="Name"
           idFeildForShowStateSetter={setIdFeildForShowStateSetter}
-          filterUrl={ReferralsFilterUrl}
           filtersList={ReferralsFiltersList}
         ></DataTableDemo>
       </div>

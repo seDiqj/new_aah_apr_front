@@ -27,6 +27,7 @@ import {
   IsCreateMode,
   IsIndicatorRelatedToThisOutput,
   IsNotShowMode,
+  IsNotSubIndicator,
   IsOutputSaved,
   IsShowMode,
 } from "@/constants/Constants";
@@ -104,7 +105,7 @@ const IndicatorForm: React.FC<IndicatorFormInterface> = ({ mode }) => {
                               Number(ind.outputId)
                             )
                           )
-                          // .filter((ind) => IsNotSubIndicator(ind))
+                          .filter((ind) => IsNotSubIndicator(ind))
                           .map((indItem, indIndex) => (
                             <div
                               key={indIndex}
@@ -193,6 +194,7 @@ const IndicatorForm: React.FC<IndicatorFormInterface> = ({ mode }) => {
             setCurrentTab,
             "output",
             undefined,
+            false,
             setCurrentTab,
             "dessaggregation"
           )}

@@ -13,6 +13,7 @@ import { useParentContext } from "@/contexts/ParentContext";
 import { TrainingSelectorInterface } from "@/interfaces/Interfaces";
 import { TrainingSelectorMessage } from "@/constants/ConfirmationModelsTexts";
 import { IsNotANullOrUndefinedValue } from "@/constants/Constants";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
 
 const TrainingSelectorDialog: React.FC<TrainingSelectorInterface> = ({
   open,
@@ -30,18 +31,26 @@ const TrainingSelectorDialog: React.FC<TrainingSelectorInterface> = ({
 
   const [selectedTraining, setSelectedTraining] = useState<string>("");
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const handleSubmit = () => {
     if (!selectedTraining) return;
+
+    setIsLoading(true);
 
     axiosInstance
       .post("/training_db/beneficiaries/add_training", {
         training: selectedTraining,
         ids: ids,
       })
-      .then((response: any) => reqForToastAndSetMessage(response.data.message))
+      .then((response: any) => {
+        reqForToastAndSetMessage(response.data.message);
+        onOpenChange(false);
+      })
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
-      );
+      )
+      .finally(() => setIsLoading(false));
   };
 
   useEffect(() => {
@@ -85,6 +94,8 @@ const TrainingSelectorDialog: React.FC<TrainingSelectorInterface> = ({
 
         {/* Submit Button */}
         <Button
+          id={SUBMIT_BUTTON_PROVIDER_ID}
+          disabled={isLoading}
           onClick={() =>
             reqForConfirmationModelFunc(TrainingSelectorMessage, () =>
               handleSubmit()
@@ -92,7 +103,7 @@ const TrainingSelectorDialog: React.FC<TrainingSelectorInterface> = ({
           }
           className="w-full mt-6"
         >
-          Submit
+          {isLoading ? "Saving ..." : "Save"}
         </Button>
       </DialogContent>
     </Dialog>

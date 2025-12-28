@@ -14,10 +14,7 @@ import {
   GenerateAprMessage,
   RejectFirstApprovedDatabaseMessage,
 } from "@/constants/ConfirmationModelsTexts";
-import {
-  ApprovedDatabasesFiltersList,
-  ApprovedDatabasesFilterUrl,
-} from "@/constants/FiltersList";
+import { ApprovedDatabasesFiltersList } from "@/constants/FiltersList";
 import { AxiosError, AxiosResponse } from "axios";
 
 const SubmittedDatabasesPage = () => {
@@ -26,6 +23,7 @@ const SubmittedDatabasesPage = () => {
     reqForConfirmationModelFunc,
     axiosInstance,
     handleReload,
+    handleAprReload,
   } = useParentContext();
 
   let [idFeildForEditStateSetter, setIdFeildForEditStateSetter] = useState<
@@ -43,6 +41,7 @@ const SubmittedDatabasesPage = () => {
       .then((response: any) => {
         {
           reqForToastAndSetMessage(response.data.message);
+          handleAprReload();
           handleReload();
         }
       })
@@ -58,6 +57,7 @@ const SubmittedDatabasesPage = () => {
       })
       .then((response: AxiosResponse<any, any, any>) => {
         reqForToastAndSetMessage(response.data.message);
+        handleAprReload();
         handleReload();
       })
       .catch((error: AxiosError<any, any>) =>
@@ -106,7 +106,6 @@ const SubmittedDatabasesPage = () => {
             </Button>
           </div>
         }
-        filterUrl={ApprovedDatabasesFilterUrl}
         filtersList={ApprovedDatabasesFiltersList}
       ></DataTableDemo>
 

@@ -36,6 +36,7 @@ import {
 } from "@/constants/Constants";
 import { OutputFormSchema } from "@/schemas/FormsSchema";
 import { Textarea } from "../ui/textarea";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
 
 const OutputModel: React.FC<OutputInterface> = ({
   isOpen,
@@ -260,6 +261,8 @@ const OutputModel: React.FC<OutputInterface> = ({
                 Cancel
               </Button>
               <Button
+                id={SUBMIT_BUTTON_PROVIDER_ID}
+                disabled={isLoading}
                 onClick={() =>
                   reqForConfirmationModelFunc(
                     IsCreateMode(mode)
@@ -269,7 +272,7 @@ const OutputModel: React.FC<OutputInterface> = ({
                   )
                 }
               >
-                Save
+                {isLoading ? "Saving ..." : "Save"}
               </Button>
             </div>
           </DialogFooter>

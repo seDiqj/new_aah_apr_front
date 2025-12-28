@@ -21,8 +21,13 @@ import { Plus } from "lucide-react";
 import { useParams } from "next/navigation";
 import { RefObject, useEffect, useRef, useState } from "react";
 import { TrainingBeneficiaryDefault } from "@/constants/FormsDefaultValues";
-import { BeneficiaryPresenceTogglerButtonMessage } from "@/constants/ConfirmationModelsTexts";
+import {
+  BeneficiaryPresenceTogglerButtonMessage,
+  RemoveTrainingFromBeneficiaryButtonMessage,
+} from "@/constants/ConfirmationModelsTexts";
 import { IsIdFeild } from "@/constants/Constants";
+import ChromeTabs from "@/app/(main)/projects/Components/ChromeTab";
+import { AxiosError, AxiosResponse } from "axios";
 
 const TrainingBeneficiaryProfile = () => {
   const { id } = useParams<{
@@ -49,6 +54,8 @@ const TrainingBeneficiaryProfile = () => {
 
   const isBeneficiaryTrainingsListFeched: RefObject<boolean> = useRef(false);
 
+  const [currentTab, setCurrentTab] = useState<string>("beneficiaryInfo");
+
   useEffect(() => {
     if (isBeneficiaryTrainingsListFeched.current) return;
     isBeneficiaryTrainingsListFeched.current = true;
@@ -67,6 +74,7 @@ const TrainingBeneficiaryProfile = () => {
           setChaptersData((prev) => [
             ...prev,
             {
+              trainingId: training.id,
               trainingName: training.name,
               chapters: training.chapters,
             },
@@ -100,6 +108,26 @@ const TrainingBeneficiaryProfile = () => {
     setOpenPreAndPostTestForm(!openPreAndPostTestForm);
   };
 
+  const removeTrainingFromBeneficiaryTrainingList = (
+    trainingId: number | null
+  ) => {
+    if (!trainingId) {
+      reqForToastAndSetMessage("Training is not valid !");
+      return;
+    }
+    axiosInstance
+      .post(`/training_db/remove_training_from_bnf`, {
+        trainingId: trainingId,
+        beneficiaryId: id,
+      })
+      .then((response: AxiosResponse<any, any>) => {
+        reqForToastAndSetMessage(response.data.message);
+      })
+      .catch((error: AxiosError<any, any>) =>
+        reqForToastAndSetMessage(error.response?.data.message)
+      );
+  };
+
   return (
     <>
       <div className="w-full h-full p-2">
@@ -110,31 +138,27 @@ const TrainingBeneficiaryProfile = () => {
         <SubHeader pageTitle={"Beneficiary Profile"}></SubHeader>
 
         {/* Main Content */}
-        {/* Main Content */}
-        <Tabs defaultValue="beneficiaryInfo">
-          <TabsList className="flex flex-row items-center justify-between w-full">
-            {/* Triggers list */}
-            <div className="overflow-auto">
-              <TabsTrigger value="beneficiaryInfo">
-                Beneficiary Info
-              </TabsTrigger>
-              {trainingsData.map((training, index) => (
-                <TabsTrigger key={index} value={training.name}>
-                  {training.name.toUpperCase()}
-                </TabsTrigger>
-              ))}
-            </div>
-            <div>
-              <Button
-                className="rounded-2xl"
-                onClick={() =>
-                  setReqForTrainingSelector(!reqForTrainingSelector)
-                }
-              >
-                <Plus></Plus>
-              </Button>
-            </div>
-          </TabsList>
+        <Tabs
+          defaultValue="beneficiaryInfo"
+          value={currentTab}
+          onValueChange={setCurrentTab}
+        >
+          <ChromeTabs
+            initialTabs={[
+              {
+                value: "beneficiaryInfo",
+                title: "Beneficiary Info",
+                stateSetter: setCurrentTab,
+              },
+
+              ...trainingsData.map((training) => ({
+                value: training.id as string,
+                title: training.name.toUpperCase(),
+                stateSetter: setCurrentTab,
+              })),
+            ]}
+          ></ChromeTabs>
+
           <TabsContent value="beneficiaryInfo">
             <Card className="min-h-[400px]">
               <CardContent className="h-full grid gap-4 max-h-[400px] overflow-auto">
@@ -143,77 +167,122 @@ const TrainingBeneficiaryProfile = () => {
             </Card>
           </TabsContent>
           {chaptersData.map((chapter, index) => (
-            <TabsContent key={index} value={chapter.trainingName}>
+            <TabsContent key={index} value={chapter.trainingId as string}>
               <Card className="min-h-[400px]">
-                <CardContent className="grid gap-6">
-                  <Tabs defaultValue={chapter.trainingName}>
-                    <TabsList>
-                      <TabsTrigger value={chapter.trainingName}>
-                        Training info
+                <CardContent className="pt-6 space-y-6">
+                  {/* Inner Tabs */}
+                  <Tabs defaultValue="training-info" className="space-y-4">
+                    {/* Tabs Header */}
+                    <TabsList className="flex flex-wrap gap-2">
+                      <TabsTrigger value="training-info">
+                        Training Info
                       </TabsTrigger>
+
                       {chapter.chapters.map((_, i) => (
                         <TabsTrigger key={i} value={`chapter-${i + 1}`}>
-                          {`Chapter ${i + 1}`}
+                          Chapter {i + 1}
                         </TabsTrigger>
                       ))}
                     </TabsList>
 
-                    <TabsContent value={chapter.trainingName}>
-                      <div className="grid grid-cols-2 gap-4">
+                    {/* ================= Training Info ================= */}
+                    <TabsContent value="training-info">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                         {Object.entries(
                           trainingsData.find(
-                            (training) => training.name === chapter.trainingName
+                            (t) => t.id === chapter.trainingId
                           ) ?? {}
-                        ).map((entity, idx) => {
-                          if (entity[0] == "id") return;
+                        ).map(([key, value], idx) => {
+                          if (IsIdFeild(key)) return null;
+
                           return (
-                            <div key={idx} className="flex gap-7 p-2 rounded">
-                              <span>{entity[0]} : </span>
-                              <span>{entity[1]}</span>
-                            </div>
+                            <>
+                              <div
+                                key={idx}
+                                className="grid grid-cols-[150px_1fr] border-b pb-2"
+                              >
+                                <span className="text-sm text-muted-foreground">
+                                  {key.replace(/([A-Z])/g, " $1")}
+                                </span>
+                                <span className="text-sm font-medium">
+                                  {value?.toString() || "-"}
+                                </span>
+                              </div>
+                            </>
                           );
                         })}
                       </div>
+                      <div className="flex flex-row items-center justify-end w-full mt-4">
+                        <Button
+                          title="Remove training from current beneficiary's training list !"
+                          onClick={() =>
+                            reqForConfirmationModelFunc(
+                              RemoveTrainingFromBeneficiaryButtonMessage,
+                              () =>
+                                removeTrainingFromBeneficiaryTrainingList(
+                                  chapter.trainingId as unknown as number
+                                )
+                            )
+                          }
+                        >
+                          Remove Training
+                        </Button>
+                      </div>
                     </TabsContent>
 
+                    {/* ================= Chapters ================= */}
                     {chapter.chapters.map((ch, i) => (
                       <TabsContent key={i} value={`chapter-${i + 1}`}>
-                        <>
-                          {/* Presence toggle btn */}
-                          <div className="flex items-center space-x-2">
-                            <Switch
-                              id="airplane-mode"
-                              onCheckedChange={(checked: boolean) =>
-                                reqForConfirmationModelFunc(
-                                  BeneficiaryPresenceTogglerButtonMessage,
-                                  () => handleTogglePrecenseOfBeneficiary(ch.id)
-                                )
-                              }
-                              defaultChecked={
-                                selfChaptersData.map((selfChapterData) => {
-                                  if (selfChapterData.id == ch.id)
-                                    return selfChapterData.isPresent;
-                                })[0]
-                              }
-                            />
-                            <Label htmlFor="airplane-mode">Is Present</Label>
+                        <div className="space-y-6">
+                          {/* Chapter Header */}
+                          <div className="flex items-center justify-between border-b pb-3">
+                            <h3 className="text-sm font-semibold">
+                              Chapter {i + 1}
+                            </h3>
+
+                            <div className="flex items-center gap-2">
+                              <Label className="text-sm">Present</Label>
+                              <Switch
+                                onCheckedChange={() =>
+                                  reqForConfirmationModelFunc(
+                                    BeneficiaryPresenceTogglerButtonMessage,
+                                    () =>
+                                      handleTogglePrecenseOfBeneficiary(ch.id)
+                                  )
+                                }
+                                defaultChecked={
+                                  selfChaptersData.find((s) => s.id === ch.id)
+                                    ?.isPresent
+                                }
+                              />
+                            </div>
                           </div>
-                          <div className="grid grid-cols-2 gap-4">
-                            {Object.entries(ch).map((entry, idx) => {
-                              if (entry[0] == "id") return;
+
+                          {/* Chapter Info */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                            {Object.entries(ch).map(([key, value], idx) => {
+                              if (key === "id") return null;
+
                               return (
                                 <div
                                   key={idx}
-                                  className="flex gap-7 p-2 rounded"
+                                  className="grid grid-cols-[150px_1fr] border-b pb-2"
                                 >
-                                  <span>{entry[0]} : </span>
-                                  <span>{entry[1]}</span>
+                                  <span className="text-sm text-muted-foreground">
+                                    {key.replace(/([A-Z])/g, " $1")}
+                                  </span>
+                                  <span className="text-sm font-medium">
+                                    {value?.toString() || "-"}
+                                  </span>
                                 </div>
                               );
                             })}
                           </div>
-                          <div className="flex flex-row items-center justify-end">
+
+                          {/* Actions */}
+                          <div className="flex justify-end pt-4">
                             <Button
+                              size="sm"
                               onClick={() =>
                                 openPreAndPostTestFormAndSetChapterId(
                                   ch.id.toString()
@@ -223,7 +292,7 @@ const TrainingBeneficiaryProfile = () => {
                               Pre & Post Test
                             </Button>
                           </div>
-                        </>
+                        </div>
                       </TabsContent>
                     ))}
                   </Tabs>

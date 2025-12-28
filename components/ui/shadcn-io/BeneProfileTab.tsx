@@ -13,6 +13,7 @@ import { ToggleRight } from "lucide-react";
 import { IsANullValue, IsIdFeild } from "@/constants/Constants";
 import { CommunityDialogueBeneficiaryFormDefault } from "@/constants/FormsDefaultValues";
 import { BeneficiarySessionPresenceTogglerButtonMessage } from "@/constants/ConfirmationModelsTexts";
+import ChromeTabs from "@/app/(main)/projects/Components/ChromeTab";
 
 export default function BeneProfileTabs() {
   const { id } = useParams<{
@@ -25,13 +26,6 @@ export default function BeneProfileTabs() {
     axiosInstance,
     handleReload,
   } = useParentContext();
-
-  let [reqForPermissionUpdateForm, setReqForPermissionUpdateForm] =
-    useState<boolean>(false);
-
-  let [idFeildForEditStateSetter, setIdFeildForEditStateSetter] = useState<
-    number | null
-  >(null);
 
   const tabs = ["Beneficiary Info", "Sessions"];
 
@@ -78,15 +72,13 @@ export default function BeneProfileTabs() {
     <div className="w-full px-4">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         {/* Tabs header */}
-        <div className="relative w-full border-b border-border mb-2">
-          <TabsList className="flex justify-start gap-6 bg-transparent p-0 w-fit [&>*]:flex-none">
-            {tabs.map((tab) => (
-              <TabsTrigger key={tab} value={tab}>
-                {tab}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </div>
+        <ChromeTabs
+          initialTabs={tabs.map((tab) => ({
+            value: tab,
+            title: tab,
+            stateSetter: setActiveTab,
+          }))}
+        ></ChromeTabs>
 
         {/* Beneficiary Information */}
         <TabsContent value={tabs[0]} className="w-full">
@@ -131,8 +123,8 @@ export default function BeneProfileTabs() {
               <DataTableDemo
                 columns={beneficiarySessionsTableColumn}
                 indexUrl={`/community_dialogue_db/beneficiary/sessions/${id}`}
-                searchableColumn="name"
-                idFeildForEditStateSetter={setIdFeildForEditStateSetter}
+                searchUrl=""
+                searchableColumn="Topic"
                 selectedRowsIdsStateSetter={setSelectedRows}
                 injectedElement={
                   <div className="flex flex-row items-center justify-end gap-2">
@@ -150,6 +142,7 @@ export default function BeneProfileTabs() {
                     </Button>
                   </div>
                 }
+                filtersList={["type", "date"]}
               ></DataTableDemo>
             </CardContent>
           </Card>

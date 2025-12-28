@@ -7,7 +7,18 @@ class ShourtcutifyConstants {
    * @returns boolean
    */
   public isKeyAccToGrammer(terminal: string): boolean {
-    return terminal.charCodeAt(0) >= 97 && terminal.charCodeAt(0) <= 122;
+    if (terminal.length == 1)
+      return terminal.charCodeAt(0) >= 97 && terminal.charCodeAt(0) <= 122;
+    if (
+      terminal == "enter" ||
+      terminal == "alt" ||
+      terminal == "control" ||
+      terminal == "shift" ||
+      terminal == "delete" ||
+      terminal == "tab"
+    )
+      return true;
+    return false;
   }
 
   /**

@@ -20,7 +20,6 @@ import {
 } from "@/constants/ConfirmationModelsTexts";
 import {
   MainDatabaseBeneficiariesFilters,
-  MainDatabaseBeneficiariesFilterUrl,
 } from "@/constants/FiltersList";
 
 const MainDatabasePage = () => {
@@ -140,7 +139,6 @@ const MainDatabasePage = () => {
               </Button>
             </div>
           }
-          filterUrl={MainDatabaseBeneficiariesFilterUrl}
           filtersList={MainDatabaseBeneficiariesFilters}
         ></DataTableDemo>
         {/* Beneficiary creation form */}

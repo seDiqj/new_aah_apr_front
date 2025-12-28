@@ -56,7 +56,7 @@ const OutcomeForm: React.FC<OutcomeFormInterface> = ({ mode }) => {
     number | null
   >(null);
 
-  const [reqForOutcomeForm, setReqForOutcomeForm] = useState(false);
+  const [reqForOutcomeForm, setReqForOutcomeForm] = useState<boolean>(false);
 
   const readOnly = IsShowMode(mode);
 
@@ -144,6 +144,7 @@ const OutcomeForm: React.FC<OutcomeFormInterface> = ({ mode }) => {
             setCurrentTab,
             "project",
             undefined,
+            false,
             setCurrentTab,
             "output"
           )}
@@ -155,7 +156,7 @@ const OutcomeForm: React.FC<OutcomeFormInterface> = ({ mode }) => {
           isOpen={reqForOutcomeForm}
           onOpenChange={setReqForOutcomeForm}
           mode="create"
-          pageIdentifier="create"
+          pageIdentifier={mode}
         ></OutcomeModel>
       )}
 

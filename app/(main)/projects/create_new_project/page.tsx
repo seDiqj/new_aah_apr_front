@@ -17,12 +17,9 @@ import AprFinalizationSubPage from "../Components/AprFinalizationSubPage";
 import AprLogsSubPage from "../Components/AprLogsSubPage";
 import IndicatorForm from "../Components/IndicatorForm";
 import Isp3SubPage from "../Components/Isp3SubPage";
-import { Button } from "@/components/ui/button";
-import IndicatorModel from "@/components/global/IndicatorEditModel";
 import { useParentContext } from "@/contexts/ParentContext";
-import OutcomeModel from "@/components/global/OutcomeEditModel";
-import OutputModel from "@/components/global/OutputEditModel";
 import { Isp3Default, ProjectDefault } from "@/constants/FormsDefaultValues";
+import ChromeTabs from "../Components/ChromeTab";
 
 const NewProjectPage = () => {
   const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
@@ -92,7 +89,7 @@ const NewProjectPage = () => {
           handleDelete,
         }}
       >
-        <div className="w-full h-full p-2">
+        <div className="max-w-full h-full p-2">
           <Navbar14 />
           <div className="flex flex-row items-center justify-start my-2">
             <BreadcrumbWithCustomSeparator></BreadcrumbWithCustomSeparator>
@@ -105,19 +102,50 @@ const NewProjectPage = () => {
               value={currentTab}
               className="h-full"
             >
-              <TabsList className="w-full">
-                <TabsTrigger value="project">Project</TabsTrigger>
-                <TabsTrigger value="outcome">OutCome</TabsTrigger>
-                <TabsTrigger value="output">Output</TabsTrigger>
-                <TabsTrigger value="indicator">Indicator</TabsTrigger>
-                <TabsTrigger value="dessaggregation">
-                  Disaggregation
-                </TabsTrigger>
-                {/* <TabsTrigger value="aprPreview">APR Preview</TabsTrigger> */}
-                <TabsTrigger value="isp3">ISP3</TabsTrigger>
-                <TabsTrigger value="finalization">APR Finalization</TabsTrigger>
-                <TabsTrigger value="logs">Logs</TabsTrigger>
-              </TabsList>
+              <ChromeTabs
+                initialTabs={[
+                  {
+                    value: "project",
+                    title: "Project",
+                    stateSetter: setCurrentTab,
+                  },
+                  {
+                    value: "outcome",
+                    title: "Outcome",
+                    stateSetter: setCurrentTab,
+                  },
+                  {
+                    value: "output",
+                    title: "Output",
+                    stateSetter: setCurrentTab,
+                  },
+                  {
+                    value: "indicator",
+                    title: "Indicator",
+                    stateSetter: setCurrentTab,
+                  },
+                  {
+                    value: "dessaggregation",
+                    title: "Disaggregation",
+                    stateSetter: setCurrentTab,
+                  },
+                  {
+                    value: "isp3",
+                    title: "ISP3",
+                    stateSetter: setCurrentTab,
+                  },
+                  {
+                    value: "finalization",
+                    title: "APR Finalization",
+                    stateSetter: setCurrentTab,
+                  },
+                  {
+                    value: "logs",
+                    title: "Activity Logs",
+                    stateSetter: setCurrentTab,
+                  },
+                ]}
+              />
 
               {/* Project */}
               <TabsContent value="project" className="h-full">
@@ -131,7 +159,7 @@ const NewProjectPage = () => {
 
               {/* Output */}
               <TabsContent value="output" className="h-full">
-                <OutputForm mode="create"></OutputForm>
+                <OutputForm      mode="create"></OutputForm>
               </TabsContent>
 
               {/* Indicator */}

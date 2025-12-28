@@ -16,6 +16,7 @@ import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import BreadcrumbWithCustomSeparator from "@/components/global/BreadCrumb";
 import SubHeader from "@/components/global/SubHeader";
 import { IsANullValue, IsIdFeild } from "@/constants/Constants";
+import ChromeTabs from "@/app/(main)/projects/Components/ChromeTab";
 
 const BeneProfileTabs = () => {
   const { id } = useParams<{
@@ -84,37 +85,17 @@ const BeneProfileTabs = () => {
         </div>
         <SubHeader pageTitle={"Benficiaries"}></SubHeader>
 
+        <ChromeTabs
+          initialTabs={tabs.map((tab) => ({
+            value: tab,
+            title: tab,
+            stateSetter: setActiveTab,
+          }))}
+        ></ChromeTabs>
+
         {/* Main Content */}
-        <div className="w-full px-4">
+        <div className="w-full px-4 mt-2">
           <ShadcnTabs value={activeTab} onValueChange={setActiveTab}>
-            {/* Tabs header */}
-            <div className="relative w-full border-b border-border mb-2">
-              <TabsList className="flex justify-start gap-6 bg-transparent p-0 w-fit [&>*]:flex-none">
-                {tabs.map((tab) => (
-                  <TabsTrigger
-                    key={tab}
-                    value={tab}
-                    ref={(el: HTMLButtonElement | null) => {
-                      tabRefs.current[tab] = el;
-                    }}
-                    className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground data-[state=active]:text-foreground data-[state=active]:font-semibold border-none shadow-none ring-0 focus:outline-none"
-                    onClick={() => (ref.current = false)}
-                  >
-                    {tab}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-
-              {/* Animated underline */}
-              <span
-                className="absolute bottom-0 h-[3px] bg-foreground rounded-t-md transition-all duration-300 ease-in-out"
-                style={{
-                  left: underlineStyle.left,
-                  width: underlineStyle.width,
-                }}
-              />
-            </div>
-
             {/* Tab 1 - Beneficiary Information */}
             <TabsContent value={tabs[0]} className="w-full">
               <Card className="shadow-sm border border-border w-full bg-background">

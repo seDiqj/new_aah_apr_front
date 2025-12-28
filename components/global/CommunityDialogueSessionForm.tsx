@@ -24,6 +24,7 @@ import {
   IsShowMode,
 } from "@/constants/Constants";
 import { CommunityDialogueSessionFormInterface } from "@/interfaces/Interfaces";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
 
 const SessionForm: React.FC<CommunityDialogueSessionFormInterface> = ({
   open,
@@ -37,7 +38,7 @@ const SessionForm: React.FC<CommunityDialogueSessionFormInterface> = ({
     reqForToastAndSetMessage,
     axiosInstance,
     reqForConfirmationModelFunc,
-    handleReload
+    handleReload,
   } = useParentContext();
 
   const [formData, setFormData] = useState<CommunityDialogueSessionForm>(
@@ -67,7 +68,7 @@ const SessionForm: React.FC<CommunityDialogueSessionFormInterface> = ({
       .then((response: any) => {
         reqForToastAndSetMessage(response.data.message);
         onOpenChange(false);
-        handleReload()
+        handleReload();
       })
       .catch((error: any) =>
         reqForToastAndSetMessage(
@@ -156,6 +157,7 @@ const SessionForm: React.FC<CommunityDialogueSessionFormInterface> = ({
 
         {IsNotShowMode(mode) && !fetching && (
           <Button
+            id={SUBMIT_BUTTON_PROVIDER_ID}
             onClick={() =>
               reqForConfirmationModelFunc(
                 CommunityDialogueSessionSubmitMessage,

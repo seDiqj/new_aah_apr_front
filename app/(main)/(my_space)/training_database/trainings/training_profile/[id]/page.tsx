@@ -4,26 +4,37 @@ import BreadcrumbWithCustomSeparator from "@/components/global/BreadCrumb";
 import CreateNewChapterForm from "@/components/global/CreateNewChapterForm";
 import SubHeader from "@/components/global/SubHeader";
 import TrainingEvaluationForm from "@/components/global/TrainingEvaluationForm";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useParentContext } from "@/contexts/ParentContext";
 import { TrainingProfileInterface } from "@/interfaces/Interfaces";
 import { IsANullValue, IsIdFeild } from "@/constants/Constants";
 import { TrainingDefault } from "@/constants/FormsDefaultValues";
 import { ChapterForm, Evaluations, TrainingForm } from "@/types/Types";
-import { Plus } from "lucide-react";
 import { use, useEffect, useState } from "react";
+import ChromeTabs from "@/app/(main)/projects/Components/ChromeTab";
+import DataTableDemo from "@/components/global/MulitSelectTable";
+import { trainingDatabaseBeneificiaryListColumn } from "@/definitions/DataTableColumnsDefinitions";
+import { TrainingBeneficiariesFiltersList } from "@/constants/FiltersList";
+import { useRouter } from "next/navigation";
 
 const TrainingProfilePage: React.FC<TrainingProfileInterface> = (
   params: TrainingProfileInterface
 ) => {
   const { id } = use(params.params);
 
+  const router = useRouter();
+
   const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
 
+  let [idFeildForShowStateSetter, setIdFeildForShowStateSetter] = useState<
+    number | null
+  >(null);
+
   let [open, setOpen] = useState<boolean>(false);
+
+  const [currentTab, setCurrentTab] = useState<string>("trainingInfo");
 
   const [trainingInfo, setTrainingInfo] = useState<TrainingForm>(
     TrainingDefault()
@@ -32,6 +43,15 @@ const TrainingProfilePage: React.FC<TrainingProfileInterface> = (
   const [chaptersData, setChaptersData] = useState<ChapterForm[]>([]);
 
   const [evaluationsData, setEvaluationsData] = useState<Evaluations>(null);
+
+  const openBeneficiaryProfilePage = (value: boolean, id: number) => {
+    router.push(`/training_database/beneficiary_profile/${id}`);
+  };
+
+  useEffect(() => {
+    if (idFeildForShowStateSetter)
+      openBeneficiaryProfilePage(true, idFeildForShowStateSetter);
+  }, [idFeildForShowStateSetter]);
 
   useEffect(() => {
     axiosInstance(`training_db/training/${id}`)
@@ -54,37 +74,60 @@ const TrainingProfilePage: React.FC<TrainingProfileInterface> = (
         <div className="flex flex-row items-center justify-start my-2">
           <BreadcrumbWithCustomSeparator></BreadcrumbWithCustomSeparator>
         </div>
-        <SubHeader pageTitle={"Trainings"}>
-          <div className="flex flex-row items-center justify-around gap-2">
-            <Button>Beneficiaries</Button>
-          </div>
-        </SubHeader>
+        <SubHeader pageTitle={"Trainings"}></SubHeader>
 
         {/* Main Content */}
-        <Tabs defaultValue="trainingInfo">
-          <TabsList className="flex flex-row items-center justify-between w-full">
-            {/* Triggers list */}
-            <div className="overflow-auto">
-              <TabsTrigger value="trainingInfo">Training Info</TabsTrigger>
-              {chaptersData.map((_, index) => (
-                <TabsTrigger value={`chapter-${index + 1}`}>
-                  Chapter {index + 1}
-                </TabsTrigger>
-              ))}
-              <TabsTrigger value="trainingEvaluation">
-                Training Evaluation
-              </TabsTrigger>
-            </div>
-            <div>
-              <Button className="rounded-2xl" onClick={() => setOpen(!open)}>
-                <Plus></Plus>
-              </Button>
-            </div>
-          </TabsList>
+        <Tabs
+          defaultValue="trainingInfo"
+          value={currentTab}
+          onValueChange={setCurrentTab}
+        >
+          <ChromeTabs
+            initialTabs={[
+              {
+                value: "trainingInfo",
+                title: "Training Info",
+                stateSetter: setCurrentTab,
+              },
+              {
+                value: "beneficiaries",
+                title: "Training Beneficiaries",
+                stateSetter: setCurrentTab,
+              },
+
+              ...chaptersData.map((_, index) => ({
+                value: `chapter-${index + 1}`,
+                title: `Chapter ${index + 1}`,
+                stateSetter: setCurrentTab,
+              })),
+
+              {
+                value: "trainingEvaluation",
+                title: "Training Evaluation",
+                stateSetter: setCurrentTab,
+              },
+            ]}
+          ></ChromeTabs>
+
           <TabsContent value="trainingInfo">
             <Card className="max-h-[400px]">
               <CardContent className="h-full grid gap-4 max-h-[400px] overflow-auto">
                 {structuredInfo(trainingInfo)}
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value="beneficiaries">
+            <Card className="max-h-[400px]">
+              <CardContent className="h-full grid gap-4 max-h-[400px] overflow-auto">
+                <DataTableDemo
+                  columns={trainingDatabaseBeneificiaryListColumn}
+                  indexUrl={`/training_db/training_beneficiaries/${id}`}
+                  deleteUrl={`/training_db/remove_beneficiaries_from_training/${id}`}
+                  searchableColumn="Name"
+                  idFeildForShowStateSetter={setIdFeildForShowStateSetter}
+                  showModelOpenerStateSetter={() => {}}
+                  filtersList={TrainingBeneficiariesFiltersList}
+                ></DataTableDemo>
               </CardContent>
             </Card>
           </TabsContent>

@@ -27,6 +27,7 @@ import {
   servicesOptions,
 } from "@/constants/SingleAndMultiSelectOptionsList";
 import { ReferralSubmitButtonMessage } from "@/constants/ConfirmationModelsTexts";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
 
 const ReferralForm: React.FC<ReferralInterface> = ({
   beneficiaryInfo,
@@ -93,6 +94,8 @@ const ReferralForm: React.FC<ReferralInterface> = ({
     setSelectedServices((prev) => ({ ...prev, [name]: !prev[name] }));
   }
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
@@ -141,12 +144,15 @@ const ReferralForm: React.FC<ReferralInterface> = ({
       referralRejectedReasone: notAcceptedReason,
     };
 
+    setIsLoading(true);
+
     axiosInstance
       .put(`/referral_db/beneficiary/updateReferral/${id}`, payload)
       .then((response: any) => reqForToastAndSetMessage(response.data.message))
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
-      );
+      )
+      .finally(() => setIsLoading(false));
   }
 
   useEffect(() => {
@@ -765,6 +771,8 @@ const ReferralForm: React.FC<ReferralInterface> = ({
 
           <div className="flex justify-end">
             <Button
+              id={SUBMIT_BUTTON_PROVIDER_ID}
+              disabled={isLoading}
               type="button"
               onClick={(e) =>
                 reqForConfirmationModelFunc(ReferralSubmitButtonMessage, () =>
@@ -772,7 +780,7 @@ const ReferralForm: React.FC<ReferralInterface> = ({
                 )
               }
             >
-              Submit
+              {isLoading ? "Saving ..." : "Save"}
             </Button>
           </div>
         </CardContent>

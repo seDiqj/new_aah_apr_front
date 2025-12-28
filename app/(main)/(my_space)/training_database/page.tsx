@@ -10,7 +10,6 @@ import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { trainingDatabaseBeneificiaryListColumn } from "@/definitions/DataTableColumnsDefinitions";
 import {
   TrainingDatabaseBeneficiaryFiltersList,
-  TrainingDatabaseBeneficiaryFilterUrl,
 } from "@/constants/FiltersList";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -90,7 +89,6 @@ const TrainingDatabasePage = () => {
             </Button>
           </div>
         }
-        filterUrl={TrainingDatabaseBeneficiaryFilterUrl}
         filtersList={TrainingDatabaseBeneficiaryFiltersList}
       ></DataTableDemo>
 

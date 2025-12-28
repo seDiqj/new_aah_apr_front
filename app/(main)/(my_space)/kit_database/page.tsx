@@ -14,7 +14,6 @@ import { Can } from "@/components/Can";
 import { withPermission } from "@/lib/withPermission";
 import {
   KitDatabaseBeneficiaryFiltersList,
-  KitDatabaseBeneficiaryFiltersUrl,
 } from "@/constants/FiltersList";
 
 const MainDatabasePage = () => {
@@ -81,7 +80,6 @@ const MainDatabasePage = () => {
           editModelOpenerStateSetter={setReqForBeneficiaryUpdateForm}
           idFeildForShowStateSetter={setIdFeildForShowStateSetter}
           showModelOpenerStateSetter={() => {}}
-          filterUrl={KitDatabaseBeneficiaryFiltersUrl}
           filtersList={KitDatabaseBeneficiaryFiltersList}
         ></DataTableDemo>
 
