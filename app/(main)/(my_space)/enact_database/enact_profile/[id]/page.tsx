@@ -5,7 +5,7 @@ import SubHeader from "@/components/global/SubHeader";
 import { Button } from "@/components/ui/button";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { useEffect, useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AssessmentFormType } from "@/types/Types";
 import { useParentContext } from "@/contexts/ParentContext";
@@ -21,7 +21,7 @@ const MainDatabasePage = () => {
   const {
     reqForToastAndSetMessage,
     reqForConfirmationModelFunc,
-    axiosInstance,
+    requestHandler,
     reloadFlag,
     handleReload,
   } = useParentContext();
@@ -51,11 +51,12 @@ const MainDatabasePage = () => {
     {
       id: string;
       description: string;
+      date: string;
     }[]
   >();
 
   const handleDelete = (id: string) => {
-    axiosInstance
+    requestHandler()
       .delete(`/enact_database/delete_assessment/${id}`)
       .then((response: AxiosResponse<any, any, any>) => {
         reqForToastAndSetMessage(response.data.message);
@@ -67,7 +68,7 @@ const MainDatabasePage = () => {
   };
 
   useEffect(() => {
-    axiosInstance
+    requestHandler()
       .get(`/enact_database/show_for_profile/${id}`)
       .then((response: any) => {
         const { assessments, ...assessmentData } = response.data.data;
@@ -104,16 +105,16 @@ const MainDatabasePage = () => {
             className="h-full max-w-full w-full overflow-auto"
           >
             <ChromeTabs
+              currentTab={currentTab}
+              onCurrentTabChange={setCurrentTab}
               initialTabs={[
                 {
                   value: "assessmentDetails",
                   title: "Assessment Details",
-                  stateSetter: setCurrentTab,
                 },
                 {
                   value: "assessments",
                   title: "Assessments",
-                  stateSetter: setCurrentTab,
                 },
               ]}
             ></ChromeTabs>
@@ -178,7 +179,8 @@ const MainDatabasePage = () => {
                             className="flex flex-row items-center justify-between w-full px-2 mb-2"
                           >
                             <div>
-                              <span>{`Assessment ${i + 1}`}</span>
+                              <span>{`Assessment ${i + 1} `}</span>
+                              <span className="text-gray-400">{`( ${assessment.date} )`}</span>
                             </div>
                             <CardContent className="flex flex-row gap-4">
                               <Eye

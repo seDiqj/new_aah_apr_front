@@ -28,6 +28,7 @@ import {
   IsEditMode,
   IsEditOrShowMode,
   IsEditPage,
+  IsNoOutcome,
   IsNotShowMode,
   IsOutcomeEdited,
   IsShowMode,
@@ -47,7 +48,7 @@ const OutcomeModel: React.FC<OutcomeInterface> = ({
   const {
     reqForToastAndSetMessage,
     reqForConfirmationModelFunc,
-    axiosInstance,
+    requestHandler,
   } = useParentContext();
 
   const {
@@ -101,6 +102,13 @@ const OutcomeModel: React.FC<OutcomeInterface> = ({
 
     setFormErrors({});
 
+    if (IsNoOutcome(formData)) {
+      reqForToastAndSetMessage(
+        "The outcome (or outcome referance) that you provided is a system reserved keyword please try something else !"
+      );
+      return;
+    }
+
     if (
       IsCreateMode(mode) &&
       IsThereAnyOutcomeWithEnteredReferance(outcomes, formData)
@@ -122,7 +130,7 @@ const OutcomeModel: React.FC<OutcomeInterface> = ({
     setIsLoading(true);
 
     if (IsCreateMode(mode)) {
-      axiosInstance
+      requestHandler()
         .post("/projects/o/outcome", {
           project_id: projectId,
           outcome: formData.outcome,
@@ -138,7 +146,7 @@ const OutcomeModel: React.FC<OutcomeInterface> = ({
         })
         .finally(() => setIsLoading(false));
     } else if (IsEditMode(mode))
-      axiosInstance
+      requestHandler()
         .put(`projects/outcome/${outcomeId}`, {
           outcome: formData.outcome,
           outcomeRef: formData.outcomeRef,
@@ -179,7 +187,7 @@ const OutcomeModel: React.FC<OutcomeInterface> = ({
   useEffect(() => {
     if (IsEditOrShowMode(mode) && outcomeId) {
       setIsLoading(true);
-      axiosInstance
+      requestHandler()
         .get(`/projects/outcome/${outcomeId}`)
         .then((response: any) => {
           setFormData(response.data.data);
@@ -195,18 +203,28 @@ const OutcomeModel: React.FC<OutcomeInterface> = ({
   return (
     <Dialog open={isOpen} onOpenChange={() => onOpenChange(false)}>
       <DialogContent
-        className="sm:max-w-3xl border border-gray-300 dark:border-gray-600 rounded-lg ml-16 overflow-auto"
+        className="
+        w-[95vw]
+        sm:w-full
+        sm:max-w-3xl
+        border
+        border-gray-300
+        dark:border-gray-600
+        rounded-lg
+        overflow-auto
+        mx-auto
+        sm:ml-16
+        px-4
+        sm:px-6
+        py-3
+      "
         style={{
           minHeight: "60vh",
           maxHeight: "60vh",
-          paddingTop: "10px",
-          paddingBottom: "10px",
-          paddingLeft: "16px",
-          paddingRight: "16px",
         }}
       >
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-base sm:text-lg">
             {IsCreateMode(mode)
               ? "Create New Outcome"
               : IsEditMode(mode)
@@ -215,7 +233,7 @@ const OutcomeModel: React.FC<OutcomeInterface> = ({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="grid gap-4">
+        <div className="grid gap-4 mt-2">
           <div className="flex flex-col gap-1">
             <Label htmlFor="outcome">Outcome</Label>
             <Textarea
@@ -224,7 +242,7 @@ const OutcomeModel: React.FC<OutcomeInterface> = ({
               value={formData.outcome}
               onChange={handleFormChange}
               disabled={IsShowMode(mode)}
-              className={`border p-2 rounded  ${
+              className={`border p-2 rounded min-h-[90px] ${
                 formErrors.outcome ? "!border-red-500" : ""
               }`}
               title={formErrors.projectCode}
@@ -248,14 +266,28 @@ const OutcomeModel: React.FC<OutcomeInterface> = ({
         </div>
 
         {IsNotShowMode(mode) && (
-          <DialogFooter>
-            <div className="flex gap-2 w-full justify-end">
-              <Button variant="outline" onClick={handleCancel}>
+          <DialogFooter className="mt-4">
+            <div
+              className="
+              flex
+              flex-col
+              sm:flex-row
+              gap-2
+              w-full
+              justify-end
+            "
+            >
+              <Button
+                variant="outline"
+                className="w-full sm:w-auto"
+                onClick={handleCancel}
+              >
                 Cancel
               </Button>
               <Button
                 id={SUBMIT_BUTTON_PROVIDER_ID}
                 disabled={isLoading}
+                className="w-full sm:w-auto"
                 onClick={() =>
                   reqForConfirmationModelFunc(
                     IsCreateMode(mode)

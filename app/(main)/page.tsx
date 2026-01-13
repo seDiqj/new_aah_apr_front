@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -27,6 +27,11 @@ import SubHeader from "@/components/global/SubHeader";
 import useEcho from "@/hooks/echo";
 import { Button } from "@/components/ui/button";
 import { useParentContext } from "@/contexts/ParentContext";
+import StringHelper from "@/helpers/StringHelpers/StringHelper";
+import StringHelperDfs from "@/helpers/StringHelpers/Dfs";
+import { AxiosResponse } from "axios";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const pieData = [
   { name: "Category A", value: 400 },
@@ -48,16 +53,7 @@ export default function DashboardPage() {
   const { axiosInstance, reqForToastAndSetMessage, myProfileDetails } =
     useParentContext();
 
-  const echo = useEcho();
-
-  useEffect(() => {
-    if (!echo || !myProfileDetails) return;
-    echo
-      .private(`chat.${myProfileDetails.id}`)
-      .listen(".MessageSent", (event: any) => {
-        reqForToastAndSetMessage(event.message);
-      });
-  }, [echo, myProfileDetails]);
+  // const echo = useEcho();
 
   return (
     <div className="p-6 space-y-6">

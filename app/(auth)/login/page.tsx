@@ -45,7 +45,8 @@ const LoginPage = () => {
       })
       .then((response: AxiosResponse<any, any, any>) => {
         reqForToastAndSetMessage(response.data.message);
-        document.cookie = `access_token=${response.data.access_token}; path=/; max-age=86400; secure; samesite=strict`;
+        document.cookie =
+  `access_token=${response.data.access_token}; path=/; max-age=86400; samesite=lax`;
         setRedirecting(true);
         router.push("/");
       })

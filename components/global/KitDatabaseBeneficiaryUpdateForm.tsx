@@ -29,13 +29,14 @@ import { KitDatabaseBenficiaryUpdateForm } from "@/interfaces/Interfaces";
 import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
 import { AxiosError, AxiosResponse } from "axios";
 import { KitDatabaseBeneficiaryFormSchema } from "@/schemas/FormsSchema";
+import { toDateOnly } from "./MainDatabaseBeneficiaryCreationForm";
 
 const KitDatabaseBeneficiaryUpdateForm: React.FC<
   KitDatabaseBenficiaryUpdateForm
 > = ({ open, onOpenChange, title, beneficiaryId }) => {
   const {
     reqForToastAndSetMessage,
-    axiosInstance,
+    requestHandler,
     reqForConfirmationModelFunc,
     handleReload,
   } = useParentContext();
@@ -53,10 +54,69 @@ const KitDatabaseBeneficiaryUpdateForm: React.FC<
     useState<boolean>(false);
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
+  const handleFormChange = (e: any) => {
+    const name: string = e.target.name;
+    let value: any = e.target.value;
+
+    // Handle number inputs
+    if (e.target.type === "number") value = Number(value);
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const [registrationDateValidRange, setRegistrationDateValidRange] = useState<{
+    start: string;
+    end: string;
+  }>({
+    start: "2025-1-1",
+    end: "2025-2-1",
+  });
+
+  const handleSubmit = (e: any) => {
+    e.preventDefault();
+
+    const result = KitDatabaseBeneficiaryFormSchema.safeParse(formData);
+
+    if (!result.success) {
+      const errors: { [key: string]: string } = {};
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0];
+        if (field) errors[field as string] = issue.message;
+      });
+
+      setFormErrors(errors);
+      reqForToastAndSetMessage("Please fix validation errors before updating.");
+      return;
+    }
+
+    setFormErrors({});
+
+    setIsLoading(true);
+
+    requestHandler()
+      .put(`/kit_db/beneficiary/${beneficiaryId}`, formData)
+      .then((response: any) => {
+        reqForToastAndSetMessage(response.data.message);
+        onOpenChange(false);
+        handleReload();
+      })
+      .catch((error: any) => {
+        reqForToastAndSetMessage(
+          error.response?.data?.message || "Update failed"
+        );
+      })
+      .finally(() => setIsLoading(false));
+  };
+
   // Fetch beneficiary data
   useEffect(() => {
     if (open && beneficiaryId) {
-      axiosInstance
+      requestHandler()
         .get(`/kit_db/beneficiary/${beneficiaryId}`)
         .then((response: any) => {
           const data = response.data.data;
@@ -91,7 +151,7 @@ const KitDatabaseBeneficiaryUpdateForm: React.FC<
   // Fetch programs & indicators
   useEffect(() => {
     if (open) {
-      axiosInstance
+      requestHandler()
         .get(`global/programs_for_selection/kit_database`)
         .then((res: AxiosResponse<any, any>) => setPrograms(res.data.data.data))
         .catch((err: AxiosError<any, any>) =>
@@ -102,7 +162,7 @@ const KitDatabaseBeneficiaryUpdateForm: React.FC<
 
   useEffect(() => {
     if (!formData.program) return;
-    axiosInstance
+    requestHandler()
       .get(`/global/indicators/${formData.program}/kit_database`)
       .then((response: any) => {
         setIndicators(response.data.data);
@@ -110,58 +170,19 @@ const KitDatabaseBeneficiaryUpdateForm: React.FC<
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
       );
+
+    requestHandler()
+      .get(`/date/project_date_range_acc_to_program/${formData.program}`)
+      .then((response: AxiosResponse<any, any>) => {
+        setRegistrationDateValidRange({
+          start: toDateOnly(response.data.data.start),
+          end: toDateOnly(response.data.data.end),
+        });
+      })
+      .catch((error: AxiosError<any, any>) =>
+        reqForToastAndSetMessage(error.response?.data.message)
+      );
   }, [formData.program]);
-
-  const handleFormChange = (e: any) => {
-    const name: string = e.target.name;
-    let value: any = e.target.value;
-
-    // Handle number inputs
-    if (e.target.type === "number") value = Number(value);
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  const handleSubmit = (e: any) => {
-    e.preventDefault();
-
-    const result = KitDatabaseBeneficiaryFormSchema.safeParse(formData);
-
-    if (!result.success) {
-      const errors: { [key: string]: string } = {};
-      result.error.issues.forEach((issue) => {
-        const field = issue.path[0];
-        if (field) errors[field as string] = issue.message;
-      });
-
-      setFormErrors(errors);
-      reqForToastAndSetMessage("Please fix validation errors before updating.");
-      return;
-    }
-
-    setFormErrors({});
-
-    setIsLoading(true);
-
-    axiosInstance
-      .put(`/kit_db/beneficiary/${beneficiaryId}`, formData)
-      .then((response: any) => {
-        reqForToastAndSetMessage(response.data.message);
-        onOpenChange(false);
-        handleReload();
-      })
-      .catch((error: any) => {
-        reqForToastAndSetMessage(
-          error.response?.data?.message || "Update failed"
-        );
-      })
-      .finally(() => setIsLoading(false));
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -254,6 +275,8 @@ const KitDatabaseBeneficiaryUpdateForm: React.FC<
                   className="border w-full"
                   value={formData.dateOfRegistration}
                   onChange={handleFormChange}
+                  min={registrationDateValidRange.start}
+                  max={registrationDateValidRange.end}
                 />
               </div>
 

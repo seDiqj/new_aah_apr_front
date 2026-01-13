@@ -156,10 +156,7 @@ class Parser {
    * @returns hgLeafs: Leafs of created sub graph.
    */
 
-  private handleGroup(group: string[]): {
-    hgNodes: ShourtcutNode[];
-    hgLeafs: ShourtcutNode[];
-  } {
+  private handleGroup(group: string[]): {hgNodes: ShourtcutNode[];hgLeafs: ShourtcutNode[];} {
     let localNodes: ShourtcutNode[] = [];
     let localBeforeLatest: ShourtcutNode[] = [];
     let localCurrentLatest: ShourtcutNode[] = [];
@@ -288,10 +285,7 @@ class Parser {
    * @returns number : index of corresponing closing tag | null
    */
 
-  public findClosingTagIndix(
-    tokens: string[],
-    indexOfOpenTag: number
-  ): number | null {
+  public findClosingTagIndix(tokens: string[],indexOfOpenTag: number): number | null {
     // Number of open tags that the algorithm finds on its way when searching for closing tag.
     let numOfOpenTags: number = 0;
 

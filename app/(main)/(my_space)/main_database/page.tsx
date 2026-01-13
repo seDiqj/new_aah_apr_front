@@ -10,7 +10,7 @@ import { useParentContext } from "@/contexts/ParentContext";
 import { mainDatabaseAndKitDatabaseBeneficiaryColumns } from "@/definitions/DataTableColumnsDefinitions";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Share2, ToggleRight } from "lucide-react";
+import { Boxes, Share2, ToggleRight } from "lucide-react";
 import { Can } from "@/components/Can";
 import MainDatabaseBeneficiaryUpdateForm from "@/components/global/MainDatabaseBeneficiaryUpdateForm";
 import { withPermission } from "@/lib/withPermission";
@@ -18,14 +18,12 @@ import {
   ChangeAprIncludedStatusButtonMessage,
   ReferrBeneficiaryButtonMessage,
 } from "@/constants/ConfirmationModelsTexts";
-import {
-  MainDatabaseBeneficiariesFilters,
-} from "@/constants/FiltersList";
+import { MainDatabaseBeneficiariesFilters } from "@/constants/FiltersList";
+import RefferalIndicatorSelector from "@/components/global/RefferalIndicatorSelector";
+import ProgramAndIndicatorSelector from "@/components/global/ProgramSelector";
 
 const MainDatabasePage = () => {
   const {
-    reqForToastAndSetMessage,
-    axiosInstance,
     changeBeneficairyAprIncludedStatus,
     reqForConfirmationModelFunc,
   } = useParentContext();
@@ -48,17 +46,13 @@ const MainDatabasePage = () => {
   const [reqForBeneficiaryEditionForm, setReqForBeneficiaryEditionForm] =
     useState<boolean>(false);
 
-  const referrBeneficiaies = () => {
-    if (Object.values(selectedRowsIds).length == 0) return;
-    axiosInstance
-      .post("/main_db/beneficiaries/referrBeneficiaries", {
-        ids: Object.keys(selectedRowsIds),
-      })
-      .then((response: any) => reqForToastAndSetMessage(response.data.message))
-      .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
-      );
-  };
+  const [reqForProgramSelector, setReqForProgramSelector] =
+    useState<boolean>(false);
+
+  const [
+    reqForRefferalIndicatorSelectorForm,
+    setReqForRefferalIndicatorSelectorForm,
+  ] = useState<boolean>(false);
 
   const openBeneficiaryProfile = (value: boolean, id: number) => {
     router.push(`main_database/beneficiary_profile/${id}`);
@@ -110,14 +104,16 @@ const MainDatabasePage = () => {
           injectedElement={
             <div className="flex flex-row items-center justify-end gap-2">
               <Button
-                title="Send Beneficiary to referral"
-                onClick={() =>
-                  reqForConfirmationModelFunc(
-                    ReferrBeneficiaryButtonMessage,
-                    referrBeneficiaies
-                  )
-                }
+                onClick={() => setReqForProgramSelector(true)}
                 variant="outline"
+                title="Add beneficiary to kit list"
+              >
+                <Boxes />
+              </Button>
+              <Button
+                onClick={() => setReqForRefferalIndicatorSelectorForm(true)}
+                variant="outline"
+                title="Send Beneficiary to referral"
               >
                 <Share2 />
               </Button>
@@ -155,6 +151,20 @@ const MainDatabasePage = () => {
             onOpenChange={setReqForBeneficiaryEditionForm}
             beneficiaryId={idFeildForEditStateSetter as unknown as string}
           ></MainDatabaseBeneficiaryUpdateForm>
+        )}
+        {reqForRefferalIndicatorSelectorForm && (
+          <RefferalIndicatorSelector
+            open={reqForRefferalIndicatorSelectorForm}
+            onOpenChange={setReqForRefferalIndicatorSelectorForm}
+            ids={selectedRowsIds}
+          ></RefferalIndicatorSelector>
+        )}
+        {reqForProgramSelector && (
+          <ProgramAndIndicatorSelector
+            open={reqForProgramSelector}
+            onOpenChange={setReqForProgramSelector}
+            ids={selectedRowsIds}
+          ></ProgramAndIndicatorSelector>
         )}
       </div>
     </>

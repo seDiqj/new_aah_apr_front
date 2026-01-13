@@ -46,7 +46,8 @@ import {
   IsIndicatorDatabaseMainDatabase,
   IsIndicatorEdited,
   IsMainDatabase,
-  IsMainDatabaseNotAvailableForSelection,
+  IsMainDatabaseAvailableForMe,
+  IsMainDatabaseMealtoolTargetAvailableForMe,
   IsNotANullOrUndefinedValue,
   isNotASubIndicator,
   IsNotIndicatorDatabaseEnactDatabase,
@@ -71,7 +72,7 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
 }) => {
   const {
     reqForToastAndSetMessage,
-    axiosInstance,
+    requestHandler,
     reqForConfirmationModelFunc,
   } = useParentContext();
   const {
@@ -96,6 +97,7 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
   );
   const [reqForSubIndicator, setReqForSubIndicator] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [formErrors, setFormErrors] = useState<{ [key: string]: any }>({});
 
   const handleChange = (e: any) => {
     const { name, value } = e.target;
@@ -221,8 +223,6 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
     }
   };
 
-  const [formErrors, setFormErrors] = useState<{ [key: string]: any }>({});
-
   const hundleSubmit = () => {
     if (
       IsThereAndIndicatorWithEnteredReferanceAndDefferentId(indicators, local)
@@ -269,7 +269,7 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
     setIsLoading(true);
 
     if (IsCreateMode(mode)) {
-      axiosInstance
+      requestHandler()
         .post("projects/i/indicator", { indicator: local })
         .then((response: any) => {
           setIndicators((prev) => [
@@ -325,7 +325,7 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
         )
       );
 
-      axiosInstance
+      requestHandler()
         .put(`/projects/indicator/${local.id}`, local)
         .then((response: any) => {
           reqForToastAndSetMessage(response.data.message);
@@ -338,10 +338,13 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
     }
   };
 
-  const availableDatabasesForSelection = () => {
+  const availableDatabasesForThisInd = (indicator: Indicator) => {
     return databases.filter((opt) => {
       if (opt.value == "main_database") {
-        if (IsMainDatabaseNotAvailableForSelection(indicators)) return false;
+        if (!IsMainDatabaseAvailableForMe(indicators, indicator)) return false;
+      } else if (opt.value == "") {
+        if (!IsMainDatabaseMealtoolTargetAvailableForMe(indicators, indicator))
+          return false;
       }
       return true;
     });
@@ -532,10 +535,11 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
       (IsEditMode(mode) || IsShowMode(mode)) &&
       IsNotANullOrUndefinedValue(indicatorId)
     ) {
-      axiosInstance
+      requestHandler()
         .get(`projects/indicator/${indicatorId}`)
         .then((response: AxiosResponse<any, any, {}>) => {
           setLocal(response.data.data);
+          if (response.data.data.subIndicator) setReqForSubIndicator(true);
           setIndicatorBeforeEdit(response.data.data);
         })
         .catch((error: AxiosError<any, any>) =>
@@ -653,14 +657,15 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
             <div className="flex-1 flex flex-col gap-1">
               <Label>Database</Label>
               <SingleSelect
-                options={availableDatabasesForSelection()}
+                options={availableDatabasesForThisInd(local)}
                 value={local.database}
-                onValueChange={(value: string) =>
+                onValueChange={(value: string) => {
                   setLocal((prev) => ({
                     ...prev,
                     database: value,
-                  }))
-                }
+                    dessaggregationType: getProperTypeAccToDb(value),
+                  }));
+                }}
                 disabled={IsShowMode(mode)}
                 error={formErrors.database}
               />
@@ -730,7 +735,9 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
                   <RadioGroupItem
                     value="indevidual"
                     id="indevidual"
-                    disabled={IsShowMode(mode)}
+                    disabled={
+                      IsShowMode(mode) || IsNotMainDatabase(local.database)
+                    }
                   />
                   <Label htmlFor={"individual"}>Indevidual</Label>
                 </div>
@@ -755,31 +762,33 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
               {local.provinces.map((province, idx) => (
                 <div
                   key={idx}
-                  className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center"
+                  className={`grid grid-cols-1 ${!IsMainDatabase(local) ? "md:grid-cols-2" : "md:grid-cols-3"} gap-4 items-center`}
                 >
                   <div>
                     <span>{province.province}</span>
                   </div>
-                  <div className="flex flex-col gap-1">
-                    <Label htmlFor={`${province.province}-count`}>
-                      Councular Count
-                    </Label>
-                    <Input
-                      id={`${province.province}-count`}
-                      type="number"
-                      value={province.councilorCount}
-                      onChange={(e) =>
-                        handleCouncilorCountInputChange(
-                          Number(e.target.value),
+                  {local.database == "main_database" && (
+                    <div className="flex flex-col gap-1">
+                      <Label htmlFor={`${province.province}-count`}>
+                        Councular Count
+                      </Label>
+                      <Input
+                        id={`${province.province}-count`}
+                        type="number"
+                        value={province.councilorCount}
+                        onChange={(e) =>
+                          handleCouncilorCountInputChange(
+                            Number(e.target.value),
+                            province.province
+                          )
+                        }
+                        placeholder={`${stringToCapital(
                           province.province
-                        )
-                      }
-                      placeholder={`${stringToCapital(
-                        province.province
-                      )} Councular Count ...`}
-                      disabled={IsShowMode(mode)}
-                    />
-                  </div>
+                        )} Councular Count ...`}
+                        disabled={IsShowMode(mode)}
+                      />
+                    </div>
+                  )}
                   <div className="flex flex-col gap-1">
                     <Label htmlFor={`${province.province}-target`}>
                       Target
@@ -824,18 +833,26 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
               <div className="flex flex-col gap-2">
                 <Input
                   name="subIndicatorName"
-                  value={local.subIndicator.name}
+                  value={local.subIndicator?.name}
                   onChange={handleChange}
                   placeholder="Sub Indicator Name"
                   disabled={IsShowMode(mode)}
+                  className={`border p-2 rounded ${
+                    formErrors.subIndicator?.name ? "!border-red-500" : ""
+                  }`}
+                  title={formErrors.subIndicator?.name}
                 />
                 <Input
                   name="subIndicatorTarget"
                   type="number"
-                  value={local.subIndicator.target}
+                  value={local.subIndicator?.target}
                   onChange={handleChange}
                   placeholder="Sub Indicator Target"
                   disabled={IsShowMode(mode)}
+                  className={`border p-2 rounded ${
+                    formErrors.subIndicator?.target ? "!border-red-500" : ""
+                  }`}
+                  title={formErrors.subIndicator?.target}
                 />
                 {/* sub indicator provinces and its target */}
                 {local.subIndicator?.provinces.map((province, index) => (
@@ -930,5 +947,11 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
     </Dialog>
   );
 };
+
+function getProperTypeAccToDb(database: string): string {
+  if (database == "main_database") return "session";
+  else if (database == "enact_database") return "enact";
+  else return "indevidual";
+}
 
 export default IndicatorModel;

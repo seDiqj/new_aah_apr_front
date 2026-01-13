@@ -19,6 +19,7 @@ import { BeneficiarySessionDeleteMessage } from "@/constants/ConfirmationModelsT
 import { IsANullOrUndefinedValue } from "@/constants/Constants";
 import { AxiosError, AxiosResponse } from "axios";
 import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import StringHelper from "@/helpers/StringHelpers/StringHelper";
 
 type Session = {
   id: number | null;
@@ -41,51 +42,60 @@ type IndicatorState = {
   dessaggregations: Dessaggregation[];
 };
 
-export default function SessionsPage() {
+interface BeneficiarySessionInterface {
+  indicatorStateSetter: React.Dispatch<React.SetStateAction<IndicatorState[]>>;
+  indicators: IndicatorState[];
+  isLoading: boolean;
+}
+
+export default function SessionsPage({
+  indicatorStateSetter,
+  indicators,
+  isLoading,
+}: BeneficiarySessionInterface) {
   const { id } = useParams<{ id: string }>();
   const {
     reqForToastAndSetMessage,
-    axiosInstance,
+    requestHandler,
     reqForConfirmationModelFunc,
   } = useParentContext();
 
-  const [indicators, setIndicators] = useState<IndicatorState[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(isLoading);
+  const [buttonLoading, setButtonLoading] = useState<boolean>(false);
 
   // Fetch indicators from backend
-  useEffect(() => {
-    axiosInstance
-      .get(`/main_db/indicators/${id}`)
-      .then((response: any) => {
-        const mapped = response.data.data.map((ind: any) => ({
-          id: ind.id,
-          type: ind.type,
-          sessions: ind.sessions.map((session: any) => ({
-            id: session.id,
-            group: session.group,
-            session: session.session,
-            date: session.date,
-            topic: session.topic,
-          })),
-          dessaggregations:
-            ind.dessaggregations.map((d: any) => ({
-              id: d.id,
-              description: d.description,
-            })) || [],
-        }));
-        setIndicators(mapped);
-      })
-      .catch((error: any) => {
-        console.log(error);
-        reqForToastAndSetMessage(
-          error.response?.data?.message || "Error fetching indicators"
-        );
-      })
-      .finally(() => setLoading(false));
-  }, []);
+  // useEffect(() => {
+  //   axiosInstance
+  //     .get(`/main_db/indicators/${id}`)
+  //     .then((response: any) => {
+  //       const mapped = response.data.data.map((ind: any) => ({
+  //         id: ind.id,
+  //         type: ind.type,
+  //         sessions: ind.sessions.map((session: any) => ({
+  //           id: session.id,
+  //           group: session.group,
+  //           session: session.session,
+  //           date: session.date,
+  //           topic: session.topic,
+  //         })),
+  //         dessaggregations:
+  //           ind.dessaggregations.map((d: any) => ({
+  //             id: d.id,
+  //             description: d.description,
+  //           })) || [],
+  //       }));
+  //       indicatorStateSetter(mapped);
+  //     })
+  //     .catch((error: any) => {
+  //       reqForToastAndSetMessage(
+  //         error.response?.data?.message || "Error fetching indicators"
+  //       );
+  //     })
+  //     .finally(() => setLoading(false));
+  // }, []);
 
   const addSessionRow = (indicatorId: number) => {
-    setIndicators((prev) =>
+    indicatorStateSetter((prev) =>
       prev.map((ind) =>
         ind.id === indicatorId
           ? {
@@ -101,7 +111,7 @@ export default function SessionsPage() {
   };
 
   const addGroupRow = (indicatorId: number) => {
-    setIndicators((prev) =>
+    indicatorStateSetter((prev) =>
       prev.map((ind) =>
         ind.id === indicatorId
           ? {
@@ -117,36 +127,50 @@ export default function SessionsPage() {
   };
 
   const handleSubmit = () => {
-    axiosInstance
+    setButtonLoading(true);
+    requestHandler()
       .post(`/main_db/sessions/${id}`, {
         indicators: indicators,
       })
       .then((response: any) => reqForToastAndSetMessage(response.data.message))
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
-      );
+      )
+      .finally(() => setButtonLoading(false));
   };
 
   const handleDeleteSession = (
     indicatorId: number | null,
-    sessionId: number | null
+    session: Session
   ) => {
-    if (
-      IsANullOrUndefinedValue(indicatorId) ||
-      IsANullOrUndefinedValue(sessionId)
-    )
-      return;
+    if (IsANullOrUndefinedValue(indicatorId)) return;
 
-    axiosInstance
-      .delete(`/main_db/beneficiary/sessions/delete_session/${sessionId}`)
+    if (IsANullOrUndefinedValue(session.id)) {
+      indicatorStateSetter((prev: IndicatorState[]) =>
+        prev.map((indicator: IndicatorState) =>
+          indicator.id == indicatorId
+            ? {
+                ...indicator,
+                sessions: indicator.sessions.filter(
+                  (s: Session) => s != session
+                ),
+              }
+            : indicator
+        )
+      );
+      return;
+    }
+
+    requestHandler()
+      .delete(`/main_db/beneficiary/sessions/delete_session/${session.id}`)
       .then((response: AxiosResponse<any, any, any>) => {
-        setIndicators((prev: IndicatorState[]) =>
+        indicatorStateSetter((prev: IndicatorState[]) =>
           prev.map((indicator: IndicatorState) =>
             indicator.id == indicatorId
               ? {
                   ...indicator,
                   sessions: indicator.sessions.filter(
-                    (session: Session) => session.id != sessionId
+                    (s: Session) => s != session
                   ),
                 }
               : indicator
@@ -190,10 +214,13 @@ export default function SessionsPage() {
           <div key={indicator.id} className="mb-10">
             {/* Full-width Title per Indicator */}
             <div className="text-center h-[51px] flex items-center justify-center mx-4 mt-4 rounded-2xl select-none border">
-              <h1 className="text-xl font-bold">{indicator.type}</h1>
+              <h1 className="text-xl font-bold">
+                {StringHelper.normalize(indicator.type)}
+              </h1>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 mx-4">
+              {/* <div className="flex flex-col gap-6 mt-6 mx-4"> */}
               {/* Sessions Table */}
               <div>
                 <div className="border rounded-2xl shadow overflow-hidden">
@@ -218,7 +245,7 @@ export default function SessionsPage() {
                                 placeholder="Session"
                                 value={indicator.sessions[index].session}
                                 onChange={(e) =>
-                                  setIndicators((prev) =>
+                                  indicatorStateSetter((prev) =>
                                     prev.map((ind) => {
                                       if (ind.id == indicator.id) {
                                         ind.sessions[index].session =
@@ -236,7 +263,7 @@ export default function SessionsPage() {
                                 className="border-none focus-visible:ring-0"
                                 value={indicator.sessions[index].date}
                                 onChange={(e) =>
-                                  setIndicators((prev) =>
+                                  indicatorStateSetter((prev) =>
                                     prev.map((ind) => {
                                       if (ind.id == indicator.id) {
                                         ind.sessions[index].date =
@@ -254,7 +281,7 @@ export default function SessionsPage() {
                                 placeholder="Topic"
                                 value={indicator.sessions[index].topic}
                                 onChange={(e) =>
-                                  setIndicators((prev) =>
+                                  indicatorStateSetter((prev) =>
                                     prev.map((ind) => {
                                       if (ind.id == indicator.id) {
                                         ind.sessions[index].topic =
@@ -266,24 +293,20 @@ export default function SessionsPage() {
                                 }
                               />
                             </TableCell>
-                            {session.id && (
-                              <TableCell>
-                                <Trash
-                                  onClick={() =>
-                                    reqForConfirmationModelFunc(
-                                      BeneficiarySessionDeleteMessage,
-                                      () =>
-                                        handleDeleteSession(
-                                          indicator.id,
-                                          session.id
-                                        )
-                                    )
-                                  }
-                                  className="cursor-pointer text-red-500 hover:text-red-700"
-                                  size={18}
-                                />
-                              </TableCell>
-                            )}
+
+                            <TableCell>
+                              <Trash
+                                onClick={() =>
+                                  reqForConfirmationModelFunc(
+                                    BeneficiarySessionDeleteMessage,
+                                    () =>
+                                      handleDeleteSession(indicator.id, session)
+                                  )
+                                }
+                                className="cursor-pointer text-red-500 hover:text-red-700"
+                                size={18}
+                              />
+                            </TableCell>
                           </TableRow>
                         );
                       })}
@@ -326,7 +349,7 @@ export default function SessionsPage() {
                                 className="border-none focus-visible:ring-0"
                                 value={item.session.group!}
                                 onChange={(e) =>
-                                  setIndicators((prev) =>
+                                  indicatorStateSetter((prev) =>
                                     prev.map((ind) => {
                                       if (ind.id === indicator.id) {
                                         ind.sessions[item.index].group =
@@ -338,13 +361,14 @@ export default function SessionsPage() {
                                 }
                               />
                             </TableCell>
+
                             <TableCell className="text-center">
                               <Input
                                 placeholder="Session"
                                 className="border-none focus-visible:ring-0"
                                 value={item.session.session}
                                 onChange={(e) =>
-                                  setIndicators((prev) =>
+                                  indicatorStateSetter((prev) =>
                                     prev.map((ind) => {
                                       if (ind.id === indicator.id) {
                                         ind.sessions[item.index].session =
@@ -356,13 +380,14 @@ export default function SessionsPage() {
                                 }
                               />
                             </TableCell>
+
                             <TableCell className="text-center">
                               <Input
                                 type="date"
                                 className="border-none focus-visible:ring-0"
                                 value={item.session.date}
                                 onChange={(e) =>
-                                  setIndicators((prev) =>
+                                  indicatorStateSetter((prev) =>
                                     prev.map((ind) => {
                                       if (ind.id === indicator.id) {
                                         ind.sessions[item.index].date =
@@ -374,13 +399,14 @@ export default function SessionsPage() {
                                 }
                               />
                             </TableCell>
+
                             <TableCell className="text-center">
                               <Input
                                 placeholder="Topic"
                                 className="border-none focus-visible:ring-0"
                                 value={item.session.topic}
                                 onChange={(e) =>
-                                  setIndicators((prev) =>
+                                  indicatorStateSetter((prev) =>
                                     prev.map((ind) => {
                                       if (ind.id === indicator.id) {
                                         ind.sessions[item.index].topic =
@@ -392,24 +418,23 @@ export default function SessionsPage() {
                                 }
                               />
                             </TableCell>
-                            {item.session.id && (
-                              <TableCell>
-                                <Trash
-                                  onClick={() =>
-                                    reqForConfirmationModelFunc(
-                                      BeneficiarySessionDeleteMessage,
-                                      () =>
-                                        handleDeleteSession(
-                                          indicator.id,
-                                          item.session.id
-                                        )
-                                    )
-                                  }
-                                  className="cursor-pointer text-red-500 hover:text-red-700"
-                                  size={18}
-                                />
-                              </TableCell>
-                            )}
+
+                            <TableCell>
+                              <Trash
+                                onClick={() =>
+                                  reqForConfirmationModelFunc(
+                                    BeneficiarySessionDeleteMessage,
+                                    () =>
+                                      handleDeleteSession(
+                                        indicator.id,
+                                        item.session
+                                      )
+                                  )
+                                }
+                                className="cursor-pointer text-red-500 hover:text-red-700"
+                                size={18}
+                              />
+                            </TableCell>
                           </TableRow>
                         ))}
                       <TableRow>
@@ -432,8 +457,12 @@ export default function SessionsPage() {
       })}
 
       <div className="flex justify-end w-full pr-4 mt-6">
-        <Button id={SUBMIT_BUTTON_PROVIDER_ID} onClick={() => reqForConfirmationModelFunc("", handleSubmit)}>
-          Submit
+        <Button
+          id={SUBMIT_BUTTON_PROVIDER_ID}
+          disabled={buttonLoading || loading}
+          onClick={() => reqForConfirmationModelFunc("", handleSubmit)}
+        >
+          {buttonLoading ? "Submitting ..." : "Submit"}
         </Button>
       </div>
     </div>

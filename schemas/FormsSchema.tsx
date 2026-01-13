@@ -4,7 +4,7 @@ export const MainDatabaseBeneficiaryFormSchema = z.object({
   program: z.number().min(1, {
     error: "Select a valid program !",
   }),
-  dateOfRegistration: z.string("Select a valid date"),
+  dateOfRegistration: z.string().min(1, "Date of registration is required !"),
   name: z.string().min(3, "Beneficiary name should be at least 3 characters !"),
   fatherHusbandName: z
     .string()
@@ -41,12 +41,50 @@ export const MainDatabaseBeneficiaryFormSchema = z.object({
   referredForProtection: z.boolean("Select a valid option !"),
 });
 
+export const MealToolFormSchema = z.object({
+  beneficiary_id: z
+    .string()
+    .min(1, "Beneficiary is required"),
+
+  type: z
+    .string()
+    .min(1, "Type is required"),
+
+  baselineDate: z
+    .string()
+    .min(1, "Baseline date is required"),
+
+  endlineDate: z
+    .string()
+    .min(1, "Endline date is required"),
+
+  baselineTotalScore: z
+    .string()
+    .regex(/^\d+(\.\d+)?$/, "Baseline total score must be a number"),
+
+  endlineTotalScore: z
+    .string()
+    .regex(/^\d+(\.\d+)?$/, "Endline total score must be a number"),
+
+  improvementPercentage: z
+    .string()
+    .regex(/^\d+(\.\d+)?$/, "Improvement percentage must be a number"),
+
+  isBaselineActive: z.boolean(),
+
+  isEndlineActive: z.boolean(),
+
+  evaluation: z
+    .string()
+    .min(1, "Evaluation is required"),
+});
+
 export const KitDatabaseBeneficiaryFormSchema = z.object({
   program: z.number().min(1, {
     error: "Select a valid program !",
   }),
   // indicators: z.array<string>("").min(1, "Select at least one indicator !"),
-  dateOfRegistration: z.string("Select a valid date"),
+  dateOfRegistration: z.string().min(1, "Date of registration is required !"),
   name: z.string().min(3, "Beneficiary name should be at least 3 characters !"),
   fatherHusbandName: z
     .string()
@@ -107,7 +145,9 @@ export const CdDatabaseBenefciaryFormSchema = z.object({
     .string("Job title is required !")
     .min(1, "Job title is required !"),
   incentiveReceived: z.boolean("Incentive received status is required !"),
-  incentiveAmount: z.string("Incentive amount is required !"),
+  incentiveAmount: z
+    .string("Incentive amount is required !")
+    .min(1, "Incentive amount is required !"),
 });
 
 export const CdFormSchema = z.object({
@@ -128,10 +168,12 @@ export const CdFormSchema = z.object({
   focalPoint: z
     .string()
     .min(3, "focal point should be at least 3 characters of 3 digits !"),
+  cdName: z
+    .string()
+    .min(3, "Community dialogue name should be at least 3 characters !"),
 });
 
 export const TrainingFormSchema = z.object({
-  
   project_id: z.number().min(1, "Select a valid project!"),
 
   province_id: z.number().min(1, "Select a valid province!"),
@@ -310,12 +352,10 @@ const ProvinceSchema = z.object({
 });
 
 const SubIndicatorSchema = z.object({
-  id: z.string().nullable(),
   indicatorRef: z.string().min(1, "Indicator reference is required"),
   name: z.string().min(1, "SubIndicator name is required"),
   target: z.number().min(0, "Target must be non-negative"),
   dessaggregationType: z.enum(["session", "indevidual"]).or(z.string()),
-  type: z.string().nullable(),
   provinces: z
     .array(ProvinceSchema)
     .min(1, "At least one province is required"),
@@ -375,7 +415,6 @@ export const KitDatabaseProgramFormSchema = z.object({
 
 export const IndicatorSchema = z
   .object({
-    id: z.string().nullable(),
     outputId: z.number(),
     indicator: z.string().min(1, "Indicator name is required"),
     indicatorRef: z.string().min(1, "Indicator reference is required"),

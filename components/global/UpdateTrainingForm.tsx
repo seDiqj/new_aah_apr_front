@@ -22,7 +22,7 @@ const UpdateTrainingForm: React.FC<TrainingUpdateInterface> = ({
   title,
   trainingId,
 }) => {
-  const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
+  const { reqForToastAndSetMessage, requestHandler } = useParentContext();
 
   const [formData, setFormData] = useState<TrainingForm>(TrainingDefault());
 
@@ -55,6 +55,7 @@ const UpdateTrainingForm: React.FC<TrainingUpdateInterface> = ({
     if (!chapter.topic) return;
     setChapters((prev) => [...prev, chapter]);
     setChapter({
+      id: null,
       topic: "",
       facilitatorName: "",
       facilitatorJobTitle: "",
@@ -72,7 +73,7 @@ const UpdateTrainingForm: React.FC<TrainingUpdateInterface> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    axiosInstance
+    requestHandler()
       .put(`/training_db/training/${trainingId}`, { ...formData, chapters })
       .then((response: any) => reqForToastAndSetMessage(response.data.message))
       .catch((error: any) =>
@@ -87,16 +88,16 @@ const UpdateTrainingForm: React.FC<TrainingUpdateInterface> = ({
   const [indicators, setIndicators] = useState<{ indicator: string }[]>([]);
 
   useEffect(() => {
-    axiosInstance
+    requestHandler()
       .get("/global/districts")
       .then((res: any) => setDistricts(Object.values(res.data.data)));
-    axiosInstance
+    requestHandler()
       .get("/global/provinces")
       .then((res: any) => setProvinces(Object.values(res.data.data)));
-    axiosInstance
+    requestHandler()
       .get("/global/projects")
       .then((res: any) => setProjects(Object.values(res.data.data)));
-    axiosInstance
+    requestHandler()
       .get("/global/indicators/training_database")
       .then((res: any) => setIndicators(Object.values(res.data.data)));
   }, []);
@@ -104,11 +105,12 @@ const UpdateTrainingForm: React.FC<TrainingUpdateInterface> = ({
   useEffect(() => {
     if (!trainingId || !open) return;
 
-    axiosInstance
+    requestHandler()
       .get(`/training_db/training/${trainingId}`)
       .then((res: any) => {
         const data = res.data.data;
         setFormData({
+          id: data.id,
           project_id: data.project_id,
           province_id: data.province,
           district_id: data.district,

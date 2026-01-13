@@ -151,6 +151,7 @@ export type TrainingForm = {
 };
 
 export type ChapterForm = {
+  id: string | null;
   topic: string;
   facilitatorName: string;
   facilitatorJobTitle: string;
@@ -193,15 +194,7 @@ export type SelectedCommunityDialoguesGroups = {
 
 export type CommunityDialogues = {
   id: string;
-  program: {
-    projectCode: string;
-    focalPoint: string;
-    province: string;
-    district: string;
-    village: string;
-    location: string;
-    indicator: string;
-  };
+  name: string;
   groups: {
     id: string;
     name: string;
@@ -464,6 +457,7 @@ export type CommunityDialogueFormType = {
   district_id: string;
   village: string;
   indicator_id: string;
+  cdName: string;
 };
 
 export type Assessments = Record<

@@ -9,7 +9,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { useState } from "react";
 import { SingleSelect } from "@/components/single-select";
@@ -32,7 +31,7 @@ const BeneficiaryCreateCD: React.FC<
 > = ({ open, onOpenChange }) => {
   const {
     reqForToastAndSetMessage,
-    axiosInstance,
+    requestHandler,
     handleReload,
     reqForConfirmationModelFunc,
   } = useParentContext();
@@ -75,7 +74,7 @@ const BeneficiaryCreateCD: React.FC<
 
     setIsLoading(true);
 
-    axiosInstance
+    requestHandler()
       .post("/community_dialogue_db/beneficiary", formData)
       .then((response: any) => {
         reqForToastAndSetMessage(response.data.message);
@@ -90,10 +89,6 @@ const BeneficiaryCreateCD: React.FC<
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
-        <Button className="px-4 py-2 rounded-md">Create</Button>
-      </DialogTrigger>
-
       <DialogContent
         className="sm:max-w-4xl border border-gray-300 dark:border-gray-600 rounded-lg ml-16 overflow-y-auto"
         style={{

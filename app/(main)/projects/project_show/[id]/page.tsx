@@ -4,7 +4,7 @@ import BreadcrumbWithCustomSeparator from "@/components/global/BreadCrumb";
 import MonitoringTablePage from "@/components/global/ExcelSheet";
 import SubHeader from "@/components/global/SubHeader";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useParentContext } from "@/contexts/ParentContext";
 import { withPermission } from "@/lib/withPermission";
 import React, { createContext, useContext } from "react";
@@ -25,7 +25,7 @@ import ChromeTabs from "../../Components/ChromeTab";
 const ShowProjectPage = () => {
   const { id } = useParams();
 
-  const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
+  const { reqForToastAndSetMessage, requestHandler } = useParentContext();
 
   const [formData, setFormData] = useState<Project>({
     id: null,
@@ -85,7 +85,7 @@ const ShowProjectPage = () => {
 
   // Fetch data
   useEffect(() => {
-    axiosInstance
+    requestHandler()
       .get(`/projects/${id}`)
       .then((response: any) => {
         const { outcomesInfo, ...project } = response.data.data;
@@ -124,6 +124,22 @@ const ShowProjectPage = () => {
 
                 indicatorInfo["outputId"] = output.id;
                 indicatorInfo["outputRef"] = output.outputRef;
+                const subIndicator = output.indicators.find(
+                  (indicator: Indicator) =>
+                    indicator.parent_indicator == indicatorInfo.id
+                );
+
+                if (subIndicator) {
+                  indicatorInfo.subIndicator = {
+                    id: subIndicator.id,
+                    indicatorRef: subIndicator.indicatorRef,
+                    name: subIndicator.indicator,
+                    target: subIndicator.target,
+                    dessaggregationType: subIndicator.dessaggregationType,
+                    type: subIndicator.type,
+                    provinces: subIndicator.provinces,
+                  };
+                }
 
                 return indicatorInfo;
               })
@@ -176,7 +192,7 @@ const ShowProjectPage = () => {
   const handleDelete = (url: string, id: string | null) => {
     if (!id) return;
 
-    axiosInstance
+    requestHandler()
       .delete(url + `/${id}`)
       .then((response: any) => reqForToastAndSetMessage(response.data.message))
       .catch((error: any) =>
@@ -231,51 +247,50 @@ const ShowProjectPage = () => {
               className="h-full"
             >
               <ChromeTabs
+                currentTab={currentTab}
+                onCurrentTabChange={setCurrentTab}
                 initialTabs={[
                   {
                     value: "project",
                     title: "Project",
-                    stateSetter: setCurrentTab,
+                    hoverTitle: `Project status: ${formData.status}`,
                   },
                   {
                     value: "outcome",
                     title: "Outcome",
-                    stateSetter: setCurrentTab,
+                    hoverTitle: `Number of outcomes: ${outcomes.length}`,
                   },
                   {
                     value: "output",
                     title: "Output",
-                    stateSetter: setCurrentTab,
+                    hoverTitle: `Number of outputs: ${outputs.length}`,
                   },
                   {
                     value: "indicator",
                     title: "Indicator",
-                    stateSetter: setCurrentTab,
+                    hoverTitle: `Number of indicators: ${indicators.length}`,
                   },
                   {
                     value: "dessaggregation",
                     title: "Disaggregation",
-                    stateSetter: setCurrentTab,
+                    hoverTitle: `Number of disaggregation: ${dessaggregations.length}`,
                   },
                   {
                     value: "aprPreview",
                     title: "APR Preview",
-                    stateSetter: setCurrentTab,
                   },
                   {
                     value: "isp3",
                     title: "ISP3",
-                    stateSetter: setCurrentTab,
                   },
                   {
                     value: "finalization",
                     title: "APR Finalization",
-                    stateSetter: setCurrentTab,
+                    hoverTitle: `Apr status: ${projectAprStatus}`,
                   },
                   {
                     value: "logs",
                     title: "Activity Logs",
-                    stateSetter: setCurrentTab,
                   },
                 ]}
               />

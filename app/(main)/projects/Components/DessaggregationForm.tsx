@@ -32,7 +32,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useProjectContext } from "../create_new_project/page";
-import { Dessaggregation, Indicator } from "../types/Types";
+import {
+  Dessaggregation,
+  Indicator,
+  IndicatorProvinceType,
+} from "../types/Types";
 import { useParentContext } from "@/contexts/ParentContext";
 import { useProjectEditContext } from "../edit_project/[id]/page";
 import { useProjectShowContext } from "../project_show/[id]/page";
@@ -61,6 +65,7 @@ import {
   DoneButtonMessage,
   ResetButtonMessage,
 } from "@/constants/ConfirmationModelsTexts";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
 
 const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
   mode,
@@ -85,7 +90,7 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
 
   const {
     reqForToastAndSetMessage,
-    axiosInstance,
+    requestHandler,
     reqForConfirmationModelFunc,
   } = useParentContext();
 
@@ -101,11 +106,20 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const hundleSubmit = () => {
+  const hundleSubmit = (indicatorId: string | null) => {
+    if (!indicatorId) return;
     setIsLoading(true);
-    axiosInstance
+    requestHandler()
       .post("/projects/d/disaggregation", {
-        dessaggregations: dessaggregations,
+        dessaggregations: dessaggregations.filter(
+          (d) =>
+            d.indicatorId == indicatorId ||
+            d.indicatorId ==
+              indicators.find((ind) => ind.parent_indicator == indicatorId)
+                ?.id ||
+            d.indicatorId ==
+              indicators.find((ind) => ind.id == indicatorId)?.subIndicator?.id
+        ),
       })
       .then((response: any) => {
         setSelectedIndicator(null);
@@ -115,17 +129,6 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
         reqForToastAndSetMessage(error.response.data.message);
       })
       .finally(() => setIsLoading(false));
-  };
-
-  const handleUpdateDessaggregation = () => {
-    axiosInstance
-      .put("/projects/dissaggregation", {
-        dessaggregations: dessaggregations,
-      })
-      .then((response: any) => reqForToastAndSetMessage(response.data.message))
-      .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
-      );
   };
 
   const addOrRemoveDessaggregation = (
@@ -152,8 +155,8 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
           ...prev,
           {
             id: null,
-            indicatorId: selectedIndicator!.id,
-            indicatorRef: selectedIndicator!.indicatorRef,
+            indicatorId: indicator!.id,
+            indicatorRef: indicator!.indicatorRef,
             dessaggration: description,
             province: province,
             target: 0,
@@ -261,8 +264,24 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
               .map((item, index) => (
                 <Card key={index} className="w-full">
                   <CardContent className="flex items-center justify-between ">
-                    <span className="text-base font-medium">
-                      {item.indicator}
+                    <span
+                      title={`Indicator: ${
+                        item.indicator
+                      } \nIndicator Referance: ${
+                        item.indicatorRef
+                      } \nDatabase: ${
+                        item.database
+                      } \nProvinces: ${item.provinces
+                        .map(
+                          (provinceObj: IndicatorProvinceType) =>
+                            provinceObj.province
+                        )
+                        .join(", ")} \nDessaggregation Type: ${
+                        item.dessaggregationType
+                      } \nTarget: ${item.target}`}
+                      className="text-base font-medium max-w-[250px] truncate cursor-pointer"
+                    >
+                      {item.indicatorRef}
                     </span>
                     <Button
                       onClick={() => {
@@ -293,11 +312,14 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
               >
                 <DialogContent className="flex flex-col justify-between sm:max-w-2xl md:max-w-4xl lg:max-w-6xl h-[90vh]">
                   <DialogHeader>
-                    <DialogTitle>
-                      {`${selectedIndicator.indicator}: (Target : ${selectedIndicator.target})`}
+                    <DialogTitle
+                      title={`Indicator : ${selectedIndicator.indicator}`}
+                    >
+                      {`${selectedIndicator.indicatorRef}: (Target : ${selectedIndicator.target})`}
                     </DialogTitle>
                   </DialogHeader>
-                  {/* Content */}
+
+                  {/* Form content */}
                   <div className="flex flex-col w-full h-full z-50 overflow-auto">
                     {/* Tabs */}
                     <div className="flex flex-row items-center justify-around">
@@ -372,6 +394,7 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                                             selectedIndicator?.indicatorRef
                                           )
                                       );
+                                      // Just cuse we need a boolean value.
                                       const isChecked = !!existing;
 
                                       return (
@@ -517,6 +540,8 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                                                   .indicatorRef
                                               )
                                             );
+
+                                          // Just cuse we need a boolean value.
                                           const isChecked = !!existing;
 
                                           return (
@@ -644,6 +669,7 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                       </Button>
                       {IsNotShowMode(mode) && (
                         <Button
+                          id={SUBMIT_BUTTON_PROVIDER_ID}
                           type="button"
                           className="bg-green-400"
                           disabled={
@@ -667,7 +693,7 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                             reqForConfirmationModelFunc(
                               DoneButtonMessage,
                               () => {
-                                hundleSubmit();
+                                hundleSubmit(selectedIndicator.id);
                               }
                             );
                           }}

@@ -44,7 +44,6 @@ const KitManagementPage = () => {
           columns={KitTableColumns}
           indexUrl="/kit_db/kit_mng"
           deleteUrl="/kit_db/kit_mng/delete_kits"
-          searchUrl="/search/kit_database/kits"
           searchableColumn="Name"
           deleteBtnPermission="Kit.delete"
           editBtnPermission="Kit.edit"

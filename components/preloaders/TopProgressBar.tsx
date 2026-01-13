@@ -1,4 +1,3 @@
-// components/TopProgressBar.tsx
 "use client";
 
 import { useEffect, useRef } from "react";
@@ -20,18 +19,15 @@ export default function TopProgressBar() {
   }, []);
 
   useEffect(() => {
-    // شروع لودر
     NProgress.start();
 
-    // اگر تایمر قبلی بود پاکش کن
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
 
-    // پایان لودر (بعد از اینکه route settle شد)
     timeoutRef.current = setTimeout(() => {
       NProgress.done(true);
-    }, 400); // عدد UX-friendly
+    }, 400); 
 
     return () => {
       if (timeoutRef.current) {

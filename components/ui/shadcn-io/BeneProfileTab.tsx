@@ -23,7 +23,7 @@ export default function BeneProfileTabs() {
   const {
     reqForToastAndSetMessage,
     reqForConfirmationModelFunc,
-    axiosInstance,
+    requestHandler,
     handleReload,
   } = useParentContext();
 
@@ -42,7 +42,7 @@ export default function BeneProfileTabs() {
     if (hasRef.current) return;
     hasRef.current = true;
 
-    axiosInstance
+    requestHandler()
       .get(`/community_dialogue_db/beneficiary/${id}`)
       .then((response: any) => {
         setBneficiaryInfo(response.data.data);
@@ -55,7 +55,7 @@ export default function BeneProfileTabs() {
   const [selectedRows, setSelectedRows] = useState<any>();
 
   const togglePresence = () => {
-    axiosInstance
+    requestHandler()
       .post(`/community_dialogue_db/beneficiaries/toggle_presence/${id}`, {
         selectedRows: Object.keys(selectedRows),
       })
@@ -73,10 +73,11 @@ export default function BeneProfileTabs() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         {/* Tabs header */}
         <ChromeTabs
+          currentTab={activeTab}
+          onCurrentTabChange={setActiveTab}
           initialTabs={tabs.map((tab) => ({
             value: tab,
             title: tab,
-            stateSetter: setActiveTab,
           }))}
         ></ChromeTabs>
 
@@ -123,7 +124,6 @@ export default function BeneProfileTabs() {
               <DataTableDemo
                 columns={beneficiarySessionsTableColumn}
                 indexUrl={`/community_dialogue_db/beneficiary/sessions/${id}`}
-                searchUrl=""
                 searchableColumn="Topic"
                 selectedRowsIdsStateSetter={setSelectedRows}
                 injectedElement={

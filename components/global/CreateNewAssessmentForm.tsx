@@ -30,7 +30,7 @@ const AssessmentForm: React.FC<AssessmentFormInterface> = ({
 }) => {
   const {
     reqForToastAndSetMessage,
-    axiosInstance,
+    requestHandler,
     reqForConfirmationModelFunc,
     handleReload,
   } = useParentContext();
@@ -88,7 +88,7 @@ const AssessmentForm: React.FC<AssessmentFormInterface> = ({
     setIsLoading(true);
 
     if (IsCreateMode(mode)) {
-      axiosInstance
+      requestHandler()
         .post("/enact_database/", formData)
         .then((response: any) => {
           reqForToastAndSetMessage(response.data.message);
@@ -100,7 +100,7 @@ const AssessmentForm: React.FC<AssessmentFormInterface> = ({
         )
         .finally(() => setIsLoading(false));
     } else if (IsEditMode(mode) && projectId) {
-      axiosInstance
+      requestHandler()
         .put(`/enact_database/${projectId}`, formData)
         .then((response: any) => {
           onOpenChange(false);
@@ -116,7 +116,7 @@ const AssessmentForm: React.FC<AssessmentFormInterface> = ({
   // Fetch program data from backend in edit and show mode.
   useEffect(() => {
     if (IsEditOrShowMode(mode) && projectId && open) {
-      axiosInstance
+      requestHandler()
         .get(`/enact_database/${projectId}`)
         .then((response: any) => {
           setFormData(response.data.data);
@@ -128,7 +128,7 @@ const AssessmentForm: React.FC<AssessmentFormInterface> = ({
   }, [mode, projectId, open]);
 
   useEffect(() => {
-    axiosInstance
+    requestHandler()
       .get("/projects/p/enact_database")
       .then((response: any) => setProjects(response.data.data))
       .catch((error: any) =>
@@ -138,14 +138,14 @@ const AssessmentForm: React.FC<AssessmentFormInterface> = ({
 
   useEffect(() => {
     if (!formData.project_id) return;
-    axiosInstance
+    requestHandler()
       .get(`projects/indicators/enact_database/${formData.project_id}`)
       .then((response: any) => setIndicators(response.data.data))
       .catch((error: any) => {
         reqForToastAndSetMessage(error.response.data.message);
       });
 
-    axiosInstance
+    requestHandler()
       .get(`projects/provinces/${formData.project_id}`)
       .then((res: any) => setProvinces(Object.values(res.data.data)))
       .catch((error: any) => {

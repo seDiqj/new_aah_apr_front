@@ -92,7 +92,7 @@ const SubmittedDatabasesPage = () => {
         idFeildForShowStateSetter={setIdFeildForEditStateSetter}
         idFeildForEditStateSetter={setIdFeildForEditStateSetter}
         showModelOpenerStateSetter={setOpenSubmittedDatabaseSummaryModel}
-        injectedElement={
+        injectedElementForOneSelectedItem={
           <div className="flex flex-row items-center gap-1">
             <Button
               title="Approve"

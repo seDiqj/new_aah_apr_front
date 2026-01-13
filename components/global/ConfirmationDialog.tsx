@@ -9,6 +9,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { GeneralMessage } from "@/constants/ConfirmationModelsTexts";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
 
 interface ComponentProps {
   open: boolean;
@@ -36,6 +37,7 @@ const ConfirmationAlertDialogue: React.FC<ComponentProps> = ({
           </AlertDialogCancel>
 
           <AlertDialogAction
+            id={SUBMIT_BUTTON_PROVIDER_ID}
             type="button"
             onClick={() => {
               if (onContinue) onContinue();

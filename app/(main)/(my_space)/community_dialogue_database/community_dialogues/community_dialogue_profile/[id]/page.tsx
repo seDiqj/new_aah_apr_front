@@ -4,7 +4,7 @@ import SubHeader from "@/components/global/SubHeader";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useParentContext } from "@/contexts/ParentContext";
 import DataTableDemo from "@/components/global/MulitSelectTable";
@@ -19,6 +19,10 @@ import { Can } from "@/components/Can";
 import { withPermission } from "@/lib/withPermission";
 import { IsIdFeild } from "@/constants/Constants";
 import ChromeTabs from "@/app/(main)/projects/Components/ChromeTab";
+import { CommunityDialogueBeneficiariesFiltersList } from "@/constants/FiltersList";
+import { CircleX } from "lucide-react";
+import { AxiosError, AxiosResponse } from "axios";
+import { DeleteGroupButtonMessage } from "@/constants/ConfirmationModelsTexts";
 
 const CommunityDialogueProfilePage = () => {
   const { id } = useParams<{
@@ -27,8 +31,9 @@ const CommunityDialogueProfilePage = () => {
 
   const {
     reqForToastAndSetMessage,
-    axiosInstance,
+    requestHandler,
     reqForConfirmationModelFunc,
+    handleReload,
   } = useParentContext();
 
   const router = useRouter();
@@ -37,9 +42,11 @@ const CommunityDialogueProfilePage = () => {
     number | null
   >(null);
 
-  let [idFeildForShowStateSetter, setIdFeildForShowStateSetter] = useState<
-    number | null
-  >(null);
+  let [idFeildForBnfShowStateSetter, setIdFeildForBnfShowStateSetter] =
+    useState<number | null>(null);
+
+  let [idFeildForSessionShowStateSetter, setIdFeildForSessionShowStateSetter] =
+    useState<number | null>(null);
 
   const [reqForSessionCreationForm, setReqForSessionCreationForm] =
     useState<boolean>(false);
@@ -66,15 +73,23 @@ const CommunityDialogueProfilePage = () => {
     setSelectedTab(value);
     if (value == "programInfo" || value == "cdSessions") return;
 
-    const currnetGroup = communityDialogue?.groups.find(
-      (group: { id: string; name: string }) => group.name == value
-    );
+    setGroupId(value ?? null);
+    handleReload();
+  };
 
-    setGroupId(currnetGroup?.id ?? null);
+  const handleDeleteGroup = (groupId: string) => {
+    requestHandler()
+      .delete(`/community_dialogue_db/community_dialogue/group/${groupId}`)
+      .then((response: AxiosResponse<any, any>) =>
+        reqForToastAndSetMessage(response.data.message)
+      )
+      .catch((error: AxiosError<any, any>) =>
+        reqForToastAndSetMessage(error.response?.data.message)
+      );
   };
 
   useEffect(() => {
-    axiosInstance
+    requestHandler()
       .get(`/community_dialogue_db/community_dialogue/${id}`)
       .then((response: any) => {
         setCommunityDialogue(response.data.data);
@@ -91,9 +106,9 @@ const CommunityDialogueProfilePage = () => {
   };
 
   useEffect(() => {
-    if (idFeildForShowStateSetter)
-      openBeneficiaryProfile(true, idFeildForShowStateSetter);
-  }, [idFeildForShowStateSetter]);
+    if (idFeildForBnfShowStateSetter)
+      openBeneficiaryProfile(true, idFeildForBnfShowStateSetter);
+  }, [idFeildForBnfShowStateSetter]);
 
   return (
     <>
@@ -116,22 +131,26 @@ const CommunityDialogueProfilePage = () => {
             >
               {/* List of tabs */}
               <ChromeTabs
+                currentTab={selectedTab}
+                onCurrentTabChange={handleTabChange}
                 initialTabs={[
                   {
                     value: "programInfo",
                     title: "Program Info",
-                    stateSetter: handleTabChange,
                   },
                   {
                     value: "cdSessions",
                     title: "Sessions",
-                    stateSetter: handleTabChange,
                   },
 
                   ...(communityDialogue?.groups.map((group) => ({
-                    value: group.name,
+                    value: group.id,
                     title: group.name.toUpperCase(),
-                    stateSetter: handleTabChange,
+                    onDeleteTab: () =>
+                      reqForConfirmationModelFunc(
+                        DeleteGroupButtonMessage,
+                        () => handleDeleteGroup(group.id)
+                      ),
                   })) ?? []),
                 ]}
               ></ChromeTabs>
@@ -209,35 +228,33 @@ const CommunityDialogueProfilePage = () => {
                       columns={communityDialoguesSessionTableColumns}
                       indexUrl={`/community_dialogue_db/community_dialogue/sessions/${id}`}
                       deleteUrl="/community_dialogue_db/community_dialogue/sessions/delete_sessions"
-                      searchableColumn="type"
+                      searchableColumn="Topic"
                       idFeildForEditStateSetter={setIdFeildForEditStateSetter}
                       editModelOpenerStateSetter={setReqForSessionEditionForm}
-                      idFeildForShowStateSetter={setIdFeildForShowStateSetter}
+                      idFeildForShowStateSetter={
+                        setIdFeildForSessionShowStateSetter
+                      }
                       showModelOpenerStateSetter={setReqForSessionShowForm}
+                      filtersList={["date", "type"]}
                     ></DataTableDemo>
                   </CardContent>
                 </Card>
               </TabsContent>
 
               {/* Each group content */}
-              <TabsContent
-                value={
-                  communityDialogue?.groups.find(
-                    (group: { id: string; name: string }) => group.id == groupId
-                  )?.name ?? ""
-                }
-                className="h-full"
-              >
+              <TabsContent value={groupId as string} className="h-full">
                 <Card className="shadow-sm border border-border w-full bg-background">
                   <CardContent>
                     <DataTableDemo
                       columns={mainDatabaseAndKitDatabaseBeneficiaryColumns}
                       indexUrl={`community_dialogue_db/community_dialogue/groups/beneficiaries/${groupId}`}
-                      deleteUrl="/community_dialogue_db/community_dialogue/sessions/delete_sessions"
-                      searchableColumn="name"
+                      deleteUrl={`/community_dialogue_db/remove_beneficiaries_from_group/${groupId}`}
+                      searchableColumn="Name"
                       idFeildForEditStateSetter={setIdFeildForEditStateSetter}
-                      idFeildForShowStateSetter={setIdFeildForShowStateSetter}
-                      showModelOpenerStateSetter={() => {}}
+                      idFeildForShowStateSetter={
+                        setIdFeildForBnfShowStateSetter
+                      }
+                      filtersList={CommunityDialogueBeneficiariesFiltersList}
                     ></DataTableDemo>
                   </CardContent>
                 </Card>
@@ -252,6 +269,7 @@ const CommunityDialogueProfilePage = () => {
               mode={"create"}
             ></SessionForm>
           )}
+
           {reqForSessionEditionForm && (
             <SessionForm
               open={reqForSessionEditionForm}
@@ -260,12 +278,13 @@ const CommunityDialogueProfilePage = () => {
               sessionId={idFeildForEditStateSetter as unknown as string}
             ></SessionForm>
           )}
+
           {reqForSessionShowForm && (
             <SessionForm
               open={reqForSessionShowForm}
               onOpenChange={setReqForSessionShowForm}
               mode={"show"}
-              sessionId={idFeildForShowStateSetter as unknown as string}
+              sessionId={idFeildForSessionShowStateSetter as unknown as string}
             ></SessionForm>
           )}
         </div>

@@ -9,7 +9,11 @@ import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useParentContext } from "@/contexts/ParentContext";
 import { TrainingProfileInterface } from "@/interfaces/Interfaces";
-import { IsANullValue, IsIdFeild } from "@/constants/Constants";
+import {
+  IsANullValue,
+  IsIdFeild,
+  IsNotANullOrUndefinedValue,
+} from "@/constants/Constants";
 import { TrainingDefault } from "@/constants/FormsDefaultValues";
 import { ChapterForm, Evaluations, TrainingForm } from "@/types/Types";
 import { use, useEffect, useState } from "react";
@@ -18,6 +22,10 @@ import DataTableDemo from "@/components/global/MulitSelectTable";
 import { trainingDatabaseBeneificiaryListColumn } from "@/definitions/DataTableColumnsDefinitions";
 import { TrainingBeneficiariesFiltersList } from "@/constants/FiltersList";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { CircleX } from "lucide-react";
+import { DeleteChapterButtonMessage } from "@/constants/ConfirmationModelsTexts";
+import { AxiosError, AxiosResponse } from "axios";
 
 const TrainingProfilePage: React.FC<TrainingProfileInterface> = (
   params: TrainingProfileInterface
@@ -26,13 +34,20 @@ const TrainingProfilePage: React.FC<TrainingProfileInterface> = (
 
   const router = useRouter();
 
-  const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
+  const {
+    reqForToastAndSetMessage,
+    requestHandler,
+    reqForConfirmationModelFunc,
+  } = useParentContext();
+
+  const [reqForChpaterForm, setReqForChapterForm] = useState<boolean>(false);
+  const [reqForChpaterEditForm, setReqForChapterEditForm] =
+    useState<boolean>(false);
+  const [chapterId, setChapterId] = useState<string | null>(null);
 
   let [idFeildForShowStateSetter, setIdFeildForShowStateSetter] = useState<
     number | null
   >(null);
-
-  let [open, setOpen] = useState<boolean>(false);
 
   const [currentTab, setCurrentTab] = useState<string>("trainingInfo");
 
@@ -44,6 +59,26 @@ const TrainingProfilePage: React.FC<TrainingProfileInterface> = (
 
   const [evaluationsData, setEvaluationsData] = useState<Evaluations>(null);
 
+  const handleDeleteChapter = (id: number | null) => {
+    if (IsNotANullOrUndefinedValue(id)) {
+      requestHandler()
+        .delete(`training_db/training/chapter/${id}`)
+        .then((response: AxiosResponse<any, any>) =>
+          reqForToastAndSetMessage(response.data.message)
+        )
+        .catch((error: AxiosError<any, any>) =>
+          reqForToastAndSetMessage(error.response?.data.message)
+        );
+    }
+    setChaptersData((prev) => prev.filter((ch, i) => ch.id !== id));
+    setCurrentTab("trainingInfo");
+  };
+
+  const handleEditChapter = (id: number) => {
+    setChapterId(id as unknown as string);
+    setReqForChapterEditForm(true);
+  };
+
   const openBeneficiaryProfilePage = (value: boolean, id: number) => {
     router.push(`/training_database/beneficiary_profile/${id}`);
   };
@@ -54,7 +89,8 @@ const TrainingProfilePage: React.FC<TrainingProfileInterface> = (
   }, [idFeildForShowStateSetter]);
 
   useEffect(() => {
-    axiosInstance(`training_db/training/${id}`)
+    requestHandler()
+      .get(`training_db/training/${id}`)
       .then((response: any) => {
         const { chapters, ...trainingAndEvaluationsData } = response.data.data;
         const { evaluations, ...trainingData } = trainingAndEvaluationsData;
@@ -74,7 +110,13 @@ const TrainingProfilePage: React.FC<TrainingProfileInterface> = (
         <div className="flex flex-row items-center justify-start my-2">
           <BreadcrumbWithCustomSeparator></BreadcrumbWithCustomSeparator>
         </div>
-        <SubHeader pageTitle={"Trainings"}></SubHeader>
+        <SubHeader pageTitle={"Trainings"}>
+          <div className="flex flex-row items-center justify-end">
+            <Button onClick={() => setReqForChapterForm(!reqForChpaterForm)}>
+              Add New Chapter
+            </Button>
+          </div>
+        </SubHeader>
 
         {/* Main Content */}
         <Tabs
@@ -83,28 +125,30 @@ const TrainingProfilePage: React.FC<TrainingProfileInterface> = (
           onValueChange={setCurrentTab}
         >
           <ChromeTabs
+            currentTab={currentTab}
+            onCurrentTabChange={setCurrentTab}
             initialTabs={[
               {
                 value: "trainingInfo",
                 title: "Training Info",
-                stateSetter: setCurrentTab,
               },
               {
                 value: "beneficiaries",
                 title: "Training Beneficiaries",
-                stateSetter: setCurrentTab,
               },
 
-              ...chaptersData.map((_, index) => ({
+              ...chaptersData.map((chapter, index) => ({
                 value: `chapter-${index + 1}`,
-                title: `Chapter ${index + 1}`,
-                stateSetter: setCurrentTab,
+                title: `Chapter-${index + 1}`,
+                onDeleteTab: () =>
+                  handleDeleteChapter(chapter.id as unknown as number),
+                onEditTab: () =>
+                  handleEditChapter(chapter.id as unknown as number),
               })),
 
               {
                 value: "trainingEvaluation",
                 title: "Training Evaluation",
-                stateSetter: setCurrentTab,
               },
             ]}
           ></ChromeTabs>
@@ -151,11 +195,23 @@ const TrainingProfilePage: React.FC<TrainingProfileInterface> = (
           </TabsContent>
         </Tabs>
 
-        {open && (
+        {reqForChpaterForm && (
           <CreateNewChapterForm
-            open={open}
-            onOpenChange={setOpen}
-            title={"Add New ChapterForm"}
+            open={reqForChpaterForm}
+            onOpenChange={setReqForChapterForm}
+            mode="create"
+            title={"Add New Chapter"}
+            chaptersDataStateSetter={setChaptersData}
+          ></CreateNewChapterForm>
+        )}
+        {reqForChpaterEditForm && chapterId && (
+          <CreateNewChapterForm
+            open={reqForChpaterEditForm}
+            onOpenChange={setReqForChapterEditForm}
+            mode="edit"
+            title={"Edit chapter"}
+            chaptersDataStateSetter={setChaptersData}
+            chapterId={chapterId}
           ></CreateNewChapterForm>
         )}
       </div>
@@ -167,7 +223,7 @@ const structuredInfo = (info: any) => {
   return (
     <>
       {info ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           {Object.entries(info).map(([key, value], index) => {
             if (IsIdFeild(key) || IsANullValue(value)) return;
             return (

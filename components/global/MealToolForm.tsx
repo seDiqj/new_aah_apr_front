@@ -26,19 +26,24 @@ import {
   endlineOptions,
 } from "@/constants/SingleAndMultiSelectOptionsList";
 import { MealToolInterface } from "@/interfaces/Interfaces";
-import { IsEditMode, IsShowMode } from "@/constants/Constants";
+import { IsCreateMode, IsEditMode, IsShowMode } from "@/constants/Constants";
 import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { AxiosError, AxiosResponse } from "axios";
+import StringHelper from "@/helpers/StringHelpers/StringHelper";
+import { MealToolFormSchema } from "@/schemas/FormsSchema";
 
 const MealToolForm: React.FC<MealToolInterface> = ({
   open,
   onOpenChange,
   mealToolsStateSetter,
-  mealToolsState,
-  onSubmit,
   mode,
   mealtoolId,
 }) => {
-  const { reqForConfirmationModelFunc } = useParentContext();
+  const {
+    requestHandler,
+    reqForConfirmationModelFunc,
+    reqForToastAndSetMessage,
+  } = useParentContext();
 
   const { id } = useParams();
 
@@ -50,21 +55,91 @@ const MealToolForm: React.FC<MealToolInterface> = ({
   const [mealTool, setMealTool] = useState<MealToolFormType>(
     MealToolDefault(id as unknown as string)
   );
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
   const handleFormChange = (e: any) => {
     setMealTool({ ...mealTool, [e.target.name]: e.target.value });
   };
 
-  const handleAdd = () => {
-    if (!mealTool.type) return;
-    mealToolsStateSetter([...mealToolsState, mealTool]);
-    setMealTool(MealToolDefault(id as unknown as string));
-    onSubmit([...mealToolsState, mealTool]);
+  const handleSubmitMealtoolForm = (mealTool: any) => {
+    const result = MealToolFormSchema.safeParse(mealTool);
+
+    if (!result.success) {
+      const errors: { [key: string]: string } = {};
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0];
+        if (field) errors[field as string] = issue.message;
+      });
+
+      setFormErrors(errors);
+      reqForToastAndSetMessage(
+        "Please fix validation errors before submitting."
+      );
+      return;
+    }
+
+    setFormErrors({});
+
+    if (IsCreateMode(mode)) {
+      setLoading(true);
+      requestHandler()
+        .post(`/main_db/beneficiary/mealtools/${id}`, { mealtool: mealTool })
+        .then((response: any) => {
+          reqForToastAndSetMessage(response.data.message);
+          mealToolsStateSetter((prev: any) => [ 
+            ...prev,
+            { id: response.data.data.id, ...mealTool },
+          ]);
+          setMealTool(MealToolDefault(id as unknown as string));
+          onOpenChange(false);
+        })
+        .catch((error: any) =>
+          reqForToastAndSetMessage(error.response.data.message)
+        )
+        .finally(() => setLoading(false));
+
+      return;
+    } else if (IsEditMode(mode)) {
+      setLoading(true);
+      requestHandler()
+        .put(`/main_db/beneficiary/mealtool/${mealTool.id}`, mealTool)
+        .then((response: any) => {
+          reqForToastAndSetMessage(response.data.message);
+          mealToolsStateSetter((prev: any) =>
+            prev.map((mt: any) =>
+              mt.id == mealtoolId
+                ? {
+                    ...mealTool,
+                    baseline: baselineSelection,
+                    endline: endlineSelection,
+                  }
+                : mt
+            )
+          );
+          onOpenChange(false);
+        })
+        .catch((error: any) =>
+          reqForToastAndSetMessage(error.response.data.message)
+        )
+        .finally(() => setLoading(false));
+    }
   };
 
   useEffect(() => {
-    if (IsShowMode(mode) || (IsEditMode(mode) && mealtoolId))
-      setMealTool(mealToolsState.find((mt: any) => mt.id == mealtoolId));
+    if (IsShowMode(mode) || (IsEditMode(mode) && mealtoolId)) {
+      setLoading(true);
+      requestHandler()
+        .get(`main_db/beneficiary/mealtool/${mealtoolId}`)
+        .then((response: AxiosResponse<any, any>) => {
+          setMealTool(response.data.data);
+          setBaselineSelection(response.data.data.baseline);
+          setEndlineSelection(response.data.data.endline);
+        })
+        .catch((error: AxiosError<any, any>) =>
+          reqForToastAndSetMessage(error.response?.data.message)
+        )
+        .finally(() => setLoading(false));
+    }
   }, []);
 
   return (
@@ -101,7 +176,10 @@ const MealToolForm: React.FC<MealToolInterface> = ({
                   name="type"
                   value={mealTool.type}
                   onChange={handleFormChange}
-                  className="border w-full"
+                  className={`border p-2 rounded ${
+                    formErrors.type ? "!border-red-500" : ""
+                  }`}
+                  title={formErrors.type}
                 />
               </div>
 
@@ -114,7 +192,10 @@ const MealToolForm: React.FC<MealToolInterface> = ({
                   type="date"
                   value={mealTool.baselineDate}
                   onChange={handleFormChange}
-                  className="border w-full"
+                  className={`border p-2 rounded ${
+                    formErrors.baselineDate ? "!border-red-500" : ""
+                  }`}
+                  title={formErrors.baselineDate}
                 />
               </div>
 
@@ -127,7 +208,10 @@ const MealToolForm: React.FC<MealToolInterface> = ({
                   type="date"
                   value={mealTool.endlineDate}
                   onChange={handleFormChange}
-                  className="border w-full"
+                  className={`border p-2 rounded ${
+                    formErrors.endlineDate ? "!border-red-500" : ""
+                  }`}
+                  title={formErrors.endlineDate}
                 />
               </div>
 
@@ -156,6 +240,10 @@ const MealToolForm: React.FC<MealToolInterface> = ({
                         isEndlineActive: e,
                       }));
                     }}
+                    className={`border p-2 rounded ${
+                      formErrors.endline ? "!border-red-500" : ""
+                    }`}
+                    title={formErrors.endline}
                   />
                   <Label htmlFor="endline">Activate Endline</Label>
                 </div>
@@ -173,7 +261,10 @@ const MealToolForm: React.FC<MealToolInterface> = ({
                   type="number"
                   value={mealTool.baselineTotalScore}
                   onChange={handleFormChange}
-                  className="border w-full"
+                  className={`border p-2 rounded ${
+                    formErrors.baselineTotalScore ? "!border-red-500" : ""
+                  }`}
+                  title={formErrors.baselineTotalScore}
                 />
               </div>
 
@@ -186,7 +277,10 @@ const MealToolForm: React.FC<MealToolInterface> = ({
                   type="number"
                   value={mealTool.endlineTotalScore}
                   onChange={handleFormChange}
-                  className="border w-full"
+                  className={`border p-2 rounded ${
+                    formErrors.endlineTotalScore ? "!border-red-500" : ""
+                  }`}
+                  title={formErrors.endlineTotalScore}
                 />
               </div>
 
@@ -201,7 +295,10 @@ const MealToolForm: React.FC<MealToolInterface> = ({
                   type="number"
                   value={mealTool.improvementPercentage}
                   onChange={handleFormChange}
-                  className="border w-full"
+                  className={`border p-2 rounded ${
+                    formErrors.improvementPercentage ? "!border-red-500" : ""
+                  }`}
+                  title={formErrors.improvementPercentage}
                 />
               </div>
             </div>
@@ -215,7 +312,10 @@ const MealToolForm: React.FC<MealToolInterface> = ({
                 name="evaluation"
                 value={mealTool.evaluation}
                 onChange={handleFormChange}
-                className="flex-1 border"
+                className={`border p-2 rounded ${
+                  formErrors.evaluation ? "!border-red-500" : ""
+                }`}
+                title={formErrors.evaluation}
               />
             </div>
 
@@ -228,10 +328,13 @@ const MealToolForm: React.FC<MealToolInterface> = ({
                   {baselineOptions.map((option) => (
                     <div key={option} className="flex items-center gap-2">
                       <Checkbox
-                        checked={baselineSelection === option}
+                        checked={
+                          baselineSelection.toLowerCase() ===
+                          option.toLowerCase()
+                        }
                         onCheckedChange={() => setBaselineSelection(option)}
                       />
-                      <Label>{option}</Label>
+                      <Label>{StringHelper.normalize(option)}</Label>
                     </div>
                   ))}
                 </div>
@@ -244,10 +347,13 @@ const MealToolForm: React.FC<MealToolInterface> = ({
                   {endlineOptions.map((option) => (
                     <div key={option} className="flex items-center gap-2">
                       <Checkbox
-                        checked={endlineSelection === option}
+                        checked={
+                          endlineSelection.toLowerCase() ===
+                          option.toLowerCase()
+                        }
                         onCheckedChange={() => setEndlineSelection(option)}
                       />
-                      <Label>{option}</Label>
+                      <Label>{StringHelper.normalize(option)}</Label>
                     </div>
                   ))}
                 </div>
@@ -263,12 +369,23 @@ const MealToolForm: React.FC<MealToolInterface> = ({
             className="w-full mt-6"
             onClick={(e) => {
               reqForConfirmationModelFunc(
-                mode == "create"
+                IsCreateMode(mode)
                   ? MealToolCreationMessage
                   : MealToolEditionMessage,
                 () => {
-                  handleAdd();
-                  onSubmit(e);
+                  if (IsCreateMode(mode)) {
+                    handleSubmitMealtoolForm({
+                      ...mealTool,
+                      baseline: baselineSelection,
+                      endline: endlineSelection,
+                    });
+                  } else if (IsEditMode(mode)) {
+                    handleSubmitMealtoolForm({
+                      ...mealTool,
+                      baseline: baselineSelection,
+                      endline: endlineSelection,
+                    });
+                  }
                 }
               );
             }}

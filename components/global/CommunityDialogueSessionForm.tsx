@@ -36,7 +36,7 @@ const SessionForm: React.FC<CommunityDialogueSessionFormInterface> = ({
 
   const {
     reqForToastAndSetMessage,
-    axiosInstance,
+    requestHandler,
     reqForConfirmationModelFunc,
     handleReload,
   } = useParentContext();
@@ -55,11 +55,11 @@ const SessionForm: React.FC<CommunityDialogueSessionFormInterface> = ({
     setLoading(true);
 
     const request = IsCreateMode(mode)
-      ? axiosInstance.post(
+      ? requestHandler().post(
           "/community_dialogue_db/community_dialogue/session",
           formData
         )
-      : axiosInstance.put(
+      : requestHandler().put(
           `/community_dialogue_db/community_dialogue/session/${sessionId}`,
           formData
         );
@@ -88,7 +88,7 @@ const SessionForm: React.FC<CommunityDialogueSessionFormInterface> = ({
   useEffect(() => {
     if (IsEditMode(mode) || IsShowMode(mode)) {
       setFetching(true);
-      axiosInstance
+      requestHandler()
         .get(`/community_dialogue_db/community_dialogue/session/${sessionId}`)
         .then((response: any) => {
           setFormData(response.data.data);

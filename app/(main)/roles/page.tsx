@@ -61,7 +61,7 @@ const RolesPage = () => {
         {reqForRoleCreationForm && (
           <RoleForm
             open={reqForRoleCreationForm}
-            openStateSetter={() => setReqForRoleCreationForm(false)}
+            openStateSetter={setReqForRoleCreationForm}
             mode={"create"}
           ></RoleForm>
         )}
@@ -69,7 +69,7 @@ const RolesPage = () => {
         {reqForRoleUpdateForm && (
           <RoleForm
             open={reqForRoleUpdateForm}
-            openStateSetter={() => setReqForRoleUpdateForm(false)}
+            openStateSetter={setReqForRoleUpdateForm}
             mode={"edit"}
             idFeildForEditStateSetter={idFeildForEditStateSetter}
           ></RoleForm>
@@ -78,7 +78,7 @@ const RolesPage = () => {
         {reqForRoleShowForm && (
           <RoleForm
             open={reqForRoleShowForm}
-            openStateSetter={() => setReqForRoleShowForm(false)}
+            openStateSetter={setReqForRoleShowForm}
             mode={"show"}
             idFeildForEditStateSetter={idFeildForShowStateSetter}
           ></RoleForm>

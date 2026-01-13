@@ -34,7 +34,7 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
 }) => {
   const {
     reqForToastAndSetMessage,
-    axiosInstance,
+    requestHandler,
     handleReload,
     reqForConfirmationModelFunc,
   } = useParentContext();
@@ -79,7 +79,7 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
     setIsLoading(true);
 
     if (IsCreateMode(mode)) {
-      axiosInstance
+      requestHandler()
         .post("/global/program/main_database", formData)
         .then((response: any) => {
           reqForToastAndSetMessage(response.data.message);
@@ -107,7 +107,7 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
         )
         .finally(() => setIsLoading(false));
     } else if (IsEditMode(mode) && programId) {
-      axiosInstance
+      requestHandler()
         .put(`/global/program/${programId}`, formData)
         .then((response: any) => {
           reqForToastAndSetMessage(response.data.message);
@@ -128,10 +128,10 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
   >([]);
 
   useEffect(() => {
-    axiosInstance
+    requestHandler()
       .get("/global/districts")
       .then((res: any) => setDistricts(Object.values(res.data.data)));
-    axiosInstance
+    requestHandler()
       .get("/projects/p/main_database")
       .then((res: any) => setProjects(Object.values(res.data.data)))
       .catch((error: any) =>
@@ -141,7 +141,7 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
 
   useEffect(() => {
     if (!formData.project_id) return;
-    axiosInstance
+    requestHandler()
       .get(`/global/project/provinces/${formData.project_id}`)
       .then((res: any) => {
         setProvinces(Object.values(res.data.data));
@@ -151,10 +151,9 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
   // Fetch program data from backend in edit and show mode.
   useEffect(() => {
     if ((IsEditMode(mode) || IsShowMode(mode)) && programId && open) {
-      axiosInstance
+      requestHandler()
         .get(`/global/program/${programId}`)
         .then((response: any) => {
-          console.log(response.data.data)
           setFormData(response.data.data);
         })
         .catch((error: any) => {

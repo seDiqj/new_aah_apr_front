@@ -30,9 +30,7 @@ const ProjectsPage = () => {
       openProjectProfile(true, idFeildForShowStateSetter);
   }, [idFeildForShowStateSetter]);
 
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  return (
+  return (  
     <>
       <div className="w-full h-full p-2">
         <Navbar14 />

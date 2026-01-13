@@ -23,7 +23,7 @@ const TrainingSelectorDialog: React.FC<TrainingSelectorInterface> = ({
 }) => {
   const {
     reqForToastAndSetMessage,
-    axiosInstance,
+    requestHandler,
     reqForConfirmationModelFunc,
   } = useParentContext();
 
@@ -38,7 +38,7 @@ const TrainingSelectorDialog: React.FC<TrainingSelectorInterface> = ({
 
     setIsLoading(true);
 
-    axiosInstance
+    requestHandler()
       .post("/training_db/beneficiaries/add_training", {
         training: selectedTraining,
         ids: ids,
@@ -54,7 +54,7 @@ const TrainingSelectorDialog: React.FC<TrainingSelectorInterface> = ({
   };
 
   useEffect(() => {
-    axiosInstance
+    requestHandler()
       .get("/training_db/trainings/for_selection")
       .then((response: any) => {
         setTrainings(response.data.data);

@@ -14,7 +14,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Edit, Eye, Trash } from "lucide-react";
-import { Dessaggregation, Indicator, Output, Project } from "../types/Types";
+import {
+  Dessaggregation,
+  Indicator,
+  Outcome,
+  Output,
+  Project,
+} from "../types/Types";
 import React, { useState } from "react";
 import { useParentContext } from "@/contexts/ParentContext";
 import IndicatorModel from "@/components/global/IndicatorEditModel";
@@ -38,6 +44,7 @@ const IndicatorForm: React.FC<IndicatorFormInterface> = ({ mode }) => {
   const { reqForConfirmationModelFunc } = useParentContext();
 
   const {
+    outcomes,
     outputs,
     indicators,
     setIndicators,
@@ -45,6 +52,7 @@ const IndicatorForm: React.FC<IndicatorFormInterface> = ({ mode }) => {
     handleDelete,
     setDessaggregations,
   }: {
+    outcomes: Outcome[];
     outputs: Output[];
     indicators: Indicator[];
     setIndicators: React.Dispatch<React.SetStateAction<Indicator[]>>;
@@ -75,10 +83,21 @@ const IndicatorForm: React.FC<IndicatorFormInterface> = ({ mode }) => {
   return (
     <>
       <Card className="relative h-full flex flex-col">
-        <CardHeader className="flex flex-row items-center justify-end w-full">
-          <CardTitle>
+        <CardHeader
+          className="
+          flex
+          flex-row
+          items-center
+          justify-end
+          w-full
+          px-4
+          sm:px-6
+        "
+        >
+          <CardTitle className="w-full flex justify-end">
             {IsNotShowMode(mode) && (
               <Button
+                className="w-full sm:w-auto"
                 onClick={() => setReqForIndicatorForm(!reqForIndicatorForm)}
               >
                 Add Indicator
@@ -87,15 +106,40 @@ const IndicatorForm: React.FC<IndicatorFormInterface> = ({ mode }) => {
           </CardTitle>
         </CardHeader>
 
-        <CardContent className="flex flex-col gap-6 overflow-auto h-[70%]">
+        <CardContent
+          className="
+          flex
+          flex-col
+          gap-6
+          overflow-auto
+          px-4
+          sm:px-6
+          h-[65%]
+          sm:h-[70%]
+        "
+        >
           {outputs.length >= 1 ? (
-            <Accordion type="single" collapsible={true} className="w-full">
+            <Accordion type="single" collapsible className="w-full">
               {outputs
                 .filter((o) => IsOutputSaved(o))
                 .map((item, index) => (
                   <AccordionItem key={index} value={`item-${index}`}>
-                    <AccordionTrigger>{item.output}</AccordionTrigger>
-                    <AccordionContent className="flex flex-col gap-6 max-h-[600px] overflow-auto">
+                    <AccordionTrigger
+                      title={`Output: ${item.output} \nOutput Referance: ${item.outputRef}`}
+                      className="text-left truncate cursor-pointer"
+                    >
+                      {item.outputRef}
+                    </AccordionTrigger>
+
+                    <AccordionContent
+                      className="
+                      flex
+                      flex-col
+                      gap-6
+                      max-h-[600px]
+                      overflow-auto
+                    "
+                    >
                       {/* indicators list */}
                       <div className="mt-4 max-h-[200px] overflow-auto border rounded-xl">
                         {indicators
@@ -109,18 +153,29 @@ const IndicatorForm: React.FC<IndicatorFormInterface> = ({ mode }) => {
                           .map((indItem, indIndex) => (
                             <div
                               key={indIndex}
-                              className="flex items-center justify-between px-3 py-2 border-b last:border-b-0"
+                              className="
+                              flex
+                              flex-col
+                              sm:flex-row
+                              sm:items-center
+                              sm:justify-between
+                              gap-3
+                              px-3
+                              py-3
+                              border-b
+                              last:border-b-0
+                            "
                             >
                               <div className="flex flex-col">
-                                <span className="font-medium">
+                                <span className="font-medium break-words max-w-[250px] truncate">
                                   {indItem.indicator}
                                 </span>
-                                <span className="text-sm text-muted-foreground">
+                                <span className="text-sm text-muted-foreground break-words">
                                   {indItem.indicatorRef}
                                 </span>
                               </div>
 
-                              <div className="flex flex-row items-center justify-end gap-2">
+                              <div className="flex flex-row items-center justify-end gap-3">
                                 {!readOnly && (
                                   <Trash
                                     onClick={() =>
@@ -150,6 +205,7 @@ const IndicatorForm: React.FC<IndicatorFormInterface> = ({ mode }) => {
                                     size={18}
                                   />
                                 )}
+
                                 {indItem.id &&
                                   (readOnly ? (
                                     <Eye
@@ -161,7 +217,7 @@ const IndicatorForm: React.FC<IndicatorFormInterface> = ({ mode }) => {
                                         );
                                       }}
                                       size={18}
-                                    ></Eye>
+                                    />
                                   ) : (
                                     <Edit
                                       className="cursor-pointer text-orange-500 hover:text-orange-700"
@@ -172,7 +228,7 @@ const IndicatorForm: React.FC<IndicatorFormInterface> = ({ mode }) => {
                                         );
                                       }}
                                       size={18}
-                                    ></Edit>
+                                    />
                                   ))}
                               </div>
                             </div>
@@ -183,13 +239,27 @@ const IndicatorForm: React.FC<IndicatorFormInterface> = ({ mode }) => {
                 ))}
             </Accordion>
           ) : (
-            <div className="flex flex-row items-center justify-center text-center text-sm text-muted-foreground">
+            <div className="flex items-center justify-center text-center text-sm text-muted-foreground py-6">
               No indicator added yet !
             </div>
           )}
         </CardContent>
 
-        <CardFooter className="flex flex-row w-full gap-2 items-start justify-end absolute bottom-5">
+        <CardFooter
+          className="
+          flex
+          flex-wrap
+          w-full
+          gap-2
+          items-start
+          justify-end
+          px-4
+          sm:px-6
+          static
+          sm:absolute
+          sm:bottom-5
+        "
+        >
           {cardsBottomButtons(
             setCurrentTab,
             "output",
@@ -219,6 +289,7 @@ const IndicatorForm: React.FC<IndicatorFormInterface> = ({ mode }) => {
           pageIdentifier={mode}
         />
       )}
+
       {reqForIndicatorShowModel && indicatorIdForEditOrShow && (
         <IndicatorModel
           isOpen={reqForIndicatorShowModel}

@@ -100,6 +100,9 @@ export const BeneficiaryPresenceTogglerButtonMessage: string =
 export const RemoveTrainingFromBeneficiaryButtonMessage: string =
   "This action will remove the current training from current beneficiary !";
 
+export const DeleteChapterButtonMessage: string =
+  "This action will remove current chapter from training chapters list";
+
 // COMMUNITY DIALOGUE DATABASE
 
 export const CdDatabaseBeneficiaryCreationMessage: string =
@@ -245,3 +248,6 @@ export const BeneficiarySessionPresenceTogglerButtonMessage: string =
 
 export const AssessmentDeleteMessage: string =
   "This action will delete the current assessment !";
+
+export const DeleteGroupButtonMessage: string =
+  "This action will delete the group and remove all beneficiaries from community dialogue !";

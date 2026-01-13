@@ -180,6 +180,7 @@ export const TrainingBeneficiaryDefault: () => TrainingBenefeciaryForm =
   });
 
 export const ChapterDefault: () => ChapterForm = () => ({
+  id: "",
   topic: "",
   facilitatorName: "",
   facilitatorJobTitle: "",
@@ -188,6 +189,7 @@ export const ChapterDefault: () => ChapterForm = () => ({
 });
 
 export const TrainingDefault: () => TrainingForm = () => ({
+  id: "",
   project_id: "",
   province_id: "",
   district_id: "",
@@ -387,6 +389,7 @@ export const CommunityDialogueFormDefault: () => CommunityDialogueFormType =
     district_id: "",
     village: "",
     indicator_id: "",
+    cdName: ""
   });
 
 export const CommunityDialogueBeneficiaryFormDefault: () => CommunityDialogBeneficiaryForm =

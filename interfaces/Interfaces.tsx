@@ -1,5 +1,6 @@
-import { BeneficiaryForm } from "@/types/Types";
+import { BeneficiaryForm, ChapterForm } from "@/types/Types";
 import { ColumnDef } from "@tanstack/react-table";
+import React from "react";
 
 export interface DataTableInterface {
   columns: ColumnDef<any>[];
@@ -27,6 +28,8 @@ export interface DataTableInterface {
 
   // Injected element
   injectedElement?: React.ReactNode;
+
+  injectedElementForOneSelectedItem?: React.ReactNode;
 
   // Filters List.
   filtersList?: string[];
@@ -81,9 +84,7 @@ export interface MainDatabaseBeneficiaryUpdate {
 export interface MealToolInterface {
   open: boolean;
   onOpenChange: (value: boolean) => void;
-  onSubmit: (e: any) => void;
   mealToolsStateSetter: any;
-  mealToolsState: any;
   mode: "create" | "edit" | "show";
   mealtoolId?: number | null;
 }
@@ -227,6 +228,9 @@ export interface ChapterFormInterface {
   open: boolean;
   onOpenChange: (value: boolean) => void;
   title: string;
+  chaptersDataStateSetter: React.Dispatch<React.SetStateAction<ChapterForm[]>>;
+  mode: "create" | "edit" | "show";
+  chapterId?: string;
 }
 
 export interface OutputFormInterface {

@@ -1,6 +1,29 @@
 import { SingleAndMultiSelectOptionsListType } from "@/types/Types";
 import { Check, Shield, User } from "lucide-react";
 
+export const ProjectStatusOptions: SingleAndMultiSelectOptionsListType[] = [
+  { value: "planed", label: "Planed" },
+  { value: "ongoing", label: "On Going" },
+  { value: "completed", label: "Compleated" },
+  { value: "onhold", label: "On Hold" },
+  { value: "canclled", label: "Canclled" },
+];
+
+export const ProvinceOptions: SingleAndMultiSelectOptionsListType[] = [
+  { value: "kabul", label: "Kabul" },
+  { value: "badakhshan", label: "Badakhshan" },
+  { value: "ghor", label: "Ghor" },
+  { value: "helmand", label: "Helmand" },
+  { value: "daikundi", label: "Daikundi" },
+];
+
+export const SectorOptions: SingleAndMultiSelectOptionsListType[] = [
+  { value: "mhpss", label: "MHPSS" },
+  { value: "wash", label: "WASH" },
+  { value: "health", label: "Health" },
+  { value: "nutrition", label: "Nutrition" },
+];
+
 export const HousholdStatusOptions: SingleAndMultiSelectOptionsListType[] = [
   { value: "idp_drought", label: "IDP (Drought)" },
   { value: "idp_conflict", label: "IDP (Conflict)" },
@@ -47,9 +70,9 @@ export const KitRecievedOptions: SingleAndMultiSelectOptionsListType[] = [
 ];
 
 export const KitStatusOptions: SingleAndMultiSelectOptionsListType[] = [
-  {value: "active", "label" : "Active"},
-  {value: "inactive", "label" : "Inactive"},
-]
+  { value: "active", label: "Active" },
+  { value: "inactive", label: "Inactive" },
+];
 
 export const indicatorStatus: SingleAndMultiSelectOptionsListType[] = [
   { value: "notStarted", label: "Not Started" },
@@ -84,7 +107,7 @@ export const databases: SingleAndMultiSelectOptionsListType[] = [
     label: "Training Database",
   },
   {
-    value: "referral_database",
+    value: "refferal_database",
     label: "Referral Database",
   },
   {
@@ -113,19 +136,19 @@ export const indicatorTypes: SingleAndMultiSelectOptionsListType[] = [
 ];
 
 export const baselineOptions = [
-  "Low",
-  "Moderate",
-  "High",
-  "Evaluation Not Possible",
-  "N / A",
+  "low",
+  "moderate",
+  "high",
+  "evaluationNotPossible",
+  "n/a",
 ];
 
 export const endlineOptions = [
-  "Low",
-  "Moderate",
-  "High",
-  "Evaluation Not Possible",
-  "N / A",
+  "low",
+  "moderate",
+  "high",
+  "evaluationNotPossible",
+  "n/a",
 ];
 
 export const servicesOptions = [
@@ -179,11 +202,11 @@ export const steps = [
 ];
 
 export const clientSatisfactionOptions: { emoji: string; label: string }[] = [
-  { emoji: "😊", label: "veryGood" },
-  { emoji: "🙂", label: "good" },
-  { emoji: "😐", label: "neutral" },
-  { emoji: "🙁", label: "bad" },
   { emoji: "😡", label: "veryBad" },
+  { emoji: "🙁", label: "bad" },
+  { emoji: "😐", label: "neutral" },
+  { emoji: "🙂", label: "good" },
+  { emoji: "😊", label: "veryGood" },
 ];
 
 export const AssessmentTypeOptions: SingleAndMultiSelectOptionsListType[] = [

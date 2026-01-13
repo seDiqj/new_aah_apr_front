@@ -77,65 +77,6 @@ const CommunityDialogueFormComponent: React.FC<
 
   const isReadOnly = IsShowMode(mode);
 
-  useEffect(() => {
-    axiosInstance
-      .get("/projects/p/cd_database")
-      .then((res: any) => setProjects(Object.values(res.data.data)))
-      .catch((err: any) =>
-        reqForToastAndSetMessage(err.response?.data?.message)
-      );
-  }, []);
-
-  useEffect(() => {
-    if (IsEditOrShowMode(mode) && dialogueId) {
-      axiosInstance
-        .get(`/community_dialogue_db/community_dialogue_for_edit/${dialogueId}`)
-        .then((res: any) => {
-          const data = res.data.data;
-          setFormData(data.programInformation);
-          setGroups(data.groups?.map((g: any) => ({ ...g })) ?? []);
-          setSessions(
-            data.sessions ?? [
-              { id: null, type: "initial", topic: "", date: "" },
-            ]
-          );
-          console.log(data.sessions);
-          setRemark(data.remark ?? "");
-        })
-        .catch((err: any) =>
-          reqForToastAndSetMessage(
-            err.response?.data?.message || "Failed to load data"
-          )
-        );
-    }
-  }, [mode, dialogueId]);
-
-  useEffect(() => {
-    if (!formData.project_id) return;
-    const projectId = formData.project_id;
-
-    axiosInstance
-      .get(`projects/indicators/cd_database/${projectId}`)
-      .then((res: any) => setIndicators(res.data.data))
-      .catch((err: any) =>
-        reqForToastAndSetMessage(err.response?.data?.message)
-      );
-
-    axiosInstance
-      .get(`projects/provinces/${projectId}`)
-      .then((res: any) => setProvinces(Object.values(res.data.data)))
-      .catch((err: any) =>
-        reqForToastAndSetMessage(err.response?.data?.message)
-      );
-
-    axiosInstance
-      .get("/global/districts")
-      .then((res: any) => setDistricts(Object.values(res.data.data)))
-      .catch((err: any) =>
-        reqForToastAndSetMessage(err.response?.data?.message)
-      );
-  }, [formData.project_id]);
-
   const handleFormChange = (e: any) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -195,11 +136,70 @@ const CommunityDialogueFormComponent: React.FC<
   };
 
   const addGroup = () => setGroups([...groups, { id: null, name: "" }]);
+  
   const addSession = () =>
     setSessions([
       ...sessions,
       { id: null, type: "followUp", topic: "", date: "" },
     ]);
+
+  useEffect(() => {
+    axiosInstance
+      .get("/projects/p/cd_database")
+      .then((res: any) => setProjects(Object.values(res.data.data)))
+      .catch((err: any) =>
+        reqForToastAndSetMessage(err.response?.data?.message)
+      );
+  }, []);
+
+  useEffect(() => {
+    if (IsEditOrShowMode(mode) && dialogueId) {
+      axiosInstance
+        .get(`/community_dialogue_db/community_dialogue_for_edit/${dialogueId}`)
+        .then((res: any) => {
+          const data = res.data.data;
+          setFormData(data.programInformation);
+          setGroups(data.groups?.map((g: any) => ({ ...g })) ?? []);
+          setSessions(
+            data.sessions ?? [
+              { id: null, type: "initial", topic: "", date: "" },
+            ]
+          );
+          setRemark(data.remark ?? "");
+        })
+        .catch((err: any) =>
+          reqForToastAndSetMessage(
+            err.response?.data?.message || "Failed to load data"
+          )
+        );
+    }
+  }, [mode, dialogueId]);
+
+  useEffect(() => {
+    if (!formData.project_id) return;
+    const projectId = formData.project_id;
+
+    axiosInstance
+      .get(`projects/indicators/cd_database/${projectId}`)
+      .then((res: any) => setIndicators(res.data.data))
+      .catch((err: any) =>
+        reqForToastAndSetMessage(err.response?.data?.message)
+      );
+
+    axiosInstance
+      .get(`projects/provinces/${projectId}`)
+      .then((res: any) => setProvinces(Object.values(res.data.data)))
+      .catch((err: any) =>
+        reqForToastAndSetMessage(err.response?.data?.message)
+      );
+
+    axiosInstance
+      .get("/global/districts")
+      .then((res: any) => setDistricts(Object.values(res.data.data)))
+      .catch((err: any) =>
+        reqForToastAndSetMessage(err.response?.data?.message)
+      );
+  }, [formData.project_id]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -358,6 +358,22 @@ const CommunityDialogueFormComponent: React.FC<
               }
               disabled={isReadOnly}
               error={formErrors.indicator_id}
+            />
+          </div>
+
+          {/* Cd Name */}
+          <div>
+            <Label className={labelClass}>Community Dialogue Name</Label>
+            <Input
+              name="cdName"
+              value={formData.cdName}
+              onChange={handleFormChange}
+              placeholder="Community Dialogue Name"
+              disabled={isReadOnly}
+              className={`border p-2 rounded ${
+                formErrors.cdName ? "!border-red-500" : ""
+              }`}
+              title={formErrors.cdName}
             />
           </div>
 

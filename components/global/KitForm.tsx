@@ -41,7 +41,7 @@ const KitForm: React.FC<KitFormInterface> = ({
 
   const {
     reqForToastAndSetMessage,
-    axiosInstance,
+    requestHandler,
     handleReload,
     reqForConfirmationModelFunc,
   } = useParentContext();
@@ -66,7 +66,7 @@ const KitForm: React.FC<KitFormInterface> = ({
     setIsLoading(true);
 
     if (IsCreateMode(mode)) {
-      axiosInstance
+      requestHandler()
         .post(`/kit_db/add_kit_to_bnf/${id}`, formData)
         .then((response: any) => {
           reqForToastAndSetMessage(response.data.message);
@@ -78,7 +78,7 @@ const KitForm: React.FC<KitFormInterface> = ({
         )
         .finally(() => setIsLoading(false));
     } else if (IsEditMode(mode) && kitId) {
-      axiosInstance
+      requestHandler()
         .put(`/kit_db/kit/${kitId}`, formData)
         .then((response: any) => {
           reqForToastAndSetMessage(response.data.message);
@@ -96,7 +96,7 @@ const KitForm: React.FC<KitFormInterface> = ({
 
   useEffect(() => {
     if (IsEditOrShowMode(mode) && kitId && open) {
-      axiosInstance
+      requestHandler()
         .get(`/kit_db/show_kit/${kitId}`)
         .then((response: AxiosResponse<any, any, any>) => {
           console.log(response.data.data);
@@ -108,7 +108,7 @@ const KitForm: React.FC<KitFormInterface> = ({
     }
 
     // Fitching kits list.
-    axiosInstance
+    requestHandler()
       .get("/kit_db/kit_list")
       .then((response: any) => {
         if (response.data.status) setKits(response.data.data);

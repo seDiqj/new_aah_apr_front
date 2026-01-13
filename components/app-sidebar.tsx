@@ -6,7 +6,6 @@ import {
   LogOut,
   User,
   User2,
-  Settings,
   ChevronDown,
   BookOpenCheck,
   Boxes,
@@ -60,6 +59,7 @@ import { useRouter } from "next/navigation";
 import { SignoutButtonMessage } from "@/constants/ConfirmationModelsTexts";
 import { AxiosError, AxiosResponse } from "axios";
 import { usePermissions } from "@/contexts/PermissionContext";
+import { Skeleton } from "./ui/skeleton";
 
 const AppSidebar = () => {
   const {
@@ -72,12 +72,15 @@ const AppSidebar = () => {
 
   const { permissions, loading } = usePermissions();
 
+  const router = useRouter();
+
   const items = [
     {
       title: "Dashboard",
       url: "/",
       icon: LayoutDashboard,
       subOptions: null,
+      permissions: ["Month Report Chart", "Project activities", "filtering"],
     },
     {
       title: "Grants Management",
@@ -88,16 +91,16 @@ const AppSidebar = () => {
           title: "Projects",
           url: "/projects",
           icon: FolderOpen,
+          permissions: [
+            "Project.create",
+            "Project.view",
+            "Project.edit",
+            "Project.delete",
+            "Project.submit",
+            "Project.grantFinalize",
+            "Project.HQFinalize",
+          ],
         },
-      ],
-      permissions: [
-        "Project.create",
-        "Project.view",
-        "Project.edit",
-        "Project.delete",
-        "Project.submit",
-        "Project.grantFinalize",
-        "Project.HQFinalize",
       ],
     },
     {
@@ -108,7 +111,7 @@ const AppSidebar = () => {
           title: "Main Database",
           url: "/main_database",
           icon: Database,
-          permission: [
+          permissions: [
             "Maindatabase.create",
             "Maindatabase.view",
             "Maindatabase.edit",
@@ -119,7 +122,7 @@ const AppSidebar = () => {
           title: "Kit Distribution",
           url: "/kit_database",
           icon: Boxes,
-          permission: [
+          permissions: [
             "Kit.create",
             "Kit.view",
             "Kit.edit",
@@ -131,7 +134,7 @@ const AppSidebar = () => {
           title: "Psychoeducation",
           url: "/psychoeducation_database",
           icon: BookOpenCheck,
-          permission: [
+          permissions: [
             "Psychoeducation.create",
             "Psychoeducation.view",
             "Psychoeducation.edit",
@@ -142,7 +145,7 @@ const AppSidebar = () => {
           title: "Community Dialogue",
           url: "/community_dialogue_database",
           icon: MessageSquareMore,
-          permission: [
+          permissions: [
             "Dialogue.create",
             "Dialogue.view",
             "Dialogue.edit",
@@ -155,7 +158,7 @@ const AppSidebar = () => {
           title: "Training",
           url: "/training_database",
           icon: GraduationCap,
-          permission: [
+          permissions: [
             "Training.create",
             "Training.edit",
             "Training.view",
@@ -167,14 +170,24 @@ const AppSidebar = () => {
           title: "Referral",
           url: "/referral_database",
           icon: Share2,
-          permission: [
+          permissions: [
             "Referral.create",
             "Referral.view",
             "Referral.edit",
             "Referral.delete",
           ],
         },
-        { title: "Enact", url: "/enact_database", icon: Star },
+        {
+          title: "Enact",
+          url: "/enact_database",
+          icon: Star,
+          permissions: [
+            "Enact.create",
+            "Enact.edit",
+            "Enact.delete",
+            "Enact.view",
+          ],
+        },
       ],
     },
     {
@@ -186,7 +199,7 @@ const AppSidebar = () => {
           title: "Users",
           url: "/users",
           icon: Users,
-          permission: [
+          permissions: [
             "List User",
             "Create User",
             "Edit User",
@@ -198,7 +211,7 @@ const AppSidebar = () => {
           title: "Roles",
           url: "/roles",
           icon: UserRound,
-          permission: [
+          permissions: [
             "List Role",
             "Create Role",
             "Edit Role",
@@ -206,7 +219,18 @@ const AppSidebar = () => {
             "Delete Role",
           ],
         },
-        { title: "Permissions", url: "/permissions", icon: ShieldCheck },
+        {
+          title: "Permissions",
+          url: "/permissions",
+          icon: ShieldCheck,
+          permissions: [
+            "List Role",
+            "Create Role",
+            "Edit Role",
+            "View Role",
+            "Delete Role",
+          ],
+        },
       ],
     },
     {
@@ -217,7 +241,7 @@ const AppSidebar = () => {
           title: "Submitted Databases",
           url: "/submitted_databases",
           icon: UploadCloud,
-          permission: [
+          permissions: [
             "Database_submission.create",
             "Database_submission.view",
             "Database_submission.edit",
@@ -229,7 +253,7 @@ const AppSidebar = () => {
           title: "Approved Databases",
           url: "/approved_databases",
           icon: CheckCircle2,
-          permission: ["Database_submission.generate_apr"],
+          permissions: ["Database_submission.generate_apr"],
         },
       ],
     },
@@ -242,13 +266,13 @@ const AppSidebar = () => {
           title: "Review APR",
           url: "/review_aprs",
           icon: FileSearch,
-          permission: ["Apr.review", "Apr.view/list", "Apr.mark_as_reviewed"],
+          permissions: ["Apr.review", "Apr.view/list", "Apr.mark_as_reviewed"],
         },
         {
           title: "Approve APR",
           url: "/approve_aprs",
           icon: FileCheck2,
-          permission: ["Apr.validate"],
+          permissions: ["Apr.validate"],
         },
       ],
     },
@@ -261,19 +285,11 @@ const AppSidebar = () => {
           title: "Kit Management",
           url: "/kit_management",
           icon: FileSearch,
-          permission: ["Apr.review", "Apr.view/list", "Apr.mark_as_reviewed"],
+          permissions: ["Apr.review", "Apr.view/list", "Apr.mark_as_reviewed"],
         },
-        // {
-        //   title: "Approve APR",
-        //   url: "/approve_aprs",
-        //   icon: FileCheck2,
-        //   permission: ["Apr.validate"],
-        // },
       ],
     },
   ];
-
-  const router = useRouter();
 
   const handleSignout = () => {
     axiosInstance
@@ -294,8 +310,7 @@ const AppSidebar = () => {
     setMounted(true);
   }, []);
 
-  if (!mounted) return null;
-
+  if (!mounted && loading) return;
   return (
     <>
       <Sidebar collapsible="icon">
@@ -306,7 +321,7 @@ const AppSidebar = () => {
               <SidebarMenuButton>
                 <Link href={"/"} />
                 <Image
-                  className="rounded-full"
+                  className=""
                   src={"/AAHLogo.png"}
                   alt={"Componey Logo"}
                   width={50}
@@ -327,54 +342,68 @@ const AppSidebar = () => {
             <SidebarGroupLabel>Main</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {items.map((item) => {
-                  if (item.subOptions != null) {
-                    return (
-                      <>
-                        <Collapsible
-                          key={item.title}
-                          defaultOpen
-                          className="group/collapsible"
-                        >
-                          <SidebarGroup>
-                            <SidebarGroupLabel asChild>
-                              <CollapsibleTrigger>
-                                <SidebarMenuButton>
-                                  <item.icon />
-                                  {item.title}
-                                </SidebarMenuButton>
-                                <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
-                              </CollapsibleTrigger>
-                            </SidebarGroupLabel>
-                            <CollapsibleContent className="pl-10">
-                              {item.subOptions.map((item, indx) => (
-                                <SidebarMenuItem key={indx}>
-                                  <SidebarMenuButton asChild>
-                                    <Link href={item.url}>
-                                      <item.icon />
-                                      <span>{item.title}</span>
-                                    </Link>
+                {items
+                  .filter(
+                    (item) =>
+                      item.subOptions?.some((op) =>
+                        op.permissions?.some((per) => permissions.includes(per))
+                      ) ??
+                      item.permissions?.some((per) => permissions.includes(per))
+                  )
+                  .map((item) => {
+                    if (item.subOptions != null) {
+                      return (
+                        <>
+                          <Collapsible
+                            key={item.title}
+                            defaultOpen
+                            className="group/collapsible"
+                          >
+                            <SidebarGroup>
+                              <SidebarGroupLabel asChild>
+                                <CollapsibleTrigger>
+                                  <SidebarMenuButton>
+                                    <item.icon />
+                                    {item.title}
                                   </SidebarMenuButton>
-                                </SidebarMenuItem>
-                              ))}
-                            </CollapsibleContent>
-                          </SidebarGroup>
-                        </Collapsible>
-                      </>
-                    );
-                  }
+                                  <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
+                                </CollapsibleTrigger>
+                              </SidebarGroupLabel>
+                              <CollapsibleContent className="pl-10">
+                                {item.subOptions
+                                  .filter((subOption) =>
+                                    subOption.permissions?.some((per) =>
+                                      permissions.includes(per)
+                                    )
+                                  )
+                                  .map((item, indx) => (
+                                    <SidebarMenuItem key={indx}>
+                                      <SidebarMenuButton asChild>
+                                        <Link href={item.url}>
+                                          <item.icon />
+                                          <span>{item.title}</span>
+                                        </Link>
+                                      </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                  ))}
+                              </CollapsibleContent>
+                            </SidebarGroup>
+                          </Collapsible>
+                        </>
+                      );
+                    }
 
-                  return (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton asChild>
-                        <Link href={item.url!}>
-                          <item.icon />
-                          <span>{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
+                    return (
+                      <SidebarMenuItem key={item.title}>
+                        <SidebarMenuButton asChild>
+                          <Link href={item.url!}>
+                            <item.icon />
+                            <span>{item.title}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

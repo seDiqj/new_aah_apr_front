@@ -31,7 +31,7 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormInterface> = ({
 }) => {
   const {
     reqForToastAndSetMessage,
-    axiosInstance,
+    requestHandler,
     handleReload,
     reqForConfirmationModelFunc,
   } = useParentContext();
@@ -47,7 +47,7 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormInterface> = ({
   useEffect(() => {
     if (IsEditMode(mode) && IsNotANullOrUndefinedValue(editId)) {
       setLoading(true);
-      axiosInstance
+      requestHandler()
         .get(`/training_db/beneficiary/${editId}`)
         .then((response: any) => {
           setFormData(response.data.data);
@@ -99,8 +99,8 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormInterface> = ({
 
       const response =
         method === "put"
-          ? await axiosInstance.put(url, formData)
-          : await axiosInstance.post(url, formData);
+          ? await requestHandler().put(url, formData)
+          : await requestHandler().post(url, formData);
 
       reqForToastAndSetMessage(response.data.message);
       handleReload();

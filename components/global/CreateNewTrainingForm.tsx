@@ -34,11 +34,14 @@ import {
   IsCreateMode,
   IsEditMode,
   IsEditOrShowMode,
+  IsNotANullOrUndefinedValue,
   IsNotShowMode,
   IsShowMode,
 } from "@/constants/Constants";
 import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
 import { TrainingFormSchema } from "@/schemas/FormsSchema";
+import { AxiosError, AxiosResponse } from "axios";
+import CreateNewChapterForm from "./CreateNewChapterForm";
 
 const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
   open,
@@ -49,10 +52,15 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
 }) => {
   const {
     reqForToastAndSetMessage,
-    axiosInstance,
+    requestHandler,
     handleReload,
     reqForConfirmationModelFunc,
   } = useParentContext();
+
+  const [reqForChpaterEditForm, setReqForChapterEditForm] =
+    useState<boolean>(false);
+
+  const [chapterId, setChapterId] = useState<string | null>(null);
 
   const isReadOnly = IsShowMode(mode);
 
@@ -102,7 +110,17 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
     setChapter(ChapterDefault());
   };
 
-  const handleDeleteChapter = (index: number) => {
+  const handleDeleteChapter = (id: string | null, index: number) => {
+    if (IsNotANullOrUndefinedValue(id)) {
+      requestHandler()
+        .delete(`training_db/training/chapter/${id}`)
+        .then((response: AxiosResponse<any, any>) =>
+          reqForToastAndSetMessage(response.data.message)
+        )
+        .catch((error: AxiosError<any, any>) =>
+          reqForToastAndSetMessage(error.response?.data.message)
+        );
+    }
     setChapters((prev) => prev.filter((_, i) => i !== index));
   };
 
@@ -121,7 +139,7 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
       });
 
       setFormErrors(errors);
-      console.log(errors)
+      console.log(errors);
       reqForToastAndSetMessage(
         "Please fix validation errors before submitting."
       );
@@ -137,9 +155,12 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
     try {
       let res;
       if (IsEditMode(mode) && id) {
-        res = await axiosInstance.put(`/training_db/training/${id}`, payload);
+        res = await requestHandler().put(
+          `/training_db/training/${id}`,
+          payload
+        );
       } else if (IsCreateMode(mode)) {
-        res = await axiosInstance.post("/training_db/training", payload);
+        res = await requestHandler().post("/training_db/training", payload);
       } else return;
 
       reqForToastAndSetMessage(res.data.message);
@@ -163,7 +184,7 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
     if (IsEditOrShowMode(mode) && id) {
       setLoading(true);
 
-      axiosInstance
+      requestHandler()
         .get(`/training_db/training_for_edit/${id}`)
         .then((response: any) => {
           const data = response.data.data;
@@ -193,7 +214,7 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
   }, [mode, id]);
 
   useEffect(() => {
-    axiosInstance
+    requestHandler()
       .get("/projects/p/training_database")
       .then((res: any) => {
         setProjects(Object.values(res.data.data));
@@ -204,21 +225,26 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
   }, []);
 
   useEffect(() => {
-    axiosInstance.get("/global/districts").then((res: any) => {
-      setDistricts(Object.values(res.data.data));
-    });
-    axiosInstance
-      .get("/global/indicators/training_database")
-      .then((res: any) => setIndicators(Object.values(res.data.data)));
+    requestHandler()
+      .get("/global/districts")
+      .then((res: any) => {
+        setDistricts(Object.values(res.data.data));
+      });
   }, []);
 
   useEffect(() => {
     if (!formData.project_id) return;
-    axiosInstance
+    requestHandler()
       .get(`/global/project/provinces/${formData.project_id}`)
       .then((res: any) => {
         setProvinces(Object.values(res.data.data));
       });
+    requestHandler()
+      .get(`projects/indicators/training_database/${formData.project_id}`)
+      .then((res: any) => setIndicators(res.data.data))
+      .catch((err: any) =>
+        reqForToastAndSetMessage(err.response?.data?.message)
+      );
   }, [formData.project_id]);
 
   if (loading) {
@@ -572,11 +598,22 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
                         </p>
                       </div>
                       {!isReadOnly && (
-                        <div className="flex justify-end">
+                        <div className="flex justify-end gap-2">
                           <Button
                             type="button"
-                            variant="destructive"
-                            onClick={() => handleDeleteChapter(index)}
+                            className="bg-orange-500"
+                            disabled={!ch.id}
+                            onClick={() => {
+                              setReqForChapterEditForm(true);
+                              setChapterId(ch.id);
+                            }}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            type="button"
+                            className="bg-red-500"
+                            onClick={() => handleDeleteChapter(ch.id, index)}
                           >
                             Delete
                           </Button>
@@ -627,6 +664,17 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
           </div>
         </form>
       </DialogContent>
+
+      {reqForChpaterEditForm && chapterId && (
+        <CreateNewChapterForm
+          open={reqForChpaterEditForm}
+          onOpenChange={setReqForChapterEditForm}
+          mode="edit"
+          title={"Edit chapter"}
+          chaptersDataStateSetter={setChapters}
+          chapterId={chapterId}
+        ></CreateNewChapterForm>
+      )}
     </Dialog>
   );
 };

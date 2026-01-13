@@ -23,7 +23,7 @@ const BeneProfileTabs = () => {
     id: string;
   }>();
 
-  const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
+  const { reqForToastAndSetMessage, requestHandler } = useParentContext();
 
   const tabs = ["Beneficiary Info", "Referral Form"];
 
@@ -64,7 +64,7 @@ const BeneProfileTabs = () => {
     if (hasRef.current) return;
     hasRef.current = true;
 
-    axiosInstance
+    requestHandler()
       .get(`/referral_db/beneficiary/${id}`)
       .then((response: any) => {
         const { referral, ...beneficiaryData } = response.data.data;
@@ -86,10 +86,11 @@ const BeneProfileTabs = () => {
         <SubHeader pageTitle={"Benficiaries"}></SubHeader>
 
         <ChromeTabs
+          currentTab={activeTab}
+          onCurrentTabChange={setActiveTab}
           initialTabs={tabs.map((tab) => ({
             value: tab,
             title: tab,
-            stateSetter: setActiveTab,
           }))}
         ></ChromeTabs>
 

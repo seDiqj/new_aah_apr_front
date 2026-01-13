@@ -44,7 +44,7 @@ const AprFinalizationSubPage: React.FC<AprFinalizationSubPageInterface> = ({
 }) => {
   const {
     reqForToastAndSetMessage,
-    axiosInstance,
+    requestHandler,
     reqForConfirmationModelFunc,
   } = useParentContext();
 
@@ -111,12 +111,13 @@ const AprFinalizationSubPage: React.FC<AprFinalizationSubPageInterface> = ({
 
     setIsLoading(true);
 
-    axiosInstance
+    requestHandler()
       .post(`projects/status/change_apr_status/${projectId}`, {
         newStatus: status,
         comment,
       })
       .then((response: any) => {
+        setComment("");
         reqForToastAndSetMessage(response.data.message);
         setProjectAprStatus(response.data.data);
         [
@@ -133,7 +134,7 @@ const AprFinalizationSubPage: React.FC<AprFinalizationSubPageInterface> = ({
   };
 
   useEffect(() => {
-    axiosInstance
+    requestHandler()
       .get(`/projects/get_project_finalizers_details/${projectId}`)
       .then((response: any) => setActionLogs(response.data.data))
       .catch((error: any) =>
@@ -233,7 +234,16 @@ const AprFinalizationSubPage: React.FC<AprFinalizationSubPageInterface> = ({
                       </div>
 
                       <AlertDialogFooter className="justify-between">
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel
+                          onClick={() => {
+                            setReqForCreationModel(false);
+                            setReqForGrantFinalizationModel(false);
+                            setReqForHqFinalizationModel(false);
+                            setReqForSubmitionModel(false);
+                          }}
+                        >
+                          Cancel
+                        </AlertDialogCancel>
 
                         {canReject ? (
                           <div className="flex gap-2">

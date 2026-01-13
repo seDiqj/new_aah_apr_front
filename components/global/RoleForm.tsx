@@ -58,7 +58,7 @@ const RoleForm: React.FC<RoleInterface> = ({
 
   const {
     reqForToastAndSetMessage,
-    axiosInstance,
+    requestHandler,
     reqForConfirmationModelFunc,
     handleReload,
   } = useParentContext();
@@ -75,7 +75,7 @@ const RoleForm: React.FC<RoleInterface> = ({
 
   useEffect(() => {
     setLoading(true);
-    axiosInstance
+    requestHandler()
       .get("user_mng/permissions")
       .then((response: any) => {
         setPermissions(response.data.data);
@@ -89,11 +89,11 @@ const RoleForm: React.FC<RoleInterface> = ({
   useEffect(() => {
     setLoading(true);
 
-    const permissionsRequest = axiosInstance.get("user_mng/permissions");
+    const permissionsRequest = requestHandler().get("user_mng/permissions");
 
     const roleRequest =
       mode !== "create" && idFeildForEditStateSetter
-        ? axiosInstance.get(`user_mng/role/${idFeildForEditStateSetter}`)
+        ? requestHandler().get(`user_mng/role/${idFeildForEditStateSetter}`)
         : Promise.resolve({ data: { data: null } });
 
     Promise.all([permissionsRequest, roleRequest]).then(
@@ -141,7 +141,7 @@ const RoleForm: React.FC<RoleInterface> = ({
       : `user_mng/role/${idFeildForEditStateSetter}`;
     const method = IsCreateMode(mode) ? "post" : "put";
 
-    axiosInstance
+    requestHandler()
       .request({
         url,
         method,
@@ -338,10 +338,10 @@ const RoleForm: React.FC<RoleInterface> = ({
               id={SUBMIT_BUTTON_PROVIDER_ID}
               disabled={isLoading}
               type="button"
-              onClick={() =>
+              onClick={() => 
                 reqForConfirmationModelFunc(
                   IsCreateMode(mode) ? RoleCreationMessage : RoleEditionMessage,
-                  () => onSubmit()
+                  onSubmit
                 )
               }
             >

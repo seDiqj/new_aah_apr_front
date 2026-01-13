@@ -21,7 +21,7 @@ const SubmittedDatabasesPage = () => {
   const {
     reqForToastAndSetMessage,
     reqForConfirmationModelFunc,
-    axiosInstance,
+    requestHandler,
     handleReload,
     handleAprReload,
   } = useParentContext();
@@ -40,7 +40,7 @@ const SubmittedDatabasesPage = () => {
   const approveApr = () => {
     if (!idFeildForEditStateSetter)
       reqForToastAndSetMessage("Please select a valid apr.");
-    axiosInstance
+    requestHandler()
       .post(`/apr_management/approve_apr/${idFeildForEditStateSetter}`, {
         newStatus: "secondApproved",
       })
@@ -57,7 +57,7 @@ const SubmittedDatabasesPage = () => {
   const rejectApr = () => {
     if (!idFeildForEditStateSetter)
       reqForToastAndSetMessage("Please select a valid apr.");
-    axiosInstance
+    requestHandler()
       .post(`/apr_management/approve_apr/${idFeildForEditStateSetter}`, {
         newStatus: "fourthRejected",
       })
@@ -85,10 +85,9 @@ const SubmittedDatabasesPage = () => {
         columns={submittedAndFirstApprovedDatabasesTableColumn}
         indexUrl="/apr_management/reviewed_aprs"
         searchableColumn="name"
-        idFeildForShowStateSetter={setIdFeildForEditStateSetter}
         idFeildForEditStateSetter={setIdFeildForEditStateSetter}
         showModelOpenerStateSetter={setOpenSubmittedDatabaseSummaryModel}
-        injectedElement={
+        injectedElementForOneSelectedItem={
           <div className="flex flex-row items-center gap-1">
             <Button
               title="Approve Apr"

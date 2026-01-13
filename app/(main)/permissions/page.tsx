@@ -5,9 +5,7 @@ import DataTableDemo from "@/components/global/MulitSelectTable";
 import SubHeader from "@/components/global/SubHeader";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { permissionColumns } from "@/definitions/DataTableColumnsDefinitions";
-import {
-  PermissionFiltersList,
-} from "@/constants/FiltersList";
+import { PermissionFiltersList } from "@/constants/FiltersList";
 import { withPermission } from "@/lib/withPermission";
 
 const PermissionsPage = () => {

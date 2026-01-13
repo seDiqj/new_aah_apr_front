@@ -6,25 +6,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "../ui/button";
 import { useEffect, useRef, useState } from "react";
 import { useParentContext } from "@/contexts/ParentContext";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from "../ui/dropdown-menu";
-
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Checkbox } from "../ui/checkbox";
 import { withPermission } from "@/lib/withPermission";
 import {
@@ -34,13 +17,26 @@ import {
 import { CommunityDialogueSelectorSubmitMessage } from "@/constants/ConfirmationModelsTexts";
 import { CommunityDialogueSelectorInterface } from "@/interfaces/Interfaces";
 import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const CommunityDialogueSelector: React.FC<
   CommunityDialogueSelectorInterface
 > = ({ open, onOpenChange, ids }) => {
   const {
     reqForToastAndSetMessage,
-    axiosInstance,
+    requestHandler,
     reqForConfirmationModelFunc,
   } = useParentContext();
 
@@ -49,13 +45,7 @@ const CommunityDialogueSelector: React.FC<
 
   const [selectedCommunityDialoguesGroup, setSelectedCommunityDialoguesGroup] =
     useState<SelectedCommunityDialoguesGroups>([]);
-
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [hoveredRowTopRectPosision, setHoveredRowTopRectPosision] =
-    useState<number>(0);
-  const [hoveredCd, setHoveredCd] = useState<any>();
   const dialogContentRef = useRef<HTMLDivElement>(null);
-  const [areWeInSubDropDown, setAreWeInSubDropDown] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleSubmit = () => {
@@ -66,7 +56,7 @@ const CommunityDialogueSelector: React.FC<
 
     setIsLoading(true);
 
-    axiosInstance
+    requestHandler()
       .post("/community_dialogue_db/beneficiaries/add_community_dialogue", {
         communityDialogue: selectedCommunityDialoguesGroup,
         ids: ids,
@@ -81,9 +71,38 @@ const CommunityDialogueSelector: React.FC<
       .finally(() => setIsLoading(false));
   };
 
+  const onCheckedChange = (communityDialogue: any, group: any) => {
+    setSelectedCommunityDialoguesGroup((prev) => {
+      const exists = prev.some(
+        (cd) =>
+          cd.communityDialogueId === communityDialogue.id &&
+          cd.group.name === group.name
+      );
+
+      return exists
+        ? prev.filter(
+            (cd) =>
+              !(
+                cd.communityDialogueId === communityDialogue.id &&
+                cd.group.name === group.name
+              )
+          )
+        : [
+            ...prev,
+            {
+              communityDialogueId: communityDialogue.id,
+              group: {
+                name: group.name,
+                id: group.id,
+              },
+            },
+          ];
+    });
+  };
+
   useEffect(() => {
     if (open) {
-      axiosInstance
+      requestHandler()
         .get("/community_dialogue_db/community_dialogues/for_selection")
         .then((response: any) => {
           setCommunityDialogues(response.data.data);
@@ -124,73 +143,43 @@ const CommunityDialogueSelector: React.FC<
             </Button>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent
-            className="w-[850px] rounded-xl p-0 shadow-lg"
-            align="start"
-          >
-            <div className="p-4">
-              <DropdownMenuLabel className="text-sm font-semibold">
-                Community Dialogues
-              </DropdownMenuLabel>
-            </div>
+          <DropdownMenuContent className="w-56" align="center">
+            <DropdownMenuLabel>Community Dialogues</DropdownMenuLabel>
             <DropdownMenuSeparator />
-
-            <div className="max-h-[420px] overflow-auto">
-              <Table>
-                <TableHeader className="sticky top-0 z-10 w-full w-full">
-                  <TableRow>
-                    <TableHead>Program Name</TableHead>
-                    <TableHead>Focal Point</TableHead>
-                    <TableHead>Village</TableHead>
-                    <TableHead>Database</TableHead>
-                    <TableHead>Project Code</TableHead>
-                    <TableHead>District</TableHead>
-                    <TableHead>Province</TableHead>
-                  </TableRow>
-                </TableHeader>
-
-                <TableBody>
-                  {communityDialogues.map((communityDialogue) => (
-                    <TableRow
-                      key={communityDialogue.id}
-                      className="cursor-pointer transition-colors hover:bg-muted"
-                      onMouseEnter={(e) => {
-                        const rect = e.currentTarget.getBoundingClientRect();
-                        const containerRect =
-                          dialogContentRef.current!.getBoundingClientRect();
-
-                        setHoveredRowTopRectPosision(
-                          rect.top - containerRect.top - 80
-                        );
-                        setHoveredCd(communityDialogue);
-                        setHoveredId(communityDialogue.id);
-                      }}
-                      onMouseLeave={() => {
-                        setTimeout(() => {
-                          if (!areWeInSubDropDown) setHoveredId(null);
-                        }, 2000);
-                      }}
-                    >
-                      {Object.entries(communityDialogue.program).map(
-                        (item, i) =>
-                          item[0] !== "id" && (
-                            <TableCell
-                              key={i}
-                              className="text-sm text-muted-foreground"
-                            >
-                              {item[1].toString().toUpperCase()}
-                            </TableCell>
-                          )
-                      )}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-
-            {hoveredCd &&
-              hoveredId &&
-              subDropDownGenerator(hoveredCd, hoveredRowTopRectPosision)}
+            {communityDialogues.map((communityDialogue: any) => (
+              <DropdownMenuSub key={communityDialogue.id}>
+                <DropdownMenuSubTrigger>
+                  {communityDialogue.name}
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  <DropdownMenuGroup>
+                    {communityDialogue.groups.map((group: any) => (
+                      <DropdownMenuItem
+                        key={group.id}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          onCheckedChange(communityDialogue, group);
+                        }}
+                      >
+                        <Checkbox
+                          checked={selectedCommunityDialoguesGroup.some(
+                            (cd) =>
+                              cd.communityDialogueId === communityDialogue.id &&
+                              cd.group.name === group.name
+                          )}
+                          onCheckedChange={() =>
+                            onCheckedChange(communityDialogue, group)
+                          }
+                          className="mr-2"
+                        />
+                        <span>{group.name.toUpperCase()}</span>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuGroup>
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+            ))}
+            <DropdownMenuSeparator />
           </DropdownMenuContent>
         </DropdownMenu>
 
@@ -211,64 +200,6 @@ const CommunityDialogueSelector: React.FC<
       </DialogContent>
     </Dialog>
   );
-
-  function subDropDownGenerator(communityDialogue: any, top: number) {
-    return (
-      <div
-        className="absolute left-full ml-3 bg-background border rounded-xl shadow-xl z-50 min-w-[200px]"
-        style={{ top }}
-        onMouseEnter={() => setAreWeInSubDropDown(true)}
-        onMouseLeave={() => {
-          setAreWeInSubDropDown(false);
-          setHoveredId(null);
-        }}
-      >
-        {communityDialogue.groups.map((group: any) => (
-          <label
-            key={group.id}
-            className="flex items-center gap-3 px-4 py-2 text-sm cursor-pointer hover:bg-muted rounded-lg"
-          >
-            <Checkbox
-              checked={selectedCommunityDialoguesGroup.some(
-                (cd) =>
-                  cd.communityDialogueId === communityDialogue.id &&
-                  cd.group.name === group.name
-              )}
-              onCheckedChange={() => {
-                setSelectedCommunityDialoguesGroup((prev) => {
-                  const exists = prev.some(
-                    (cd) =>
-                      cd.communityDialogueId === communityDialogue.id &&
-                      cd.group.name === group.name
-                  );
-
-                  return exists
-                    ? prev.filter(
-                        (cd) =>
-                          !(
-                            cd.communityDialogueId === communityDialogue.id &&
-                            cd.group.name === group.name
-                          )
-                      )
-                    : [
-                        ...prev,
-                        {
-                          communityDialogueId: communityDialogue.id,
-                          group: {
-                            name: group.name,
-                            id: group.id,
-                          },
-                        },
-                      ];
-                });
-              }}
-            />
-            <span>{group.name.toUpperCase()}</span>
-          </label>
-        ))}
-      </div>
-    );
-  }
 };
 
 export default withPermission(CommunityDialogueSelector, "Dialogue.assign");

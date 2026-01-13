@@ -9,7 +9,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { SingleSelect } from "../single-select";
@@ -31,6 +30,8 @@ import {
   IsShowMode,
 } from "@/constants/Constants";
 import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { AxiosError, AxiosResponse } from "axios";
+import { toDateOnly } from "./MainDatabaseBeneficiaryCreationForm";
 
 const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
   open,
@@ -40,7 +41,7 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
 }) => {
   const {
     reqForToastAndSetMessage,
-    axiosInstance,
+    requestHandler,
     handleReload,
     reqForConfirmationModelFunc,
   } = useParentContext();
@@ -93,7 +94,13 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  useEffect(() => console.log(formErrors), [formErrors]);
+  const [registrationDateValidRange, setRegistrationDateValidRange] = useState<{
+    start: string;
+    end: string;
+  }>({
+    start: "2025-1-1",
+    end: "2025-2-1",
+  });
 
   const handleSubmit = () => {
     const result = PsychoeducationFormSchema.safeParse(formData);
@@ -118,8 +125,6 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
 
       setFormErrors(errors);
 
-      console.log(errors);
-
       reqForToastAndSetMessage(
         "Please fix validation errors before submitting."
       );
@@ -134,7 +139,7 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
     setIsLoading(true);
 
     if (IsCreateMode(mode)) {
-      axiosInstance
+      requestHandler()
         .post("/psychoeducation_db/psychoeducation", formData)
         .then((response: any) => {
           reqForToastAndSetMessage(response.data.message);
@@ -146,7 +151,7 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
         )
         .finally(() => setIsLoading(false));
     } else if (IsEditMode(mode)) {
-      axiosInstance
+      requestHandler()
         .put(
           `/psychoeducation_db/psychoeducation/${psychoeducationId}`,
           formData
@@ -164,7 +169,7 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
   };
 
   useEffect(() => {
-    axiosInstance
+    requestHandler()
       .get("/projects/p/psychoeducation_database")
       .then((res: any) => {
         setProjects(Object.values(res.data.data));
@@ -179,32 +184,43 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
 
     const projectId = formData.programInformation.project_id;
 
-    axiosInstance
+    requestHandler()
       .get(`projects/indicators/psychoeducation_database/${projectId}`)
       .then((response: any) => setIndicators(response.data.data))
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
       );
 
-    axiosInstance
+    requestHandler()
       .get("/global/districts")
       .then((res: any) => setDistricts(Object.values(res.data.data)))
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
       );
 
-    axiosInstance
+    requestHandler()
       .get(`projects/provinces/${projectId}`)
       .then((res: any) => setProvinces(Object.values(res.data.data)))
       .catch((error: any) => {
         reqForToastAndSetMessage(error.response.data.message);
-        console.log(error.response.data.message);
       });
+
+    requestHandler()
+      .get(`/date/project_date_range/${projectId}`)
+      .then((response: AxiosResponse<any, any>) => {
+        setRegistrationDateValidRange({
+          start: toDateOnly(response.data.data.start),
+          end: toDateOnly(response.data.data.end),
+        });
+      })
+      .catch((error: AxiosError<any, any>) =>
+        reqForToastAndSetMessage(error.response?.data.message)
+      );
   }, [formData.programInformation.project_id]);
 
   useEffect(() => {
     if ((IsEditMode(mode) || IsShowMode(mode)) && psychoeducationId && open) {
-      axiosInstance
+      requestHandler()
         .get(`/psychoeducation_db/psychoeducation/${psychoeducationId}`)
         .then((response: any) => {
           const { programData, ...psychoeducationData } = response.data.data;
@@ -224,10 +240,6 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
-        <Button className="px-4 py-2 rounded-md">Create</Button>
-      </DialogTrigger>
-
       <DialogContent
         className="sm:max-w-4xl border border-gray-300 dark:border-gray-600 rounded-lg ml-16 overflow-y-auto"
         style={{
@@ -481,7 +493,7 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
               onChange={(e) => handleFormChange(e, "psychoeducation")}
               disabled={readOnly}
               className={`border p-2 rounded ${
-                formErrors.programInformation.awarenessTopic
+                formErrors.psychoeducationInformation.awarenessTopic
                   ? "!border-red-500"
                   : ""
               }`}
@@ -502,7 +514,7 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
               onChange={(e) => handleFormChange(e, "psychoeducation")}
               disabled={readOnly}
               className={`border p-2 rounded ${
-                formErrors.programInformation.awarenessDate
+                formErrors.psychoeducationInformation.awarenessDate
                   ? "!border-red-500"
                   : ""
               }`}
@@ -511,6 +523,8 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
                   ? formErrors.psychoeducationInformation.awarenessDate
                   : undefined
               }
+              min={registrationDateValidRange.start}
+              max={registrationDateValidRange.end}
             ></Input>
           </div>
         </div>
@@ -673,24 +687,12 @@ function DemographicLine({
           ? "ofBoyReturnee"
           : "ofGirlReturnee",
     },
-    {
-      label: "Disability Type",
-      placeholder: "Enter value",
-      name:
-        prefix == "ofMen"
-          ? "ofMenDisabilityType"
-          : prefix == "ofWomen"
-          ? "ofWomenDisabilityType"
-          : prefix == "ofBoy"
-          ? "ofBoyDisabilityType"
-          : "ofGirlDisabilityType",
-    },
   ];
 
   return (
     <div className="mt-4">
       <span className="font-semibold">{title}.</span>
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mt-2">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-2">
         {fields.map((field) => (
           <div key={field.label}>
             <Label>{field.label}</Label>

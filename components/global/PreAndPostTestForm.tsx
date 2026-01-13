@@ -25,7 +25,7 @@ const PreAndPostTestForm: React.FC<PreAndPostTestsInterface> = ({
 
   const {
     reqForToastAndSetMessage,
-    axiosInstance,
+    requestHandler,
     reqForConfirmationModelFunc,
   } = useParentContext();
 
@@ -47,12 +47,15 @@ const PreAndPostTestForm: React.FC<PreAndPostTestsInterface> = ({
   const handleSubmit = (e: any) => {
     e.preventDefault();
     setLoading(true);
-    axiosInstance
+    requestHandler()
       .put(
         `training_db/beneficiary/chapter/setPreAndPostTest/${id}/${chapterId}`,
         formData
       )
-      .then((response: any) => reqForToastAndSetMessage(response.data.message))
+      .then((response: any) => {
+        onOpenChange(false);
+        reqForToastAndSetMessage(response.data.message);
+      })
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
       )
@@ -60,10 +63,9 @@ const PreAndPostTestForm: React.FC<PreAndPostTestsInterface> = ({
   };
 
   useEffect(() => {
-    axiosInstance
+    requestHandler()
       .get(`/training_db/beneficiary/chapter/preAndPostTest/${id}/${chapterId}`)
       .then((response: any) => {
-        console.log(response.data.data);
         setFormData(response.data.data);
       })
       .catch((error: any) =>
@@ -111,11 +113,10 @@ const PreAndPostTestForm: React.FC<PreAndPostTestsInterface> = ({
             <Button
               id={SUBMIT_BUTTON_PROVIDER_ID}
               disabled={loading}
-              type="submit"
-              onClick={() =>
-                reqForConfirmationModelFunc(
-                  PreAndPostTestCreationMessage,
-                  handleSubmit
+              type="button"
+              onClick={(e) =>
+                reqForConfirmationModelFunc(PreAndPostTestCreationMessage, () =>
+                  handleSubmit(e)
                 )
               }
             >

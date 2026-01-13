@@ -29,14 +29,14 @@ import { MainDatabaseBeneficiaryUpdate } from "@/interfaces/Interfaces";
 import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
 import { AxiosError, AxiosResponse } from "axios";
 import { MainDatabaseBeneficiaryFormSchema } from "@/schemas/FormsSchema";
-import { error } from "console";
+import { toDateOnly } from "./MainDatabaseBeneficiaryCreationForm";
 
 const MainDatabaseBeneficiaryUpdateForm: React.FC<
   MainDatabaseBeneficiaryUpdate
 > = ({ open, onOpenChange, beneficiaryId }) => {
   const {
     reqForToastAndSetMessage,
-    axiosInstance,
+    requestHandler,
     handleReload,
     reqForConfirmationModelFunc,
   } = useParentContext();
@@ -52,7 +52,7 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
   // Fetch beneficiary data
   useEffect(() => {
     if (open && beneficiaryId) {
-      axiosInstance
+      requestHandler()
         .get(`/kit_db/beneficiary/${beneficiaryId}`)
         .then((response: any) => {
           const data = response.data.data;
@@ -87,7 +87,7 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
 
   useEffect(() => {
     if (open) {
-      axiosInstance
+      requestHandler()
         .get(`global/programs_for_selection/main_database`)
         .then((res: AxiosResponse<any, any>) => {
           setPrograms(res.data.data.data);
@@ -131,7 +131,7 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
     setIsLoading(true);
 
     setIsLoading(true);
-    axiosInstance
+    requestHandler()
       .put(`/main_db/beneficiary/${beneficiaryId}`, {
         bnfData: formData,
         program: program,
@@ -148,6 +148,30 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
       })
       .finally(() => setIsLoading(false));
   };
+
+  const [registrationDateValidRange, setRegistrationDateValidRange] = useState<{
+    start: string;
+    end: string;
+  }>({
+    start: "2025-1-1",
+    end: "2025-2-1",
+  });
+
+  useEffect(() => {
+    if (!formData.program) return;
+
+    requestHandler()
+      .get(`/date/project_date_range_acc_to_program/${formData.program}`)
+      .then((response: AxiosResponse<any, any>) => {
+        setRegistrationDateValidRange({
+          start: toDateOnly(response.data.data.start),
+          end: toDateOnly(response.data.data.end),
+        });
+      })
+      .catch((error: AxiosError<any, any>) =>
+        reqForToastAndSetMessage(error.response?.data.message)
+      );
+  }, [formData.program]);
 
   const renderSkeletonInput = () => (
     <Skeleton className="h-10 w-full rounded-md" />
@@ -217,6 +241,8 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
                         ? formErrors["dateOfRegistration"]
                         : undefined
                     }
+                    min={registrationDateValidRange.start}
+                    max={registrationDateValidRange.end}
                   />
                 </div>
 

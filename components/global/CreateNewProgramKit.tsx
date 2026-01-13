@@ -35,7 +35,7 @@ const ProgramKitForm: React.FC<KitDatabaseProgramFormInterface> = ({
 }) => {
   const {
     reqForToastAndSetMessage,
-    axiosInstance,
+    requestHandler,
     handleReload,
     reqForConfirmationModelFunc,
   } = useParentContext();
@@ -49,7 +49,7 @@ const ProgramKitForm: React.FC<KitDatabaseProgramFormInterface> = ({
   // Fetch program data from backend in edit and show mode.
   useEffect(() => {
     if ((IsEditMode(mode) || IsShowMode(mode)) && programId && open) {
-      axiosInstance
+      requestHandler()
         .get(`/global/program/${programId}`)
         .then((response: any) => {
           setFormData(response.data.data);
@@ -96,7 +96,7 @@ const ProgramKitForm: React.FC<KitDatabaseProgramFormInterface> = ({
     setIsLoading(true);
 
     if (IsCreateMode(mode)) {
-      axiosInstance
+      requestHandler()
         .post("/global/program/kit_database", formData)
         .then((response: any) => {
           reqForToastAndSetMessage(response.data.message);
@@ -124,7 +124,7 @@ const ProgramKitForm: React.FC<KitDatabaseProgramFormInterface> = ({
         )
         .finally(() => setIsLoading(false));
     } else if (IsEditMode(mode) && programId) {
-      axiosInstance
+      requestHandler()
         .put(`/global/program/${programId}`, formData)
         .then((response: any) => {
           reqForToastAndSetMessage(response.data.message);
@@ -145,10 +145,10 @@ const ProgramKitForm: React.FC<KitDatabaseProgramFormInterface> = ({
   >([]);
 
   useEffect(() => {
-    axiosInstance
+    requestHandler()
       .get("/global/districts")
       .then((res: any) => setDistricts(Object.values(res.data.data)));
-    axiosInstance
+    requestHandler()
       .get("/projects/p/kit_database")
       .then((res: any) => {
         setProjects(Object.values(res.data.data));
@@ -160,7 +160,7 @@ const ProgramKitForm: React.FC<KitDatabaseProgramFormInterface> = ({
 
   useEffect(() => {
     if (!formData.project_id) return;
-    axiosInstance
+    requestHandler()
       .get(`/global/project/provinces/${formData.project_id}`)
       .then((res: any) => setProvinces(Object.values(res.data.data)))
       .catch((error: AxiosError<any, any>) =>

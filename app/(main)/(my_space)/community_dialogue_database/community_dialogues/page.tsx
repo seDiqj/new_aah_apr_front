@@ -75,7 +75,7 @@ const CommunityDialogDatabasePage = () => {
           columns={communityDialoguesTableColumns}
           indexUrl="/community_dialogue_db/community_dialogues"
           deleteUrl="community_dialogue_db/delete_cds"
-          searchableColumn="Project Code"
+          searchableColumn="Name"
           idFeildForEditStateSetter={setIdFeildForEditStateSetter}
           editModelOpenerStateSetter={setReqForCommunityDialogueEditionForm}
           idFeildForShowStateSetter={setIdFeildForShowStateSetter}

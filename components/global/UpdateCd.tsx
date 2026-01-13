@@ -31,7 +31,7 @@ const CommunityDialogueUpdateCD: React.FC<CommunityDialogueUpdateInterface> = ({
   beneficiaryId,
 }) => {
   const {
-    axiosInstance,
+    requestHandler,
     reqForToastAndSetMessage,
     reqForConfirmationModelFunc,
   } = useParentContext();
@@ -45,7 +45,7 @@ const CommunityDialogueUpdateCD: React.FC<CommunityDialogueUpdateInterface> = ({
   useEffect(() => {
     if (open && beneficiaryId) {
       setLoading(true);
-      axiosInstance
+      requestHandler()
         .get(`/community_dialogue_db/beneficiary/${beneficiaryId}`)
         .then((res: any) => {
           const data = res.data;
@@ -85,7 +85,7 @@ const CommunityDialogueUpdateCD: React.FC<CommunityDialogueUpdateInterface> = ({
 
   const handleSubmit = () => {
     setIsLoading(true);
-    axiosInstance
+    requestHandler()
       .put(`/community_dialogue_db/beneficiary/${beneficiaryId}`, formData)
       .then((response: any) => {
         reqForToastAndSetMessage(response.data.message);

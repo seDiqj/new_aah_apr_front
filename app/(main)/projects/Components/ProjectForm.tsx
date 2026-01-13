@@ -20,11 +20,16 @@ import { useProjectContext } from "../create_new_project/page";
 import { Project } from "../types/Types";
 import { useProjectEditContext } from "../edit_project/[id]/page";
 import { useProjectShowContext } from "../project_show/[id]/page";
-import { IsCreateMode, IsShowMode } from "@/constants/Constants";
+import { IsCreateMode, IsEditMode, IsShowMode } from "@/constants/Constants";
 import { ProjectFormInterface } from "@/interfaces/Interfaces";
+import {
+  ProjectStatusOptions,
+  ProvinceOptions,
+  SectorOptions,
+} from "@/constants/SingleAndMultiSelectOptionsList";
 
 const ProjectForm: React.FC<ProjectFormInterface> = ({ mode }) => {
-  const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
+  const { reqForToastAndSetMessage, requestHandler } = useParentContext();
   const {
     projectId,
     setProjectId,
@@ -32,6 +37,7 @@ const ProjectForm: React.FC<ProjectFormInterface> = ({ mode }) => {
     setProjectProvinces,
     formData,
     setFormData,
+    setOutcomes,
   }: {
     projectId: number | null;
     setCurrentTab: (value: string) => void;
@@ -39,6 +45,7 @@ const ProjectForm: React.FC<ProjectFormInterface> = ({ mode }) => {
     setProjectProvinces: React.Dispatch<React.SetStateAction<string[]>>;
     formData: Project;
     setFormData: React.Dispatch<React.SetStateAction<Project>>;
+    setOutcomes: React.Dispatch<React.SetStateAction<Outcome[]>>;
   } = IsCreateMode(mode)
     ? useProjectContext()
     : IsShowMode(mode)
@@ -79,10 +86,11 @@ const ProjectForm: React.FC<ProjectFormInterface> = ({ mode }) => {
     setIsLoading(true);
 
     if (IsCreateMode(mode)) {
-      axiosInstance
+      requestHandler()
         .post("/projects", formData)
         .then((response: any) => {
-          setProjectId(response.data.data.id);
+          setProjectId(response.data.data.project.id);
+          setOutcomes((prev) => [...prev, response.data.data.outcome]);
           reqForToastAndSetMessage(response.data.message);
         })
         .catch((error: any) => {
@@ -92,13 +100,17 @@ const ProjectForm: React.FC<ProjectFormInterface> = ({ mode }) => {
       return;
     }
 
-    axiosInstance
-      .post(`projects/${projectId}`, formData)
-      .then((response: any) => reqForToastAndSetMessage(response.data.message))
-      .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
-      )
-      .finally(() => setIsLoading(false));
+    if (IsEditMode(mode)) {
+      requestHandler()
+        .post(`projects/${projectId}`, formData)
+        .then((response: any) =>
+          reqForToastAndSetMessage(response.data.message)
+        )
+        .catch((error: any) =>
+          reqForToastAndSetMessage(error.response.data.message)
+        )
+        .finally(() => setIsLoading(false));
+    }
   };
 
   const readOnly = IsShowMode(mode);
@@ -106,12 +118,21 @@ const ProjectForm: React.FC<ProjectFormInterface> = ({ mode }) => {
   return (
     <>
       <Card className="h-full flex flex-col">
-        <CardHeader>
-          <CardTitle>Project Details</CardTitle>
+        <CardHeader className="px-4 sm:px-6">
+          <CardTitle className="text-lg sm:text-xl">Project Details</CardTitle>
         </CardHeader>
 
-        <CardContent className="overflow-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-auto">
+        <CardContent className="overflow-auto px-4 sm:px-6">
+          <div
+            className="
+            grid
+            grid-cols-1
+            sm:grid-cols-2
+            xl:grid-cols-3
+            gap-4
+            sm:gap-6
+          "
+          >
             <div className="flex flex-col gap-1">
               <Label htmlFor="projectCode">Project Code</Label>
               <Input
@@ -134,7 +155,7 @@ const ProjectForm: React.FC<ProjectFormInterface> = ({ mode }) => {
                 name="projectTitle"
                 value={formData.projectTitle}
                 onChange={hundleFormChange}
-                className={`border p-2 rounded ${
+                className={`border p-2 rounded min-h-[80px] ${
                   formErrors.projectTitle ? "!border-red-500" : ""
                 }`}
                 title={formErrors.projectTitle}
@@ -149,7 +170,7 @@ const ProjectForm: React.FC<ProjectFormInterface> = ({ mode }) => {
                 name="projectGoal"
                 value={formData.projectGoal}
                 onChange={hundleFormChange}
-                className={`border p-2 rounded ${
+                className={`border p-2 rounded min-h-[80px] ${
                   formErrors.projectGoal ? "!border-red-500" : ""
                 }`}
                 title={formErrors.projectGoal}
@@ -207,13 +228,7 @@ const ProjectForm: React.FC<ProjectFormInterface> = ({ mode }) => {
             <div className="flex flex-col gap-1">
               <Label htmlFor="status">Status</Label>
               <SingleSelect
-                options={[
-                  { value: "planed", label: "Planed" },
-                  { value: "ongoing", label: "On Going" },
-                  { value: "completed", label: "Compleated" },
-                  { value: "onhold", label: "On Hold" },
-                  { value: "canclled", label: "Canclled" },
-                ]}
+                options={ProjectStatusOptions}
                 value={formData.status}
                 onValueChange={(value: string) => {
                   setFormData((prev) => ({
@@ -245,13 +260,7 @@ const ProjectForm: React.FC<ProjectFormInterface> = ({ mode }) => {
             <div className="flex flex-col gap-1">
               <Label htmlFor="province">Province</Label>
               <MultiSelect
-                options={[
-                  { value: "kabul", label: "Kabul" },
-                  { value: "badakhshan", label: "Badakhshan" },
-                  { value: "ghor", label: "Ghor" },
-                  { value: "helmand", label: "Helmand" },
-                  { value: "daikundi", label: "Daikundi" },
-                ]}
+                options={ProvinceOptions}
                 value={formData.provinces}
                 onValueChange={(value: string[]) => {
                   setFormData((prev) => ({
@@ -269,12 +278,7 @@ const ProjectForm: React.FC<ProjectFormInterface> = ({ mode }) => {
             <div className="flex flex-col gap-1">
               <Label htmlFor="thematicSector">Thematic Sector</Label>
               <MultiSelect
-                options={[
-                  { value: "mhpss", label: "MHPSS" },
-                  { value: "wash", label: "WASH" },
-                  { value: "health", label: "Health" },
-                  { value: "nutrition", label: "Nutrition" },
-                ]}
+                options={SectorOptions}
                 value={formData.thematicSector}
                 onValueChange={(value: string[]) => {
                   setFormData((prev) => ({
@@ -288,14 +292,14 @@ const ProjectForm: React.FC<ProjectFormInterface> = ({ mode }) => {
               />
             </div>
 
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1 sm:col-span-2 xl:col-span-1">
               <Label htmlFor="reportingPeriod">Reporting Period</Label>
               <Textarea
                 id="reportingPeriod"
                 name="reportingPeriod"
                 value={formData.reportingPeriod}
                 onChange={hundleFormChange}
-                className={`border p-2 rounded ${
+                className={`border p-2 rounded min-h-[80px] ${
                   formErrors.reportingPeriod ? "!border-red-500" : ""
                 }`}
                 title={formErrors.reportingPeriod}
@@ -327,7 +331,7 @@ const ProjectForm: React.FC<ProjectFormInterface> = ({ mode }) => {
                 name="description"
                 value={formData.description}
                 onChange={hundleFormChange}
-                className={`border p-2 rounded ${
+                className={`border p-2 rounded min-h-[120px] ${
                   formErrors.description ? "!border-red-500" : ""
                 }`}
                 title={formErrors.description}
@@ -337,7 +341,7 @@ const ProjectForm: React.FC<ProjectFormInterface> = ({ mode }) => {
           </div>
         </CardContent>
 
-        <CardFooter className="flex justify-end gap-4">
+        <CardFooter className="flex flex-wrap justify-end gap-3 px-4 sm:px-6">
           {cardsBottomButtons(
             setCurrentTab,
             "project",
@@ -346,7 +350,9 @@ const ProjectForm: React.FC<ProjectFormInterface> = ({ mode }) => {
             setCurrentTab,
             "outcome",
             "project",
-            true
+            true,
+            false,
+            !!projectId && IsCreateMode(mode)
           )}
         </CardFooter>
       </Card>

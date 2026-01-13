@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/app-sidebar";
 import { cookies } from "next/headers";
 import Parent from "@/components/layout/Parent";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { PermissionProvider } from "@/contexts/PermissionContext";
-import GlobalListeners from "@/providers/GlobalListeners";
 import { EventProvider } from "@/contexts/EventContext";
 import { Lato } from "next/font/google";
 import TopProgressBar from "@/components/preloaders/TopProgressBar";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -46,23 +46,25 @@ export default async function RootLayout({
         <SidebarProvider defaultOpen={defaultOpen}>
           <>
             <Parent>
-              <PermissionProvider>
-                <EventProvider>
-                  <ThemeProvider
-                    attribute="class"
-                    defaultTheme="system"
-                    enableSystem
-                    disableTransitionOnChange
-                  >
-                    <div className="flex flex-row">
-                      <TopProgressBar></TopProgressBar>
-                      <AppSidebar />
-                      <div className="flex-1">{children}</div>
-                      <Toaster />
-                    </div>
-                  </ThemeProvider>
-                </EventProvider>
-              </PermissionProvider>
+              <NotificationProvider>
+                <PermissionProvider>
+                  <EventProvider>
+                    <ThemeProvider
+                      attribute="class"
+                      defaultTheme="system"
+                      enableSystem
+                      disableTransitionOnChange
+                    >
+                      <div className="flex flex-row">
+                        <TopProgressBar></TopProgressBar>
+                        <AppSidebar />
+                        <div className="flex-1">{children}</div>
+                        <Toaster />
+                      </div>
+                    </ThemeProvider>
+                  </EventProvider>
+                </PermissionProvider>
+              </NotificationProvider>
             </Parent>
           </>
         </SidebarProvider>

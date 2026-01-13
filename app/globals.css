@@ -5,7 +5,7 @@
 
 :root {
   --sidebar-bg: white;
-  --sidebar-option-bg: #A36568; 
+  --sidebar-option-bg: #a36568;
   --sidebar-option-fg: white;
   --sidebar-foreground: oklch(0.141 0.005 285.823);
   --radius: 0.625rem;
@@ -47,7 +47,6 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-
 }
 
 @theme inline {
@@ -94,7 +93,7 @@
   --background: oklch(0.141 0.005 285.823);
   --foreground: oklch(0.985 0 0);
   --sidebar-bg: black;
-  --sidebar-option-bg: #A36568;
+  --sidebar-option-bg: #a36568;
   --sidebar-option-fg: white;
   --sidebar-foreground: oklch(0.985 0 0);
   --card: oklch(0.21 0.006 285.885);
@@ -133,15 +132,16 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.439 0 0);
-
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;}
+    @apply border-border outline-ring/50;
+  }
   body {
-    @apply bg-background text-foreground;}}
-
+    @apply bg-background text-foreground;
+  }
+}
 
 /* hidding the scroll bar if overflow occured in a div for borwsers like : Firefox */
 div {
@@ -153,22 +153,21 @@ div::-webkit-scrollbar {
   display: none;
 }
 
-
 input[type="date"] {
-  direction: ltr;            
-  text-align: left;          
-  padding-right: 30px;       
+  direction: ltr;
+  text-align: left;
+  padding-right: 30px;
   position: relative;
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator {
   position: absolute;
-  right: 5px;                
+  right: 5px;
   left: auto;
   cursor: pointer;
 }
 
-
 input[type="date"]::-moz-focus-inner {
   padding: 0;
 }
+

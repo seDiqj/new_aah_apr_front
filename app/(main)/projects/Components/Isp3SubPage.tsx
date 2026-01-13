@@ -25,7 +25,7 @@ import {
 } from "@/constants/Constants";
 
 const Isp3SubPage: React.FC<Isp3SubPageInterface> = ({ mode }) => {
-  const { axiosInstance, reqForToastAndSetMessage } = useParentContext();
+  const { requestHandler, reqForToastAndSetMessage } = useParentContext();
 
   const {
     indicators,
@@ -48,7 +48,7 @@ const Isp3SubPage: React.FC<Isp3SubPageInterface> = ({ mode }) => {
   const hundleSubmit = () => {
     setIsLoading(true);
     if (readOnly) return;
-    axiosInstance
+    requestHandler()
       .post("/projects/is/isp3", {
         isp3s: isp3,
       })

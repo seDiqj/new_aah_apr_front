@@ -27,7 +27,7 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationInterface> = ({
 }) => {
   const {
     reqForToastAndSetMessage,
-    axiosInstance,
+    requestHandler,
     reqForConfirmationModelFunc,
   } = useParentContext();
 
@@ -37,7 +37,7 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationInterface> = ({
 
   useEffect(() => {
     if (!open || !psychoId) return;
-    axiosInstance
+    requestHandler()
       .get(`/psychoeducation_db/psychoeducation/${psychoId}`)
       .then((res: any) => setFormData(res.data.data))
       .catch((err: any) =>
@@ -70,7 +70,7 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationInterface> = ({
 
   const handleUpdate = () => {
     setIsLoading(true);
-    axiosInstance
+    requestHandler()
       .put(`/psychoeducation_db/psychoeducation/${psychoId}`, formData)
       .then((response: any) => {
         reqForToastAndSetMessage(response.data.message);
@@ -96,7 +96,7 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationInterface> = ({
   >([]);
 
   useEffect(() => {
-    axiosInstance
+    requestHandler()
       .get("/global/projects")
       .then((res: any) => setProjects(Object.values(res.data.data)))
       .catch((error: any) =>
@@ -108,21 +108,21 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationInterface> = ({
     if (!formData.programInformation.project_id) return;
 
     const projectId = formData.programInformation.project_id;
-    axiosInstance
+    requestHandler()
       .get(`projects/indicators/psychoeducation_database/${projectId}`)
       .then((response: any) => setIndicators(response.data.data))
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
       );
 
-    axiosInstance
+    requestHandler()
       .get("/global/districts")
       .then((res: any) => setDistricts(Object.values(res.data.data)))
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
       );
 
-    axiosInstance
+    requestHandler()
       .get(`projects/provinces/${projectId}`)
       .then((res: any) => setProvinces(Object.values(res.data.data)))
       .catch((error: any) =>

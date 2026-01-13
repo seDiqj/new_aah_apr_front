@@ -47,6 +47,7 @@ import {
 import { AxiosError, AxiosResponse } from "axios";
 import { DataTableInterface } from "@/interfaces/Interfaces";
 import { useEffect } from "react";
+import StringHelper from "@/helpers/StringHelpers/StringHelper";
 
 const DataTableDemo: React.FC<DataTableInterface> = ({
   columns,
@@ -59,6 +60,7 @@ const DataTableDemo: React.FC<DataTableInterface> = ({
   showModelOpenerStateSetter,
   selectedRowsIdsStateSetter,
   injectedElement,
+  injectedElementForOneSelectedItem,
   filtersList,
   deleteBtnPermission,
   editBtnPermission,
@@ -66,10 +68,9 @@ const DataTableDemo: React.FC<DataTableInterface> = ({
 }) => {
   const {
     reqForToastAndSetMessage,
-    axiosInstance,
     reloadFlag,
     reqForConfirmationModelFunc,
-    setGloabalLoading,
+    requestHandler,
   } = useParentContext();
 
   const [loading, setLoading] = React.useState(true);
@@ -101,8 +102,7 @@ const DataTableDemo: React.FC<DataTableInterface> = ({
 
   const fetchTableData = () => {
     setLoading(true);
-    setGloabalLoading(true);
-    axiosInstance
+    requestHandler()
       .get(indexUrl)
       .then((response: AxiosResponse<any, any, any>) => {
         setData(response.data.data);
@@ -116,13 +116,12 @@ const DataTableDemo: React.FC<DataTableInterface> = ({
       })
       .finally(() => {
         setLoading(false);
-        setGloabalLoading(false);
       });
   };
 
   const handleDelete = () => {
     const ids = Object.keys(rowSelection).map(Number);
-    axiosInstance
+    requestHandler()
       .post(deleteUrl, { ids })
       .then((res: any) => {
         reqForToastAndSetMessage(res.data.message);
@@ -159,18 +158,21 @@ const DataTableDemo: React.FC<DataTableInterface> = ({
 
   const handleFetch = () => {
     setLoading(true);
-    setGloabalLoading(true);
-    axiosInstance
+    requestHandler()
       .get(getUrl())
       .then((response: AxiosResponse<any, any>) => {
-        setData(response.data.data.data);
-        console.log(response.data.data);
-        
+        if (response.data.data.data) {
+          setData(response.data.data.data);
+        } else {
+          setData(response.data.data);
+        }
+
         if (response.data.data.next_page_url) setCanNext(true);
         else setCanNext(false);
 
         if (response.data.data.prev_page_url) setCanPrev(true);
         else setCanPrev(false);
+        setRowSelection({});
       })
       .catch((error: AxiosError<any, any>) => {
         if (error.response?.data.data) setData(error.response.data.data);
@@ -180,7 +182,6 @@ const DataTableDemo: React.FC<DataTableInterface> = ({
       })
       .finally(() => {
         setLoading(false);
-        setGloabalLoading(false);
       });
   };
 
@@ -253,6 +254,10 @@ const DataTableDemo: React.FC<DataTableInterface> = ({
             Object.keys(rowSelection).length >= 1 &&
             injectedElement}
 
+          {injectedElementForOneSelectedItem &&
+            Object.keys(rowSelection).length == 1 &&
+            injectedElementForOneSelectedItem}
+
           {Object.keys(rowSelection).length === 1 &&
             editModelOpenerStateSetter && (
               <Can permission={editBtnPermission ?? "ok"}>
@@ -304,7 +309,9 @@ const DataTableDemo: React.FC<DataTableInterface> = ({
                         key={i}
                         className="grid grid-cols-3 items-center gap-4"
                       >
-                        <Label htmlFor={filter}>{filter}</Label>
+                        <Label htmlFor={filter}>
+                          {StringHelper.normalize(filter)}
+                        </Label>
                         <Input
                           id={filter}
                           name={filter}
@@ -370,7 +377,7 @@ const DataTableDemo: React.FC<DataTableInterface> = ({
       {/* Table */}
       <div className="overflow-hidden rounded-md border">
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-primary">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.slice(0, 8).map((header) => (
@@ -388,65 +395,73 @@ const DataTableDemo: React.FC<DataTableInterface> = ({
           </TableHeader>
 
           <TableBody>
-            {loading
-              ? // Skeleton rows
-                Array.from({ length: 10 }).map((_, rowIndex) => (
-                  <TableRow key={rowIndex}>
-                    {columns.slice(0, 8).map((col, colIndex) => (
-                      <TableCell key={colIndex}>
-                        <Skeleton className="h-4 w-full" />
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              : table.getRowModel().rows.length >= 1 &&
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    className="cursor-pointer"
-                    onClick={(e) => {
-                      const target = e.target as HTMLElement;
-                      if (
-                        target.closest("input[type='checkbox']") ||
-                        target.closest("button") ||
-                        target.closest("label") ||
-                        target.closest("svg")
-                      )
-                        return;
+            {!loading &&
+              // ?
+              //   Array.from({ length: 10 }).map((_, rowIndex) => (
+              //     <TableRow key={rowIndex}>
+              //       {columns.slice(0, 8).map((col, colIndex) => (
+              //         <TableCell key={colIndex}>
+              //           <Skeleton className="h-4 w-full" />
+              //         </TableCell>
+              //       ))}
+              //     </TableRow>
+              //   ))
+              // :
 
-                      if (idFeildForShowStateSetter)
-                        idFeildForShowStateSetter(Number(row.id));
-                      if (showModelOpenerStateSetter)
-                        showModelOpenerStateSetter(true);
-                    }}
-                  >
-                    {row
-                      .getVisibleCells()
-                      .slice(0, 8)
-                      .map((cell) => {
-                        return (
-                          <TableCell key={cell.id}>
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
-                          </TableCell>
-                        );
-                      })}
-                  </TableRow>
-                ))}
+              table.getRowModel().rows.length >= 1 &&
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  className="cursor-pointer"
+                  onClick={(e) => {
+                    const target = e.target as HTMLElement;
+                    if (
+                      target.closest("input[type='checkbox']") ||
+                      target.closest("button") ||
+                      target.closest("label") ||
+                      target.closest("svg")
+                    )
+                      return;
+
+                    if (idFeildForShowStateSetter)
+                      idFeildForShowStateSetter(Number(row.id));
+                    if (showModelOpenerStateSetter)
+                      showModelOpenerStateSetter(true);
+                  }}
+                >
+                  {row
+                    .getVisibleCells()
+                    .slice(0, 8)
+                    .map((cell) => {
+                      return (
+                        <TableCell key={cell.id}>
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </TableCell>
+                      );
+                    })}
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
 
-        {table.getRowModel().rows.length == 0 && (
-          <div className="flex flex-row items-center justify-center h-[250px] text-gray-400">
+        {loading && (
+          <div className="flex items-center justify-end space-x-2 relative top-20 h-[310px] py-4 w-full">
+            <Skeleton className="h-[310px] w-full -top-20 absolute rounded-none bg-gray-500" />
+          </div>
+        )}
+
+        {!loading && table.getRowModel().rows.length == 0 && (
+          <div className="flex flex-row items-center justify-center h-[310px] text-gray-400 border-none">
             No Records
           </div>
         )}
       </div>
 
       {/* Pagination info */}
-      <div className="flex items-center justify-end space-x-2 py-4 absolute bottom-1 w-full">
+      <div className="flex items-center justify-end space-x-2 py-4 absolute -bottom-13 w-full">
         <div className="text-muted-foreground flex-1 text-sm">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}
           {table.getFilteredRowModel().rows.length} row(s) selected.

@@ -21,7 +21,7 @@ const SubmittedDatabasesPage = () => {
   const {
     reqForToastAndSetMessage,
     reqForConfirmationModelFunc,
-    axiosInstance,
+    requestHandler,
     handleReload,
     handleAprReload,
   } = useParentContext();
@@ -36,7 +36,7 @@ const SubmittedDatabasesPage = () => {
   ] = useState<boolean>(false);
 
   const generateApr = () => {
-    axiosInstance
+    requestHandler()
       .post(`/apr_management/generate_apr/${idFeildForEditStateSetter}`)
       .then((response: any) => {
         {
@@ -51,7 +51,7 @@ const SubmittedDatabasesPage = () => {
   };
 
   const rejectDatabase = () => {
-    axiosInstance
+    requestHandler()
       .post(`/db_management/change_db_status/${idFeildForEditStateSetter}`, {
         newStatus: "secondRejected",
       })
@@ -79,7 +79,7 @@ const SubmittedDatabasesPage = () => {
         idFeildForShowStateSetter={setIdFeildForEditStateSetter}
         idFeildForEditStateSetter={setIdFeildForEditStateSetter}
         showModelOpenerStateSetter={setOpenSubmittedDatabaseSummaryModel}
-        injectedElement={
+        injectedElementForOneSelectedItem={
           <div className="flex flex-row items-center gap-1">
             <Button
               title="Generate Apr"

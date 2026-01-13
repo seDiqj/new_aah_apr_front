@@ -10,6 +10,10 @@ import {
   projectAprStatusList,
 } from "@/app/(main)/projects/utils/OptionLists";
 import { RemoveIdFielsFromObj } from "@/helpers/GlobalHelpers";
+import {
+  NO_OUTCOME_DEFAULT_OUTCOME,
+  NO_OUTCOME_DEFAULT_REFERANCE,
+} from "./System";
 
 export const IsValidAprStatus = (status: string) => {
   return projectAprStatusList.includes(status);
@@ -112,6 +116,47 @@ export const IsMainDatabaseNotAvailableForSelection = (
         indicator.database == "main_database" &&
         indicator.type == "child_care_practices"
     )
+  );
+};
+
+export const IsMainDatabaseAvailableForMe = (
+  indicators: Indicator[],
+  indicator: Indicator
+) => {
+  return !(
+    indicators.find(
+      (ind) =>
+        ind.id != indicator.id &&
+        ind.database == "main_database" &&
+        ind.type == "adult_psychosocial_support"
+    ) &&
+    indicators.find(
+      (ind) =>
+        ind.id != indicator.id &&
+        ind.database == "main_database" &&
+        ind.type == "child_psychosocial_support"
+    ) &&
+    indicators.find(
+      (ind) =>
+        ind.id != indicator.id &&
+        ind.database == "main_database" &&
+        ind.type == "parenting_skills"
+    ) &&
+    indicators.find(
+      (ind) =>
+        ind.id != indicator.id &&
+        ind.database == "main_database" &&
+        ind.type == "child_care_practices"
+    )
+  );
+};
+
+export const IsMainDatabaseMealtoolTargetAvailableForMe = (
+  Indicators: Indicator[],
+  indicator: Indicator
+) => {
+  return Indicators.find(
+    (ind) => ind.database == "main_database_meal_tool" && ind.id != indicator.id
   );
 };
 
@@ -397,6 +442,22 @@ export const IsOutputSaved = (output: Output): boolean => {
 
 export const IsOutcomeSaved = (outcome: Outcome): boolean => {
   return outcome.id !== null;
+};
+
+export const IsNoOutcome = (outcome: Outcome | string): boolean => {
+  if (typeof outcome == "string") {
+    if (
+      outcome == NO_OUTCOME_DEFAULT_REFERANCE ||
+      outcome == NO_OUTCOME_DEFAULT_OUTCOME
+    )
+      return true;
+    else return false;
+  } else {
+    return (
+      outcome.outcomeRef == NO_OUTCOME_DEFAULT_REFERANCE ||
+      outcome.outcome == NO_OUTCOME_DEFAULT_OUTCOME
+    );
+  }
 };
 
 export const IsANullValue = (value: any): value is null => {

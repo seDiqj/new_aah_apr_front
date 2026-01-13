@@ -11,6 +11,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { usePathname } from "next/navigation";
+import StringHelper from "@/helpers/StringHelpers/StringHelper";
 
 const BreadcrumbWithCustomSeparator = () => {
   const currentPathName = usePathname();
@@ -27,8 +28,7 @@ const BreadcrumbWithCustomSeparator = () => {
           ? pathSegments.slice(0)
           : pathSegments.slice(0, index + 1)
         ).join("/");
-      let label = segment.replace("_", " ");
-      label = label.toUpperCase();
+      let label = StringHelper.normalize(segment);
       return { href, label };
     })
     .filter((b) => b != null);

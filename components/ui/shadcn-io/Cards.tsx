@@ -15,7 +15,7 @@ const StatsCards = () => {
   const aprsState: AprState = useParentContext().aprStats;
 
   return (
-    <div className="flex flex-row flex-wrap items-center justify-start gap-3 mt-4 ml-4">
+    <div className="flex flex-row flex-wrap items-center justify-center gap-3 mt-4 ml-4">
       {aprsState.map((item, index) => {
         const Icon = item.icon;
         return (

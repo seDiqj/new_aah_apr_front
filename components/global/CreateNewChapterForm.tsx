@@ -18,17 +18,28 @@ import { ChapterDefault } from "@/constants/FormsDefaultValues";
 import { ChapterCreationMessage } from "@/constants/ConfirmationModelsTexts";
 import { ChapterFormInterface } from "@/interfaces/Interfaces";
 import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import {
+  IsANullOrUndefinedValue,
+  IsCreateMode,
+  IsEditMode,
+  IsNotEditMode,
+  IsNotShowMode,
+} from "@/constants/Constants";
+import { AxiosError, AxiosResponse } from "axios";
 
 const CreateNewChapterForm: React.FC<ChapterFormInterface> = ({
   open,
   onOpenChange,
   title,
+  chaptersDataStateSetter,
+  mode,
+  chapterId,
 }) => {
   const { id } = useParams<{ id: string }>();
 
   const {
     reqForToastAndSetMessage,
-    axiosInstance,
+    requestHandler,
     reqForConfirmationModelFunc,
   } = useParentContext();
 
@@ -44,14 +55,53 @@ const CreateNewChapterForm: React.FC<ChapterFormInterface> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    axiosInstance
-      .post(`/training_db/training/chapter/${id}`, formData)
-      .then((response: any) => reqForToastAndSetMessage(response.data.message))
-      .catch((error: any) =>
-        reqForToastAndSetMessage(error.response?.data?.message || "Error")
-      )
-      .finally(() => setIsLoading(false));
+    if (IsCreateMode(mode)) {
+      requestHandler()
+        .post(`/training_db/training/chapter/${id}`, formData)
+        .then((response: AxiosResponse<any, any>) => {
+          reqForToastAndSetMessage(response.data.message);
+          chaptersDataStateSetter((prev) => [...prev, formData]);
+          onOpenChange(false);
+        })
+        .catch((error: AxiosError<any, any>) =>
+          reqForToastAndSetMessage(error.response?.data?.message || "Error")
+        )
+        .finally(() => setIsLoading(false));
+    } else if (IsEditMode(mode)) {
+      requestHandler()
+        .put(`/training_db/training/chapter/${chapterId}`, formData)
+        .then((response: AxiosResponse<any, any>) => {
+          reqForToastAndSetMessage(response.data.message);
+          chaptersDataStateSetter((prev) =>
+            prev.map((chapter) =>
+              chapter.id == chapterId ? formData : chapter
+            )
+          );
+          onOpenChange(false);
+        })
+        .catch((error: AxiosError<any, any>) =>
+          reqForToastAndSetMessage(error.response?.data?.message)
+        )
+        .finally(() => setIsLoading(false));
+    }
   };
+
+  React.useEffect(() => {
+    if (
+      (IsNotEditMode(mode) && IsNotShowMode(mode)) ||
+      IsANullOrUndefinedValue(chapterId)
+    )
+      return;
+
+    requestHandler()
+      .get(`/training_db/training/chapter/${chapterId}`)
+      .then((response: AxiosResponse<any, any>) =>
+        setFormData(response.data.data)
+      )
+      .catch((error: AxiosError<any, any>) =>
+        reqForToastAndSetMessage(error.response?.data.message)
+      );
+  }, [mode, chapterId]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -63,10 +113,7 @@ const CreateNewChapterForm: React.FC<ChapterFormInterface> = ({
           <DialogTitle className="text-lg">{title}</DialogTitle>
         </DialogHeader>
 
-        <form
-          onSubmit={handleSubmit}
-          className="grid grid-cols-1 md:grid-cols-2 gap-4"
-        >
+        <form className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Chapter Info */}
           <div className="col-span-2 mt-6">
             <h2 className="text-center font-bold mb-4">Chapter Information</h2>
@@ -120,6 +167,7 @@ const CreateNewChapterForm: React.FC<ChapterFormInterface> = ({
             <Button
               id={SUBMIT_BUTTON_PROVIDER_ID}
               disabled={isLoading}
+              type="button"
               onClick={(e) =>
                 reqForConfirmationModelFunc(ChapterCreationMessage, () =>
                   handleSubmit(e)

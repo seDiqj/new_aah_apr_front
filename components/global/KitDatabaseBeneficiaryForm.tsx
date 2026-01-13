@@ -29,13 +29,15 @@ import {
   ReferredForProtectionOptions,
 } from "@/constants/SingleAndMultiSelectOptionsList";
 import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { toDateOnly } from "./MainDatabaseBeneficiaryCreationForm";
+import { AxiosError, AxiosResponse } from "axios";
 
 const KitDatabaseBeneficiaryForm: React.FC<
   KitDatabaseBeneficiaryFormInterface
 > = ({ open, onOpenChange, title }) => {
   const {
     reqForToastAndSetMessage,
-    axiosInstance,
+    requestHandler,
     handleReload,
     reqForConfirmationModelFunc,
   } = useParentContext();
@@ -83,7 +85,7 @@ const KitDatabaseBeneficiaryForm: React.FC<
     setFormErrors({});
     setIsLoading(true);
 
-    axiosInstance
+    requestHandler()
       .post("/kit_db/beneficiary", formData)
       .then((response: any) => {
         reqForToastAndSetMessage(response.data.message);
@@ -102,9 +104,33 @@ const KitDatabaseBeneficiaryForm: React.FC<
     { id: string; indicatorRef: string }[]
   >([]);
 
+  const [registrationDateValidRange, setRegistrationDateValidRange] = useState<{
+    start: string;
+    end: string;
+  }>({
+    start: "2025-1-1",
+    end: "2025-2-1",
+  });
+
+  useEffect(() => {
+    if (!formData.program) return;
+
+    requestHandler()
+      .get(`/date/project_date_range_acc_to_program/${formData.program}`)
+      .then((response: AxiosResponse<any, any>) => {
+        setRegistrationDateValidRange({
+          start: toDateOnly(response.data.data.start),
+          end: toDateOnly(response.data.data.end),
+        });
+      })
+      .catch((error: AxiosError<any, any>) =>
+        reqForToastAndSetMessage(error.response?.data.message)
+      );
+  }, [formData.program]);
+
   useEffect(() => {
     // Fetching kit database programs
-    axiosInstance
+    requestHandler()
       .get(`global/programs_for_selection/kit_database`)
       .then((response: any) => {
         setPrograms(response.data.data.data);
@@ -116,7 +142,7 @@ const KitDatabaseBeneficiaryForm: React.FC<
 
   useEffect(() => {
     if (!formData.program) return;
-    axiosInstance
+    requestHandler()
       .get(`/global/indicators/${formData.program}/kit_database`)
       .then((response: any) => {
         setIndicators(response.data.data);
@@ -239,6 +265,8 @@ const KitDatabaseBeneficiaryForm: React.FC<
                       ? formErrors["dateOfRegistration"]
                       : undefined
                   }
+                  min={registrationDateValidRange.start}
+                  max={registrationDateValidRange.end}
                 />
               </div>
 

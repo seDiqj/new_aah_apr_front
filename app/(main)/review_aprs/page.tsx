@@ -17,7 +17,7 @@ import {
 } from "@/constants/ConfirmationModelsTexts";
 import { ReviewAprFiltersList } from "@/constants/FiltersList";
 
-const SubmittedDatabasesPage = () => {
+const ReviewAprPage = () => {
   const {
     axiosInstance,
     reqForToastAndSetMessage,
@@ -83,7 +83,7 @@ const SubmittedDatabasesPage = () => {
         idFeildForShowStateSetter={setIdFeildForEditStateSetter}
         idFeildForEditStateSetter={setIdFeildForEditStateSetter}
         showModelOpenerStateSetter={setOpenSubmittedDatabaseSummaryModel}
-        injectedElement={
+        injectedElementForOneSelectedItem={
           <div className="flex flex-row items-center gap-1">
             <Button
               title="Review Apr"
@@ -132,4 +132,4 @@ const SubmittedDatabasesPage = () => {
   );
 };
 
-export default SubmittedDatabasesPage;
+export default ReviewAprPage;

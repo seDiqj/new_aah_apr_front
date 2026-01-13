@@ -38,7 +38,7 @@ const ReferralForm: React.FC<ReferralInterface> = ({
   }>();
   const {
     reqForToastAndSetMessage,
-    axiosInstance,
+    requestHandler,
     reqForConfirmationModelFunc,
   } = useParentContext();
 
@@ -146,7 +146,7 @@ const ReferralForm: React.FC<ReferralInterface> = ({
 
     setIsLoading(true);
 
-    axiosInstance
+    requestHandler()
       .put(`/referral_db/beneficiary/updateReferral/${id}`, payload)
       .then((response: any) => reqForToastAndSetMessage(response.data.message))
       .catch((error: any) =>
@@ -180,7 +180,7 @@ const ReferralForm: React.FC<ReferralInterface> = ({
         agency: referralData.referrerAgency ?? "",
         phone: referralData.referrerPhone ?? "",
         email: referralData.referrerEmail ?? "",
-        address: "", // نداشتی توی بک‌اند
+        address: "", 
       });
 
       // Referred To
@@ -189,7 +189,7 @@ const ReferralForm: React.FC<ReferralInterface> = ({
         agency: referralData.referredToAgency ?? "",
         phone: referralData.referredToPhone ?? "",
         email: referralData.referredToEmail ?? "",
-        address: "", // نداشتی توی بک‌اند
+        address: "",
       });
 
       // Reasons
@@ -240,7 +240,7 @@ const ReferralForm: React.FC<ReferralInterface> = ({
   }, [referralInfo]);
 
   const inputStyle =
-    "w-full border-0 border-b border-transparent focus:border-gray-300 focus:border-b focus:outline-none rounded-none";
+    "w-full focus:border-gray-300 focus:border-b focus:outline-none rounded-none";
 
   const smallInputStyle =
     "border-0 border-b border-transparent focus:border-gray-300 focus:border-b focus:outline-none rounded-none";
@@ -251,27 +251,6 @@ const ReferralForm: React.FC<ReferralInterface> = ({
         <CardHeader className="flex items-start justify-between gap-4">
           <div>
             <CardTitle className="text-lg">Consent & Referral Form</CardTitle>
-          </div>
-
-          <div>
-            {/* Edit Icon Button */}
-            <Button variant="ghost" size="sm" aria-label="Edit form">
-              {/* simple pencil svg */}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15.232 5.232l3.536 3.536M4 20h4.586a1 1 0 00.707-.293l9.414-9.414a1 1 0 000-1.414L15.707 4.293a1 1 0 00-1.414 0L4.293 14.293A1 1 0 004 15v4z"
-                />
-              </svg>
-            </Button>
           </div>
         </CardHeader>
 
@@ -306,7 +285,7 @@ const ReferralForm: React.FC<ReferralInterface> = ({
 
             {q1Yes && (
               <div className="mt-2">
-                <Input
+                <Textarea
                   placeholder="Please explain..."
                   value={q1Text}
                   onChange={(e) => setQ1Text(e.target.value)}
@@ -617,7 +596,7 @@ const ReferralForm: React.FC<ReferralInterface> = ({
             <div className="grid grid-cols-1 gap-2">
               <div className="flex items-center gap-3">
                 <div className="w-56 text-sm">Mental health alert</div>
-                <Input
+                <Textarea
                   placeholder="Description"
                   className={inputStyle}
                   value={reasons.mentalHealthAlert}
@@ -632,7 +611,7 @@ const ReferralForm: React.FC<ReferralInterface> = ({
 
               <div className="flex items-center gap-3">
                 <div className="w-56 text-sm">Self-Harm</div>
-                <Input
+                <Textarea
                   placeholder="Description"
                   className={inputStyle}
                   value={reasons.selfHarm}
@@ -644,7 +623,7 @@ const ReferralForm: React.FC<ReferralInterface> = ({
 
               <div className="flex items-center gap-3">
                 <div className="w-56 text-sm">Suicide ideation/Attempt</div>
-                <Input
+                <Textarea
                   placeholder="Description"
                   className={inputStyle}
                   value={reasons.suicideIdeation}
@@ -661,7 +640,7 @@ const ReferralForm: React.FC<ReferralInterface> = ({
                 <div className="w-56 text-sm">
                   Potential undiagnosed psychosis
                 </div>
-                <Input
+                <Textarea
                   placeholder="Description"
                   className={inputStyle}
                   value={reasons.undiagnosedPsychosis}
@@ -718,7 +697,7 @@ const ReferralForm: React.FC<ReferralInterface> = ({
               placeholder="Describe what you and the person being referred is hoping to achieve through the referral."
               value={expectedOutcome}
               onChange={(e) => setExpectedOutcome(e.target.value)}
-              className="border-0 border-b border-transparent focus:border-gray-300 focus:border-b focus:outline-none rounded-none"
+              className="focus:border-gray-300 focus:border-b focus:outline-none rounded-none"
               rows={4}
             />
           </div>
@@ -755,12 +734,12 @@ const ReferralForm: React.FC<ReferralInterface> = ({
               </div>
             </div>
 
-            <div>
-              <Label>
+            <div className="flex flex-col gap-2">
+              <Label className="mb-1">
                 If referral was not accepted by the service provider, state
                 reasons:
               </Label>
-              <Input
+              <Textarea
                 placeholder="Reason"
                 className={inputStyle}
                 value={notAcceptedReason}

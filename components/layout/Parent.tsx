@@ -12,9 +12,12 @@ import ConfirmationAlertDialogue from "../global/ConfirmationDialog";
 import ProfileModal from "../global/UserForm";
 import { Folder, Clock, CheckCircle, XCircle } from "lucide-react";
 import { ParentInterface } from "@/interfaces/Interfaces";
+import RequestHandler from "@/axios/Axios";
 
 const Parent: React.FC<ParentInterface> = ({ children }) => {
   const axiosInstance: AxiosInstance = createAxiosInstance();
+  const requestHandler: () => RequestHandler = () =>
+    new RequestHandler();
 
   const reqForToastAndSetMessage = (
     message: string,
@@ -37,7 +40,7 @@ const Parent: React.FC<ParentInterface> = ({ children }) => {
             : "yellow"
           : undefined,
       },
-      duration: 5000,
+      duration: 6000,
     });
 
   const [notifications, setNotifications] = useState([]);
@@ -154,6 +157,9 @@ const Parent: React.FC<ParentInterface> = ({ children }) => {
   };
 
   useEffect(() => {
+    // if (!["permission:Apr.view/list"].some((per) => permissions.includes(per)))
+    //   return;
+    return;
     axiosInstance
       .get("/apr_management/get_system_aprs_status")
       .then((response: any) => {
@@ -197,6 +203,7 @@ const Parent: React.FC<ParentInterface> = ({ children }) => {
         setGloabalLoading,
         aprReloadFlag,
         handleAprReload,
+        requestHandler
       }}
     >
       <div className="w-full h-full">{children}</div>
@@ -209,8 +216,6 @@ const Parent: React.FC<ParentInterface> = ({ children }) => {
           mode="show"
         ></ProfileModal>
       )}
-
-      {/* {globalLoading && <Preloader reqForLoading={globalLoading} />} */}
 
       <ConfirmationAlertDialogue
         open={reqForConfirmationModel}

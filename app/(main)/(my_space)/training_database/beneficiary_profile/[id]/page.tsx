@@ -17,7 +17,7 @@ import {
   TrainingBenefeciaryForm,
   TrainingForm,
 } from "@/types/Types";
-import { Plus } from "lucide-react";
+import { CircleX, Plus } from "lucide-react";
 import { useParams } from "next/navigation";
 import { RefObject, useEffect, useRef, useState } from "react";
 import { TrainingBeneficiaryDefault } from "@/constants/FormsDefaultValues";
@@ -36,7 +36,7 @@ const TrainingBeneficiaryProfile = () => {
 
   const {
     reqForToastAndSetMessage,
-    axiosInstance,
+    requestHandler,
     reqForConfirmationModelFunc,
   } = useParentContext();
 
@@ -56,38 +56,8 @@ const TrainingBeneficiaryProfile = () => {
 
   const [currentTab, setCurrentTab] = useState<string>("beneficiaryInfo");
 
-  useEffect(() => {
-    if (isBeneficiaryTrainingsListFeched.current) return;
-    isBeneficiaryTrainingsListFeched.current = true;
-    axiosInstance
-      .get(`/training_db/beneficiary/trainings/${id}`)
-      .then((response: any) => {
-        const { trainings, ...beneficiaryData } = response.data.data;
-        const { selfChapters, ...bnfData } = beneficiaryData;
-        setBeneficiaryInfo(bnfData);
-        setSelfChaptersData(selfChapters);
-        trainings.map((training: any) => {
-          const { chapters, ...t } = training;
-
-          setTrainingsData((prev) => [...prev, t]);
-
-          setChaptersData((prev) => [
-            ...prev,
-            {
-              trainingId: training.id,
-              trainingName: training.name,
-              chapters: training.chapters,
-            },
-          ]);
-        });
-      })
-      .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
-      );
-  }, []);
-
   const handleTogglePrecenseOfBeneficiary = (chapterId: number) => {
-    axiosInstance
+    requestHandler()
       .put(`training_db/beneficiary/chapter/setPrecense/${id}/${chapterId}`)
       .then((response: any) => reqForToastAndSetMessage(response.data.message))
       .catch((error: any) =>
@@ -115,7 +85,7 @@ const TrainingBeneficiaryProfile = () => {
       reqForToastAndSetMessage("Training is not valid !");
       return;
     }
-    axiosInstance
+    requestHandler()
       .post(`/training_db/remove_training_from_bnf`, {
         trainingId: trainingId,
         beneficiaryId: id,
@@ -127,6 +97,36 @@ const TrainingBeneficiaryProfile = () => {
         reqForToastAndSetMessage(error.response?.data.message)
       );
   };
+
+  useEffect(() => {
+    if (isBeneficiaryTrainingsListFeched.current) return;
+    isBeneficiaryTrainingsListFeched.current = true;
+    requestHandler()
+      .get(`/training_db/beneficiary/trainings/${id}`)
+      .then((response: any) => {
+        const { trainings, ...beneficiaryData } = response.data.data;
+        const { selfChapters, ...bnfData } = beneficiaryData;
+        setBeneficiaryInfo(bnfData);
+        setSelfChaptersData(selfChapters);
+        trainings.map((training: any) => {
+          const { chapters, ...t } = training;
+
+          setTrainingsData((prev) => [...prev, t]);
+
+          setChaptersData((prev) => [
+            ...prev,
+            {
+              trainingId: training.id,
+              trainingName: training.name,
+              chapters: training.chapters,
+            },
+          ]);
+        });
+      })
+      .catch((error: any) =>
+        reqForToastAndSetMessage(error.response.data.message)
+      );
+  }, []);
 
   return (
     <>
@@ -143,22 +143,32 @@ const TrainingBeneficiaryProfile = () => {
           value={currentTab}
           onValueChange={setCurrentTab}
         >
+          {/* Tabs */}
           <ChromeTabs
+            currentTab={currentTab}
+            onCurrentTabChange={setCurrentTab}
             initialTabs={[
               {
                 value: "beneficiaryInfo",
                 title: "Beneficiary Info",
-                stateSetter: setCurrentTab,
               },
 
               ...trainingsData.map((training) => ({
                 value: training.id as string,
                 title: training.name.toUpperCase(),
-                stateSetter: setCurrentTab,
+                onDeleteTab: () =>
+                  reqForConfirmationModelFunc(
+                    RemoveTrainingFromBeneficiaryButtonMessage,
+                    () =>
+                      removeTrainingFromBeneficiaryTrainingList(
+                        training.id as unknown as number
+                      )
+                  ),
               })),
             ]}
           ></ChromeTabs>
 
+          {/* Beneficiary Info */}
           <TabsContent value="beneficiaryInfo">
             <Card className="min-h-[400px]">
               <CardContent className="h-full grid gap-4 max-h-[400px] overflow-auto">
@@ -166,6 +176,8 @@ const TrainingBeneficiaryProfile = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Trainings Info */}
           {chaptersData.map((chapter, index) => (
             <TabsContent key={index} value={chapter.trainingId as string}>
               <Card className="min-h-[400px]">
@@ -173,13 +185,22 @@ const TrainingBeneficiaryProfile = () => {
                   {/* Inner Tabs */}
                   <Tabs defaultValue="training-info" className="space-y-4">
                     {/* Tabs Header */}
-                    <TabsList className="flex flex-wrap gap-2">
+                    <TabsList className="flex flex-wrap gap-2 mx-auto">
                       <TabsTrigger value="training-info">
                         Training Info
                       </TabsTrigger>
 
-                      {chapter.chapters.map((_, i) => (
-                        <TabsTrigger key={i} value={`chapter-${i + 1}`}>
+                      {chapter.chapters.map((ch, i) => (
+                        <TabsTrigger
+                          key={i}
+                          value={`chapter-${i + 1}`}
+                          title={`Presence status: ${
+                            selfChaptersData.find((s) => s.id === ch.id)
+                              ?.isPresent
+                              ? "Present"
+                              : "Not present"
+                          }`}
+                        >
                           Chapter {i + 1}
                         </TabsTrigger>
                       ))}
@@ -211,22 +232,6 @@ const TrainingBeneficiaryProfile = () => {
                             </>
                           );
                         })}
-                      </div>
-                      <div className="flex flex-row items-center justify-end w-full mt-4">
-                        <Button
-                          title="Remove training from current beneficiary's training list !"
-                          onClick={() =>
-                            reqForConfirmationModelFunc(
-                              RemoveTrainingFromBeneficiaryButtonMessage,
-                              () =>
-                                removeTrainingFromBeneficiaryTrainingList(
-                                  chapter.trainingId as unknown as number
-                                )
-                            )
-                          }
-                        >
-                          Remove Training
-                        </Button>
                       </div>
                     </TabsContent>
 
@@ -260,8 +265,18 @@ const TrainingBeneficiaryProfile = () => {
 
                           {/* Chapter Info */}
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-                            {Object.entries(ch).map(([key, value], idx) => {
-                              if (key === "id") return null;
+                            {[
+                              ...Object.entries(ch),
+                              [
+                                "postTest",
+                                selfChaptersData.find((sc) => sc.id == ch.id)?.postTestScore ?? 0,
+                              ],
+                              [
+                                "preTest",
+                                selfChaptersData.find((sc) => sc.id == ch.id)?.preTestScore ?? 0,
+                              ],
+                            ].map(([key, value], idx) => {
+                              if (IsIdFeild(String(key))) return null;
 
                               return (
                                 <div
@@ -269,7 +284,7 @@ const TrainingBeneficiaryProfile = () => {
                                   className="grid grid-cols-[150px_1fr] border-b pb-2"
                                 >
                                   <span className="text-sm text-muted-foreground">
-                                    {key.replace(/([A-Z])/g, " $1")}
+                                    {(String(key)).replace(/([A-Z])/g, " $1")}
                                   </span>
                                   <span className="text-sm font-medium">
                                     {value?.toString() || "-"}

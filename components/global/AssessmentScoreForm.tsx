@@ -27,7 +27,7 @@ const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
   const { id } = useParams<{ id: string }>();
   const {
     reqForToastAndSetMessage,
-    axiosInstance,
+    requestHandler,
     reqForConfirmationModelFunc,
     handleReload,
   } = useParentContext();
@@ -43,15 +43,6 @@ const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
   const [assessmentsList, setAssessmentsList] = useState<Assessments>({});
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  useEffect(() => {
-    axiosInstance
-      .get("/enact_database/assessments_list")
-      .then((res: any) => setAssessmentsList(res.data.data))
-      .catch((err: any) =>
-        reqForToastAndSetMessage(err.response?.data?.message || "Error")
-      );
-  }, []);
 
   const handleFormChange = (e: any) => {
     const { name, value } = e.target;
@@ -70,12 +61,15 @@ const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
     e.preventDefault();
     setIsLoading(true);
     const request = IsCreateMode(mode)
-      ? axiosInstance.post("/enact_database/assess_assessment", {
+      ? requestHandler().post("/enact_database/assess_assessment", {
           enactId: id,
           scores: formData,
           date: assessmentDate,
         })
-      : axiosInstance.put(`/enact_database/${projectId}`, formData);
+      : requestHandler().put(`/enact_database/${id}`, {
+          scores: formData,
+          date: assessmentDate,
+        });
 
     request
       .then((res: any) => {
@@ -99,20 +93,28 @@ const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
   const titleColors = ["#1E3A8A", "#059669", "#7C3AED", "#F97316"];
 
   useEffect(() => {
+    requestHandler()
+      .get("/enact_database/assessments_list")
+      .then((res: any) => setAssessmentsList(res.data.data))
+      .catch((err: any) =>
+        reqForToastAndSetMessage(err.response?.data?.message || "Error")
+      );
+  }, []);
+
+  useEffect(() => {
     if (!assessmentId) return;
 
     if (IsShowMode(mode) || IsEditMode(mode)) {
-      axiosInstance
+      requestHandler()
         .get(`/enact_database/assessment/${assessmentId}`)
         .then((response: AxiosResponse<any>) => {
           setFormData(
-            Array.from({ length: 15 }, (_, i) => i + 1).reduce(
-              (acc, cur) => ({
+            Array.from({ length: 15 }, (_, i) => i).reduce((acc, cur) => {
+              return {
                 ...acc,
                 [cur]: Number(response.data.data.questions?.[cur]?.score ?? 0),
-              }),
-              {}
-            )
+              };
+            }, {})
           );
           setAssessmentData(response.data.data.date);
         })
@@ -121,6 +123,8 @@ const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
         });
     }
   }, [mode, assessmentId]);
+
+  let counter = 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -147,6 +151,7 @@ const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
             <Label className="font-semibold">Assessment Date</Label>
             <Input
               type="date"
+              
               value={assessmentDate}
               disabled={readOnly}
               readOnly={readOnly}
@@ -169,18 +174,18 @@ const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
                 </Label>
 
                 <div className="flex flex-col gap-4 w-full">
-                  {assessments.map((assessment) => (
+                  {assessments.map((assessment, i) => (
                     <div
                       key={assessment.id}
                       className="flex flex-col md:flex-row items-start md:items-center justify-between border-b pb-4 pt-4 px-4 rounded-lg shadow-sm min-h-[70px]"
                     >
-                      <span className="text-base md:text-lg mb-2 md:mb-0">
+                      <span className="text-base md:text-lg mb-2 md:mb-0 max-w-[400px] text-wrap">
                         {assessment.description}
                       </span>
                       <Input
                         type="number"
-                        name={assessment.id}
-                        value={formData[assessment.id]}
+                        name={`${counter}`}
+                        value={formData[counter++]}
                         className="w-full md:w-40 lg:w-48 text-center border-gray-300 rounded-lg px-3 py-2 text-lg"
                         readOnly={readOnly}
                         disabled={readOnly}
@@ -216,6 +221,7 @@ const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
               </Button>
               <Button
                 id={SUBMIT_BUTTON_PROVIDER_ID}
+                disabled={IsShowMode(mode) || isLoading}
                 type="button"
                 className="px-8 py-3 bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg"
                 onClick={(e) =>

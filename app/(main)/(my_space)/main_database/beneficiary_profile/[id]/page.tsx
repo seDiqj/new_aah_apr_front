@@ -22,7 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useParentContext } from "@/contexts/ParentContext";
 import { MainDatabaseBeneficiaryProfileInterface } from "@/interfaces/Interfaces";
@@ -41,6 +41,27 @@ import {
 import { use, useEffect, useState } from "react";
 import ChromeTabs from "@/app/(main)/projects/Components/ChromeTab";
 
+type Session = {
+  id: number | null;
+  group: string | null;
+  session: string;
+  date: string;
+  topic: string;
+};
+
+type Dessaggregation = {
+  id: string;
+  description: string;
+};
+
+type IndicatorState = {
+  id: number;
+  indicatorRef: string;
+  type: string;
+  sessions: Session[];
+  dessaggregations: Dessaggregation[];
+};
+
 const BeneficiaryProfilePage: React.FC<
   MainDatabaseBeneficiaryProfileInterface
 > = (params: MainDatabaseBeneficiaryProfileInterface) => {
@@ -48,7 +69,7 @@ const BeneficiaryProfilePage: React.FC<
 
   const {
     reqForToastAndSetMessage,
-    axiosInstance,
+    requestHandler,
     reqForConfirmationModelFunc,
   } = useParentContext();
 
@@ -59,9 +80,14 @@ const BeneficiaryProfilePage: React.FC<
   const [programInfo, setProgramInfo] = useState<MainDatabaseProgram[]>();
   const [mealTools, setMealTools] = useState<any[]>([]);
   const [reqForMealToolForm, setReqForMealToolForm] = useState<boolean>(false);
+  const [mealToolId, setMealToolId] = useState<number | null>(null);
   const [reqForMealToolEditForm, setReqForMealToolEditForm] =
     useState<boolean>(false);
   const [currentTab, setCurrentTab] = useState<string>("beneficiaryInfo");
+
+  const [indicators, setIndicators] = useState<IndicatorState[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [deleteLoading, setDeleteLoading] = useState<number | false>(false);
 
   const handleEvaluationFormChange = (e: any) => {
     const name: string = e.target.name;
@@ -72,19 +98,7 @@ const BeneficiaryProfilePage: React.FC<
       [name]: value,
     }));
   };
-
-  const handleSubmitMealtoolForm = (mealTools: any) => {
-    axiosInstance
-      .post(`/main_db/beneficiary/mealtools/${id}`, { mealtools: mealTools })
-      .then((response: any) => {
-        reqForToastAndSetMessage(response.data.message);
-        setReqForMealToolForm(false);
-      })
-      .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
-      );
-  };
-
+  
   const handleSubmitEvaluationForm = (e: any) => {
     e.preventDefault();
 
@@ -99,7 +113,7 @@ const BeneficiaryProfilePage: React.FC<
     });
 
     if (!isError)
-      axiosInstance
+      requestHandler()
         .post(`main_db/beneficiary/evaluation/${id}`, {
           evaluation: evaluationForm,
         })
@@ -117,8 +131,9 @@ const BeneficiaryProfilePage: React.FC<
       setMealTools(mealTools.filter((_: any, i: number) => i !== index));
       return;
     }
+    setDeleteLoading(id);
 
-    axiosInstance
+    requestHandler()
       .delete(`/main_db/beneficiary/mealtool/${id}`)
       .then((response: any) => {
         reqForToastAndSetMessage(response.data.message);
@@ -126,21 +141,13 @@ const BeneficiaryProfilePage: React.FC<
       })
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
-      );
-  };
-
-  const handleEditMealTool = (mealTool: any) => {
-    axiosInstance
-      .put(`/main_db/beneficiary/mealtool/${mealTool.id}`, mealTool)
-      .then((response: any) => reqForToastAndSetMessage(response.data.message))
-      .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
-      );
+      )
+      .finally(() => setDeleteLoading(false));
   };
 
   useEffect(() => {
     // Fitching Beneficiary info.
-    axiosInstance
+    requestHandler()
       .get(`/main_db/beneficiary/${id}`)
       .then((response: any) => {
         if (response.data.status) setBeneficiaryInfo(response.data.data);
@@ -150,7 +157,7 @@ const BeneficiaryProfilePage: React.FC<
       );
 
     // Fitching Program Info.
-    axiosInstance
+    requestHandler()
       .get(`main_db/program/${id}`)
       .then((response: any) => {
         if (response.data.status) setProgramInfo(response.data.data);
@@ -161,10 +168,10 @@ const BeneficiaryProfilePage: React.FC<
   }, []);
 
   useEffect(() => {
-    axiosInstance
+    requestHandler()
       .get(`main_db/beneficiary/mealtool/${id}`)
       .then((response: any) => {
-        setMealTools(response.data.data);
+        setMealTools((prev) => [...prev, response.data.data]);
       })
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
@@ -172,16 +179,46 @@ const BeneficiaryProfilePage: React.FC<
   }, []);
 
   useEffect(() => {
-    axiosInstance
+    requestHandler()
       .get(`main_db/beneficiary/evaluation/${id}`)
       .then((response: any) => {
         setEvaluationForm(response.data.data);
-        console.log(response.data.data);
       })
       .catch((error: any) => {
         reqForToastAndSetMessage(error.response.data.message);
-        console.log(error.response.data);
       });
+  }, []);
+
+  // Fetch indicators from backend
+  useEffect(() => {
+    setLoading(true);
+    requestHandler()
+      .get(`/main_db/indicators/${id}`)
+      .then((response: any) => {
+        const mapped = response.data.data.map((ind: any) => ({
+          id: ind.id,
+          type: ind.type,
+          sessions: ind.sessions.map((session: any) => ({
+            id: session.id,
+            group: session.group,
+            session: session.session,
+            date: session.date,
+            topic: session.topic,
+          })),
+          dessaggregations:
+            ind.dessaggregations.map((d: any) => ({
+              id: d.id,
+              description: d.description,
+            })) || [],
+        }));
+        setIndicators(mapped);
+      })
+      .catch((error: any) => {
+        reqForToastAndSetMessage(
+          error.response?.data?.message || "Error fetching indicators"
+        );
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   return (
@@ -203,29 +240,44 @@ const BeneficiaryProfilePage: React.FC<
           >
             {/* List of tabs */}
             <ChromeTabs
+              currentTab={currentTab}
+              onCurrentTabChange={setCurrentTab}
               initialTabs={[
                 {
                   value: "beneficiaryInfo",
                   title: "Beneficiary",
-                  stateSetter: setCurrentTab,
                 },
                 {
                   value: "activity",
                   title: "Activity",
-                  stateSetter: setCurrentTab,
+                  hoverTitle: `Number of individual sessions: ${indicators.reduce(
+                    (s: any, ind: IndicatorState) =>
+                      s +
+                      ind.sessions.filter(
+                        (session: any) => session.group == null
+                      ).length,
+                    0
+                  )} \nNumber of group sessions: ${indicators.reduce(
+                    (s: any, ind: IndicatorState) =>
+                      s +
+                      ind.sessions.filter(
+                        (session: any) => session.group != null
+                      ).length,
+                    0
+                  )}`,
                 },
                 {
                   value: "mealtool",
                   title: "Meal Tools",
-                  stateSetter: setCurrentTab,
+                  hoverTitle: `Number of mealtools: ${mealTools.length}`,
                 },
                 {
                   value: "evaluation",
                   title: "Evaluation",
-                  stateSetter: setCurrentTab,
                 },
               ]}
             ></ChromeTabs>
+
             {/* Beneficiary Info */}
             <TabsContent value="beneficiaryInfo" className="h-full">
               <Card className="h-full flex flex-col shadow-sm border rounded-2xl">
@@ -309,7 +361,11 @@ const BeneficiaryProfilePage: React.FC<
             <TabsContent value="activity" className="h-full">
               <Card className="relative min-h-[350px] h-full flex flex-col">
                 <CardContent className="flex flex-col gap-4 overflow-auto">
-                  <SessionsPage></SessionsPage>
+                  <SessionsPage
+                    indicatorStateSetter={setIndicators}
+                    indicators={indicators}
+                    isLoading={loading}
+                  ></SessionsPage>
                 </CardContent>
                 <CardFooter className="flex flex-row w-full gap-2 items-center justify-end"></CardFooter>
               </Card>
@@ -376,7 +432,19 @@ const BeneficiaryProfilePage: React.FC<
                             </div>
                             <div className="flex justify-end gap-2 p-2">
                               <Button
-                                variant="destructive"
+                                variant="default"
+                                className="bg-orange-500"
+                                onClick={() => {
+                                  setMealToolId(tool.id);
+                                  setReqForMealToolEditForm(true);
+                                }}
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                variant="default"
+                                className="bg-red-500"
+                                disabled={deleteLoading == tool.id}
                                 onClick={() =>
                                   reqForConfirmationModelFunc(
                                     MealToolDeleteButtonMessage,
@@ -386,7 +454,9 @@ const BeneficiaryProfilePage: React.FC<
                                   )
                                 }
                               >
-                                Delete
+                                {deleteLoading == tool.id
+                                  ? "Deleting ..."
+                                  : "Delete"}
                               </Button>
                             </div>
                           </AccordionContent>
@@ -425,7 +495,7 @@ const BeneficiaryProfilePage: React.FC<
                           name="date"
                           value={evaluationForm.date}
                           type="date"
-                          className="w-64 bg-white text-black"
+                          className="w-64 bg-white"
                           onChange={handleEvaluationFormChange}
                         />
                       </div>
@@ -479,7 +549,7 @@ const BeneficiaryProfilePage: React.FC<
 
                       <Textarea
                         placeholder="If other please specify here..."
-                        className="w-full bg-white text-black"
+                        className="w-full"
                         name="otherClientSessionEvaluation"
                         value={evaluationForm.otherClientSessionEvaluation}
                         onChange={handleEvaluationFormChange}
@@ -506,7 +576,7 @@ const BeneficiaryProfilePage: React.FC<
                           name="satisfactionDate"
                           value={evaluationForm.satisfactionDate}
                           onChange={handleEvaluationFormChange}
-                          className="w-64 bg-white text-black"
+                          className="w-64 bg-white"
                         />
                       </div>
 
@@ -528,6 +598,7 @@ const BeneficiaryProfilePage: React.FC<
                               className="flex flex-col items-center gap-1"
                             >
                               <span className="text-3xl">{option.emoji}</span>
+                              <span className="text-sm">{option.label}</span>
                               <RadioGroupItem
                                 value={option.label}
                                 id={option.label}
@@ -557,7 +628,7 @@ const BeneficiaryProfilePage: React.FC<
                           name="dischargeReasonDate"
                           value={evaluationForm.dischargeReasonDate}
                           onChange={handleEvaluationFormChange}
-                          className="w-64 bg-white text-black"
+                          className="w-64 bg-white"
                         />
                       </div>
 
@@ -610,7 +681,7 @@ const BeneficiaryProfilePage: React.FC<
 
                       <Textarea
                         placeholder="If other please specify here..."
-                        className="w-full bg-white text-black"
+                        className="w-full"
                         name="otherDischargeReasone"
                         value={evaluationForm.otherDischargeReasone}
                         onChange={handleEvaluationFormChange}
@@ -643,20 +714,18 @@ const BeneficiaryProfilePage: React.FC<
           <MealToolForm
             open={reqForMealToolForm}
             onOpenChange={setReqForMealToolForm}
-            onSubmit={handleSubmitMealtoolForm}
             mealToolsStateSetter={setMealTools}
-            mealToolsState={mealTools}
             mode={"create"}
           ></MealToolForm>
         )}
-        {reqForMealToolEditForm && (
+
+        {reqForMealToolEditForm && mealToolId && (
           <MealToolForm
             open={reqForMealToolEditForm}
             onOpenChange={setReqForMealToolEditForm}
-            onSubmit={handleSubmitMealtoolForm}
             mealToolsStateSetter={setMealTools}
-            mealToolsState={mealTools}
-            mode={"create"}
+            mealtoolId={mealToolId}
+            mode={"edit"}
           ></MealToolForm>
         )}
       </div>

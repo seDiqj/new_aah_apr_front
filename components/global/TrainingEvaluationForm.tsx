@@ -31,7 +31,7 @@ const TrainingEvaluationForm: React.FC<TrainingEvaluationInterface> = ({
 
   const {
     reqForToastAndSetMessage,
-    axiosInstance,
+    requestHandler,
     reqForConfirmationModelFunc,
   } = useParentContext();
 
@@ -84,7 +84,7 @@ const TrainingEvaluationForm: React.FC<TrainingEvaluationInterface> = ({
 
   const handleSubmit = () => {
     setIsLoading(true);
-    axiosInstance
+    requestHandler()
       .post(`/training_db/training/evaluation/${id}`, {
         evaluations: summary,
         remark: remark,

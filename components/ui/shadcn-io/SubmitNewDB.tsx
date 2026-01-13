@@ -26,6 +26,8 @@ import { useEffect, useState } from "react";
 import { useParentContext } from "@/contexts/ParentContext";
 import { SubmittNewDatabaseFormSchema } from "@/schemas/FormsSchema";
 import { SubmitNewDatabaseMessage } from "@/constants/ConfirmationModelsTexts";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import StringHelper from "@/helpers/StringHelpers/StringHelper";
 
 const months = [
   "January",
@@ -66,6 +68,7 @@ const SubmitNewDB: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
   const [fromYear, setFromYear] = React.useState<number | undefined>();
   const [toMonth, setToMonth] = React.useState<string | undefined>();
   const [toYear, setToYear] = React.useState<number | undefined>();
+  const [loading, setLoading] = React.useState<boolean>(false);
 
   const formatMonthYear = (m?: string, y?: number) =>
     m && y ? `${m} / ${y}` : "";
@@ -179,6 +182,7 @@ const SubmitNewDB: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
     // }
 
     // setFormErrors({});
+    setLoading(true);
 
     axiosInstance
       .post("/db_management/submit_new_database", {
@@ -196,7 +200,8 @@ const SubmitNewDB: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
       })
       .catch((error: any) =>
         reqForToastAndSetMessage(error.response.data.message)
-      );
+      )
+      .finally(() => setLoading(false));
   };
 
   return (
@@ -251,7 +256,7 @@ const SubmitNewDB: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
             <SelectContent>
               {databases.map((db, i) => (
                 <SelectItem key={i} value={db.id}>
-                  {db.name}
+                  {StringHelper.normalize(db.name)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -276,7 +281,7 @@ const SubmitNewDB: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
             <SelectContent>
               {provinces.map((p, i) => (
                 <SelectItem key={i} value={p.id}>
-                  {p.name}
+                  {StringHelper.normalize(p.name)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -300,7 +305,7 @@ const SubmitNewDB: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
             <SelectContent>
               {managers.map((m, i) => (
                 <SelectItem key={i} value={m.id}>
-                  {m.name}
+                  {StringHelper.normalize(m.name)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -416,6 +421,8 @@ const SubmitNewDB: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
           {/* Submit button */}
           <div className="flex flex-row items-center justify-end w-full px-2">
             <Button
+              id={SUBMIT_BUTTON_PROVIDER_ID}
+              disabled={loading}
               onClick={() =>
                 reqForConfirmationModelFunc(
                   SubmitNewDatabaseMessage,
@@ -424,7 +431,7 @@ const SubmitNewDB: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
               }
               className="mt-4 w-32"
             >
-              Submit
+              {loading ? "Submitting ..." : "Submit"}
             </Button>
           </div>
         </div>

@@ -19,3 +19,7 @@ export const PREVIOUS_INPUT_BUTTON_PROVIDER = "previousInputBtnProvider";
 export const GLOBAL_SEARCH_BUTTON_PROVIDER = "globalSearchBtnProvider";
 
 export const SIDEBAR_OPEN_TOGGLER_PROVIDER = "sideBarOpenTogglerProvider";
+
+export const NO_OUTCOME_DEFAULT_REFERANCE = "$ NO-OUTCOME-REF#NOOUTCOME-REF $";
+
+export const NO_OUTCOME_DEFAULT_OUTCOME = "$ NO-OUTCOME#NO-OUTCOME $";

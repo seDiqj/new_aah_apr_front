@@ -53,7 +53,6 @@ const Page403: React.FC<Page403Props> = ({ showAnimation = true }) => {
     setImagePositions(positions);
 
     const fadeIn = setTimeout(() => setVisible(true), 50);
-
   }, [showAnimation]);
 
   return (
@@ -79,12 +78,12 @@ const Page403: React.FC<Page403Props> = ({ showAnimation = true }) => {
       ))}
 
       <div className="absolute inset-0 bg-green-400 dark:bg-[#00bfff] opacity-80 mix-blend-screen transition-opacity duration-500"></div>
-      
+
       <div className="relative z-10 text-center text-white flex flex-col items-center">
         <img
-          src="/logo.jpg"
+          src="/AAHLogo.png"
           alt="logo"
-          className="w-36 h-36 brightness-125 rounded-full shadow-xl mb-4"
+          className="w-38 h-36 brightness-125 rounded-full shadow-xl mb-4"
         />
         <h1 className="text-4xl font-bold mb-2">403 - Access Denied</h1>
         <p className="text-lg">You do not have permission to view this page.</p>

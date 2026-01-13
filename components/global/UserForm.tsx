@@ -7,7 +7,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,6 +39,7 @@ import {
 import { UserFormDefault } from "@/constants/FormsDefaultValues";
 import { UserType } from "@/types/Types";
 import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { AxiosError } from "axios";
 
 const ProfileModal: React.FC<UserInterface> = ({
   open,
@@ -48,7 +48,7 @@ const ProfileModal: React.FC<UserInterface> = ({
   userId,
 }) => {
   const {
-    axiosInstance,
+    requestHandler,
     reqForToastAndSetMessage,
     reqForConfirmationModelFunc,
     handleReload,
@@ -143,8 +143,8 @@ const ProfileModal: React.FC<UserInterface> = ({
     setIsLoading(true);
 
     const request = IsCreateMode(mode)
-      ? axiosInstance.post("/user_mng/user", formData)
-      : axiosInstance.post(`/user_mng/edit_user/${userId}`, formData);
+      ? requestHandler().post("/user_mng/user", formData)
+      : requestHandler().post(`/user_mng/edit_user/${userId}`, formData);
 
     request
       .then((response: any) => {
@@ -161,11 +161,10 @@ const ProfileModal: React.FC<UserInterface> = ({
   useEffect(() => {
     if (IsEditOrShowMode(mode)) {
       Promise.all([
-        axiosInstance.get(`/user_mng/user/${userId}`),
-        axiosInstance.get(`/user_mng/permissions_&_roles`),
+        requestHandler().get(`/user_mng/user/${userId}`),
+        requestHandler().get(`/user_mng/permissions_&_roles`),
       ])
         .then(([userRes, rolePermRes]: any) => {
-          console.log(userRes);
           const { permissions, role, ...rest } = userRes.data.data;
           setForm((prev) => ({ ...prev, ...rest }));
           setAllPermissions(rolePermRes.data.data.permissions);
@@ -178,9 +177,11 @@ const ProfileModal: React.FC<UserInterface> = ({
           );
           setLoading(false);
         })
-        .catch(() => setLoading(false));
+        .catch((error: AxiosError<any, any>) =>
+          reqForToastAndSetMessage(error.response?.data.message)
+        );
     } else {
-      axiosInstance
+      requestHandler()
         .get("/user_mng/permissions_&_roles")
         .then((response: any) => {
           setAllPermissions(response.data.data.permissions);
@@ -189,7 +190,7 @@ const ProfileModal: React.FC<UserInterface> = ({
         })
         .catch(() => setLoading(false));
     }
-  }, [mode, axiosInstance, userId]);
+  }, [mode, requestHandler(), userId]);
 
   const getGroupPermissionIds = (perms: any[]) => perms.map((p) => p.id);
 
@@ -219,12 +220,6 @@ const ProfileModal: React.FC<UserInterface> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
-        <Button variant={IsShowMode(mode) ? "outline" : "default"}>
-          {IsShowMode(mode) ? "View Profile" : "Open Profile Modal"}
-        </Button>
-      </DialogTrigger>
-
       <DialogContent
         className="
           min-w-[1000px]
@@ -246,26 +241,36 @@ const ProfileModal: React.FC<UserInterface> = ({
               : "Create User"}
           </h2>
           <div className="space-y-8 sticky top-0">
-            {steps.map((s) => (
-              <div
-                key={s.id}
-                onClick={() => setStep(s.id)}
-                className={`flex items-center gap-4 cursor-pointer ${
-                  step === s.id ? "" : "opacity-60 hover:opacity-100 transition"
-                }`}
-              >
+            {steps
+              .filter((step) =>
+                step.label == "Summary"
+                  ? IsShowMode(mode)
+                    ? false
+                    : true
+                  : true
+              )
+              .map((s) => (
                 <div
-                  className={`w-10 h-10 flex items-center justify-center rounded-full ${
+                  key={s.id}
+                  onClick={() => setStep(s.id)}
+                  className={`flex items-center gap-4 cursor-pointer ${
                     step === s.id
-                      ? "bg-blue-600"
-                      : "border border-gray-600 bg-transparent"
+                      ? ""
+                      : "opacity-60 hover:opacity-100 transition"
                   }`}
                 >
-                  {s.icon}
+                  <div
+                    className={`w-10 h-10 flex items-center justify-center rounded-full ${
+                      step === s.id
+                        ? "bg-blue-600"
+                        : "border border-gray-600 bg-transparent"
+                    }`}
+                  >
+                    {s.icon}
+                  </div>
+                  <span>{s.label}</span>
                 </div>
-                <span>{s.label}</span>
-              </div>
-            ))}
+              ))}
           </div>
         </div>
 
@@ -329,6 +334,7 @@ const ProfileModal: React.FC<UserInterface> = ({
                       className="hidden"
                       ref={fileInputRef}
                       onChange={handlePhotoChange}
+                      disabled={IsShowMode(mode)}
                     />
                     <div>
                       <p className="text-lg font-medium">{form.name}</p>
@@ -481,7 +487,7 @@ const ProfileModal: React.FC<UserInterface> = ({
               )}
 
               {/* STEP 3 */}
-              {step === 3 && mode != "show" && (
+              {step === 3 && IsNotShowMode(mode) && (
                 <div className="space-y-4">
                   <Card className="border-gray-700">
                     <CardContent className="p-6 space-y-2">
@@ -555,7 +561,5 @@ const ProfileModal: React.FC<UserInterface> = ({
     </Dialog>
   );
 };
-
-// export default withPermission(ProfileModal, permission);
 
 export default ProfileModal;

@@ -3,7 +3,6 @@
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -25,6 +24,7 @@ import { useProjectShowContext } from "../project_show/[id]/page";
 import { OutputFormInterface } from "@/interfaces/Interfaces";
 import {
   IsCreateMode,
+  IsNoOutcome,
   IsNotShowMode,
   IsOutcomeSaved,
   IsOutputRelatedToThisOutcome,
@@ -71,25 +71,70 @@ const OutputForm: React.FC<OutputFormInterface> = ({ mode }) => {
   return (
     <>
       <Card className="relative h-full flex flex-col overflow-y-auto">
-        <CardHeader className="flex flex-row items-center justify-end w-full">
-          <CardTitle>
+        <CardHeader
+          className="
+          flex
+          flex-row
+          items-center
+          justify-end
+          w-full
+          px-4
+          sm:px-6
+        "
+        >
+          <CardTitle className="w-full flex justify-end">
             {IsNotShowMode(mode) && (
-              <Button onClick={() => setReqForOutputForm(!reqForOutputForm)}>
+              <Button
+                className="w-full sm:w-auto"
+                onClick={() => setReqForOutputForm(!reqForOutputForm)}
+              >
                 Add Output
               </Button>
             )}
           </CardTitle>
         </CardHeader>
 
-        <CardContent className="flex flex-col gap-6 overflow-auto h-[70%]">
+        <CardContent
+          className="
+          flex
+          flex-col
+          gap-6
+          overflow-auto
+          px-4
+          sm:px-6
+          h-[65%]
+          sm:h-[70%]
+        "
+        >
           {outcomes.length >= 1 ? (
             <Accordion type="single" collapsible className="w-full">
               {outcomes
                 .filter((o) => IsOutcomeSaved(o))
                 .map((item, index) => (
-                  <AccordionItem key={index} value={`item-${index}`}>
-                    <AccordionTrigger>{item.outcome}</AccordionTrigger>
-                    <AccordionContent className="flex flex-col gap-4 text-balance max-h-96 overflow-auto">
+                  <AccordionItem
+                    key={index}
+                    value={`item-${index}`}
+                    defaultChecked={true}
+                  >
+                    <AccordionTrigger
+                      className="text-left cursor-pointer"
+                      title={`Outcome: ${item.outcome} \nOutcome Referance: ${item.outcomeRef}`}
+                    >
+                      <span className="max-w-[250px] truncate">
+                        {IsNoOutcome(item) ? "No Outcome" : item.outcomeRef}
+                      </span>
+                    </AccordionTrigger>
+
+                    <AccordionContent
+                      className="
+                      flex
+                      flex-col
+                      gap-4
+                      text-balance
+                      max-h-96
+                      overflow-auto
+                    "
+                    >
                       {/* List of added outputs for current outcome */}
                       <div className="mt-4 overflow-auto border rounded-xl">
                         {outputs.filter((o) =>
@@ -102,6 +147,7 @@ const OutputForm: React.FC<OutputFormInterface> = ({ mode }) => {
                             No outputs added yet.
                           </p>
                         )}
+
                         {outputs
                           .filter((outputItem) =>
                             IsOutputRelatedToThisOutcome(
@@ -112,17 +158,29 @@ const OutputForm: React.FC<OutputFormInterface> = ({ mode }) => {
                           .map((outputItem, outIndex) => (
                             <div
                               key={outIndex}
-                              className="flex items-center justify-between px-3 py-2 border-b last:border-b-0"
+                              className="
+                              flex
+                              flex-col
+                              sm:flex-row
+                              sm:items-center
+                              sm:justify-between
+                              gap-3
+                              px-3
+                              py-3
+                              border-b
+                              last:border-b-0
+                            "
                             >
                               <div className="flex flex-col">
-                                <span className="font-medium">
+                                <span className="font-medium break-words max-w-[250px] truncate">
                                   {outputItem.output}
                                 </span>
-                                <span className="text-sm text-muted-foreground">
+                                <span className="text-sm text-muted-foreground break-words">
                                   {outputItem.outputRef}
                                 </span>
                               </div>
-                              <div className="flex flex-row items-center justify-end gap-2">
+
+                              <div className="flex flex-row items-center justify-end gap-3">
                                 {!readOnly && (
                                   <Trash
                                     onClick={() =>
@@ -143,6 +201,7 @@ const OutputForm: React.FC<OutputFormInterface> = ({ mode }) => {
                                     size={18}
                                   />
                                 )}
+
                                 {outputItem.id &&
                                   (!readOnly ? (
                                     <Edit
@@ -154,7 +213,7 @@ const OutputForm: React.FC<OutputFormInterface> = ({ mode }) => {
                                         setReqForOutputEditModel(true);
                                       }}
                                       size={18}
-                                    ></Edit>
+                                    />
                                   ) : (
                                     <Eye
                                       className="cursor-pointer text-orange-500 hover:text-orange-700"
@@ -165,7 +224,7 @@ const OutputForm: React.FC<OutputFormInterface> = ({ mode }) => {
                                         setReqForOutputShowModel(true);
                                       }}
                                       size={18}
-                                    ></Eye>
+                                    />
                                   ))}
                               </div>
                             </div>
@@ -176,13 +235,27 @@ const OutputForm: React.FC<OutputFormInterface> = ({ mode }) => {
                 ))}
             </Accordion>
           ) : (
-            <div className="flex flex-row items-center justify-center text-center text-muted-foreground text-sm">
+            <div className="flex items-center justify-center text-center text-muted-foreground text-sm py-6">
               No output added yet !
             </div>
           )}
         </CardContent>
 
-        <CardFooter className="flex flex-row w-full gap-2 items-start justify-end absolute bottom-5">
+        <CardFooter
+          className="
+          flex
+          flex-wrap
+          w-full
+          gap-2
+          items-start
+          justify-end
+          px-4
+          sm:px-6
+          static
+          sm:absolute
+          sm:bottom-5
+        "
+        >
           {cardsBottomButtons(
             setCurrentTab,
             "outcome",
@@ -200,7 +273,7 @@ const OutputForm: React.FC<OutputFormInterface> = ({ mode }) => {
           onOpenChange={setReqForOutputForm}
           mode={"create"}
           pageIdentifier={mode}
-        ></OutputModel>
+        />
       )}
 
       {reqForOutputEditModel && outputIdForEditOrShow && (
@@ -210,7 +283,7 @@ const OutputForm: React.FC<OutputFormInterface> = ({ mode }) => {
           mode={readOnly ? "show" : "edit"}
           pageIdentifier={mode}
           outputId={outputIdForEditOrShow}
-        ></OutputEditModel>
+        />
       )}
 
       {reqForOutputShowModel && outputIdForEditOrShow && (
@@ -220,7 +293,7 @@ const OutputForm: React.FC<OutputFormInterface> = ({ mode }) => {
           mode={readOnly ? "show" : "edit"}
           pageIdentifier={mode}
           outputId={outputIdForEditOrShow}
-        ></OutputEditModel>
+        />
       )}
     </>
   );

@@ -28,6 +28,8 @@ import {
 } from "@/constants/SingleAndMultiSelectOptionsList";
 import { MainDatabaseBeneficiaryCreation } from "@/interfaces/Interfaces";
 import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { IsANullOrUndefinedValue } from "@/constants/Constants";
+import { AxiosError, AxiosResponse } from "axios";
 
 const MainDatabaseBeneficiaryForm: React.FC<
   MainDatabaseBeneficiaryCreation
@@ -35,7 +37,7 @@ const MainDatabaseBeneficiaryForm: React.FC<
   const {
     reqForToastAndSetMessage,
     reqForConfirmationModelFunc,
-    axiosInstance,
+    requestHandler,
     handleReload,
   } = useParentContext();
 
@@ -82,7 +84,7 @@ const MainDatabaseBeneficiaryForm: React.FC<
     setFormErrors({});
     setIsLoading(true);
 
-    axiosInstance
+    requestHandler()
       .post("/main_db/beneficiary", formData)
       .then((response: any) => {
         reqForToastAndSetMessage(response.data.message);
@@ -102,9 +104,17 @@ const MainDatabaseBeneficiaryForm: React.FC<
     }[]
   >([]);
 
+  const [registrationDateValidRange, setRegistrationDateValidRange] = useState<{
+    start: string;
+    end: string;
+  }>({
+    start: "2025-1-1",
+    end: "2025-2-1",
+  });
+
   useEffect(() => {
-    axiosInstance
-      .get(`global/programs_for_selection/main_database`)
+    requestHandler()
+      .get(`/global/programs_for_selection/main_database`)
       .then((response: any) => {
         setPrograms(response.data.data.data);
       })
@@ -112,6 +122,22 @@ const MainDatabaseBeneficiaryForm: React.FC<
         reqForToastAndSetMessage(error.response.data.message)
       );
   }, [open]);
+
+  useEffect(() => {
+    if (!formData.program) return;
+
+    requestHandler()
+      .get(`/date/project_date_range_acc_to_program/${formData.program}`)
+      .then((response: AxiosResponse<any, any>) => {
+        setRegistrationDateValidRange({
+          start: toDateOnly(response.data.data.start),
+          end: toDateOnly(response.data.data.end),
+        });
+      })
+      .catch((error: AxiosError<any, any>) =>
+        reqForToastAndSetMessage(error.response?.data.message)
+      );
+  }, [formData.program]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -195,6 +221,7 @@ const MainDatabaseBeneficiaryForm: React.FC<
                 <Input
                   id="dateOfRegistration"
                   name="dateOfRegistration"
+                  disabled={!formData.program}
                   type="date"
                   onChange={handleFormChange}
                   className={`border rounded-xl p-2 rounded ${
@@ -205,6 +232,8 @@ const MainDatabaseBeneficiaryForm: React.FC<
                       ? formErrors["dateOfRegistration"]
                       : undefined
                   }
+                  min={registrationDateValidRange.start}
+                  max={registrationDateValidRange.end}
                 />
               </div>
 
@@ -473,3 +502,7 @@ export default withPermission(
   MainDatabaseBeneficiaryForm,
   "Maindatabase.create"
 );
+
+export function toDateOnly(dateTime: string) {
+  return new Date(dateTime).toISOString().slice(0, 10);
+}

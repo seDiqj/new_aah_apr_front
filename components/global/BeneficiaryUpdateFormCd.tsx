@@ -10,7 +10,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { SingleSelect } from "@/components/single-select";
 import { useParentContext } from "@/contexts/ParentContext";
@@ -32,7 +31,7 @@ const BeneficiaryUpdateCD: React.FC<
 > = ({ open, onOpenChange, beneficiaryId }) => {
   const {
     reqForToastAndSetMessage,
-    axiosInstance,
+    requestHandler,
     handleReload,
     reqForConfirmationModelFunc,
   } = useParentContext();
@@ -42,21 +41,6 @@ const BeneficiaryUpdateCD: React.FC<
   );
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
-
-  useEffect(() => {
-    if (open && beneficiaryId) {
-      axiosInstance
-        .get(`/community_dialogue_db/beneficiary/${beneficiaryId}`)
-        .then((response: any) => {
-          setFormData(response.data.data);
-        })
-        .catch((error: any) => {
-          reqForToastAndSetMessage(
-            error.response?.data?.message || "Failed to load beneficiary data"
-          );
-        });
-    }
-  }, [open, beneficiaryId]);
 
   const handleFormChange = (e: any) => {
     const { name, value } = e.target;
@@ -88,7 +72,7 @@ const BeneficiaryUpdateCD: React.FC<
     setFormErrors({});
     setIsLoading(true);
 
-    axiosInstance
+    requestHandler()
       .put(`/community_dialogue_db/beneficiary/${beneficiaryId}`, formData)
       .then((response: any) => {
         reqForToastAndSetMessage(
@@ -105,12 +89,23 @@ const BeneficiaryUpdateCD: React.FC<
       .finally(() => setIsLoading(false));
   };
 
+  useEffect(() => {
+    if (open && beneficiaryId) {
+      requestHandler()
+        .get(`/community_dialogue_db/beneficiary/${beneficiaryId}`)
+        .then((response: any) => {
+          setFormData(response.data.data);
+        })
+        .catch((error: any) => {
+          reqForToastAndSetMessage(
+            error.response?.data?.message || "Failed to load beneficiary data"
+          );
+        });
+    }
+  }, [open, beneficiaryId]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
-        <Button className="px-4 py-2 rounded-md">Edit</Button>
-      </DialogTrigger>
-
       <DialogContent
         className="sm:max-w-4xl border border-gray-300 dark:border-gray-600 rounded-lg ml-16 overflow-y-auto"
         style={{
@@ -288,6 +283,7 @@ const BeneficiaryUpdateCD: React.FC<
             <Input
               id="dateOfRegistration"
               name="dateOfRegistration"
+              value={formData.dateOfRegistration}
               type="date"
               onChange={handleFormChange}
               className={`border rounded-xl p-2 rounded ${

@@ -27,7 +27,7 @@ import { IsCreateMode, IsShowMode } from "@/constants/Constants";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const AprLogsSubPage: React.FC<AprLogsSubPageInterface> = ({ mode }) => {
-  const { axiosInstance, reqForToastAndSetMessage } = useParentContext();
+  const { requestHandler, reqForToastAndSetMessage } = useParentContext();
   const { projectId } = IsCreateMode(mode)
     ? useProjectContext()
     : IsShowMode(mode)
@@ -40,8 +40,9 @@ const AprLogsSubPage: React.FC<AprLogsSubPageInterface> = ({ mode }) => {
   const [logs, setLogs] = useState<Logs>([]);
 
   useEffect(() => {
+    if (!projectId) return;
     setLoading(true);
-    axiosInstance
+    requestHandler()
       .get(`/projects/logs/${projectId}`)
       .then((response: any) => setLogs(response.data.data))
       .catch((error: any) =>

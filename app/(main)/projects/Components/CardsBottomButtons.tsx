@@ -19,7 +19,8 @@ export const cardsBottomButtons = (
   nextBtnOnClickFuncInput: string,
   section?: "project" | "isp3",
   backBtnDisabled?: boolean,
-  nextBtnDisabled?: boolean
+  nextBtnDisabled?: boolean,
+  saveBtnDisabled?: boolean,
 ) => {
   const { reqForConfirmationModelFunc } = useParentContext();
   return (
@@ -29,13 +30,14 @@ export const cardsBottomButtons = (
         disabled={backBtnDisabled}
         variant="outline"
         onClick={() => backBtnOnClick(backBtnOnClickFuncInput)}
+        className="mr-2"
       >
         Back
       </Button>
       {saveBtnOnClick && section && (
         <Button
           id={SUBMIT_BUTTON_PROVIDER_ID}
-          disabled={saveBtnOnClick == null}
+          disabled={saveBtnOnClick == null || isLoading || saveBtnDisabled}
           onClick={() =>
             reqForConfirmationModelFunc(
               getConfirmationMessage(section),
@@ -51,6 +53,7 @@ export const cardsBottomButtons = (
         disabled={nextBtnDisabled}
         onClick={() => nextBtnOnClick(nextBtnOnClickFuncInput)}
         variant={"outline"}
+        className="ml-2"
       >
         Next
       </Button>

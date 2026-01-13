@@ -4,7 +4,7 @@ import BreadcrumbWithCustomSeparator from "@/components/global/BreadCrumb";
 import MonitoringTablePage from "@/components/global/ExcelSheet";
 import SubHeader from "@/components/global/SubHeader";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { withPermission } from "@/lib/withPermission";
 import React, { createContext, useContext } from "react";
 import { useState } from "react";
@@ -22,7 +22,7 @@ import { Isp3Default, ProjectDefault } from "@/constants/FormsDefaultValues";
 import ChromeTabs from "../Components/ChromeTab";
 
 const NewProjectPage = () => {
-  const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
+  const { reqForToastAndSetMessage, requestHandler } = useParentContext();
 
   const [formData, setFormData] = useState<Project>(ProjectDefault());
 
@@ -51,7 +51,7 @@ const NewProjectPage = () => {
   const handleDelete = (url: string, id: string | null) => {
     if (!id) return;
 
-    axiosInstance
+    requestHandler()
       .delete(url + `/${id}`)
       .then((response: any) => reqForToastAndSetMessage(response.data.message))
       .catch((error: any) =>
@@ -103,46 +103,44 @@ const NewProjectPage = () => {
               className="h-full"
             >
               <ChromeTabs
+                currentTab={currentTab}
+                onCurrentTabChange={setCurrentTab}
                 initialTabs={[
                   {
                     value: "project",
                     title: "Project",
-                    stateSetter: setCurrentTab,
                   },
                   {
                     value: "outcome",
                     title: "Outcome",
-                    stateSetter: setCurrentTab,
                   },
                   {
                     value: "output",
                     title: "Output",
-                    stateSetter: setCurrentTab,
                   },
                   {
                     value: "indicator",
                     title: "Indicator",
-                    stateSetter: setCurrentTab,
                   },
                   {
                     value: "dessaggregation",
                     title: "Disaggregation",
-                    stateSetter: setCurrentTab,
+                  },
+                  {
+                    value: "aprPreview",
+                    title: "APR Preview",
                   },
                   {
                     value: "isp3",
                     title: "ISP3",
-                    stateSetter: setCurrentTab,
                   },
                   {
                     value: "finalization",
                     title: "APR Finalization",
-                    stateSetter: setCurrentTab,
                   },
                   {
                     value: "logs",
                     title: "Activity Logs",
-                    stateSetter: setCurrentTab,
                   },
                 ]}
               />
@@ -159,7 +157,7 @@ const NewProjectPage = () => {
 
               {/* Output */}
               <TabsContent value="output" className="h-full">
-                <OutputForm      mode="create"></OutputForm>
+                <OutputForm mode="create"></OutputForm>
               </TabsContent>
 
               {/* Indicator */}

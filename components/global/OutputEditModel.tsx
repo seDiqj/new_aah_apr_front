@@ -27,6 +27,7 @@ import {
   IsCreatePage,
   IsEditMode,
   IsEditPage,
+  IsNoOutcome,
   IsNotShowMode,
   IsOutcomeSaved,
   IsOutputEdited,
@@ -48,7 +49,7 @@ const OutputModel: React.FC<OutputInterface> = ({
   const {
     reqForConfirmationModelFunc,
     reqForToastAndSetMessage,
-    axiosInstance,
+    requestHandler,
   } = useParentContext();
   const {
     outcomes,
@@ -121,7 +122,7 @@ const OutputModel: React.FC<OutputInterface> = ({
     setIsLoading(true);
 
     if (IsCreateMode(mode))
-      axiosInstance
+      requestHandler()
         .post("/projects/o/output", formData)
         .then((response: any) => {
           reqForToastAndSetMessage(response.data.message);
@@ -136,7 +137,7 @@ const OutputModel: React.FC<OutputInterface> = ({
         })
         .finally(() => setIsLoading(false));
     else if (IsEditMode(mode))
-      axiosInstance
+      requestHandler()
         .put(`/projects/output/${outputId}`, formData)
         .then((response: any) => {
           reqForToastAndSetMessage(response.data.message);
@@ -166,7 +167,7 @@ const OutputModel: React.FC<OutputInterface> = ({
   useEffect(() => {
     if ((IsEditMode(mode) || IsShowMode(mode)) && outputId) {
       setIsLoading(true);
-      axiosInstance
+      requestHandler()
         .get(`projects/output/${outputId}`)
         .then((response: any) => {
           setFormData(response.data.data);
@@ -182,18 +183,28 @@ const OutputModel: React.FC<OutputInterface> = ({
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent
-        className="sm:max-w-3xl border border-gray-300 dark:border-gray-600 rounded-lg ml-16 overflow-auto"
+        className="
+        w-[95vw]
+        sm:w-full
+        sm:max-w-3xl
+        border
+        border-gray-300
+        dark:border-gray-600
+        rounded-lg
+        overflow-auto
+        mx-auto
+        sm:ml-16
+        px-4
+        sm:px-6
+        py-3
+      "
         style={{
           minHeight: "60vh",
           maxHeight: "60vh",
-          paddingTop: "10px",
-          paddingBottom: "10px",
-          paddingLeft: "16px",
-          paddingRight: "16px",
         }}
       >
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-base sm:text-lg">
             {IsCreateMode(mode)
               ? "Create New Output"
               : IsEditMode(mode)
@@ -202,16 +213,22 @@ const OutputModel: React.FC<OutputInterface> = ({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="grid gap-4">
+        <div className="grid gap-4 mt-2">
           <div className="flex flex-col gap-1">
             <Label htmlFor="outputRef">Outcome Reference</Label>
             <SingleSelect
               options={outcomes
                 .filter((outcome) => IsOutcomeSaved(outcome))
-                .map((outcome) => ({
-                  value: outcome.id!,
-                  label: outcome.outcomeRef,
-                }))}
+                .map((outcome) => {
+                  let outcomeRef: string = outcome.outcomeRef;
+
+                  if (IsNoOutcome(outcome)) outcomeRef = "No outcome";
+
+                  return {
+                    value: outcome.id!,
+                    label: outcomeRef,
+                  };
+                })}
               value={formData.outcomeId ?? "Unknown value"}
               onValueChange={(value: string) =>
                 setFormData((prev) => ({
@@ -231,7 +248,7 @@ const OutputModel: React.FC<OutputInterface> = ({
               value={formData.output}
               onChange={handleFormChange}
               disabled={mode == "show"}
-              className={`border p-2 rounded ${
+              className={`border p-2 rounded min-h-[90px] ${
                 formErrors.output ? "!border-red-500" : ""
               }`}
               title={formErrors.output}
@@ -255,14 +272,28 @@ const OutputModel: React.FC<OutputInterface> = ({
         </div>
 
         {IsNotShowMode(mode) && (
-          <DialogFooter>
-            <div className="flex gap-2 w-full justify-end">
-              <Button variant="outline" onClick={handleCancel}>
+          <DialogFooter className="mt-4">
+            <div
+              className="
+              flex
+              flex-col
+              sm:flex-row
+              gap-2
+              w-full
+              justify-end
+            "
+            >
+              <Button
+                variant="outline"
+                className="w-full sm:w-auto"
+                onClick={handleCancel}
+              >
                 Cancel
               </Button>
               <Button
                 id={SUBMIT_BUTTON_PROVIDER_ID}
                 disabled={isLoading}
+                className="w-full sm:w-auto"
                 onClick={() =>
                   reqForConfirmationModelFunc(
                     IsCreateMode(mode)

@@ -1,16 +1,14 @@
 "use client";
 
 import BreadcrumbWithCustomSeparator from "@/components/global/BreadCrumb";
-import MonitoringTablePage from "@/components/global/ExcelSheet";
 import SubHeader from "@/components/global/SubHeader";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useParentContext } from "@/contexts/ParentContext";
 import { withPermission } from "@/lib/withPermission";
 import React, { createContext, useContext } from "react";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { isp3s } from "../../utils/OptionLists";
 import ProjectForm from "../../Components/ProjectForm";
 import OutputForm from "../../Components/OutputForm";
 import DessaggregationForm from "../../Components/DessaggregationForm";
@@ -21,16 +19,17 @@ import AprLogsSubPage from "../../Components/AprLogsSubPage";
 import IndicatorForm from "../../Components/IndicatorForm";
 import Isp3SubPage from "../../Components/Isp3SubPage";
 import { IndicatorModel } from "@/components/global/IndicatorEditModel";
-import { Button } from "@/components/ui/button";
 import OutcomeModel from "@/components/global/OutcomeEditModel";
 import OutputModel from "@/components/global/OutputEditModel";
 import { Isp3Default } from "@/constants/FormsDefaultValues";
 import ChromeTabs from "../../Components/ChromeTab";
+import { IsNoOutcome } from "@/constants/Constants";
+import MonitoringTablePage from "@/components/global/ExcelSheet";
 
 const EditProjectPage = () => {
   const { id } = useParams();
 
-  const { reqForToastAndSetMessage, axiosInstance } = useParentContext();
+  const { reqForToastAndSetMessage, requestHandler } = useParentContext();
 
   const [formData, setFormData] = useState<Project>({
     id: null,
@@ -85,10 +84,9 @@ const EditProjectPage = () => {
 
   // Fech project data
   useEffect(() => {
-    axiosInstance
+    requestHandler()
       .get(`/projects/${id}`)
       .then((response: any) => {
-        console.log(response.data.data);
         const { outcomesInfo, ...project } = response.data.data;
         project["provinces"] = project.provinces.map(
           (province: { id: string; name: string; pivo: any }) => province.name
@@ -200,7 +198,7 @@ const EditProjectPage = () => {
   const handleDelete = (url: string, id: string | null) => {
     if (!id) return;
 
-    axiosInstance
+    requestHandler()
       .delete(url + `/${id}`)
       .then((response: any) => reqForToastAndSetMessage(response.data.message))
       .catch((error: any) =>
@@ -255,46 +253,52 @@ const EditProjectPage = () => {
               className="h-full"
             >
               <ChromeTabs
+                currentTab={currentTab}
+                onCurrentTabChange={setCurrentTab}
                 initialTabs={[
                   {
                     value: "project",
                     title: "Project",
-                    stateSetter: setCurrentTab,
+                    hoverTitle: `Project status: ${formData.status}`,
                   },
                   {
                     value: "outcome",
                     title: "Outcome",
-                    stateSetter: setCurrentTab,
+                    hoverTitle: `Number of outcomes: ${
+                      outcomes.filter((outcome) => !IsNoOutcome(outcome)).length
+                    }`,
                   },
                   {
                     value: "output",
                     title: "Output",
-                    stateSetter: setCurrentTab,
+                    hoverTitle: `Number of outputs: ${outputs.length}`,
                   },
                   {
                     value: "indicator",
                     title: "Indicator",
-                    stateSetter: setCurrentTab,
+                    hoverTitle: `Number of indicators: ${indicators.length}`,
                   },
                   {
                     value: "dessaggregation",
                     title: "Disaggregation",
-                    stateSetter: setCurrentTab,
+                    hoverTitle: `Number of disaggregation: ${dessaggregations.length}`,
+                  },
+                  {
+                    value: "aprPreview",
+                    title: "APR Preview",
                   },
                   {
                     value: "isp3",
                     title: "ISP3",
-                    stateSetter: setCurrentTab,
                   },
                   {
                     value: "finalization",
                     title: "APR Finalization",
-                    stateSetter: setCurrentTab,
+                    hoverTitle: `Apr status: ${projectAprStatus}`,
                   },
                   {
                     value: "logs",
                     title: "Activity Logs",
-                    stateSetter: setCurrentTab,
                   },
                 ]}
               />
@@ -322,6 +326,11 @@ const EditProjectPage = () => {
               {/* Dessaggregation */}
               <TabsContent value="dessaggregation" className="h-full">
                 <DessaggregationForm mode="edit"></DessaggregationForm>
+              </TabsContent>
+
+              {/* APR preview */}
+              <TabsContent value="aprPreview" className="h-full">
+                <MonitoringTablePage mode="edit"></MonitoringTablePage>
               </TabsContent>
 
               {/* ISP3 */}

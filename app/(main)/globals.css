@@ -5,6 +5,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
+
 /* ==========================
    Palette-based variables
    (Light mode defaults)

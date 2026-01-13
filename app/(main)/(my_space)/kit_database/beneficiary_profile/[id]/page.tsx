@@ -13,7 +13,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useParentContext } from "@/contexts/ParentContext";
 import { beneficiaryKitListColumns } from "@/definitions/DataTableColumnsDefinitions";
 import { KitDatabaseBeneficiaryProfileInterface } from "@/interfaces/Interfaces";
-import { createAxiosInstance } from "@/lib/axios";
 import { IsANullValue, IsIdFeild } from "@/constants/Constants";
 import { KitDatabaseBeneficiaryKitsTableFiltersList } from "@/constants/FiltersList";
 import { withPermission } from "@/lib/withPermission";
@@ -29,8 +28,7 @@ const KitDbBeneficiaryProfilePage: React.FC<
 > = (params: KitDatabaseBeneficiaryProfileInterface) => {
   const { id } = use(params.params);
 
-  const axiosInstance = createAxiosInstance();
-  const { reqForToastAndSetMessage } = useParentContext();
+  const { reqForToastAndSetMessage, requestHandler } = useParentContext();
 
   const [currentTab, setCurrentTab] = useState<string>("beneficiaryInfo");
 
@@ -57,7 +55,7 @@ const KitDbBeneficiaryProfilePage: React.FC<
 
   useEffect(() => {
     // Fitching Beneficiary info.
-    axiosInstance
+    requestHandler()
       .get(`/kit_db/beneficiary/${id}`)
       .then((response: any) => {
         const { programs, ...benefciaryDetails } = response.data.data;
@@ -68,10 +66,9 @@ const KitDbBeneficiaryProfilePage: React.FC<
       );
 
     // Fitching Program Info.
-    axiosInstance
+    requestHandler()
       .get(`kit_db/program/${id}`)
       .then((response: any) => {
-        console.log(response.data.data);
         if (response.data.status) setProgramInfo(response.data.data);
       })
       .catch((error: any) =>
@@ -106,16 +103,16 @@ const KitDbBeneficiaryProfilePage: React.FC<
             className="h-full"
           >
             <ChromeTabs
+              currentTab={currentTab}
+              onCurrentTabChange={setCurrentTab}
               initialTabs={[
-                {
-                  value: "kit",
-                  title: "Kit",
-                  stateSetter: setCurrentTab,
-                },
                 {
                   value: "beneficiaryInfo",
                   title: "Beneficiary Info",
-                  stateSetter: setCurrentTab,
+                },
+                {
+                  value: "kit",
+                  title: "Kit",
                 },
               ]}
             ></ChromeTabs>
