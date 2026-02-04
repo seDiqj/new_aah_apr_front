@@ -22,7 +22,8 @@ import {
   IsNotShowMode,
   IsShowMode,
 } from "@/constants/Constants";
-import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
+import { AxiosError } from "axios";
 
 const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
   open,
@@ -40,7 +41,7 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
   } = useParentContext();
 
   const [formData, setFormData] = useState<MainDatabaseProgram>(
-    MainDatabaseProgramDefault()
+    MainDatabaseProgramDefault(),
   );
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
@@ -69,7 +70,8 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
 
       setFormErrors(errors);
       reqForToastAndSetMessage(
-        "Please fix validation errors before submitting."
+        "Please fix validation errors before submitting.",
+        "warning",
       );
       return;
     }
@@ -82,7 +84,7 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
       requestHandler()
         .post("/global/program/main_database", formData)
         .then((response: any) => {
-          reqForToastAndSetMessage(response.data.message);
+          reqForToastAndSetMessage(response.data.message, "success");
           if (createdProgramStateSetter)
             createdProgramStateSetter({
               target: {
@@ -103,19 +105,19 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
           handleReload();
         })
         .catch((error: any) =>
-          reqForToastAndSetMessage(error.response.data.message)
+          reqForToastAndSetMessage(error.response.data.message, "error"),
         )
         .finally(() => setIsLoading(false));
     } else if (IsEditMode(mode) && programId) {
       requestHandler()
         .put(`/global/program/${programId}`, formData)
         .then((response: any) => {
-          reqForToastAndSetMessage(response.data.message);
+          reqForToastAndSetMessage(response.data.message, "success");
           onOpenChange(false);
           handleReload();
         })
         .catch((error: any) =>
-          reqForToastAndSetMessage(error.response.data.message)
+          reqForToastAndSetMessage(error.response.data.message, "error"),
         )
         .finally(() => setIsLoading(false));
     }
@@ -130,12 +132,15 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
   useEffect(() => {
     requestHandler()
       .get("/global/districts")
-      .then((res: any) => setDistricts(Object.values(res.data.data)));
+      .then((res: any) => setDistricts(Object.values(res.data.data)))
+      .catch((error: AxiosError<any, any>) =>
+        reqForToastAndSetMessage(error.response?.data.message, "error"),
+      );
     requestHandler()
       .get("/projects/p/main_database")
       .then((res: any) => setProjects(Object.values(res.data.data)))
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       );
   }, []);
 
@@ -145,7 +150,10 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
       .get(`/global/project/provinces/${formData.project_id}`)
       .then((res: any) => {
         setProvinces(Object.values(res.data.data));
-      });
+      })
+      .catch((error: AxiosError<any, any>) =>
+        reqForToastAndSetMessage(error.response?.data.message, "error"),
+      );
   }, [formData.project_id]);
 
   // Fetch program data from backend in edit and show mode.
@@ -157,7 +165,7 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
           setFormData(response.data.data);
         })
         .catch((error: any) => {
-          reqForToastAndSetMessage(error.response.data.message);
+          reqForToastAndSetMessage(error.response.data.message, "error");
         });
     }
   }, [mode, programId, open]);
@@ -341,7 +349,7 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
                     : MainDatabaseProgramEditionMessage,
                   () => {
                     handleSubmit();
-                  }
+                  },
                 )
               }
             >
@@ -350,8 +358,8 @@ const ProgramMainForm: React.FC<MainDatabaseProgramFormInterface> = ({
                   ? "Saving ..."
                   : "Updating ..."
                 : IsCreateMode(mode)
-                ? "Save"
-                : "Update"}
+                  ? "Save"
+                  : "Update"}
             </Button>
           </div>
         )}

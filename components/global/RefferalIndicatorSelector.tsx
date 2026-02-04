@@ -12,7 +12,7 @@ import { useEffect, useState } from "react";
 import { useParentContext } from "@/contexts/ParentContext";
 import { TrainingSelectorInterface } from "@/interfaces/Interfaces";
 import { TrainingSelectorMessage } from "@/constants/ConfirmationModelsTexts";
-import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
 
 const RefferalIndicatorSelector: React.FC<TrainingSelectorInterface> = ({
   open,
@@ -35,7 +35,7 @@ const RefferalIndicatorSelector: React.FC<TrainingSelectorInterface> = ({
 
   const handleSubmit = () => {
     if (!selectedIndicator) {
-      reqForToastAndSetMessage("Please select a valid indicator at first !");
+      reqForToastAndSetMessage("Please select a valid indicator at first !", "warning");
       return;
     }
 
@@ -47,11 +47,11 @@ const RefferalIndicatorSelector: React.FC<TrainingSelectorInterface> = ({
         ids: ids,
       })
       .then((response: any) => {
-        reqForToastAndSetMessage(response.data.message);
+        reqForToastAndSetMessage(response.data.message, "success");
         onOpenChange(false);
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       )
       .finally(() => setIsLoading(false));
   };
@@ -63,7 +63,7 @@ const RefferalIndicatorSelector: React.FC<TrainingSelectorInterface> = ({
         setIndicators(response.data.data);
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       );
   }, [open]);
 
@@ -98,7 +98,7 @@ const RefferalIndicatorSelector: React.FC<TrainingSelectorInterface> = ({
           disabled={isLoading}
           onClick={() =>
             reqForConfirmationModelFunc(TrainingSelectorMessage, () =>
-              handleSubmit()
+              handleSubmit(),
             )
           }
           className="w-full mt-6"

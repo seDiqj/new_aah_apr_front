@@ -13,7 +13,7 @@ import { useParentContext } from "@/contexts/ParentContext";
 import { TrainingSelectorInterface } from "@/interfaces/Interfaces";
 import { TrainingSelectorMessage } from "@/constants/ConfirmationModelsTexts";
 import { IsNotANullOrUndefinedValue } from "@/constants/Constants";
-import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
 
 const TrainingSelectorDialog: React.FC<TrainingSelectorInterface> = ({
   open,
@@ -27,7 +27,7 @@ const TrainingSelectorDialog: React.FC<TrainingSelectorInterface> = ({
     reqForConfirmationModelFunc,
   } = useParentContext();
 
-  const [trainings, setTrainings] = useState<{ name: string }[]>([]);
+  const [trainings, setTrainings] = useState<{ id: string, name: string }[]>([]);
 
   const [selectedTraining, setSelectedTraining] = useState<string>("");
 
@@ -44,11 +44,11 @@ const TrainingSelectorDialog: React.FC<TrainingSelectorInterface> = ({
         ids: ids,
       })
       .then((response: any) => {
-        reqForToastAndSetMessage(response.data.message);
+        reqForToastAndSetMessage(response.data.message, "success");
         onOpenChange(false);
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       )
       .finally(() => setIsLoading(false));
   };
@@ -60,7 +60,7 @@ const TrainingSelectorDialog: React.FC<TrainingSelectorInterface> = ({
         setTrainings(response.data.data);
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       );
 
     if (IsNotANullOrUndefinedValue(trainingsData))
@@ -85,7 +85,7 @@ const TrainingSelectorDialog: React.FC<TrainingSelectorInterface> = ({
 
         <SingleSelect
           options={trainings.map((training) => ({
-            value: training.name,
+            value: training.id,
             label: training.name.toUpperCase(),
           }))}
           value={selectedTraining}
@@ -98,7 +98,7 @@ const TrainingSelectorDialog: React.FC<TrainingSelectorInterface> = ({
           disabled={isLoading}
           onClick={() =>
             reqForConfirmationModelFunc(TrainingSelectorMessage, () =>
-              handleSubmit()
+              handleSubmit(),
             )
           }
           className="w-full mt-6"

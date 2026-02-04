@@ -17,7 +17,6 @@ import {
   TrainingBenefeciaryForm,
   TrainingForm,
 } from "@/types/Types";
-import { CircleX, Plus } from "lucide-react";
 import { useParams } from "next/navigation";
 import { RefObject, useEffect, useRef, useState } from "react";
 import { TrainingBeneficiaryDefault } from "@/constants/FormsDefaultValues";
@@ -59,9 +58,9 @@ const TrainingBeneficiaryProfile = () => {
   const handleTogglePrecenseOfBeneficiary = (chapterId: number) => {
     requestHandler()
       .put(`training_db/beneficiary/chapter/setPrecense/${id}/${chapterId}`)
-      .then((response: any) => reqForToastAndSetMessage(response.data.message))
+      .then((response: any) => reqForToastAndSetMessage(response.data.message, "success"))
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error")
       );
   };
 
@@ -91,10 +90,10 @@ const TrainingBeneficiaryProfile = () => {
         beneficiaryId: id,
       })
       .then((response: AxiosResponse<any, any>) => {
-        reqForToastAndSetMessage(response.data.message);
+        reqForToastAndSetMessage(response.data.message, "success");
       })
       .catch((error: AxiosError<any, any>) =>
-        reqForToastAndSetMessage(error.response?.data.message)
+        reqForToastAndSetMessage(error.response?.data.message, "error")
       );
   };
 
@@ -124,7 +123,7 @@ const TrainingBeneficiaryProfile = () => {
         });
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error")
       );
   }, []);
 

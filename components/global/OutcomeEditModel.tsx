@@ -36,7 +36,7 @@ import {
   IsThereAnyOutcomeWithEnteredReferanceAndDefferentId,
 } from "@/constants/Constants";
 import { Textarea } from "../ui/textarea";
-import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
 
 const OutcomeModel: React.FC<OutcomeInterface> = ({
   isOpen,
@@ -63,13 +63,12 @@ const OutcomeModel: React.FC<OutcomeInterface> = ({
   } = IsCreatePage(pageIdentifier)
     ? useProjectContext()
     : IsEditPage(pageIdentifier)
-    ? useProjectEditContext()
-    : useProjectShowContext();
+      ? useProjectEditContext()
+      : useProjectShowContext();
 
   const [formData, setFormData] = useState<Outcome>(OutcomeDefault());
-  const [outcomeBeforeEdit, setOutcomeBeforeEdit] = useState<Outcome>(
-    OutcomeDefault()
-  );
+  const [outcomeBeforeEdit, setOutcomeBeforeEdit] =
+    useState<Outcome>(OutcomeDefault());
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -95,7 +94,8 @@ const OutcomeModel: React.FC<OutcomeInterface> = ({
 
       setFormErrors(errors);
       reqForToastAndSetMessage(
-        "Please fix validation errors before submitting."
+        "Please fix validation errors before submitting.",
+        "warning"
       );
       return;
     }
@@ -104,7 +104,7 @@ const OutcomeModel: React.FC<OutcomeInterface> = ({
 
     if (IsNoOutcome(formData)) {
       reqForToastAndSetMessage(
-        "The outcome (or outcome referance) that you provided is a system reserved keyword please try something else !"
+        "The outcome (or outcome referance) that you provided is a system reserved keyword please try something else !",
       );
       return;
     }
@@ -114,7 +114,8 @@ const OutcomeModel: React.FC<OutcomeInterface> = ({
       IsThereAnyOutcomeWithEnteredReferance(outcomes, formData)
     ) {
       reqForToastAndSetMessage(
-        "A project can not have two outcomes with same referance !"
+        "A project can not have two outcomes with same referance !",
+        "success"
       );
       return;
     } else if (
@@ -122,7 +123,8 @@ const OutcomeModel: React.FC<OutcomeInterface> = ({
       IsThereAnyOutcomeWithEnteredReferanceAndDefferentId(outcomes, formData)
     ) {
       reqForToastAndSetMessage(
-        "A project can not have two outcomes with same referance !"
+        "A project can not have two outcomes with same referance !",
+        "error"
       );
       return;
     }
@@ -161,13 +163,13 @@ const OutcomeModel: React.FC<OutcomeInterface> = ({
                     outcome: formData.outcome,
                     outcomeRef: formData.outcomeRef,
                   }
-                : o
-            )
+                : o,
+            ),
           );
           onOpenChange(false);
         })
         .catch((error: any) =>
-          reqForToastAndSetMessage(error.response.data.message)
+          reqForToastAndSetMessage(error.response.data.message),
         )
         .finally(() => setIsLoading(false));
   };
@@ -175,7 +177,7 @@ const OutcomeModel: React.FC<OutcomeInterface> = ({
   const handleCancel = () => {
     if (IsOutcomeEdited(outcomeBeforeEdit, formData)) {
       reqForConfirmationModelFunc(CancelButtonMessage, () =>
-        onOpenChange(false)
+        onOpenChange(false),
       );
 
       return;
@@ -194,7 +196,7 @@ const OutcomeModel: React.FC<OutcomeInterface> = ({
           setOutcomeBeforeEdit(response.data.data);
         })
         .catch((error: any) =>
-          reqForToastAndSetMessage(error.response.data.message)
+          reqForToastAndSetMessage(error.response.data.message),
         )
         .finally(() => setIsLoading(false));
     }
@@ -228,8 +230,8 @@ const OutcomeModel: React.FC<OutcomeInterface> = ({
             {IsCreateMode(mode)
               ? "Create New Outcome"
               : IsEditMode(mode)
-              ? "Edit Outcome"
-              : "Show Outcome"}
+                ? "Edit Outcome"
+                : "Show Outcome"}
           </DialogTitle>
         </DialogHeader>
 
@@ -293,7 +295,7 @@ const OutcomeModel: React.FC<OutcomeInterface> = ({
                     IsCreateMode(mode)
                       ? OutcomeCreationMessage
                       : OutcomeEditionMessage,
-                    handleSubmit
+                    handleSubmit,
                   )
                 }
               >

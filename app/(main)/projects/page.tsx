@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { withPermission } from "@/lib/withPermission";
 import { Can } from "@/components/Can";
+import { ProjectFiltersList } from "@/constants/FiltersList";
 
 const ProjectsPage = () => {
   const router = useRouter();
@@ -60,15 +61,7 @@ const ProjectsPage = () => {
             router.push(`/projects/edit_project/${idFeildForEditStateSetter}`)
           }
           idFeildForShowStateSetter={setIdFeildForShowStateSetter}
-          filtersList={[
-            "projectCode",
-            "projectManager",
-            "provinces",
-            "thematicSector",
-            "startDate",
-            "endDate",
-            "status",
-          ]}
+          filtersList={ProjectFiltersList}
         ></DataTableDemo>
       </div>
     </>

@@ -12,7 +12,7 @@ import { PreAndPostTestsDefault } from "@/constants/FormsDefaultValues";
 import { PreAndPostTestFormType } from "@/types/Types";
 import { PreAndPostTestCreationMessage } from "@/constants/ConfirmationModelsTexts";
 import { PreAndPostTestsInterface } from "@/interfaces/Interfaces";
-import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
 
 const PreAndPostTestForm: React.FC<PreAndPostTestsInterface> = ({
   open,
@@ -32,7 +32,7 @@ const PreAndPostTestForm: React.FC<PreAndPostTestsInterface> = ({
   const [loading, setLoading] = useState<boolean>(false);
 
   const [formData, setFormData] = useState<PreAndPostTestFormType>(
-    PreAndPostTestsDefault()
+    PreAndPostTestsDefault(),
   );
 
   const handleFormChange = (e: any) => {
@@ -50,14 +50,14 @@ const PreAndPostTestForm: React.FC<PreAndPostTestsInterface> = ({
     requestHandler()
       .put(
         `training_db/beneficiary/chapter/setPreAndPostTest/${id}/${chapterId}`,
-        formData
+        formData,
       )
       .then((response: any) => {
         onOpenChange(false);
-        reqForToastAndSetMessage(response.data.message);
+        reqForToastAndSetMessage(response.data.message, "success");
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       )
       .finally(() => setLoading(false));
   };
@@ -69,7 +69,7 @@ const PreAndPostTestForm: React.FC<PreAndPostTestsInterface> = ({
         setFormData(response.data.data);
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       );
   }, []);
 
@@ -116,7 +116,7 @@ const PreAndPostTestForm: React.FC<PreAndPostTestsInterface> = ({
               type="button"
               onClick={(e) =>
                 reqForConfirmationModelFunc(PreAndPostTestCreationMessage, () =>
-                  handleSubmit(e)
+                  handleSubmit(e),
                 )
               }
             >

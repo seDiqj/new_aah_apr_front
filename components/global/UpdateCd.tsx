@@ -23,7 +23,7 @@ import {
   MaritalStatusOptions,
 } from "@/constants/SingleAndMultiSelectOptionsList";
 import { CdDatabaseBenefciaryEditionMessage } from "@/constants/ConfirmationModelsTexts";
-import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
 
 const CommunityDialogueUpdateCD: React.FC<CommunityDialogueUpdateInterface> = ({
   open,
@@ -37,7 +37,7 @@ const CommunityDialogueUpdateCD: React.FC<CommunityDialogueUpdateInterface> = ({
   } = useParentContext();
 
   const [formData, setFormData] = useState<CommunityDialogBeneficiaryForm>(
-    CommunityDialogueBeneficiaryDefault()
+    CommunityDialogueBeneficiaryDefault(),
   );
 
   const [loading, setLoading] = useState<boolean>(false);
@@ -66,7 +66,7 @@ const CommunityDialogueUpdateCD: React.FC<CommunityDialogueUpdateInterface> = ({
         })
         .catch((err: any) => {
           reqForToastAndSetMessage(
-            err.response?.data?.message || "Error loading data"
+            err.response?.data?.message || "Error loading data",
           );
         })
         .finally(() => setLoading(false));
@@ -93,8 +93,8 @@ const CommunityDialogueUpdateCD: React.FC<CommunityDialogueUpdateInterface> = ({
       })
       .catch((error: any) =>
         reqForToastAndSetMessage(
-          error.response?.data?.message || "Update failed"
-        )
+          error.response?.data?.message || "Update failed",
+        ),
       )
       .finally(() => setIsLoading(false));
   };
@@ -260,7 +260,7 @@ const CommunityDialogueUpdateCD: React.FC<CommunityDialogueUpdateInterface> = ({
             onClick={() =>
               reqForConfirmationModelFunc(
                 CdDatabaseBenefciaryEditionMessage,
-                handleSubmit
+                handleSubmit,
               )
             }
           >

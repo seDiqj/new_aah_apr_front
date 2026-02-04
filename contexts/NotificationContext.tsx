@@ -13,7 +13,7 @@ const NotificationContext = createContext<any>({});
 export const NotificationProvider = ({
   children,
 }: NotificationProviderPropsType) => {
-  const { axiosInstance, reqForToastAndSetMessage, myProfileDetails } =
+  const { handleReloadNotification, reqForToastAndSetMessage, myProfileDetails,  } =
     useParentContext();
 
   const echo = useEcho();
@@ -24,6 +24,7 @@ export const NotificationProvider = ({
       .private(`chat.${myProfileDetails.id}`)
       .listen(".MessageSent", (event: any) => {
         reqForToastAndSetMessage(event.message);
+        handleReloadNotification();
       });
   }, [echo, myProfileDetails]);
 

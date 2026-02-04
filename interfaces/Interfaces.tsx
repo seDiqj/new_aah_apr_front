@@ -252,7 +252,11 @@ export interface AssessmentScoreFormInterface {
   open: boolean;
   onOpenChange: (value: boolean) => void;
   mode: "create" | "edit" | "show";
-  projectId?: number;
+  dateRange: {
+    startDate: string;
+    endDate: string;
+  };
+  exceptMonth: number[];
   assessmentId?: number;
 }
 
@@ -384,4 +388,8 @@ export interface AprLogsSubPageInterface {
 
 export interface ParentInterface {
   children: React.ReactNode;
+}
+
+export interface UserAvatarInterface {
+  userName: string;
 }

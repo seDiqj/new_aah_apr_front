@@ -38,8 +38,8 @@ import {
 } from "@/constants/Constants";
 import { UserFormDefault } from "@/constants/FormsDefaultValues";
 import { UserType } from "@/types/Types";
-import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
-import { AxiosError } from "axios";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
+import { AxiosError, AxiosResponse } from "axios";
 
 const ProfileModal: React.FC<UserInterface> = ({
   open,
@@ -73,7 +73,7 @@ const ProfileModal: React.FC<UserInterface> = ({
     setUserPermissions((prev) =>
       prev.includes(permissionId)
         ? prev.filter((p) => p !== permissionId)
-        : [...prev, permissionId]
+        : [...prev, permissionId],
     );
   };
 
@@ -85,7 +85,7 @@ const ProfileModal: React.FC<UserInterface> = ({
   const handleChange = (
     e:
       | React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-      | { target: { name: string; value: string } }
+      | { target: { name: string; value: string } },
   ) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -120,7 +120,7 @@ const ProfileModal: React.FC<UserInterface> = ({
 
       setFormErrors(errors);
       reqForToastAndSetMessage(
-        "Please fix validation errors before submitting."
+        "Please fix validation errors before submitting.",
       );
       return;
     }
@@ -148,12 +148,15 @@ const ProfileModal: React.FC<UserInterface> = ({
 
     request
       .then((response: any) => {
-        reqForToastAndSetMessage(response.data.message);
+        reqForToastAndSetMessage(response.data.message, "success");
         onOpenChange(false);
         handleReload();
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response?.data?.message || "Error")
+        reqForToastAndSetMessage(
+          error.response?.data?.message || "Error",
+          "error",
+        ),
       )
       .finally(() => setIsLoading(false));
   };
@@ -170,27 +173,36 @@ const ProfileModal: React.FC<UserInterface> = ({
           setAllPermissions(rolePermRes.data.data.permissions);
           setAllRoles(rolePermRes.data.data.roles);
           setUserRole(
-            userRes.data.data.roles.length > 0 ? userRes.data.data.roles[0] : ""
+            userRes.data.data.roles.length > 0
+              ? userRes.data.data.roles[0]
+              : "",
           );
           setUserPermissions(
-            userRes.data.data.permissions.map((p: any) => p.id)
+            userRes.data.data.permissions.map((p: any) => p.id),
           );
           setLoading(false);
         })
         .catch((error: AxiosError<any, any>) =>
-          reqForToastAndSetMessage(error.response?.data.message)
+          reqForToastAndSetMessage(error.response?.data.message, "error"),
         );
     } else {
       requestHandler()
         .get("/user_mng/permissions_&_roles")
-        .then((response: any) => {
+        .then((response: AxiosResponse<any, any>) => {
           setAllPermissions(response.data.data.permissions);
           setAllRoles(response.data.data.roles);
           setLoading(false);
         })
-        .catch(() => setLoading(false));
+        .catch((error: AxiosError<any, any>) =>
+          reqForToastAndSetMessage(
+            error.response?.data.message ||
+              "An error occured during fitching roles and permissions !",
+            "error",
+          ),
+        )
+        .finally(() => setLoading(false));
     }
-  }, [mode, requestHandler(), userId]);
+  }, [mode, userId]);
 
   const getGroupPermissionIds = (perms: any[]) => perms.map((p) => p.id);
 
@@ -206,7 +218,7 @@ const ProfileModal: React.FC<UserInterface> = ({
 
     const groupPermissionIds = getGroupPermissionIds(perms);
     const allSelected = groupPermissionIds.every((id) =>
-      userPermissions.includes(id)
+      userPermissions.includes(id),
     );
 
     setUserPermissions((prev) => {
@@ -237,8 +249,8 @@ const ProfileModal: React.FC<UserInterface> = ({
             {IsShowMode(mode)
               ? "View User"
               : IsEditMode(mode)
-              ? "Edit User"
-              : "Create User"}
+                ? "Edit User"
+                : "Create User"}
           </h2>
           <div className="space-y-8 sticky top-0">
             {steps
@@ -247,7 +259,7 @@ const ProfileModal: React.FC<UserInterface> = ({
                   ? IsShowMode(mode)
                     ? false
                     : true
-                  : true
+                  : true,
               )
               .map((s) => (
                 <div
@@ -302,8 +314,8 @@ const ProfileModal: React.FC<UserInterface> = ({
                   {step === 1
                     ? "View personal details below."
                     : step === 2
-                    ? "Assigned permissions for this user."
-                    : "Summary of user information."}
+                      ? "Assigned permissions for this user."
+                      : "Summary of user information."}
                 </DialogDescription>
               </DialogHeader>
 
@@ -411,7 +423,7 @@ const ProfileModal: React.FC<UserInterface> = ({
                         onValueChange={(value: string) => {
                           setUserRole(value);
                           handleSelectRole(
-                            allRoles.find((role) => role.name === value)
+                            allRoles.find((role) => role.name === value),
                           );
                           setForm((prev) => ({ ...prev, role: value }));
                         }}
@@ -445,8 +457,8 @@ const ProfileModal: React.FC<UserInterface> = ({
                               fullySelected
                                 ? true
                                 : partiallySelected
-                                ? "indeterminate"
-                                : false
+                                  ? "indeterminate"
+                                  : false
                             }
                             disabled={isReadOnly}
                             className="border-gray-500 data-[state=checked]:bg-blue-600 data-[state=indeterminate]:bg-blue-600"
@@ -511,8 +523,8 @@ const ProfileModal: React.FC<UserInterface> = ({
                             (perm: any) =>
                               userPermissions.includes(perm.id) && (
                                 <li key={perm.id}>{perm.name}</li>
-                              )
-                          )
+                              ),
+                          ),
                         )}
                       </ul>
                     </CardContent>
@@ -545,7 +557,7 @@ const ProfileModal: React.FC<UserInterface> = ({
                           IsCreateMode(mode)
                             ? UserCreationMessage
                             : UserEditionMessage,
-                          handleSubmit
+                          handleSubmit,
                         )
                       }
                     >

@@ -18,7 +18,7 @@ import { PsychoeducationForm } from "@/types/Types";
 import { PsychoeducationDefault } from "@/constants/FormsDefaultValues";
 import { UpdatePsychoeducationInterface } from "@/interfaces/Interfaces";
 import { PsychoeducationEditionMessage } from "@/constants/ConfirmationModelsTexts";
-import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
 
 const UpdatePsychoeducation: React.FC<UpdatePsychoeducationInterface> = ({
   open,
@@ -32,7 +32,7 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationInterface> = ({
   } = useParentContext();
 
   const [formData, setFormData] = useState<PsychoeducationForm>(
-    PsychoeducationDefault()
+    PsychoeducationDefault(),
   );
 
   useEffect(() => {
@@ -42,8 +42,8 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationInterface> = ({
       .then((res: any) => setFormData(res.data.data))
       .catch((err: any) =>
         reqForToastAndSetMessage(
-          err.response?.data?.message || "Failed to load data."
-        )
+          err.response?.data?.message || "Failed to load data.",
+        ),
       );
   }, [open, psychoId]);
 
@@ -77,7 +77,7 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationInterface> = ({
         onOpenChange(false);
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message),
       )
       .finally(() => setIsLoading(false));
   };
@@ -86,10 +86,10 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationInterface> = ({
     { id: string; indicatorRef: string }[]
   >([]);
   const [districts, setDistricts] = useState<{ id: string; name: string }[]>(
-    []
+    [],
   );
   const [provinces, setProvinces] = useState<{ id: string; name: string }[]>(
-    []
+    [],
   );
   const [projects, setProjects] = useState<
     { id: string; projectCode: string }[]
@@ -100,7 +100,7 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationInterface> = ({
       .get("/global/projects")
       .then((res: any) => setProjects(Object.values(res.data.data)))
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message),
       );
   }, []);
 
@@ -112,21 +112,21 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationInterface> = ({
       .get(`projects/indicators/psychoeducation_database/${projectId}`)
       .then((response: any) => setIndicators(response.data.data))
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message),
       );
 
     requestHandler()
       .get("/global/districts")
       .then((res: any) => setDistricts(Object.values(res.data.data)))
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message),
       );
 
     requestHandler()
       .get(`projects/provinces/${projectId}`)
       .then((res: any) => setProvinces(Object.values(res.data.data)))
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message),
       );
   }, [formData.programInformation.project_id]);
 
@@ -154,7 +154,7 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationInterface> = ({
               }))}
               value={
                 projects.find(
-                  (p) => p.id == formData.programInformation.project_id
+                  (p) => p.id == formData.programInformation.project_id,
                 )?.projectCode ?? ""
               }
               onValueChange={(value: string) =>
@@ -165,7 +165,7 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationInterface> = ({
                       value: projects.find((p) => p.projectCode == value)?.id,
                     },
                   },
-                  "program"
+                  "program",
                 )
               }
             />
@@ -180,7 +180,7 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationInterface> = ({
               }))}
               value={
                 indicators.find(
-                  (i) => i.id === formData.programInformation.indicator_id
+                  (i) => i.id === formData.programInformation.indicator_id,
                 )?.indicatorRef ?? ""
               }
               onValueChange={(value: string) =>
@@ -192,7 +192,7 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationInterface> = ({
                         ?.id,
                     },
                   },
-                  "program"
+                  "program",
                 )
               }
             />
@@ -216,7 +216,7 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationInterface> = ({
               }))}
               value={
                 provinces.find(
-                  (p) => p.id == formData.programInformation.province_id
+                  (p) => p.id == formData.programInformation.province_id,
                 )?.name ?? ""
               }
               onValueChange={(value: string) =>
@@ -227,7 +227,7 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationInterface> = ({
                       value: provinces.find((p) => p.name == value)?.id,
                     },
                   },
-                  "program"
+                  "program",
                 )
               }
             />
@@ -260,7 +260,7 @@ const UpdatePsychoeducation: React.FC<UpdatePsychoeducationInterface> = ({
           onClick={() =>
             reqForConfirmationModelFunc(
               PsychoeducationEditionMessage,
-              handleUpdate
+              handleUpdate,
             )
           }
         >

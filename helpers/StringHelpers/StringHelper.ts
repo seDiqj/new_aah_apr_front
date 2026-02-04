@@ -268,6 +268,39 @@ class StringHelper {
 
   /**
    *
+   * Check's if the input character is a lowercase character or not.
+   *
+   * @param @character char
+   * @returns @boolean
+   */
+  private static isLowerCase(char: string): boolean {
+    return !this.isUpperCase(char);
+  }
+
+  /**
+   *
+   * Converts every single character to lowercase version.
+   *
+   * @param @character char
+   * @returns @boolean
+   */
+  private static toLowerCase(str: string): string {
+    return str.toLowerCase();
+  }
+
+  /**
+   *
+   * Converts every single character to uppercase version.
+   *
+   * @param @character char
+   * @returns @boolean
+   */
+  private static toUpperCase(str: string): string {
+    return str.toUpperCase();
+  }
+
+  /**
+   *
    * Check's if the input character is a space or not.
    *
    * @param @character char
@@ -302,6 +335,7 @@ class StringHelper {
   /**
    *
    * Check's if the input character is a separator or not.
+   *
    *
    * @param @character char
    * @returns @boolean

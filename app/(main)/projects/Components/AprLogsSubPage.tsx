@@ -46,7 +46,7 @@ const AprLogsSubPage: React.FC<AprLogsSubPageInterface> = ({ mode }) => {
       .get(`/projects/logs/${projectId}`)
       .then((response: any) => setLogs(response.data.data))
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error")
       )
       .finally(() => setLoading(false));
   }, []);
@@ -116,7 +116,7 @@ const AprLogsSubPage: React.FC<AprLogsSubPageInterface> = ({ mode }) => {
                 <DialogHeader>
                   <DialogTitle>Comment</DialogTitle>
                 </DialogHeader>
-                <div className="mt-2 text-sm text-gray-700">
+                <div className="mt-2 text-sm">
                   {selectedComment}
                 </div>
                 <div className="mt-4 flex justify-end">

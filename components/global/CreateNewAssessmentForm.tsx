@@ -20,7 +20,9 @@ import {
   IsShowMode,
 } from "@/constants/Constants";
 import { AssessmentTypeOptions } from "@/constants/SingleAndMultiSelectOptionsList";
-import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
+import { AxiosError, AxiosResponse } from "axios";
+import { toDateOnly } from "./MainDatabaseBeneficiaryCreationForm";
 
 const AssessmentForm: React.FC<AssessmentFormInterface> = ({
   open,
@@ -35,9 +37,8 @@ const AssessmentForm: React.FC<AssessmentFormInterface> = ({
     handleReload,
   } = useParentContext();
 
-  const [formData, setFormData] = useState<AssessmentFormType>(
-    AssessmentDefault()
-  );
+  const [formData, setFormData] =
+    useState<AssessmentFormType>(AssessmentDefault());
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
@@ -46,7 +47,7 @@ const AssessmentForm: React.FC<AssessmentFormInterface> = ({
   >([]);
 
   const [provinces, setProvinces] = useState<{ id: string; name: string }[]>(
-    []
+    [],
   );
 
   const [projects, setProjects] = useState<
@@ -65,6 +66,14 @@ const AssessmentForm: React.FC<AssessmentFormInterface> = ({
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  const [registrationDateValidRange, setRegistrationDateValidRange] = useState<{
+    start: string;
+    end: string;
+  }>({
+    start: "2025-1-1",
+    end: "2025-2-1",
+  });
+
   const handleSubmit = (e: any) => {
     e.preventDefault();
 
@@ -79,7 +88,8 @@ const AssessmentForm: React.FC<AssessmentFormInterface> = ({
 
       setFormErrors(errors);
       reqForToastAndSetMessage(
-        "Please fix validation errors before submitting."
+        "Please fix validation errors before submitting.",
+        "warning"
       );
       return;
     }
@@ -91,12 +101,12 @@ const AssessmentForm: React.FC<AssessmentFormInterface> = ({
       requestHandler()
         .post("/enact_database/", formData)
         .then((response: any) => {
-          reqForToastAndSetMessage(response.data.message);
+          reqForToastAndSetMessage(response.data.message, "success");
           onOpenChange(false);
           handleReload();
         })
         .catch((error: any) =>
-          reqForToastAndSetMessage(error.response.data.message)
+          reqForToastAndSetMessage(error.response.data.message, "error"),
         )
         .finally(() => setIsLoading(false));
     } else if (IsEditMode(mode) && projectId) {
@@ -104,10 +114,10 @@ const AssessmentForm: React.FC<AssessmentFormInterface> = ({
         .put(`/enact_database/${projectId}`, formData)
         .then((response: any) => {
           onOpenChange(false);
-          reqForToastAndSetMessage(response.data.message);
+          reqForToastAndSetMessage(response.data.message, "success");
         })
         .catch((error: any) =>
-          reqForToastAndSetMessage(error.response.data.message)
+          reqForToastAndSetMessage(error.response.data.message, "error"),
         )
         .finally(() => setIsLoading(false));
     }
@@ -122,7 +132,7 @@ const AssessmentForm: React.FC<AssessmentFormInterface> = ({
           setFormData(response.data.data);
         })
         .catch((error: any) => {
-          reqForToastAndSetMessage(error.response.data.message);
+          reqForToastAndSetMessage(error.response.data.message, "error");
         });
     }
   }, [mode, projectId, open]);
@@ -132,7 +142,7 @@ const AssessmentForm: React.FC<AssessmentFormInterface> = ({
       .get("/projects/p/enact_database")
       .then((response: any) => setProjects(response.data.data))
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       );
   }, []);
 
@@ -142,15 +152,26 @@ const AssessmentForm: React.FC<AssessmentFormInterface> = ({
       .get(`projects/indicators/enact_database/${formData.project_id}`)
       .then((response: any) => setIndicators(response.data.data))
       .catch((error: any) => {
-        reqForToastAndSetMessage(error.response.data.message);
+        reqForToastAndSetMessage(error.response.data.message, "error");
       });
 
     requestHandler()
       .get(`projects/provinces/${formData.project_id}`)
       .then((res: any) => setProvinces(Object.values(res.data.data)))
       .catch((error: any) => {
-        reqForToastAndSetMessage(error.response.data.message);
+        reqForToastAndSetMessage(error.response.data.message, "error");
       });
+    requestHandler()
+      .get(`/date/project_date_range/${formData.project_id}`)
+      .then((response: AxiosResponse<any, any>) => {
+        setRegistrationDateValidRange({
+          start: toDateOnly(response.data.data.start),
+          end: toDateOnly(response.data.data.end),
+        });
+      })
+      .catch((error: AxiosError<any, any>) =>
+        reqForToastAndSetMessage(error.response?.data.message, "error"),
+      );
   }, [formData.project_id]);
 
   const readOnly = IsShowMode(mode);
@@ -283,11 +304,13 @@ const AssessmentForm: React.FC<AssessmentFormInterface> = ({
               type="date"
               value={formData.date}
               onChange={handleFormChange}
-              disabled={readOnly}
+              disabled={readOnly || !formData.project_id}
               className={`border p-2 rounded ${
                 formErrors.date ? "!border-red-500" : ""
               }`}
               title={formErrors.date}
+              min={registrationDateValidRange.start}
+              max={registrationDateValidRange.end}
             />
           </div>
           {/* Apr Included */}
@@ -328,7 +351,7 @@ const AssessmentForm: React.FC<AssessmentFormInterface> = ({
                 onClick={(e) =>
                   reqForConfirmationModelFunc(
                     AssessmentSubmitButtonMessage,
-                    () => handleSubmit(e)
+                    () => handleSubmit(e),
                   )
                 }
               >
@@ -337,8 +360,8 @@ const AssessmentForm: React.FC<AssessmentFormInterface> = ({
                     ? "Saving ..."
                     : "Updating ..."
                   : IsCreateMode(mode)
-                  ? "Save"
-                  : "Update"}
+                    ? "Save"
+                    : "Update"}
               </Button>
             </div>
           )}

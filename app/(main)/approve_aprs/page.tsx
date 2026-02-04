@@ -16,6 +16,8 @@ import {
   RejectAprMessage,
 } from "@/constants/ConfirmationModelsTexts";
 import { ApprovedAprsFiltersList } from "@/constants/FiltersList";
+import BreadcrumbWithCustomSeparator from "@/components/global/BreadCrumb";
+import CommentDialog from "@/components/global/CommentBox";
 
 const SubmittedDatabasesPage = () => {
   const {
@@ -37,6 +39,9 @@ const SubmittedDatabasesPage = () => {
     setOpenSubmittedDatabaseSummaryModel,
   ] = useState<boolean>(false);
 
+  const [reqForCommentDialog, setReqForCommentDialog] =
+    useState<boolean>(false);
+
   const approveApr = () => {
     if (!idFeildForEditStateSetter)
       reqForToastAndSetMessage("Please select a valid apr.");
@@ -45,29 +50,30 @@ const SubmittedDatabasesPage = () => {
         newStatus: "secondApproved",
       })
       .then((response: any) => {
-        reqForToastAndSetMessage(response.data.message);
+        reqForToastAndSetMessage(response.data.message, "success");
         handleAprReload();
         handleReload();
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       );
   };
 
-  const rejectApr = () => {
+  const rejectApr = (comment: string) => {
     if (!idFeildForEditStateSetter)
       reqForToastAndSetMessage("Please select a valid apr.");
     requestHandler()
       .post(`/apr_management/approve_apr/${idFeildForEditStateSetter}`, {
         newStatus: "fourthRejected",
+        comment: comment,
       })
       .then((response: any) => {
-        reqForToastAndSetMessage(response.data.message);
+        reqForToastAndSetMessage(response.data.message, "success");
         handleAprReload();
         handleReload();
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       );
   };
 
@@ -77,58 +83,71 @@ const SubmittedDatabasesPage = () => {
 
   return (
     <>
-      <Navbar14 />
-      <SubHeader pageTitle={"Approve Apr's"}></SubHeader>
-      <Cards />
+      <div className="w-full h-full p-2">
+        <Navbar14 />
+        <div className="flex flex-row items-center justify-start my-2">
+          <BreadcrumbWithCustomSeparator></BreadcrumbWithCustomSeparator>
+        </div>
+        <SubHeader pageTitle={"Approve Apr's"}></SubHeader>
+        <Cards />
 
-      <DataTableDemo
-        columns={submittedAndFirstApprovedDatabasesTableColumn}
-        indexUrl="/apr_management/reviewed_aprs"
-        searchableColumn="name"
-        idFeildForEditStateSetter={setIdFeildForEditStateSetter}
-        showModelOpenerStateSetter={setOpenSubmittedDatabaseSummaryModel}
-        injectedElementForOneSelectedItem={
-          <div className="flex flex-row items-center gap-1">
-            <Button
-              title="Approve Apr"
-              className="text-blue-600"
-              variant={"outline"}
-              onClick={() =>
-                reqForConfirmationModelFunc(ApproveAprMessage, approveApr)
-              }
-            >
-              <ShieldCheck />
-            </Button>
-            <Button
-              title="Reject"
-              className="text-red-500"
-              variant={"outline"}
-              onClick={() =>
-                reqForConfirmationModelFunc(RejectAprMessage, rejectApr)
-              }
-            >
-              <XCircle />
-            </Button>
-            <Button
-              title="Review Apr"
-              className="text-blue-600"
-              variant={"outline"}
-              onClick={previewApr}
-            >
-              <Eye />
-            </Button>
-          </div>
-        }
-        filtersList={ApprovedAprsFiltersList}
-      ></DataTableDemo>
+        <DataTableDemo
+          columns={submittedAndFirstApprovedDatabasesTableColumn}
+          indexUrl="/apr_management/reviewed_aprs"
+          deleteUrl="/db_management/delete_apr"
+          searchableColumn="name"
+          idFeildForEditStateSetter={setIdFeildForEditStateSetter}
+          showModelOpenerStateSetter={setOpenSubmittedDatabaseSummaryModel}
+          injectedElementForOneSelectedItem={
+            <div className="flex flex-row items-center gap-1">
+              <Button
+                title="Approve Apr"
+                className="text-blue-600"
+                variant={"outline"}
+                onClick={() =>
+                  reqForConfirmationModelFunc(ApproveAprMessage, approveApr)
+                }
+              >
+                <ShieldCheck />
+              </Button>
+              <Button
+                title="Reject"
+                className="text-red-500"
+                variant={"outline"}
+                onClick={() => setReqForCommentDialog(true)}
+              >
+                <XCircle />
+              </Button>
+              <Button
+                title="Review Apr"
+                className="text-blue-600"
+                variant={"outline"}
+                onClick={previewApr}
+              >
+                <Eye />
+              </Button>
+            </div>
+          }
+          filtersList={ApprovedAprsFiltersList}
+        ></DataTableDemo>
 
-      {OpenSubmittedDatabaseSummaryModel && (
-        <SubmitSummary
-          open={OpenSubmittedDatabaseSummaryModel}
-          onOpenChange={setOpenSubmittedDatabaseSummaryModel}
-          databaseId={idFeildForEditStateSetter as unknown as string}
-        />
-      )}
+        {OpenSubmittedDatabaseSummaryModel && (
+          <SubmitSummary
+            open={OpenSubmittedDatabaseSummaryModel}
+            onOpenChange={setOpenSubmittedDatabaseSummaryModel}
+            databaseId={idFeildForEditStateSetter as unknown as string}
+          />
+        )}
+
+        {reqForCommentDialog && (
+          <CommentDialog
+            open={reqForCommentDialog}
+            onOpenChange={setReqForCommentDialog}
+            onSubmit={rejectApr}
+            confirmationModelMessage={RejectAprMessage}
+          ></CommentDialog>
+        )}
+      </div>
     </>
   );
 };

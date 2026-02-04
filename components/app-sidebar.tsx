@@ -310,7 +310,13 @@ const AppSidebar = () => {
     setMounted(true);
   }, []);
 
-  if (!mounted && loading) return;
+  if (!mounted || loading)
+    return (
+      <div className="flex items-center justify-end space-x-2 relative top-20 h-[650px] py-4 min-w-[200px] max-w-[250px]">
+        <Skeleton className="h-full w-full -top-20 absolute rounded-none bg-gray-500" />
+      </div>
+    );
+
   return (
     <>
       <Sidebar collapsible="icon">

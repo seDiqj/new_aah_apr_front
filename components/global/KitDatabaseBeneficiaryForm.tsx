@@ -28,7 +28,7 @@ import {
   MaritalStatusOptions,
   ReferredForProtectionOptions,
 } from "@/constants/SingleAndMultiSelectOptionsList";
-import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
 import { toDateOnly } from "./MainDatabaseBeneficiaryCreationForm";
 import { AxiosError, AxiosResponse } from "axios";
 
@@ -43,7 +43,7 @@ const KitDatabaseBeneficiaryForm: React.FC<
   } = useParentContext();
 
   const [formData, setFormData] = useState<KitDatabaseBeneficiaryFormType>(
-    KitDatabaseBeneficiaryDefault()
+    KitDatabaseBeneficiaryDefault(),
   );
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
@@ -77,7 +77,8 @@ const KitDatabaseBeneficiaryForm: React.FC<
 
       setFormErrors(errors);
       reqForToastAndSetMessage(
-        "Please fix validation errors before submitting."
+        "Please fix validation errors before submitting.",
+        "warning"
       );
       return;
     }
@@ -88,12 +89,12 @@ const KitDatabaseBeneficiaryForm: React.FC<
     requestHandler()
       .post("/kit_db/beneficiary", formData)
       .then((response: any) => {
-        reqForToastAndSetMessage(response.data.message);
+        reqForToastAndSetMessage(response.data.message, "success");
         onOpenChange(false);
         handleReload();
       })
       .catch((error: any) => {
-        reqForToastAndSetMessage(error.response.data.message);
+        reqForToastAndSetMessage(error.response.data.message, "error");
       })
       .finally(() => setIsLoading(false));
   };
@@ -124,7 +125,7 @@ const KitDatabaseBeneficiaryForm: React.FC<
         });
       })
       .catch((error: AxiosError<any, any>) =>
-        reqForToastAndSetMessage(error.response?.data.message)
+        reqForToastAndSetMessage(error.response?.data.message, "error"),
       );
   }, [formData.program]);
 
@@ -136,7 +137,7 @@ const KitDatabaseBeneficiaryForm: React.FC<
         setPrograms(response.data.data.data);
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       );
   }, [open]);
 
@@ -148,7 +149,7 @@ const KitDatabaseBeneficiaryForm: React.FC<
         setIndicators(response.data.data);
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       );
   }, [formData.program]);
 
@@ -513,7 +514,7 @@ const KitDatabaseBeneficiaryForm: React.FC<
           onClick={(e) =>
             reqForConfirmationModelFunc(
               KitDatabaseBeneficiaryCreationMessage,
-              () => handleSubmit(e)
+              () => handleSubmit(e),
             )
           }
         >

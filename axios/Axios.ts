@@ -21,7 +21,7 @@ class RequestHandler {
     this.axiosInstance = this.createAxiosInstance();
   }
 
-  public get(url: string) {
+  public get(url: string): RequestHandler | undefined {
     if (this.isLocked()) return;
     this.lockRequest();
 
@@ -29,7 +29,7 @@ class RequestHandler {
     return this;
   }
 
-  public post(url: string, data?: any) {
+  public post(url: string, data?: any): RequestHandler | undefined {
     if (this.isLocked()) return;
     this.lockRequest();
 
@@ -37,18 +37,36 @@ class RequestHandler {
     return this;
   }
 
-  public put(url: string, data?: any) {
+  public put(url: string, data?: any): RequestHandler | undefined {
     if (this.isLocked()) return;
     this.lockRequest();
     this.result = this.axiosInstance?.put(url, data ?? undefined);
     return this;
   }
 
-  public delete(url: string, data?: any) {
+  public delete(url: string, data?: any): RequestHandler | undefined {
     if (this.isLocked()) return;
     this.lockRequest();
     this.result = this.axiosInstance?.delete(url);
     return this;
+  }
+
+  public request(
+    url: string,
+    method: string,
+    data?: any
+  ): RequestHandler | undefined {
+    if (this.isLocked()) return;
+
+    if (this.isGetMethod(method)) {
+      return this.get(url);
+    } else if (this.isPostMethod(method)) {
+      return this.post(url, data);
+    } else if (this.isPutMethod(method)) {
+      return this.put(url, data);
+    } else if (this.isDeleteMethod(method)) {
+      return this.delete(url, data);
+    }
   }
 
   public then(handler: (response: AxiosResponse) => void) {
@@ -79,6 +97,31 @@ class RequestHandler {
 
   private isLocked() {
     return this.requestLock;
+  }
+
+  private isGetMethod(method: string) {
+    return method == "get";
+  }
+
+  private isPostMethod(method: string) {
+    return method == "post";
+  }
+
+  private isPutMethod(method: string) {
+    return method == "put";
+  }
+
+  private isDeleteMethod(method: string) {
+    return method == "delete";
+  }
+
+  private whichMethodIs(
+    method: string
+  ): "get" | "post" | "put" | "delete" | undefined {
+    if (this.isGetMethod(method)) return "get";
+    else if (this.isPostMethod(method)) return "post";
+    else if (this.isPutMethod(method)) return "put";
+    else if (this.isDeleteMethod(method)) return "delete";
   }
 
   private createAxiosInstance = () => {

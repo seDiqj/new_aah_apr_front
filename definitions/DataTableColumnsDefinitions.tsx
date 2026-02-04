@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { SELECT_ALL_BUTTON_PROVIDER } from "@/constants/System";
+import { Switch } from "@/components/ui/switch";
+import { SELECT_ALL_BUTTON_PROVIDER } from "@/config/System";
 import {
   Role,
   User,
@@ -569,7 +570,9 @@ export const mainDatabaseAndKitDatabaseBeneficiaryColumns: ColumnDef<Beneficiary
           className="max-w-[100px] truncate"
           title={row.getValue("programName")}
         >
-          {row.getValue("programName")}
+          {!row.getValue("programName")
+            ? "No program !"
+            : row.getValue("programName")}
         </div>
       ),
     },
@@ -1073,7 +1076,6 @@ export const psychoeducationTableListColumn: ColumnDef<any>[] = [
     enableSorting: false,
     enableHiding: false,
   },
-
   {
     accessorKey: "programName",
     header: "Program",
@@ -1087,23 +1089,23 @@ export const psychoeducationTableListColumn: ColumnDef<any>[] = [
     ),
   },
   {
+    accessorKey: "projectCode",
+    header: "Project Code",
+    cell: ({ row }) => (
+      <div
+        className="max-w-[100px] truncate"
+        title={row.getValue("projectCode")}
+      >
+        {row.getValue("projectCode")}
+      </div>
+    ),
+  },
+  {
     accessorKey: "indicator",
     header: "Indicator",
     cell: ({ row }) => (
       <div className="max-w-[100px] truncate" title={row.getValue("indicator")}>
         {row.getValue("indicator")}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "awarenessTopic",
-    header: "Awareness Topic",
-    cell: ({ row }) => (
-      <div
-        className="max-w-[100px] truncate"
-        title={row.getValue("awarenessTopic")}
-      >
-        {row.getValue("awarenessTopic")}
       </div>
     ),
   },
@@ -1121,71 +1123,147 @@ export const psychoeducationTableListColumn: ColumnDef<any>[] = [
   },
 ];
 
-export const beneficiarySessionsTableColumn: ColumnDef<any>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
+export const beneficiarySessionsTableColumn = (
+  onSwitchChange: (id: number) => void,
+): ColumnDef<any>[] => {
+  return [
+    {
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
 
-  {
-    accessorKey: "type",
-    header: "Type",
-    cell: ({ row }) => (
-      <div className="max-w-[100px] truncate" title={row.getValue("type")}>
-        {row.getValue("type")}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "topic",
-    header: "Topic",
-    cell: ({ row }) => (
-      <div className="max-w-[100px] truncate" title={row.getValue("topic")}>
-        {row.getValue("topic")}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "date",
-    header: "Date",
-    cell: ({ row }) => (
-      <div className="max-w-[100px] truncate" title={row.getValue("date")}>
-        {row.getValue("date")}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "isPresent",
-    header: "Is Present",
-    cell: ({ row }) => (
-      <div>
-        {row.getValue("isPresent") ? (
-          <span className="rounded border bg-green-500">Yes</span>
-        ) : (
-          <span className="rounded border bg-red-500">No</span>
-        )}
-      </div>
-    ),
-  },
-];
+    {
+      accessorKey: "type",
+      header: "Type",
+      cell: ({ row }) => (
+        <div className="max-w-[100px] truncate" title={row.getValue("type")}>
+          {row.getValue("type")}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "topic",
+      header: "Topic",
+      cell: ({ row }) => (
+        <div className="max-w-[100px] truncate" title={row.getValue("topic")}>
+          {row.getValue("topic")}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "date",
+      header: "Date",
+      cell: ({ row }) => (
+        <div className="max-w-[100px] truncate" title={row.getValue("date")}>
+          {row.getValue("date")}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "isPresent",
+      header: "Is Present",
+      cell: ({ row }) => (
+        <div>
+          <Switch
+            id={`switch`}
+            defaultChecked={row.getValue("isPresent")}
+            onCheckedChange={() => onSwitchChange(row.id as unknown as number)}
+            className="h-5 w-8 [&_span]:size-4 data-[state=checked]:[&_span]:translate-x-3 data-[state=checked]:[&_span]:rtl:-translate-x-3"
+            aria-label="Toggle dark mode"
+          />
+        </div>
+      ),
+    },
+  ];
+};
+
+// export const beneficiarySessionsTableColumn: ColumnDef<any>[] = [
+//   {
+//     id: "select",
+//     header: ({ table }) => (
+//       <Checkbox
+//         checked={
+//           table.getIsAllPageRowsSelected() ||
+//           (table.getIsSomePageRowsSelected() && "indeterminate")
+//         }
+//         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+//         aria-label="Select all"
+//       />
+//     ),
+//     cell: ({ row }) => (
+//       <Checkbox
+//         checked={row.getIsSelected()}
+//         onCheckedChange={(value) => row.toggleSelected(!!value)}
+//         aria-label="Select row"
+//       />
+//     ),
+//     enableSorting: false,
+//     enableHiding: false,
+//   },
+
+//   {
+//     accessorKey: "type",
+//     header: "Type",
+//     cell: ({ row }) => (
+//       <div className="max-w-[100px] truncate" title={row.getValue("type")}>
+//         {row.getValue("type")}
+//       </div>
+//     ),
+//   },
+//   {
+//     accessorKey: "topic",
+//     header: "Topic",
+//     cell: ({ row }) => (
+//       <div className="max-w-[100px] truncate" title={row.getValue("topic")}>
+//         {row.getValue("topic")}
+//       </div>
+//     ),
+//   },
+//   {
+//     accessorKey: "date",
+//     header: "Date",
+//     cell: ({ row }) => (
+//       <div className="max-w-[100px] truncate" title={row.getValue("date")}>
+//         {row.getValue("date")}
+//       </div>
+//     ),
+//   },
+//   {
+//     accessorKey: "isPresent",
+//     header: "Is Present",
+//     cell: ({ row }) => (
+//       <div>
+//         <Switch
+//           id={`switch`}
+//           defaultChecked={row.getValue("isPresent")}
+//           onCheckedChange={() => {
+//             console.log(row.id);
+//           }}
+//           className="h-5 w-8 [&_span]:size-4 data-[state=checked]:[&_span]:translate-x-3 data-[state=checked]:[&_span]:rtl:-translate-x-3"
+//           aria-label="Toggle dark mode"
+//         />
+//       </div>
+//     ),
+//   },
+// ];
 
 export const enactTableColumn: ColumnDef<any>[] = [
   {

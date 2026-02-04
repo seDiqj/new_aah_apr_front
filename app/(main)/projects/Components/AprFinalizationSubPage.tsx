@@ -38,6 +38,9 @@ import {
   RejectFinalizationMessage,
 } from "@/constants/ConfirmationModelsTexts";
 import { usePermissions } from "@/contexts/PermissionContext";
+import UserAvatar from "@/components/global/UserAvatar";
+import StringHelper from "@/helpers/StringHelpers/StringHelper";
+import { userDefaultAvatarUrl } from "@/config/UserConfig";
 
 const AprFinalizationSubPage: React.FC<AprFinalizationSubPageInterface> = ({
   mode,
@@ -57,8 +60,8 @@ const AprFinalizationSubPage: React.FC<AprFinalizationSubPageInterface> = ({
   } = IsCreateMode(mode)
     ? useProjectContext()
     : IsShowMode(mode)
-    ? useProjectShowContext()
-    : useProjectEditContext();
+      ? useProjectShowContext()
+      : useProjectEditContext();
 
   const { permissions } = usePermissions();
 
@@ -70,41 +73,56 @@ const AprFinalizationSubPage: React.FC<AprFinalizationSubPageInterface> = ({
     useState(false);
   const [reqForHqFinalizationModel, setReqForHqFinalizationModel] =
     useState(false);
-
   const [isLoading, setIsLoading] = useState(false);
+
+  const hasPositiveResult = (action: string) => {
+    return (
+      action == "create" ||
+      action == "submit" ||
+      action == "grantFinalize" ||
+      action == "hqFinalize"
+    );
+  };
+
+  const isRealAvatar = (avatar: string) => {
+    return avatar && avatar !== userDefaultAvatarUrl;
+  };
 
   const changeProjectAprStatus = (status: string) => {
     if (!IsValidAprStatus(status)) {
-      reqForToastAndSetMessage("Wronge status !");
+      reqForToastAndSetMessage("Wronge status !", "error");
       return;
     } else if (
       IsEnteredStatusLocaltedAtTheLowerLevelThenTheCurrentStatus(
         projectAprStatus,
-        status
+        status,
       )
     ) {
       reqForToastAndSetMessage(
-        `You can not set the project status to ${status} while its ${projectAprStatus}!`
+        `You can not set the project status to ${status} while its ${projectAprStatus}!`,
+        "warning"
       );
       return;
     } else if (
       IsEnteredStatusCallsToRejectAtTheLevelAboveTheCurrentLimit(
         projectAprStatus,
-        status
+        status,
       )
     ) {
       reqForToastAndSetMessage(
-        `You can not reject a project at the ${status} stage while its on ${projectAprStatus}!`
+        `You can not reject a project at the ${status} stage while its on ${projectAprStatus}!`,
+        "warning"
       );
       return;
     } else if (
       IsEnteredStatusCallingToBeApproveAtLevelAboveTheAllowedLevel(
         projectAprStatus,
-        status
+        status,
       )
     ) {
       reqForToastAndSetMessage(
-        `You can not approve this step before previous levels!`
+        `You can not approve this step before previous steps!`,
+        "warning"
       );
       return;
     }
@@ -118,7 +136,7 @@ const AprFinalizationSubPage: React.FC<AprFinalizationSubPageInterface> = ({
       })
       .then((response: any) => {
         setComment("");
-        reqForToastAndSetMessage(response.data.message);
+        reqForToastAndSetMessage(response.data.message, "success");
         setProjectAprStatus(response.data.data);
         [
           setReqForCreationModel,
@@ -128,7 +146,7 @@ const AprFinalizationSubPage: React.FC<AprFinalizationSubPageInterface> = ({
         ].forEach((fn) => fn(false));
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       )
       .finally(() => setIsLoading(false));
   };
@@ -138,7 +156,7 @@ const AprFinalizationSubPage: React.FC<AprFinalizationSubPageInterface> = ({
       .get(`/projects/get_project_finalizers_details/${projectId}`)
       .then((response: any) => setActionLogs(response.data.data))
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       );
   }, [projectAprStatus]);
 
@@ -171,10 +189,10 @@ const AprFinalizationSubPage: React.FC<AprFinalizationSubPageInterface> = ({
                       step.id === "create"
                         ? reqForCreationModel
                         : step.id === "submit"
-                        ? reqForSubmitionModel
-                        : step.id === "grantFinalize"
-                        ? reqForGrantFinalizationModel
-                        : reqForHqFinalizationModel
+                          ? reqForSubmitionModel
+                          : step.id === "grantFinalize"
+                            ? reqForGrantFinalizationModel
+                            : reqForHqFinalizationModel
                     }
                   >
                     <AlertDialogTrigger asChild>
@@ -185,7 +203,7 @@ const AprFinalizationSubPage: React.FC<AprFinalizationSubPageInterface> = ({
                             const currentIdx =
                               projectAprStatusList.indexOf(projectAprStatus);
                             const stepIdx = projectAprStatusList.indexOf(
-                              step.acceptStatusValue!
+                              step.acceptStatusValue!,
                             );
                             const isRejected = step.rejectStatusValue
                               ? projectAprStatus === step.rejectStatusValue
@@ -202,10 +220,10 @@ const AprFinalizationSubPage: React.FC<AprFinalizationSubPageInterface> = ({
                           step.id === "create"
                             ? setReqForCreationModel(true)
                             : step.id === "submit"
-                            ? setReqForSubmitionModel(true)
-                            : step.id === "grantFinalize"
-                            ? setReqForGrantFinalizationModel(true)
-                            : setReqForHqFinalizationModel(true)
+                              ? setReqForSubmitionModel(true)
+                              : step.id === "grantFinalize"
+                                ? setReqForGrantFinalizationModel(true)
+                                : setReqForHqFinalizationModel(true)
                         }
                         disabled={readOnly}
                       />
@@ -256,11 +274,11 @@ const AprFinalizationSubPage: React.FC<AprFinalizationSubPageInterface> = ({
                                   () =>
                                     comment.trim()
                                       ? changeProjectAprStatus(
-                                          step.rejectStatusValue!
+                                          step.rejectStatusValue!,
                                         )
                                       : reqForToastAndSetMessage(
-                                          "Comment is required!"
-                                        )
+                                          "Comment is required!",
+                                        ),
                                 )
                               }
                             >
@@ -275,11 +293,11 @@ const AprFinalizationSubPage: React.FC<AprFinalizationSubPageInterface> = ({
                                   () =>
                                     comment.trim()
                                       ? changeProjectAprStatus(
-                                          step.acceptStatusValue!
+                                          step.acceptStatusValue!,
                                         )
                                       : reqForToastAndSetMessage(
-                                          "Comment is required!"
-                                        )
+                                          "Comment is required!",
+                                        ),
                                 )
                               }
                             >
@@ -292,10 +310,10 @@ const AprFinalizationSubPage: React.FC<AprFinalizationSubPageInterface> = ({
                             onClick={() =>
                               comment.trim()
                                 ? changeProjectAprStatus(
-                                    step.acceptStatusValue!
+                                    step.acceptStatusValue!,
                                   )
                                 : reqForToastAndSetMessage(
-                                    "Comment is required!"
+                                    "Comment is required!",
                                   )
                             }
                           >
@@ -329,19 +347,24 @@ const AprFinalizationSubPage: React.FC<AprFinalizationSubPageInterface> = ({
             {actionLogs.map((log: any, i: number) => (
               <div key={log.id} className="flex items-center gap-4 shrink-0">
                 <div className="flex flex-col items-center text-center">
-                  <img
-                    src={log.avatar}
-                    className="w-10 h-10 rounded-full border"
-                  />
+                  {isRealAvatar(log.avatar) ? (
+                    <img
+                      src={log.avatar}
+                      alt={log.name}
+                      className="w-10 h-10 rounded-full border"
+                    />
+                  ) : (
+                    <UserAvatar userName={log.name}></UserAvatar>
+                  )}
                   <span className="text-xs font-medium mt-1">{log.name}</span>
                   <span
                     className={`text-xs px-2 py-0.5 rounded-full mt-1 ${
-                      log.action === "Accepted"
+                      hasPositiveResult(log.action)
                         ? "bg-green-100 text-green-700"
                         : "bg-red-100 text-red-700"
                     }`}
                   >
-                    {log.action}
+                    {StringHelper.normalize(log.action)}
                   </span>
                 </div>
 

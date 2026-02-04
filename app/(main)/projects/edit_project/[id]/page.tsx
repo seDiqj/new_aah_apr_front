@@ -25,6 +25,7 @@ import { Isp3Default } from "@/constants/FormsDefaultValues";
 import ChromeTabs from "../../Components/ChromeTab";
 import { IsNoOutcome } from "@/constants/Constants";
 import MonitoringTablePage from "@/components/global/ExcelSheet";
+import StringHelper from "@/helpers/StringHelpers/StringHelper";
 
 const EditProjectPage = () => {
   const { id } = useParams();
@@ -294,7 +295,7 @@ const EditProjectPage = () => {
                   {
                     value: "finalization",
                     title: "APR Finalization",
-                    hoverTitle: `Apr status: ${projectAprStatus}`,
+                    hoverTitle: `Apr status: ${StringHelper.normalize(projectAprStatus)}`,
                   },
                   {
                     value: "logs",

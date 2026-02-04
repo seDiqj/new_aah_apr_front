@@ -12,11 +12,15 @@ import KitDatabaseBeneficiaryForm from "@/components/global/KitDatabaseBeneficia
 import KitDatabaseBeneficiaryUpdateForm from "@/components/global/KitDatabaseBeneficiaryUpdateForm";
 import { Can } from "@/components/Can";
 import { withPermission } from "@/lib/withPermission";
-import {
-  KitDatabaseBeneficiaryFiltersList,
-} from "@/constants/FiltersList";
+import { KitDatabaseBeneficiaryFiltersList } from "@/constants/FiltersList";
+import { ToggleRight } from "lucide-react";
+import { useParentContext } from "@/contexts/ParentContext";
+import { ChangeAprIncludedStatusButtonMessage } from "@/constants/ConfirmationModelsTexts";
 
 const MainDatabasePage = () => {
+  const { reqForConfirmationModelFunc, changeBeneficairyAprIncludedStatus } =
+    useParentContext();
+
   const router = useRouter();
 
   let [idFeildForEditStateSetter, setIdFeildForEditStateSetter] = useState<
@@ -58,7 +62,7 @@ const MainDatabasePage = () => {
               <Button
                 onClick={() =>
                   setReqForBeneficiaryCreationForm(
-                    !reqForBeneficiaryCreationForm
+                    !reqForBeneficiaryCreationForm,
                   )
                 }
               >
@@ -81,6 +85,26 @@ const MainDatabasePage = () => {
           idFeildForShowStateSetter={setIdFeildForShowStateSetter}
           showModelOpenerStateSetter={() => {}}
           filtersList={KitDatabaseBeneficiaryFiltersList}
+          injectedElement={
+            <div className="flex flex-row items-center justify-end gap-2">
+              <Button
+                variant={"outline"}
+                onClick={() =>
+                  reqForConfirmationModelFunc(
+                    ChangeAprIncludedStatusButtonMessage,
+                    () => {
+                      changeBeneficairyAprIncludedStatus(
+                        idFeildForEditStateSetter,
+                      );
+                    },
+                  )
+                }
+                title="Change Apr Included"
+              >
+                <ToggleRight></ToggleRight>
+              </Button>
+            </div>
+          }
         ></DataTableDemo>
 
         {/* Create new beneficiary form */}

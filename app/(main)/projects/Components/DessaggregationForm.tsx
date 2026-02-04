@@ -65,7 +65,7 @@ import {
   DoneButtonMessage,
   ResetButtonMessage,
 } from "@/constants/ConfirmationModelsTexts";
-import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
 
 const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
   mode,
@@ -85,8 +85,8 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
   } = IsCreateMode(mode)
     ? useProjectContext()
     : IsShowMode(mode)
-    ? useProjectShowContext()
-    : useProjectEditContext();
+      ? useProjectShowContext()
+      : useProjectEditContext();
 
   const {
     reqForToastAndSetMessage,
@@ -118,15 +118,15 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
               indicators.find((ind) => ind.parent_indicator == indicatorId)
                 ?.id ||
             d.indicatorId ==
-              indicators.find((ind) => ind.id == indicatorId)?.subIndicator?.id
+              indicators.find((ind) => ind.id == indicatorId)?.subIndicator?.id,
         ),
       })
       .then((response: any) => {
         setSelectedIndicator(null);
-        reqForToastAndSetMessage(response.data.message);
+        reqForToastAndSetMessage(response.data.message, "success");
       })
       .catch((error: any) => {
-        reqForToastAndSetMessage(error.response.data.message);
+        reqForToastAndSetMessage(error.response.data.message, "error");
       })
       .finally(() => setIsLoading(false));
   };
@@ -135,7 +135,7 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
     shouldBeAdd: boolean,
     description: string,
     province: string,
-    indicator: { id: string | null; indicatorRef: string }
+    indicator: { id: string | null; indicatorRef: string },
   ) => {
     if (shouldBeAdd) {
       setDessaggregations((prev) => {
@@ -146,8 +146,8 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
               d,
               description,
               province,
-              indicator.indicatorRef
-            )
+              indicator.indicatorRef,
+            ),
           )
         )
           return prev;
@@ -171,24 +171,24 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
               d,
               description,
               province,
-              indicator.indicatorRef
-            )
-        )
+              indicator.indicatorRef,
+            ),
+        ),
       );
     }
   };
 
   const calculateProvinceDessaggregationsTotal = (
     province: string,
-    indicatorRef: string
+    indicatorRef: string,
   ) => {
     return dessaggregations
       .filter((d) =>
         IsTheDessaggregationOfThisIndicatorAndProvince(
           d,
           province,
-          indicatorRef
-        )
+          indicatorRef,
+        ),
       )
       .reduce((sum, d) => sum + Number(d.target || 0), 0);
   };
@@ -197,7 +197,7 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
     description: string,
     province: string,
     indicator: { id: string | null; indicatorRef: string },
-    newTarget: string | number
+    newTarget: string | number,
   ) => {
     const num = newTarget === "" ? 0 : Number(newTarget);
     setDessaggregations((prev) => {
@@ -206,8 +206,8 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
           d,
           description,
           province,
-          indicator.indicatorRef
-        )
+          indicator.indicatorRef,
+        ),
       );
       if (WasIndexFound(foundIndex)) {
         const copy = [...prev];
@@ -259,7 +259,7 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
             {indicators
               .filter(
                 (indicator) =>
-                  IsIndicatorSaved(indicator) && IsNotSubIndicator(indicator)
+                  IsIndicatorSaved(indicator) && IsNotSubIndicator(indicator),
               )
               .map((item, index) => (
                 <Card key={index} className="w-full">
@@ -274,7 +274,7 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                       } \nProvinces: ${item.provinces
                         .map(
                           (provinceObj: IndicatorProvinceType) =>
-                            provinceObj.province
+                            provinceObj.province,
                         )
                         .join(", ")} \nDessaggregation Type: ${
                         item.dessaggregationType
@@ -287,7 +287,7 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                       onClick={() => {
                         setSelectedIndicator(item);
                         setActiveDessaggregationTab(
-                          stringToCapital(item.dessaggregationType)
+                          stringToCapital(item.dessaggregationType),
                         );
                         setDessaggregationBeforeEdit(dessaggregations);
                       }}
@@ -295,8 +295,8 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                       {IsCreateMode(mode)
                         ? "Add"
                         : IsShowMode(mode)
-                        ? "Check"
-                        : "Edit"}
+                          ? "Check"
+                          : "Edit"}
                     </Button>
                   </CardContent>
                 </Card>
@@ -333,7 +333,7 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                             value={selectedIndicator.dessaggregationType.toLowerCase()}
                           >
                             {stringToCapital(
-                              selectedIndicator.dessaggregationType
+                              selectedIndicator.dessaggregationType,
                             )}
                           </TabsTrigger>
                           {selectedIndicator.subIndicator && (
@@ -342,7 +342,7 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                             >
                               {stringToCapital(
                                 selectedIndicator.subIndicator
-                                  .dessaggregationType
+                                  .dessaggregationType,
                               )}
                             </TabsTrigger>
                           )}
@@ -357,7 +357,7 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                             const totalForProvince =
                               calculateProvinceDessaggregationsTotal(
                                 province.province,
-                                selectedIndicator.indicatorRef
+                                selectedIndicator.indicatorRef,
                               );
 
                             return (
@@ -383,7 +383,7 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
 
                                   <TableBody>
                                     {getReliableDessaggregationOptionsAccordingToDessagregationType(
-                                      selectedIndicator.dessaggregationType
+                                      selectedIndicator.dessaggregationType,
                                     ).map((opt, i) => {
                                       const existing = dessaggregations.find(
                                         (d) =>
@@ -391,8 +391,8 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                                             d,
                                             opt,
                                             province.province,
-                                            selectedIndicator?.indicatorRef
-                                          )
+                                            selectedIndicator?.indicatorRef,
+                                          ),
                                       );
                                       // Just cuse we need a boolean value.
                                       const isChecked = !!existing;
@@ -407,7 +407,7 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                                                   checked as unknown as boolean,
                                                   opt,
                                                   province.province,
-                                                  selectedIndicator
+                                                  selectedIndicator,
                                                 )
                                               }
                                               disabled={readOnly}
@@ -431,7 +431,7 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                                                   opt,
                                                   province.province,
                                                   selectedIndicator,
-                                                  e.target.value
+                                                  e.target.value,
                                                 )
                                               }
                                               className="mx-auto max-w-[200px] text-center"
@@ -462,7 +462,7 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                                 {/* Error previewer */}
                                 {IsTotalOfDessaggregationsOfProvinceBiggerThenTotalOfProvince(
                                   totalForProvince,
-                                  province.target || 0
+                                  province.target || 0,
                                 ) && (
                                   <div className="flex flex-row items-center justify-start w-[90%] mx-auto">
                                     <p className="text-red-500 text-sm mt-2">
@@ -475,7 +475,7 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                                 )}
                                 {IsTotalOfDessaggregationsOfProvinceLessThenTotalOfProvince(
                                   totalForProvince,
-                                  province.target || 0
+                                  province.target || 0,
                                 ) && (
                                   <div className="flex flex-row items-center justify-start w-[90%] mx-auto">
                                     <p className="text-red-500 text-sm mt-2">
@@ -503,7 +503,7 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                                   calculateProvinceDessaggregationsTotal(
                                     province.province,
                                     selectedIndicator?.subIndicator!
-                                      .indicatorRef
+                                      .indicatorRef,
                                   );
 
                                 return (
@@ -528,7 +528,7 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                                       <TableBody>
                                         {getReliableDessaggregationOptionsForSubIndicatorAccordingToDessagregationType(
                                           selectedIndicator.subIndicator!
-                                            .dessaggregationType
+                                            .dessaggregationType,
                                         ).map((opt, i) => {
                                           const existing =
                                             dessaggregations.find((d) =>
@@ -537,8 +537,8 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                                                 opt,
                                                 province.province,
                                                 selectedIndicator?.subIndicator!
-                                                  .indicatorRef
-                                              )
+                                                  .indicatorRef,
+                                              ),
                                             );
 
                                           // Just cuse we need a boolean value.
@@ -554,7 +554,7 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                                                       checked as unknown as boolean,
                                                       opt,
                                                       province.province,
-                                                      selectedIndicator.subIndicator!
+                                                      selectedIndicator.subIndicator!,
                                                     )
                                                   }
                                                   disabled={readOnly}
@@ -578,7 +578,7 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                                                       opt,
                                                       province.province,
                                                       selectedIndicator.subIndicator!,
-                                                      e.target.value
+                                                      e.target.value,
                                                     );
                                                   }}
                                                   className="mx-auto max-w-[200px] text-center"
@@ -609,7 +609,7 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                                     {/* Error previewer */}
                                     {IsTotalOfDessaggregationsOfProvinceBiggerThenTotalOfProvince(
                                       totalForProvince,
-                                      province.target
+                                      province.target,
                                     ) && (
                                       <div className="flex flex-row items-center justify-start w-[90%] mx-auto">
                                         <p className="text-red-500 text-sm mt-2">
@@ -622,7 +622,7 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                                     )}
                                     {IsTotalOfDessaggregationsOfProvinceLessThenTotalOfProvince(
                                       totalForProvince,
-                                      province.target
+                                      province.target,
                                     ) && (
                                       <div className="flex flex-row items-center justify-start w-[90%] mx-auto">
                                         <p className="text-red-500 text-sm mt-2">
@@ -636,7 +636,7 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                                     <Separator className="my-5" />
                                   </React.Fragment>
                                 );
-                              }
+                              },
                             )}
                           </TabsContent>
                         )}
@@ -655,9 +655,10 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                               () =>
                                 setDessaggregations((prev) =>
                                   prev.filter(
-                                    (d) => d.indicatorId != selectedIndicator.id
-                                  )
-                                )
+                                    (d) =>
+                                      d.indicatorId != selectedIndicator.id,
+                                  ),
+                                ),
                             )
                           }
                         >
@@ -675,18 +676,18 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                           disabled={
                             isTheTotalTargetOfDessaggregationsEqualToTotalTargetOfIndicator(
                               selectedIndicator,
-                              dessaggregations
+                              dessaggregations,
                             ) || isLoading
                           }
                           onClick={(e) => {
                             if (
                               isTheTotalTargetOfDessaggregationsEqualToTotalTargetOfIndicator(
                                 selectedIndicator,
-                                dessaggregations
+                                dessaggregations,
                               )
                             ) {
                               reqForToastAndSetMessage(
-                                "The total target of dessaggregations should be equal to total target of indicator !"
+                                "The total target of dessaggregations should be equal to total target of indicator !",
                               );
                               return;
                             }
@@ -694,7 +695,7 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
                               DoneButtonMessage,
                               () => {
                                 hundleSubmit(selectedIndicator.id);
-                              }
+                              },
                             );
                           }}
                         >
@@ -716,7 +717,7 @@ const DessaggregationForm: React.FC<DessaggregationFromInterface> = ({
             undefined,
             false,
             setCurrentTab,
-            "aprPreview"
+            "aprPreview",
           )}
         </CardFooter>
       </Card>

@@ -24,7 +24,7 @@ import {
   IsShowMode,
 } from "@/constants/Constants";
 import { CommunityDialogueSessionFormInterface } from "@/interfaces/Interfaces";
-import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
 
 const SessionForm: React.FC<CommunityDialogueSessionFormInterface> = ({
   open,
@@ -42,7 +42,7 @@ const SessionForm: React.FC<CommunityDialogueSessionFormInterface> = ({
   } = useParentContext();
 
   const [formData, setFormData] = useState<CommunityDialogueSessionForm>(
-    CommunityDialogueSessionDefault(id as unknown as string)
+    CommunityDialogueSessionDefault(id as unknown as string),
   );
 
   const [loading, setLoading] = useState(false);
@@ -50,30 +50,31 @@ const SessionForm: React.FC<CommunityDialogueSessionFormInterface> = ({
 
   const handleSubmit = () => {
     if (!formData.date || !formData.topic)
-      return reqForToastAndSetMessage("Please fill all fields.");
+      return reqForToastAndSetMessage("Please fill all fields.", "warning");
 
     setLoading(true);
 
     const request = IsCreateMode(mode)
       ? requestHandler().post(
           "/community_dialogue_db/community_dialogue/session",
-          formData
+          formData,
         )
       : requestHandler().put(
           `/community_dialogue_db/community_dialogue/session/${sessionId}`,
-          formData
+          formData,
         );
 
     request
       .then((response: any) => {
-        reqForToastAndSetMessage(response.data.message);
+        reqForToastAndSetMessage(response.data.message, "success");
         onOpenChange(false);
         handleReload();
       })
       .catch((error: any) =>
         reqForToastAndSetMessage(
-          error.response?.data?.message || "Error occurred."
-        )
+          error.response?.data?.message || "Error occurred.",
+          "error"
+        ),
       )
       .finally(() => {
         setLoading(false);
@@ -95,8 +96,9 @@ const SessionForm: React.FC<CommunityDialogueSessionFormInterface> = ({
         })
         .catch((error: any) =>
           reqForToastAndSetMessage(
-            error.response?.data?.message || "Error fetching data."
-          )
+            error.response?.data?.message || "Error fetching data.",
+            "error"
+          ),
         )
         .finally(() => setFetching(false));
     }
@@ -110,8 +112,8 @@ const SessionForm: React.FC<CommunityDialogueSessionFormInterface> = ({
             {IsCreateMode(mode)
               ? "Add New Session"
               : IsEditMode(mode)
-              ? "Update Session"
-              : "Session Information"}
+                ? "Update Session"
+                : "Session Information"}
           </DialogTitle>
         </DialogHeader>
 
@@ -161,7 +163,7 @@ const SessionForm: React.FC<CommunityDialogueSessionFormInterface> = ({
             onClick={() =>
               reqForConfirmationModelFunc(
                 CommunityDialogueSessionSubmitMessage,
-                () => handleSubmit()
+                () => handleSubmit(),
               )
             }
             disabled={loading}

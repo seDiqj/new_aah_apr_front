@@ -55,15 +55,18 @@ const MainDatabasePage = () => {
     }[]
   >();
 
+  const [projectStartDate, setProjectStartDate] = useState<string>("");
+  const [projectEndDate, setProjectEndDate] = useState<string>("");
+
   const handleDelete = (id: string) => {
     requestHandler()
       .delete(`/enact_database/delete_assessment/${id}`)
       .then((response: AxiosResponse<any, any, any>) => {
-        reqForToastAndSetMessage(response.data.message);
+        reqForToastAndSetMessage(response.data.message, "success");
         handleReload();
       })
       .catch((error: AxiosError<any, any>) =>
-        reqForToastAndSetMessage(error.response?.data.message)
+        reqForToastAndSetMessage(error.response?.data.message, "error"),
       );
   };
 
@@ -72,11 +75,15 @@ const MainDatabasePage = () => {
       .get(`/enact_database/show_for_profile/${id}`)
       .then((response: any) => {
         const { assessments, ...assessmentData } = response.data.data;
+        setProjectStartDate(assessmentData.projectStartDate);
+        setProjectEndDate(assessmentData.projectEndDate);
+        delete assessmentData.projectStartDate;
+        delete assessmentData.projectEndDate;
         setAssessmentInfo(assessmentData);
         setAssessmentsData(assessments);
       })
       .catch((error: any) => {
-        reqForToastAndSetMessage(error.response.data.message);
+        reqForToastAndSetMessage(error.response.data.message, "error");
       });
   }, [reloadFlag]);
 
@@ -146,7 +153,7 @@ const MainDatabasePage = () => {
                                 </span>
                               </div>
                             );
-                          }
+                          },
                         )}
                       </div>
                     ) : (
@@ -187,22 +194,34 @@ const MainDatabasePage = () => {
                                 className="cursor-pointer text-orange-500 hover:text-orange-700"
                                 onClick={() => {
                                   setSelectedAssessmentId(
-                                    Number(assessment.id)
+                                    Number(assessment.id),
                                   );
                                   setReqForAssessmentShowModel(
-                                    !reqForAssessmentShowModel
+                                    !reqForAssessmentShowModel,
                                   );
                                 }}
                                 size={18}
                               ></Eye>
+                              <Edit
+                                className="cursor-pointer text-orange-500 hover:text-orange-700"
+                                onClick={() => {
+                                  setSelectedAssessmentId(
+                                    Number(assessment.id),
+                                  );
+                                  setReqForAssessmentEditModel(
+                                    !reqForAssessmentEditModel,
+                                  );
+                                }}
+                                size={18}
+                              ></Edit>
                               <Trash
                                 onClick={() =>
                                   reqForConfirmationModelFunc(
                                     AssessmentDeleteMessage,
                                     () =>
                                       handleDelete(
-                                        assessment.id as unknown as string
-                                      )
+                                        assessment.id as unknown as string,
+                                      ),
                                   )
                                 }
                                 className="cursor-pointer text-red-500 hover:text-red-700"
@@ -222,6 +241,15 @@ const MainDatabasePage = () => {
               open={reqForAddNewAssessment}
               onOpenChange={setReqForAddNewAssessment}
               mode={"create"}
+              dateRange={{
+                startDate: projectStartDate,
+                endDate: projectEndDate,
+              }}
+              exceptMonth={
+                assessmentsData?.map((assessment) => {
+                  return new Date(assessment.date).getMonth() + 1;
+                }) ?? []
+              }
             ></AssessmentScoreForm>
           )}
           {reqForAssessmentEditModel && selectedAssessmentId && (
@@ -230,6 +258,15 @@ const MainDatabasePage = () => {
               onOpenChange={setReqForAssessmentEditModel}
               mode={"edit"}
               assessmentId={selectedAssessmentId}
+              dateRange={{
+                startDate: projectStartDate,
+                endDate: projectEndDate,
+              }}
+              exceptMonth={
+                assessmentsData?.map((assessment) => {
+                  return new Date(assessment.date).getMonth() + 1;
+                }) ?? []
+              }
             ></AssessmentScoreForm>
           )}
           {reqForAssessmentShowModel && selectedAssessmentId && (
@@ -238,6 +275,15 @@ const MainDatabasePage = () => {
               onOpenChange={setReqForAssessmentShowModel}
               mode={"show"}
               assessmentId={selectedAssessmentId}
+              dateRange={{
+                startDate: projectStartDate,
+                endDate: projectEndDate,
+              }}
+              exceptMonth={
+                assessmentsData?.map((assessment) => {
+                  return new Date(assessment.date).getMonth() + 1;
+                }) ?? []
+              }
             ></AssessmentScoreForm>
           )}
         </div>

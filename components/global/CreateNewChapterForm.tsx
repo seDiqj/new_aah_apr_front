@@ -17,7 +17,7 @@ import { useParams } from "next/navigation";
 import { ChapterDefault } from "@/constants/FormsDefaultValues";
 import { ChapterCreationMessage } from "@/constants/ConfirmationModelsTexts";
 import { ChapterFormInterface } from "@/interfaces/Interfaces";
-import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
 import {
   IsANullOrUndefinedValue,
   IsCreateMode,
@@ -59,28 +59,31 @@ const CreateNewChapterForm: React.FC<ChapterFormInterface> = ({
       requestHandler()
         .post(`/training_db/training/chapter/${id}`, formData)
         .then((response: AxiosResponse<any, any>) => {
-          reqForToastAndSetMessage(response.data.message);
+          reqForToastAndSetMessage(response.data.message, "success");
           chaptersDataStateSetter((prev) => [...prev, formData]);
           onOpenChange(false);
         })
         .catch((error: AxiosError<any, any>) =>
-          reqForToastAndSetMessage(error.response?.data?.message || "Error")
+          reqForToastAndSetMessage(
+            error.response?.data?.message || "Error",
+            "error",
+          ),
         )
         .finally(() => setIsLoading(false));
     } else if (IsEditMode(mode)) {
       requestHandler()
         .put(`/training_db/training/chapter/${chapterId}`, formData)
         .then((response: AxiosResponse<any, any>) => {
-          reqForToastAndSetMessage(response.data.message);
+          reqForToastAndSetMessage(response.data.message, "success");
           chaptersDataStateSetter((prev) =>
             prev.map((chapter) =>
-              chapter.id == chapterId ? formData : chapter
-            )
+              chapter.id == chapterId ? formData : chapter,
+            ),
           );
           onOpenChange(false);
         })
         .catch((error: AxiosError<any, any>) =>
-          reqForToastAndSetMessage(error.response?.data?.message)
+          reqForToastAndSetMessage(error.response?.data?.message, "error"),
         )
         .finally(() => setIsLoading(false));
     }
@@ -96,10 +99,10 @@ const CreateNewChapterForm: React.FC<ChapterFormInterface> = ({
     requestHandler()
       .get(`/training_db/training/chapter/${chapterId}`)
       .then((response: AxiosResponse<any, any>) =>
-        setFormData(response.data.data)
+        setFormData(response.data.data),
       )
       .catch((error: AxiosError<any, any>) =>
-        reqForToastAndSetMessage(error.response?.data.message)
+        reqForToastAndSetMessage(error.response?.data.message, "error"),
       );
   }, [mode, chapterId]);
 
@@ -170,7 +173,7 @@ const CreateNewChapterForm: React.FC<ChapterFormInterface> = ({
               type="button"
               onClick={(e) =>
                 reqForConfirmationModelFunc(ChapterCreationMessage, () =>
-                  handleSubmit(e)
+                  handleSubmit(e),
                 )
               }
               className="w-full mt-6"

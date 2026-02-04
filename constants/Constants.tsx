@@ -13,7 +13,7 @@ import { RemoveIdFielsFromObj } from "@/helpers/GlobalHelpers";
 import {
   NO_OUTCOME_DEFAULT_OUTCOME,
   NO_OUTCOME_DEFAULT_REFERANCE,
-} from "./System";
+} from "../config/System";
 
 export const IsValidAprStatus = (status: string) => {
   return projectAprStatusList.includes(status);
@@ -21,17 +21,17 @@ export const IsValidAprStatus = (status: string) => {
 
 export const IsEnteredStatusLocaltedAtTheLowerLevelThenTheCurrentStatus = (
   projectAprStatus: string,
-  status: string
+  status: string,
 ) => {
   const projectCurrentStatusValue: undefined | number =
     aprFinalizationSteps.find(
       (step) =>
         step.acceptStatusValue == projectAprStatus ||
-        step.rejectStatusValue == projectAprStatus
+        step.rejectStatusValue == projectAprStatus,
     )?.stepValue;
 
   const inputAcceptStatusValue: undefined | number = aprFinalizationSteps.find(
-    (step) => step.acceptStatusValue == status
+    (step) => step.acceptStatusValue == status,
   )?.stepValue;
 
   return (
@@ -43,17 +43,17 @@ export const IsEnteredStatusLocaltedAtTheLowerLevelThenTheCurrentStatus = (
 
 export const IsEnteredStatusCallsToRejectAtTheLevelAboveTheCurrentLimit = (
   projectAprStatus: string,
-  status: string
+  status: string,
 ) => {
   const projectCurrentStatusValue: undefined | number =
     aprFinalizationSteps.find(
       (step) =>
         step.acceptStatusValue == projectAprStatus ||
-        step.rejectStatusValue == projectAprStatus
+        step.rejectStatusValue == projectAprStatus,
     )?.stepValue;
 
   const inputRejectStatusValue: undefined | number = aprFinalizationSteps.find(
-    (step) => step.rejectStatusValue == status
+    (step) => step.rejectStatusValue == status,
   )?.stepValue;
 
   return (
@@ -65,7 +65,7 @@ export const IsEnteredStatusCallsToRejectAtTheLevelAboveTheCurrentLimit = (
 
 export const IsEnteredStatusCallingToBeApproveAtLevelAboveTheAllowedLevel = (
   projectAprStatus: string,
-  status: string
+  status: string,
 ) => {
   let isRejected: boolean = false;
 
@@ -81,7 +81,7 @@ export const IsEnteredStatusCallingToBeApproveAtLevelAboveTheAllowedLevel = (
 
   const inputRejectStatusValue: undefined | number = aprFinalizationSteps.find(
     (step) =>
-      step.rejectStatusValue == status || step.acceptStatusValue == status
+      step.rejectStatusValue == status || step.acceptStatusValue == status,
   )?.stepValue;
 
   return (
@@ -93,83 +93,84 @@ export const IsEnteredStatusCallingToBeApproveAtLevelAboveTheAllowedLevel = (
 };
 
 export const IsMainDatabaseNotAvailableForSelection = (
-  indicators: Indicator[]
+  indicators: Indicator[],
 ) => {
   return (
     indicators.find(
       (indicator) =>
         indicator.database == "main_database" &&
-        indicator.type == "adult_psychosocial_support"
+        indicator.type == "adult_psychosocial_support",
     ) &&
     indicators.find(
       (indicator) =>
         indicator.database == "main_database" &&
-        indicator.type == "child_psychosocial_support"
+        indicator.type == "child_psychosocial_support",
     ) &&
     indicators.find(
       (indicator) =>
         indicator.database == "main_database" &&
-        indicator.type == "parenting_skills"
+        indicator.type == "parenting_skills",
     ) &&
     indicators.find(
       (indicator) =>
         indicator.database == "main_database" &&
-        indicator.type == "child_care_practices"
+        indicator.type == "child_care_practices",
     )
   );
 };
 
 export const IsMainDatabaseAvailableForMe = (
   indicators: Indicator[],
-  indicator: Indicator
+  indicator: Indicator,
 ) => {
   return !(
     indicators.find(
       (ind) =>
         ind.id != indicator.id &&
         ind.database == "main_database" &&
-        ind.type == "adult_psychosocial_support"
+        ind.type == "adult_psychosocial_support",
     ) &&
     indicators.find(
       (ind) =>
         ind.id != indicator.id &&
         ind.database == "main_database" &&
-        ind.type == "child_psychosocial_support"
+        ind.type == "child_psychosocial_support",
     ) &&
     indicators.find(
       (ind) =>
         ind.id != indicator.id &&
         ind.database == "main_database" &&
-        ind.type == "parenting_skills"
+        ind.type == "parenting_skills",
     ) &&
     indicators.find(
       (ind) =>
         ind.id != indicator.id &&
         ind.database == "main_database" &&
-        ind.type == "child_care_practices"
+        ind.type == "child_care_practices",
     )
   );
 };
 
 export const IsMainDatabaseMealtoolTargetAvailableForMe = (
   Indicators: Indicator[],
-  indicator: Indicator
+  indicator: Indicator,
 ) => {
   return Indicators.find(
-    (ind) => ind.database == "main_database_meal_tool" && ind.id != indicator.id
+    (ind) =>
+      ind.database == "main_database_meal_tool" && ind.id != indicator.id,
   );
 };
 
 export const IsCurrentTypeOptionAvailable = (
   indicators: Indicator[],
   option: { value: string; label: string },
-  localIndicator: Indicator
+  localIndicator: Indicator,
 ) => {
   return indicators.find(
     (indicator) =>
       indicator.database == "main_database" &&
       indicator.type == option.value &&
-      indicator.id !== localIndicator.id
+      indicator.id !== localIndicator.id,
   );
 };
 
@@ -178,14 +179,14 @@ export const IsMainDatabase = (indicator: Indicator) => {
 };
 
 export const HasSubIndicator = (
-  indicator: Indicator
+  indicator: Indicator,
 ): indicator is Indicator => {
   return indicator.subIndicator !== null;
 };
 
 export const isTheTotalTargetOfDessaggregationsEqualToTotalTargetOfIndicator = (
   selectedIndicator: Indicator,
-  dessaggregations: Dessaggregation[]
+  dessaggregations: Dessaggregation[],
 ) => {
   const selectedIndicatorId = selectedIndicator.id;
   const subIndicatorId = selectedIndicator.subIndicator?.id ?? null;
@@ -211,88 +212,88 @@ export const isTheTotalTargetOfDessaggregationsEqualToTotalTargetOfIndicator = (
 
 export const IsThereAnyOutputWithEnteredReferance = (
   outputs: Output[],
-  enteredReferance: string
+  enteredReferance: string,
 ) => {
   return outputs.some((output) => output.outputRef == enteredReferance);
 };
 
 export const IsThereAnyOutputWithEnteredReferanceAndDefferentId = (
   outputs: Output[],
-  enteredOutput: Output
+  enteredOutput: Output,
 ) => {
   return outputs.some(
     (output) =>
       output.outputRef === enteredOutput.outputRef &&
-      output.id !== enteredOutput.id
+      output.id !== enteredOutput.id,
   );
 };
 
 export const IsThereAnyOutcomeWithEnteredReferance = (
   outcomes: Outcome[],
-  outcome: Outcome
+  outcome: Outcome,
 ) => {
   return outcomes.some((o) => o.outcomeRef == outcome.outcomeRef);
 };
 
 export const IsThereAnyOutcomeWithEnteredReferanceAndDefferentId = (
   outcomes: Outcome[],
-  outcome: Outcome
+  outcome: Outcome,
 ) => {
   return outcomes.some(
-    (o) => o.outcomeRef == outcome.outcomeRef && o.id != outcome.id
+    (o) => o.outcomeRef == outcome.outcomeRef && o.id != outcome.id,
   );
 };
 
 export const IsCreateMode = (
-  mode: "create" | "edit" | "update" | "show"
+  mode: "create" | "edit" | "update" | "show",
 ): boolean => {
   return mode == "create";
 };
 
 export const IsEditMode = (
-  mode: "create" | "edit" | "update" | "show"
+  mode: "create" | "edit" | "update" | "show",
 ): boolean => {
   return mode == "edit" || mode == "update";
 };
 
 export const IsShowMode = (
-  mode: "create" | "edit" | "update" | "show"
+  mode: "create" | "edit" | "update" | "show",
 ): boolean => {
   return mode == "show";
 };
 
 export const IsNotCreateMode = (
-  mode: "create" | "edit" | "update" | "show"
+  mode: "create" | "edit" | "update" | "show",
 ): boolean => {
   return mode != "create";
 };
 
 export const IsNotEditMode = (
-  mode: "create" | "edit" | "update" | "show"
+  mode: "create" | "edit" | "update" | "show",
 ): boolean => {
   return mode != "edit" && mode != "update";
 };
 
 export const IsNotShowMode = (
-  mode: "create" | "edit" | "update" | "show"
+  mode: "create" | "edit" | "update" | "show",
 ): boolean => {
   return mode != "show";
 };
 
 export const IsCreateOrEditMode = (
-  mode: "create" | "edit" | "update" | "show"
+  mode: "create" | "edit" | "update" | "show",
 ): boolean => {
   return mode == "create" || mode == "edit" || mode == "update";
 };
 
 export const IsEditOrShowMode = (
-  mode: "create" | "edit" | "update" | "show"
+  mode: "create" | "edit" | "update" | "show",
 ): boolean => {
   return mode == "edit" || mode == "update" || mode == "show";
 };
 
 export const IsCreateOrShowMode = (
-  mode: "create" | "edit" | "update" | "show"
+  mode: "create" | "edit" | "update" | "show",
 ): boolean => {
   return mode == "create" || mode == "show";
 };
@@ -301,7 +302,7 @@ export const HasDessaggregationTheseFeature = (
   dessaggregation: Dessaggregation,
   description: string,
   province: string,
-  indicatorRef: string
+  indicatorRef: string,
 ) => {
   return (
     dessaggregation.dessaggration === description &&
@@ -312,14 +313,14 @@ export const HasDessaggregationTheseFeature = (
 
 export const IsTotalOfDessaggregationsOfProvinceBiggerThenTotalOfProvince = (
   dessaggregationsTotal: number,
-  provinceTotal: number
+  provinceTotal: number,
 ): boolean => {
   return dessaggregationsTotal > provinceTotal;
 };
 
 export const IsTotalOfDessaggregationsOfProvinceLessThenTotalOfProvince = (
   dessaggregationsTotal: number,
-  provinceTotal: number
+  provinceTotal: number,
 ): boolean => {
   return dessaggregationsTotal < provinceTotal;
 };
@@ -331,7 +332,7 @@ export const WasIndexFound = (index: number) => {
 export const IsTheDessaggregationOfThisIndicatorAndProvince = (
   dessaggration: Dessaggregation,
   province: string,
-  indicatorRef: string
+  indicatorRef: string,
 ): boolean => {
   return (
     dessaggration.province === province &&
@@ -353,7 +354,7 @@ export const IsNotIndicatorDatabaseEnactDatabase = (indicator: Indicator) => {
 
 export const AreDessaggregationsTheSame = (
   firstDessaggregation: Dessaggregation,
-  secondDessaggregation: Dessaggregation
+  secondDessaggregation: Dessaggregation,
 ): boolean => {
   return (
     firstDessaggregation.dessaggration == secondDessaggregation.dessaggration &&
@@ -365,7 +366,7 @@ export const AreDessaggregationsTheSame = (
 
 export const AreDessaggregationsEdited = (
   dessaggrationsBeforeEdit: Dessaggregation[],
-  dessaggrationsAfterEdit: Dessaggregation[]
+  dessaggrationsAfterEdit: Dessaggregation[],
 ): boolean => {
   let areEqual: boolean = true;
 
@@ -375,59 +376,59 @@ export const AreDessaggregationsEdited = (
   if (areEqual)
     for (let dessaggration of dessaggrationsBeforeEdit)
       areEqual = !!dessaggrationsAfterEdit.find((d) =>
-        AreDessaggregationsTheSame(d, dessaggration)
+        AreDessaggregationsTheSame(d, dessaggration),
       );
 
   return !areEqual;
 };
 
 export const IsIdFeild = (feildName: string): boolean => {
-  return feildName == "id";
+  return feildName == "id" || feildName == "project_id";
 };
 
 export const IsCurrentTypeOptionIsTheCurrentIndicatorOption = (
   indicator: Indicator,
-  typeOption: string
+  typeOption: string,
 ): boolean => {
   return (indicator.type as unknown as string) === typeOption;
 };
 
 export const IsCurrentTypeOptionHasBeenTakenByOtherIndicators = (
   indicators: Indicator[],
-  typeOption: string
+  typeOption: string,
 ): boolean => {
   return !indicators.find(
     (indicator) =>
-      indicator.database == "main_database" && indicator.type == typeOption
+      indicator.database == "main_database" && indicator.type == typeOption,
   );
 };
 
 export const IsThereAnyIndicatorWithEnteredReferance = (
   indicators: Indicator[],
-  enteredRef: string
+  enteredRef: string,
 ): boolean => {
   return indicators.some((indicator) => indicator.indicatorRef == enteredRef);
 };
 
 export const IsThereAndIndicatorWithEnteredReferanceAndDefferentId = (
   indicators: Indicator[],
-  indicator: Indicator
+  indicator: Indicator,
 ): boolean => {
   return indicators.some(
-    (i) => i.indicatorRef == indicator.indicatorRef && i.id !== indicator.id
+    (i) => i.indicatorRef == indicator.indicatorRef && i.id !== indicator.id,
   );
 };
 
 export const IsIndicatorRelatedToThisOutput = (
   outputId: number,
-  indicatorOutputId: number
+  indicatorOutputId: number,
 ): boolean => {
   return outputId === indicatorOutputId;
 };
 
 export const IsOutputRelatedToThisOutcome = (
   outcomeId: number,
-  outputOutcomeId: number
+  outputOutcomeId: number,
 ): boolean => {
   return outcomeId === outputOutcomeId;
 };
@@ -469,19 +470,19 @@ export const IsNotANullValue = (value: any): boolean => {
 };
 
 export const IsCreatePage = (
-  pageIdentifier: "create" | "edit" | "show"
+  pageIdentifier: "create" | "edit" | "show",
 ): boolean => {
   return pageIdentifier == "create";
 };
 
 export const IsEditPage = (
-  pageIdentifier: "create" | "edit" | "show"
+  pageIdentifier: "create" | "edit" | "show",
 ): boolean => {
   return pageIdentifier == "edit";
 };
 
 export const IsShowPage = (
-  pageIdentifier: "create" | "edit" | "show"
+  pageIdentifier: "create" | "edit" | "show",
 ): boolean => {
   return pageIdentifier == "show";
 };
@@ -495,38 +496,38 @@ export const NotSavedYet = (value: any): boolean => {
 };
 
 export const IsDessaggregationSaved = (
-  dessaggration: Dessaggregation
+  dessaggration: Dessaggregation,
 ): boolean => {
   return IsNotANullValue(dessaggration.id);
 };
 
 export const isNotASubIndicator = (
-  subIndicator: SubIndicator | null
+  subIndicator: SubIndicator | null,
 ): subIndicator is null => {
   return subIndicator == null;
 };
 
 export const NoProvinceSelectedForIndicator = (
-  indicator: Indicator
+  indicator: Indicator,
 ): boolean => {
   return indicator.provinces.length == 0;
 };
 
 export const NoProvinceSelectedForSubIndicator = (
-  subIndicator: SubIndicator
+  subIndicator: SubIndicator,
 ): boolean => {
   return subIndicator.provinces.length == 0;
 };
 
 export const AtLeastOneProvinceSelectedForIndicator = (
-  indicator: Indicator
+  indicator: Indicator,
 ): boolean => {
   return indicator.provinces.length >= 1;
 };
 
 export const AreObjectsStructureBaseShallowEqual = (
   first: Object,
-  second: Object
+  second: Object,
 ): boolean => {
   const firstKeys = Object.keys(first);
   const secondKeys = Object.keys(second);
@@ -538,7 +539,7 @@ export const AreObjectsStructureBaseShallowEqual = (
 
 export const AreObjectsStructureBaseDeepEqual = (
   first: any,
-  second: any
+  second: any,
 ): boolean => {
   if (first === second) return true;
 
@@ -630,14 +631,14 @@ export const IsNonPrimitiveType = (value: any): boolean => {
 };
 
 export const IsNonePrimitiveTypeAndNotNullOrUndefined = (
-  value: any
+  value: any,
 ): boolean => {
   return IsNotANullOrUndefinedValue(value) && IsNonPrimitiveType(value);
 };
 
 export const IsTypeOfValuesSameAndPrimitive = (
   first: any,
-  second: any
+  second: any,
 ): boolean => {
   return (
     IsTypeOfValuesEqual(first, second) &&
@@ -656,7 +657,7 @@ export const IsANullOrUndefinedValue = (value: any): boolean => {
 
 export const AreObjectsValueBaseDeepEqual = (
   first: any,
-  second: any
+  second: any,
 ): boolean => {
   const checkIfObjectsAreStructureBaseDeepEqual =
     AreObjectsStructureBaseDeepEqual(first, second);
@@ -700,27 +701,27 @@ export const AreObjectsValueBaseDeepEqual = (
 
 export const IsIndicatorEdited = (
   indicatorBeforeEdit: Indicator,
-  indicatorAfterEdit: Indicator
+  indicatorAfterEdit: Indicator,
 ): boolean => {
   const indicatorBeforeEditCopy = { ...indicatorBeforeEdit };
   const indicatorAfterEditCopy = { ...indicatorAfterEdit };
 
   const indicatorBeforeEditCopyWithoutIdFeilds = RemoveIdFielsFromObj(
-    indicatorBeforeEditCopy
+    indicatorBeforeEditCopy,
   );
   const indicatorAfterEditCopyWithoutIdFeilds = RemoveIdFielsFromObj(
-    indicatorAfterEditCopy
+    indicatorAfterEditCopy,
   );
 
   return !AreObjectsValueBaseDeepEqual(
     indicatorBeforeEditCopyWithoutIdFeilds,
-    indicatorAfterEditCopyWithoutIdFeilds
+    indicatorAfterEditCopyWithoutIdFeilds,
   );
 };
 
 export const IsOutcomeEdited = (
   outcomeBeforeEdit: Outcome,
-  outcomeAfterEdit: Outcome
+  outcomeAfterEdit: Outcome,
 ): boolean => {
   const outcomeBeforeEditCopyWithoutIdFeilds =
     RemoveIdFielsFromObj(outcomeBeforeEdit);
@@ -729,13 +730,13 @@ export const IsOutcomeEdited = (
 
   return !AreObjectsValueBaseDeepEqual(
     outcomeBeforeEditCopyWithoutIdFeilds,
-    outcomeAfterEditCopyWithoutIdFeilds
+    outcomeAfterEditCopyWithoutIdFeilds,
   );
 };
 
 export const IsOutputEdited = (
   outputBeforeEdit: Output,
-  outputAfterEdit: Output
+  outputAfterEdit: Output,
 ): boolean => {
   const outputBeforeEditCopyWithoutIdFeilds =
     RemoveIdFielsFromObj(outputBeforeEdit);
@@ -744,7 +745,7 @@ export const IsOutputEdited = (
 
   return !AreObjectsValueBaseDeepEqual(
     outputBeforeEditCopyWithoutIdFeilds,
-    outputAfterEditCopyWithoutIdFeilds
+    outputAfterEditCopyWithoutIdFeilds,
   );
 };
 

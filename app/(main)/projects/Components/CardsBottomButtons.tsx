@@ -7,7 +7,7 @@ import {
   ARROW_LEFT_BUTTON_PROVIDER,
   ARROW_RIGHT_BUTTON_PROVIDER,
   SUBMIT_BUTTON_PROVIDER_ID,
-} from "@/constants/System";
+} from "@/config/System";
 import { useParentContext } from "@/contexts/ParentContext";
 
 export const cardsBottomButtons = (
@@ -41,7 +41,7 @@ export const cardsBottomButtons = (
           onClick={() =>
             reqForConfirmationModelFunc(
               getConfirmationMessage(section),
-              saveBtnOnClick
+              saveBtnOnClick,
             )
           }
         >

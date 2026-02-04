@@ -23,22 +23,16 @@ import { trainingDatabaseBeneificiaryListColumn } from "@/definitions/DataTableC
 import { TrainingBeneficiariesFiltersList } from "@/constants/FiltersList";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { CircleX } from "lucide-react";
-import { DeleteChapterButtonMessage } from "@/constants/ConfirmationModelsTexts";
 import { AxiosError, AxiosResponse } from "axios";
 
 const TrainingProfilePage: React.FC<TrainingProfileInterface> = (
-  params: TrainingProfileInterface
+  params: TrainingProfileInterface,
 ) => {
   const { id } = use(params.params);
 
   const router = useRouter();
 
-  const {
-    reqForToastAndSetMessage,
-    requestHandler,
-    reqForConfirmationModelFunc,
-  } = useParentContext();
+  const { reqForToastAndSetMessage, requestHandler } = useParentContext();
 
   const [reqForChpaterForm, setReqForChapterForm] = useState<boolean>(false);
   const [reqForChpaterEditForm, setReqForChapterEditForm] =
@@ -51,9 +45,8 @@ const TrainingProfilePage: React.FC<TrainingProfileInterface> = (
 
   const [currentTab, setCurrentTab] = useState<string>("trainingInfo");
 
-  const [trainingInfo, setTrainingInfo] = useState<TrainingForm>(
-    TrainingDefault()
-  );
+  const [trainingInfo, setTrainingInfo] =
+    useState<TrainingForm>(TrainingDefault());
 
   const [chaptersData, setChaptersData] = useState<ChapterForm[]>([]);
 
@@ -64,10 +57,10 @@ const TrainingProfilePage: React.FC<TrainingProfileInterface> = (
       requestHandler()
         .delete(`training_db/training/chapter/${id}`)
         .then((response: AxiosResponse<any, any>) =>
-          reqForToastAndSetMessage(response.data.message)
+          reqForToastAndSetMessage(response.data.message, "success"),
         )
         .catch((error: AxiosError<any, any>) =>
-          reqForToastAndSetMessage(error.response?.data.message)
+          reqForToastAndSetMessage(error.response?.data.message, "error"),
         );
     }
     setChaptersData((prev) => prev.filter((ch, i) => ch.id !== id));
@@ -99,7 +92,7 @@ const TrainingProfilePage: React.FC<TrainingProfileInterface> = (
         setEvaluationsData(evaluations);
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       );
   }, []);
 

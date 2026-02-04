@@ -29,7 +29,7 @@ import {
   IsNotShowMode,
   IsShowMode,
 } from "@/constants/Constants";
-import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
 import { AxiosError, AxiosResponse } from "axios";
 import { toDateOnly } from "./MainDatabaseBeneficiaryCreationForm";
 
@@ -47,7 +47,7 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
   } = useParentContext();
 
   const [formData, setFormData] = useState<PsychoeducationForm>(
-    PsychoeducationDefault()
+    PsychoeducationDefault(),
   );
 
   const [formErrors, setFormErrors] = useState<{
@@ -60,11 +60,11 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
   >([]);
 
   const [districts, setDistricts] = useState<{ id: string; name: string }[]>(
-    []
+    [],
   );
 
   const [provinces, setProvinces] = useState<{ id: string; name: string }[]>(
-    []
+    [],
   );
 
   const [projects, setProjects] = useState<
@@ -126,7 +126,8 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
       setFormErrors(errors);
 
       reqForToastAndSetMessage(
-        "Please fix validation errors before submitting."
+        "Please fix validation errors before submitting.",
+        "warning"
       );
       return;
     }
@@ -142,27 +143,27 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
       requestHandler()
         .post("/psychoeducation_db/psychoeducation", formData)
         .then((response: any) => {
-          reqForToastAndSetMessage(response.data.message);
+          reqForToastAndSetMessage(response.data.message, "success");
           onOpenChange(false);
           handleReload();
         })
         .catch((error: any) =>
-          reqForToastAndSetMessage(error.response.data.message)
+          reqForToastAndSetMessage(error.response.data.message, "error"),
         )
         .finally(() => setIsLoading(false));
     } else if (IsEditMode(mode)) {
       requestHandler()
         .put(
           `/psychoeducation_db/psychoeducation/${psychoeducationId}`,
-          formData
+          formData,
         )
         .then((response: any) => {
-          reqForToastAndSetMessage(response.data.message);
+          reqForToastAndSetMessage(response.data.message, "success");
           onOpenChange(false);
           handleReload();
         })
         .catch((error: any) => {
-          reqForToastAndSetMessage(error.response.data.message);
+          reqForToastAndSetMessage(error.response.data.message, "error");
         })
         .finally(() => setIsLoading(false));
     }
@@ -175,7 +176,7 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
         setProjects(Object.values(res.data.data));
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       );
   }, []);
 
@@ -188,21 +189,21 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
       .get(`projects/indicators/psychoeducation_database/${projectId}`)
       .then((response: any) => setIndicators(response.data.data))
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       );
 
     requestHandler()
       .get("/global/districts")
       .then((res: any) => setDistricts(Object.values(res.data.data)))
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       );
 
     requestHandler()
       .get(`projects/provinces/${projectId}`)
       .then((res: any) => setProvinces(Object.values(res.data.data)))
       .catch((error: any) => {
-        reqForToastAndSetMessage(error.response.data.message);
+        reqForToastAndSetMessage(error.response.data.message, "error");
       });
 
     requestHandler()
@@ -214,7 +215,7 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
         });
       })
       .catch((error: AxiosError<any, any>) =>
-        reqForToastAndSetMessage(error.response?.data.message)
+        reqForToastAndSetMessage(error.response?.data.message, "error"),
       );
   }, [formData.programInformation.project_id]);
 
@@ -225,14 +226,16 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
         .then((response: any) => {
           const { programData, ...psychoeducationData } = response.data.data;
 
-          console.log(programData);
           setFormData((prev) => ({
             programInformation: programData,
             psychoeducationInformation: {
               ...response.data.data.psychoeducationData,
             },
           }));
-        });
+        })
+        .catch((error: AxiosError<any, any>) =>
+          reqForToastAndSetMessage(error.response?.data.message, "error"),
+        );
     }
   }, [mode, psychoeducationId]);
 
@@ -282,7 +285,7 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
                       value: value,
                     },
                   },
-                  "program"
+                  "program",
                 )
               }
               disabled={readOnly}
@@ -306,7 +309,7 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
                       value: value,
                     },
                   },
-                  "program"
+                  "program",
                 )
               }
               disabled={readOnly}
@@ -370,7 +373,7 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
                       value: value,
                     },
                   },
-                  "program"
+                  "program",
                 )
               }
               disabled={readOnly}
@@ -394,7 +397,7 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
                       value: value,
                     },
                   },
-                  "program"
+                  "program",
                 )
               }
               disabled={readOnly}
@@ -485,7 +488,7 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
 
         {/* Topic of Awareness & Date of Awareness */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-          <div>
+          <div className="flex flex-col gap-4">
             <Label>Topic of Awareness</Label>
             <Input
               name="awarenessTopic"
@@ -505,14 +508,14 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
             />
           </div>
 
-          <div>
+          <div className="flex flex-col gap-4">
             <Label>Date of Awareness</Label>
             <Input
               type="date"
               name="awarenessDate"
               value={formData.psychoeducationInformation.awarenessDate}
               onChange={(e) => handleFormChange(e, "psychoeducation")}
-              disabled={readOnly}
+              disabled={readOnly || !formData.programInformation.project_id}
               className={`border p-2 rounded ${
                 formErrors.psychoeducationInformation.awarenessDate
                   ? "!border-red-500"
@@ -583,7 +586,7 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
                 IsCreateMode(mode)
                   ? PsychoeducationCreationMessage
                   : PsychoeducationEditionMessage,
-                () => handleSubmit()
+                () => handleSubmit(),
               )
             }
           >
@@ -619,25 +622,21 @@ function DemographicLine({
       | "ofMenIdp"
       | "ofMenRefugee"
       | "ofMenReturnee"
-      | "ofMenDisabilityType"
       // women
       | "ofWomenHostCommunity"
       | "ofWomenIdp"
       | "ofWomenRefugee"
       | "ofWomenReturnee"
-      | "ofWomenDisabilityType"
       // boy
       | "ofBoyHostCommunity"
       | "ofBoyIdp"
       | "ofBoyRefugee"
       | "ofBoyReturnee"
-      | "ofBoyDisabilityType"
       // girl
       | "ofGirlHostCommunity"
       | "ofGirlIdp"
       | "ofGirlRefugee"
-      | "ofGirlReturnee"
-      | "ofGirlDisabilityType";
+      | "ofGirlReturnee";
   }[] = [
     {
       label: "Host Community",
@@ -646,10 +645,10 @@ function DemographicLine({
         prefix == "ofMen"
           ? "ofMenHostCommunity"
           : prefix == "ofWomen"
-          ? "ofWomenHostCommunity"
-          : prefix == "ofBoy"
-          ? "ofBoyHostCommunity"
-          : "ofGirlHostCommunity",
+            ? "ofWomenHostCommunity"
+            : prefix == "ofBoy"
+              ? "ofBoyHostCommunity"
+              : "ofGirlHostCommunity",
     },
     {
       label: "of IDP",
@@ -658,10 +657,10 @@ function DemographicLine({
         prefix == "ofMen"
           ? "ofMenIdp"
           : prefix == "ofWomen"
-          ? "ofWomenIdp"
-          : prefix == "ofBoy"
-          ? "ofBoyIdp"
-          : "ofGirlIdp",
+            ? "ofWomenIdp"
+            : prefix == "ofBoy"
+              ? "ofBoyIdp"
+              : "ofGirlIdp",
     },
     {
       label: "of Refugee",
@@ -670,10 +669,10 @@ function DemographicLine({
         prefix == "ofMen"
           ? "ofMenRefugee"
           : prefix == "ofWomen"
-          ? "ofWomenRefugee"
-          : prefix == "ofBoy"
-          ? "ofBoyRefugee"
-          : "ofGirlRefugee",
+            ? "ofWomenRefugee"
+            : prefix == "ofBoy"
+              ? "ofBoyRefugee"
+              : "ofGirlRefugee",
     },
     {
       label: "of Returnee",
@@ -682,10 +681,10 @@ function DemographicLine({
         prefix == "ofMen"
           ? "ofMenReturnee"
           : prefix == "ofWomen"
-          ? "ofWomenReturnee"
-          : prefix == "ofBoy"
-          ? "ofBoyReturnee"
-          : "ofGirlReturnee",
+            ? "ofWomenReturnee"
+            : prefix == "ofBoy"
+              ? "ofBoyReturnee"
+              : "ofGirlReturnee",
     },
   ];
 

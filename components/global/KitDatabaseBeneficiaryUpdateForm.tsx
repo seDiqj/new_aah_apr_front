@@ -26,7 +26,7 @@ import {
   ReferredForProtectionOptions,
 } from "@/constants/SingleAndMultiSelectOptionsList";
 import { KitDatabaseBenficiaryUpdateForm } from "@/interfaces/Interfaces";
-import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
 import { AxiosError, AxiosResponse } from "axios";
 import { KitDatabaseBeneficiaryFormSchema } from "@/schemas/FormsSchema";
 import { toDateOnly } from "./MainDatabaseBeneficiaryCreationForm";
@@ -43,7 +43,7 @@ const KitDatabaseBeneficiaryUpdateForm: React.FC<
 
   const [formData, setFormData] =
     useState<KitDatabaseBeneficiaryUpdateFormType>(
-      KitDatabaseBeneficiaryUpdateDefault()
+      KitDatabaseBeneficiaryUpdateDefault(),
     );
 
   const [programs, setPrograms] = useState<{ id: string; name: string }[]>([]);
@@ -90,7 +90,7 @@ const KitDatabaseBeneficiaryUpdateForm: React.FC<
       });
 
       setFormErrors(errors);
-      reqForToastAndSetMessage("Please fix validation errors before updating.");
+      reqForToastAndSetMessage("Please fix validation errors before updating.", "warning");
       return;
     }
 
@@ -101,13 +101,14 @@ const KitDatabaseBeneficiaryUpdateForm: React.FC<
     requestHandler()
       .put(`/kit_db/beneficiary/${beneficiaryId}`, formData)
       .then((response: any) => {
-        reqForToastAndSetMessage(response.data.message);
+        reqForToastAndSetMessage(response.data.message, "success");
         onOpenChange(false);
         handleReload();
       })
       .catch((error: any) => {
         reqForToastAndSetMessage(
-          error.response?.data?.message || "Update failed"
+          error.response?.data?.message || "Update failed",
+          "error"
         );
       })
       .finally(() => setIsLoading(false));
@@ -142,7 +143,8 @@ const KitDatabaseBeneficiaryUpdateForm: React.FC<
         })
         .catch((error: any) => {
           reqForToastAndSetMessage(
-            error.response?.data?.message || "Error loading beneficiary"
+            error.response?.data?.message || "Error loading beneficiary",
+            "error"
           );
         });
     }
@@ -155,7 +157,7 @@ const KitDatabaseBeneficiaryUpdateForm: React.FC<
         .get(`global/programs_for_selection/kit_database`)
         .then((res: AxiosResponse<any, any>) => setPrograms(res.data.data.data))
         .catch((err: AxiosError<any, any>) =>
-          reqForToastAndSetMessage(err.response?.data?.message)
+          reqForToastAndSetMessage(err.response?.data?.message, "error"),
         );
     }
   }, [open]);
@@ -168,7 +170,7 @@ const KitDatabaseBeneficiaryUpdateForm: React.FC<
         setIndicators(response.data.data);
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       );
 
     requestHandler()
@@ -180,7 +182,7 @@ const KitDatabaseBeneficiaryUpdateForm: React.FC<
         });
       })
       .catch((error: AxiosError<any, any>) =>
-        reqForToastAndSetMessage(error.response?.data.message)
+        reqForToastAndSetMessage(error.response?.data.message, "error"),
       );
   }, [formData.program]);
 
@@ -474,7 +476,7 @@ const KitDatabaseBeneficiaryUpdateForm: React.FC<
           onClick={(e) =>
             reqForConfirmationModelFunc(
               KitDatabaseBeneficiaryEditionMessage,
-              () => handleSubmit(e)
+              () => handleSubmit(e),
             )
           }
         >

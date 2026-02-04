@@ -37,7 +37,7 @@ import {
 } from "@/constants/Constants";
 import { OutputFormSchema } from "@/schemas/FormsSchema";
 import { Textarea } from "../ui/textarea";
-import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
 
 const OutputModel: React.FC<OutputInterface> = ({
   isOpen,
@@ -62,14 +62,13 @@ const OutputModel: React.FC<OutputInterface> = ({
   } = IsCreatePage(pageIdentifier)
     ? useProjectContext()
     : IsEditPage(pageIdentifier)
-    ? useProjectEditContext()
-    : useProjectShowContext();
+      ? useProjectEditContext()
+      : useProjectShowContext();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [formData, setFormData] = useState<Output>(OutputDefault());
-  const [outputBeforeEdit, setOutputBeforeEdite] = useState<Output>(
-    OutputDefault()
-  );
+  const [outputBeforeEdit, setOutputBeforeEdite] =
+    useState<Output>(OutputDefault());
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
   const handleFormChange = (e: any) => {
@@ -94,7 +93,8 @@ const OutputModel: React.FC<OutputInterface> = ({
 
       setFormErrors(errors);
       reqForToastAndSetMessage(
-        "Please fix validation errors before submitting."
+        "Please fix validation errors before submitting.",
+        "warning"
       );
       return;
     }
@@ -106,7 +106,7 @@ const OutputModel: React.FC<OutputInterface> = ({
       IsThereAnyOutputWithEnteredReferance(outputs, formData.outputRef)
     ) {
       reqForToastAndSetMessage(
-        "A project can not have two output with same referance !"
+        "A project can not have two output with same referance !",
       );
       return;
     } else if (
@@ -114,7 +114,7 @@ const OutputModel: React.FC<OutputInterface> = ({
       IsThereAnyOutputWithEnteredReferanceAndDefferentId(outputs, formData)
     ) {
       reqForToastAndSetMessage(
-        "A project can not have two output with same referance !"
+        "A project can not have two output with same referance !",
       );
       return;
     }
@@ -125,7 +125,7 @@ const OutputModel: React.FC<OutputInterface> = ({
       requestHandler()
         .post("/projects/o/output", formData)
         .then((response: any) => {
-          reqForToastAndSetMessage(response.data.message);
+          reqForToastAndSetMessage(response.data.message, "success");
           setOutputs((prev) => [
             ...prev,
             { ...formData, id: response.data.data.id },
@@ -133,21 +133,23 @@ const OutputModel: React.FC<OutputInterface> = ({
           onOpenChange(false);
         })
         .catch((error: any) => {
-          reqForToastAndSetMessage(error.response.data.message);
+          reqForToastAndSetMessage(error.response.data.message, "error");
         })
         .finally(() => setIsLoading(false));
     else if (IsEditMode(mode))
       requestHandler()
         .put(`/projects/output/${outputId}`, formData)
         .then((response: any) => {
-          reqForToastAndSetMessage(response.data.message);
+          reqForToastAndSetMessage(response.data.message, "success");
           setOutputs((prev) =>
-            prev.map((output) => (output.id == formData.id ? formData : output))
+            prev.map((output) =>
+              output.id == formData.id ? formData : output,
+            ),
           );
           onOpenChange(false);
         })
         .catch((error: any) =>
-          reqForToastAndSetMessage(error.response.data.message)
+          reqForToastAndSetMessage(error.response.data.message, "error"),
         )
         .finally(() => setIsLoading(false));
   };
@@ -155,7 +157,7 @@ const OutputModel: React.FC<OutputInterface> = ({
   const handleCancel = () => {
     if (IsOutputEdited(outputBeforeEdit, formData)) {
       reqForConfirmationModelFunc(CancelButtonMessage, () =>
-        onOpenChange(false)
+        onOpenChange(false),
       );
 
       return;
@@ -174,7 +176,7 @@ const OutputModel: React.FC<OutputInterface> = ({
           setOutputBeforeEdite(response.data.data);
         })
         .catch((error: any) =>
-          reqForToastAndSetMessage(error.response.data.message)
+          reqForToastAndSetMessage(error.response.data.message, "error"),
         )
         .finally(() => setIsLoading(false));
     }
@@ -208,8 +210,8 @@ const OutputModel: React.FC<OutputInterface> = ({
             {IsCreateMode(mode)
               ? "Create New Output"
               : IsEditMode(mode)
-              ? "Edit Output"
-              : "Show Output"}
+                ? "Edit Output"
+                : "Show Output"}
           </DialogTitle>
         </DialogHeader>
 
@@ -299,7 +301,7 @@ const OutputModel: React.FC<OutputInterface> = ({
                     IsCreateMode(mode)
                       ? OutputCreationMessage
                       : OutputEditionMessage,
-                    handleSubmit
+                    handleSubmit,
                   )
                 }
               >

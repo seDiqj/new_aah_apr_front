@@ -2,11 +2,8 @@
 
 import * as React from "react";
 import { useEffect, useId, useState } from "react";
-import { LayoutGridIcon } from "lucide-react";
-import InfoMenu from "./InfoMenu";
 import NotificationMenu from "./NotificationMenu";
 import SettingsMenu from "./SettingsMenu";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -19,7 +16,7 @@ import { useParentContext } from "@/contexts/ParentContext";
 import SubmitSummary from "../submitSummary";
 import { webSiteContentList } from "@/constants/SingleAndMultiSelectOptionsList";
 import { Navbar14Props, Notification } from "@/interfaces/Interfaces";
-import { SIDEBAR_OPEN_TOGGLER_PROVIDER } from "@/constants/System";
+import { SIDEBAR_OPEN_TOGGLER_PROVIDER } from "@/config/System";
 
 export const Navbar14 = React.forwardRef<HTMLElement, Navbar14Props>(
   (
@@ -33,12 +30,12 @@ export const Navbar14 = React.forwardRef<HTMLElement, Navbar14Props>(
       onInfoItemClick,
       ...props
     },
-    ref
+    ref,
   ) => {
     const {
       notifications,
       setNotifications,
-      axiosInstance,
+      requestHandler,
       reqForToastAndSetMessage,
     } = useParentContext();
     const router = useRouter();
@@ -73,25 +70,27 @@ export const Navbar14 = React.forwardRef<HTMLElement, Navbar14Props>(
       }
 
       const filtered = webSiteContentList.filter((item) =>
-        item.contentTitle.toLowerCase().includes(value.toLowerCase())
+        item.contentTitle.toLowerCase().includes(value.toLowerCase()),
       );
       setSearchResults(filtered);
       onSearchChange?.(value);
     };
 
     const onNotificationClick = (notification: Notification) => {
-      axiosInstance
-        .post(`/notification/mark_as_read/${notification.id}`)
-        .then((response: any) =>
-          setNotifications((prev: Notification[]) =>
-            prev.map((n) =>
-              n.id == notification.id ? { ...n, unread: !n.unread } : {}
-            )
+      if (notification.unread) {
+        requestHandler()
+          .post(`/notification/mark_as_read/${notification.id}`)
+          .then((response: any) =>
+            setNotifications((prev: Notification[]) =>
+              prev.map((n) =>
+                n.id == notification.id ? { ...n, unread: !n.unread } : n,
+              ),
+            ),
           )
-        )
-        .catch((error: any) =>
-          reqForToastAndSetMessage(error.response.data.message)
-        );
+          .catch((error: any) =>
+            reqForToastAndSetMessage(error.response.data.message, "error"),
+          );
+      }
 
       switch (notification.type) {
         case "project":
@@ -178,19 +177,6 @@ export const Navbar14 = React.forwardRef<HTMLElement, Navbar14Props>(
               </div>
             )}
             <div className="flex items-center gap-2">
-              <Button
-                size="icon"
-                variant="ghost"
-                className="text-muted-foreground size-8 rounded-full shadow-none"
-                aria-label="Open layout menu"
-                onClick={(e) => {
-                  e.preventDefault();
-                  onLayoutClick?.();
-                }}
-              >
-                <LayoutGridIcon size={16} aria-hidden="true" />
-              </Button>
-              <InfoMenu onItemClick={onInfoItemClick} />
               <NotificationMenu
                 notifications={notifications}
                 onNotificationClick={onNotificationClick}
@@ -207,9 +193,9 @@ export const Navbar14 = React.forwardRef<HTMLElement, Navbar14Props>(
         </div>
       </header>
     );
-  }
+  },
 );
 
 Navbar14.displayName = "Navbar14";
 
-export { InfoMenu, NotificationMenu, SettingsMenu };
+export { NotificationMenu, SettingsMenu };

@@ -53,10 +53,10 @@ const Isp3SubPage: React.FC<Isp3SubPageInterface> = ({ mode }) => {
         isp3s: isp3,
       })
       .then((response: any) => {
-        reqForToastAndSetMessage(response.data.message);
+        reqForToastAndSetMessage(response.data.message, "success");
       })
       .catch((error: any) => {
-        reqForToastAndSetMessage(error.response.data.message);
+        reqForToastAndSetMessage(error.response.data.message, "error");
       })
       .finally(() => setIsLoading(false));
   };

@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SingleSelect } from "@/components/single-select";
 import { useParentContext } from "@/contexts/ParentContext";
 import { CommunityDialogBeneficiaryForm } from "@/types/Types";
@@ -24,7 +24,9 @@ import {
   incentiveReceivedOptions,
   MaritalStatusOptions,
 } from "@/constants/SingleAndMultiSelectOptionsList";
-import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
+import { toDateOnly } from "./MainDatabaseBeneficiaryCreationForm";
+import { AxiosError, AxiosResponse } from "axios";
 
 const BeneficiaryCreateCD: React.FC<
   CdDatabaseBeneficiaryCreationFormInterface
@@ -37,7 +39,7 @@ const BeneficiaryCreateCD: React.FC<
   } = useParentContext();
 
   const [formData, setFormData] = useState<CommunityDialogBeneficiaryForm>(
-    CommunityDialogueBeneficiaryDefault()
+    CommunityDialogueBeneficiaryDefault(),
   );
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
@@ -53,6 +55,14 @@ const BeneficiaryCreateCD: React.FC<
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  const [registrationDateValidRange, setRegistrationDateValidRange] = useState<{
+    start: string;
+    end: string;
+  }>({
+    start: "2025-1-1",
+    end: "2025-2-1",
+  });
+
   const handleSubmit = () => {
     const result = CdDatabaseBenefciaryFormSchema.safeParse(formData);
 
@@ -65,7 +75,8 @@ const BeneficiaryCreateCD: React.FC<
 
       setFormErrors(errors);
       reqForToastAndSetMessage(
-        "Please fix validation errors before submitting."
+        "Please fix validation errors before submitting.",
+        "warning"
       );
       return;
     }
@@ -77,15 +88,31 @@ const BeneficiaryCreateCD: React.FC<
     requestHandler()
       .post("/community_dialogue_db/beneficiary", formData)
       .then((response: any) => {
-        reqForToastAndSetMessage(response.data.message);
+        reqForToastAndSetMessage(response.data.message, "success");
         onOpenChange(false);
         handleReload();
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       )
       .finally(() => setIsLoading(false));
   };
+
+  // useEffect(() => {
+  //   if (!formData) return;
+
+  //   requestHandler()
+  //     .get(`/date/project_date_range_acc_to_program/${formData.program}`)
+  //     .then((response: AxiosResponse<any, any>) => {
+  //       setRegistrationDateValidRange({
+  //         start: toDateOnly(response.data.data.start),
+  //         end: toDateOnly(response.data.data.end),
+  //       });
+  //     })
+  //     .catch((error: AxiosError<any, any>) =>
+  //       reqForToastAndSetMessage(error.response?.data.message)
+  //     );
+  // }, [formData.program]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -206,13 +233,28 @@ const BeneficiaryCreateCD: React.FC<
           </div>
 
           <div className="flex flex-col gap-4">
+            <Label htmlFor="code">Code</Label>
+            <Input
+              name="code"
+              value={formData.code}
+              onChange={handleFormChange}
+              id="code"
+              placeholder="Beneficiary Code ..."
+              className={`border rounded-xl p-2 rounded ${
+                formErrors.code ? "!border-red-500" : ""
+              } w-full`}
+              title={formErrors.code}
+            />
+          </div>
+
+          <div className="flex flex-col gap-4">
             <Label htmlFor="nid">NID Number</Label>
             <Input
               name="nationalId"
               value={formData.nationalId}
               onChange={handleFormChange}
               id="nid"
-              placeholder="NID Number"
+              placeholder="NID Number ..."
               className={`border rounded-xl p-2 rounded ${
                 formErrors.nationalId ? "!border-red-500" : ""
               } w-full`}
@@ -279,6 +321,8 @@ const BeneficiaryCreateCD: React.FC<
                 formErrors.dateOfRegistration ? "!border-red-500" : ""
               } w-full`}
               title={formErrors.dateOfRegistration}
+              min={registrationDateValidRange.start}
+              max={registrationDateValidRange.end}
             />
           </div>
         </div>
@@ -291,7 +335,7 @@ const BeneficiaryCreateCD: React.FC<
           onClick={() =>
             reqForConfirmationModelFunc(
               CdDatabaseBeneficiaryCreationMessage,
-              () => handleSubmit()
+              () => handleSubmit(),
             )
           }
         >

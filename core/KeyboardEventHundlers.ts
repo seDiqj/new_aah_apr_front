@@ -6,7 +6,7 @@ import {
   SIDEBAR_OPEN_TOGGLER_PROVIDER,
   ARROW_RIGHT_BUTTON_PROVIDER,
   ARROW_LEFT_BUTTON_PROVIDER,
-} from "@/constants/System";
+} from "@/config/System";
 
 class KeyboardEventHandlers {
   /**
@@ -38,7 +38,7 @@ class KeyboardEventHandlers {
 
   onCtrlPlusAPressed() {
     const selectAllBtn: HTMLElement | null = document.getElementById(
-      SELECT_ALL_BUTTON_PROVIDER
+      SELECT_ALL_BUTTON_PROVIDER,
     );
 
     if (IsNotANullValue(selectAllBtn)) selectAllBtn?.click();
@@ -51,7 +51,7 @@ class KeyboardEventHandlers {
 
   onCtrlPlusBPressed() {
     const sideBarOpenerButton = document.getElementById(
-      SIDEBAR_OPEN_TOGGLER_PROVIDER
+      SIDEBAR_OPEN_TOGGLER_PROVIDER,
     );
 
     if (IsNotANullValue(sideBarOpenerButton)) sideBarOpenerButton?.click();

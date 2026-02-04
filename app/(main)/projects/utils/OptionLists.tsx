@@ -4,14 +4,14 @@ export const sessionDessaggregationOptions: string[] = [
 ];
 
 export const indevidualDessaggregationOptions: string[] = [
-  "Of Male (above 18)",
-  "Of Female (above 18)",
-  "of Male adolescents (12 to 17 years old)",
-  "of Female adolescents (12 to 17 years old)",
-  "of Male children (6 to 11 years old)",
-  "of Female children (6 to 11 years old)",
-  "of Male CU5 (boys)",
-  "of Female CU5 (girls)",
+  "# Of Male (above 18)",
+  "# Of Female (above 18)",
+  "# of Male adolescents (12 to 17 years old)",
+  "# of Female adolescents (12 to 17 years old)",
+  "# of Male children (6 to 11 years old)",
+  "# of Female children (6 to 11 years old)",
+  "# of Male CU5 (boys)",
+  "# of Female CU5 (girls)",
 ];
 
 export const enactDessaggregationOptions: string[] = [

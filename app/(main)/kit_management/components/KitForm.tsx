@@ -19,7 +19,7 @@ import {
   IsShowMode,
 } from "@/constants/Constants";
 import { AxiosError, AxiosResponse } from "axios";
-import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { SingleSelect } from "@/components/single-select";
@@ -66,24 +66,24 @@ const KitForm: React.FC<KitFormInterface> = ({
       axiosInstance
         .post(`/kit_db/kit_mng/`, formData)
         .then((response: any) => {
-          reqForToastAndSetMessage(response.data.message);
+          reqForToastAndSetMessage(response.data.message, "success");
           onOpenChange(false);
           handleReload();
         })
         .catch((error: any) =>
-          reqForToastAndSetMessage(error.response.data.message)
+          reqForToastAndSetMessage(error.response.data.message, "error"),
         )
         .finally(() => setIsLoading(false));
     } else if (IsEditMode(mode) && kitId) {
       axiosInstance
         .put(`/kit_db/kit_mng/${kitId}`, formData)
         .then((response: any) => {
-          reqForToastAndSetMessage(response.data.message);
+          reqForToastAndSetMessage(response.data.message, "success");
           onOpenChange(false);
           handleReload();
         })
         .catch((error: any) =>
-          reqForToastAndSetMessage(error.response.data.message)
+          reqForToastAndSetMessage(error.response.data.message, "error"),
         )
         .finally(() => setIsLoading(false));
     }
@@ -97,7 +97,7 @@ const KitForm: React.FC<KitFormInterface> = ({
           setFormData(response.data.data);
         })
         .catch((error: AxiosError<any, any>) => {
-          reqForToastAndSetMessage(error.response?.data.message);
+          reqForToastAndSetMessage(error.response?.data.message, "error");
         });
     }
   }, [mode, kitId, open]);
@@ -163,7 +163,7 @@ const KitForm: React.FC<KitFormInterface> = ({
                 onClick={(e) =>
                   reqForConfirmationModelFunc(
                     IsCreateMode(mode) ? KitCreationMessage : KitEditionMessage,
-                    () => handleSubmit(e)
+                    () => handleSubmit(e),
                   )
                 }
               >
@@ -172,8 +172,8 @@ const KitForm: React.FC<KitFormInterface> = ({
                     ? "Saving ..."
                     : "Updating ..."
                   : IsCreateMode(mode)
-                  ? "Save"
-                  : "Update"}
+                    ? "Save"
+                    : "Update"}
               </Button>
             </div>
           )}
@@ -185,5 +185,9 @@ const KitForm: React.FC<KitFormInterface> = ({
 
 export default withPermission(
   KitForm,
-  IsCreateMode(mode) ? "Kit.create" : IsEditMode(mode) ? "Kit.edit" : "Kit.view"
+  IsCreateMode(mode)
+    ? "Kit.create"
+    : IsEditMode(mode)
+      ? "Kit.edit"
+      : "Kit.view",
 );

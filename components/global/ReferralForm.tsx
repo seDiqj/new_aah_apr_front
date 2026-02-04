@@ -27,7 +27,7 @@ import {
   servicesOptions,
 } from "@/constants/SingleAndMultiSelectOptionsList";
 import { ReferralSubmitButtonMessage } from "@/constants/ConfirmationModelsTexts";
-import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
 
 const ReferralForm: React.FC<ReferralInterface> = ({
   beneficiaryInfo,
@@ -61,15 +61,15 @@ const ReferralForm: React.FC<ReferralInterface> = ({
 
   // Referred By / To
   const [referredBy, setReferredBy] = useState<ReferredByAndReferredToFormType>(
-    ReferredByAndReferredToDefault()
+    ReferredByAndReferredToDefault(),
   );
   const [referredTo, setReferredTo] = useState<ReferredByAndReferredToFormType>(
-    ReferredByAndReferredToDefault()
+    ReferredByAndReferredToDefault(),
   );
 
   // Reason of referral
   const [reasons, setReasons] = useState<ReferralReasonFormType>(
-    ReasoneOfReferralDefault()
+    ReasoneOfReferralDefault(),
   );
 
   // Services requested
@@ -113,8 +113,8 @@ const ReferralForm: React.FC<ReferralInterface> = ({
       type: referralTypeInternal
         ? "internal"
         : referralTypeExternal
-        ? "external"
-        : "",
+          ? "external"
+          : "",
       referrerName: referredBy.name,
       referrerAgency: referredBy.agency,
       referrerPhone: referredBy.phone,
@@ -136,7 +136,7 @@ const ReferralForm: React.FC<ReferralInterface> = ({
       ].filter(Boolean),
 
       serviceRequested: Object.keys(selectedServices).filter(
-        (s) => selectedServices[s]
+        (s) => selectedServices[s],
       ),
       expectedOutcome,
 
@@ -150,7 +150,7 @@ const ReferralForm: React.FC<ReferralInterface> = ({
       .put(`/referral_db/beneficiary/updateReferral/${id}`, payload)
       .then((response: any) => reqForToastAndSetMessage(response.data.message))
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message),
       )
       .finally(() => setIsLoading(false));
   }
@@ -180,7 +180,7 @@ const ReferralForm: React.FC<ReferralInterface> = ({
         agency: referralData.referrerAgency ?? "",
         phone: referralData.referrerPhone ?? "",
         email: referralData.referrerEmail ?? "",
-        address: "", 
+        address: "",
       });
 
       // Referred To
@@ -202,7 +202,7 @@ const ReferralForm: React.FC<ReferralInterface> = ({
           ? "yes"
           : "",
         undiagnosedPsychosis: referralData.mentalHealthAlert?.includes(
-          "potential"
+          "potential",
         )
           ? "yes"
           : "",
@@ -219,7 +219,7 @@ const ReferralForm: React.FC<ReferralInterface> = ({
       setOtherServiceText(
         referralData.serviceRequested?.includes("Others (please specify)")
           ? "specified text..."
-          : ""
+          : "",
       );
 
       // Expected outcome
@@ -755,7 +755,7 @@ const ReferralForm: React.FC<ReferralInterface> = ({
               type="button"
               onClick={(e) =>
                 reqForConfirmationModelFunc(ReferralSubmitButtonMessage, () =>
-                  handleSubmit(e)
+                  handleSubmit(e),
                 )
               }
             >

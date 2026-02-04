@@ -60,7 +60,7 @@ import {
 import { stringToCapital } from "@/helpers/StringToCapital";
 import { getStructuredProvinces } from "@/helpers/IndicatorFormHelpers";
 import { AxiosError, AxiosResponse } from "axios";
-import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
 import { IndicatorSchema } from "@/schemas/FormsSchema";
 
 export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
@@ -88,13 +88,12 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
   } = IsCreatePage(pageIdentifier)
     ? useProjectContext()
     : IsEditPage(pageIdentifier)
-    ? useProjectEditContext()
-    : useProjectShowContext();
+      ? useProjectEditContext()
+      : useProjectShowContext();
 
   const [local, setLocal] = useState<Indicator>(IndicatorDefault());
-  const [indicatorBeforeEdit, setIndicatorBeforeEdit] = useState<Indicator>(
-    IndicatorDefault()
-  );
+  const [indicatorBeforeEdit, setIndicatorBeforeEdit] =
+    useState<Indicator>(IndicatorDefault());
   const [reqForSubIndicator, setReqForSubIndicator] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [formErrors, setFormErrors] = useState<{ [key: string]: any }>({});
@@ -145,7 +144,7 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
             ...prev,
             target: Number(value),
           },
-          setLocal
+          setLocal,
         );
 
       return {
@@ -154,8 +153,8 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
           name === "target"
             ? Number(value)
             : name === "type"
-            ? value || null
-            : value,
+              ? value || null
+              : value,
       };
     });
   };
@@ -175,7 +174,7 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
             target:
               name === "subIndicatorProvinceTarget" ? Number(value) : p.target,
           }
-        : p
+        : p,
     );
 
     setLocal((prev) => ({
@@ -228,7 +227,7 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
       IsThereAndIndicatorWithEnteredReferanceAndDefferentId(indicators, local)
     ) {
       reqForToastAndSetMessage(
-        "A project can not have two indicators with same referance !"
+        "A project can not have two indicators with same referance !",
       );
       return;
     } else if (
@@ -260,7 +259,8 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
       setFormErrors(errors);
 
       reqForToastAndSetMessage(
-        "Please fix validation errors before submitting."
+        "Please fix validation errors before submitting.",
+        "warning"
       );
       return;
     }
@@ -278,7 +278,7 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
               ...local,
               id: response.data.data.find(
                 (indicator: { id: string; indicatorRef: string }) =>
-                  indicator.indicatorRef == local.indicatorRef
+                  indicator.indicatorRef == local.indicatorRef,
               ).id,
               subIndicator: local.subIndicator
                 ? {
@@ -286,7 +286,7 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
                     id: response.data.data.find(
                       (indicator: { id: string; indicatorRef: string }) =>
                         indicator.indicatorRef ==
-                        local.subIndicator?.indicatorRef
+                        local.subIndicator?.indicatorRef,
                     ).id,
                   }
                 : null,
@@ -297,7 +297,7 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
               ...prev,
               id: response.data.data.find(
                 (indicator: { id: string; indicatorRef: string }) =>
-                  indicator.indicatorRef == local.indicatorRef
+                  indicator.indicatorRef == local.indicatorRef,
               ).id,
               subIndicator: prev.subIndicator
                 ? {
@@ -305,34 +305,34 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
                     id: response.data.data.find(
                       (indicator: { id: string; indicatorRef: string }) =>
                         indicator.indicatorRef ==
-                        local.subIndicator?.indicatorRef
+                        local.subIndicator?.indicatorRef,
                     ).id,
                   }
                 : null,
             };
           });
-          reqForToastAndSetMessage(response.data.message);
+          reqForToastAndSetMessage(response.data.message, "success");
           onClose();
         })
         .catch((error: any) => {
-          reqForToastAndSetMessage(error.response.data.message);
+          reqForToastAndSetMessage(error.response.data.message, "error");
         })
         .finally(() => setIsLoading(false));
     } else if (IsEditMode(mode)) {
       setIndicators((prev) =>
         prev.map((ind) =>
-          ind.indicatorRef == local.indicatorRef ? local : ind
-        )
+          ind.indicatorRef == local.indicatorRef ? local : ind,
+        ),
       );
 
       requestHandler()
         .put(`/projects/indicator/${local.id}`, local)
         .then((response: any) => {
-          reqForToastAndSetMessage(response.data.message);
+          reqForToastAndSetMessage(response.data.message, "success");
           onClose();
         })
         .catch((error: any) =>
-          reqForToastAndSetMessage(error.response.data.message)
+          reqForToastAndSetMessage(error.response.data.message, "error"),
         )
         .finally(() => setIsLoading(false));
     }
@@ -342,7 +342,7 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
     return databases.filter((opt) => {
       if (opt.value == "main_database") {
         if (!IsMainDatabaseAvailableForMe(indicators, indicator)) return false;
-      } else if (opt.value == "") {
+      } else if (opt.value == "main_database_meal_tool") {
         if (!IsMainDatabaseMealtoolTargetAvailableForMe(indicators, indicator))
           return false;
       }
@@ -352,7 +352,7 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
 
   const availableTypes = () => {
     return indicatorTypes.filter(
-      (opt) => !IsCurrentTypeOptionAvailable(indicators, opt, local)
+      (opt) => !IsCurrentTypeOptionAvailable(indicators, opt, local),
     );
   };
 
@@ -372,15 +372,15 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
               province: p,
               target:
                 indicatorBeforeEdit.provinces.find(
-                  (province) => province.province == p
+                  (province) => province.province == p,
                 )?.target ?? 0,
               councilorCount:
                 indicatorBeforeEdit.provinces.find(
-                  (province) => province.province == p
+                  (province) => province.province == p,
                 )?.councilorCount ?? 0,
             })),
           },
-          setLocal
+          setLocal,
         );
         return {
           ...prev,
@@ -388,11 +388,11 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
             province: p,
             target:
               indicatorBeforeEdit.provinces.find(
-                (province) => province.province == p
+                (province) => province.province == p,
               )?.target ?? 0,
             councilorCount:
               indicatorBeforeEdit.provinces.find(
-                (province) => province.province == p
+                (province) => province.province == p,
               )?.councilorCount ?? 0,
           })),
         };
@@ -406,15 +406,15 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
               province: p,
               target:
                 indicatorBeforeEdit.provinces.find(
-                  (province) => province.province == p
+                  (province) => province.province == p,
                 )?.target ?? 0,
               councilorCount:
                 indicatorBeforeEdit.provinces.find(
-                  (province) => province.province == p
+                  (province) => province.province == p,
                 )?.councilorCount ?? 0,
             })),
           },
-          setLocal
+          setLocal,
         );
 
         return {
@@ -423,11 +423,11 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
             province: p,
             target:
               indicatorBeforeEdit.provinces.find(
-                (province) => province.province == p
+                (province) => province.province == p,
               )?.target ?? 0,
             councilorCount:
               indicatorBeforeEdit.provinces.find(
-                (province) => province.province == p
+                (province) => province.province == p,
               )?.councilorCount ?? 0,
           })),
           subIndicator: {
@@ -451,7 +451,7 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
 
   const handleCouncilorCountInputChange = (
     councilorCount: number,
-    province: string
+    province: string,
   ) => {
     setLocal((prev) => {
       const updatedProvinces = prev.provinces.map((p) =>
@@ -460,7 +460,7 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
               ...p,
               councilorCount: councilorCount,
             }
-          : p
+          : p,
       );
 
       calculateEachIndicatorProvinceTargetAccordingTONumberOFCouncilorCount(
@@ -468,7 +468,7 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
           ...prev,
           provinces: updatedProvinces,
         },
-        setLocal
+        setLocal,
       );
 
       return {
@@ -480,12 +480,12 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
 
   const handleSubIndicatorCouncilorCountInputChange = (
     councilorCount: number,
-    province: string
+    province: string,
   ) => {
     if (isNotASubIndicator(local.subIndicator)) return;
     setLocal((prev) => {
       const updatedProvinces = prev.subIndicator!.provinces.map((p) =>
-        p.province == province ? { ...p, councilorCount: councilorCount } : p
+        p.province == province ? { ...p, councilorCount: councilorCount } : p,
       );
 
       calculateEachSubIndicatorProvinceTargetAccordingTONumberOFCouncilorCount(
@@ -496,7 +496,7 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
             provinces: updatedProvinces,
           },
         },
-        setLocal
+        setLocal,
       );
 
       return {
@@ -514,7 +514,7 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
       return {
         ...prev,
         provinces: prev.provinces.map((p) =>
-          p.province === province ? { ...p, target: newTarget } : p
+          p.province === province ? { ...p, target: newTarget } : p,
         ),
       };
     });
@@ -543,7 +543,7 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
           setIndicatorBeforeEdit(response.data.data);
         })
         .catch((error: AxiosError<any, any>) =>
-          reqForToastAndSetMessage(error.response?.data.message)
+          reqForToastAndSetMessage(error.response?.data.message, "error"),
         );
     }
   }, [indicatorId, isOpen]);
@@ -565,8 +565,8 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
             {IsEditMode(mode)
               ? "Edit Indicator"
               : IsCreateMode(mode)
-              ? "Create New Indicator"
-              : "Show Indicator"}
+                ? "Create New Indicator"
+                : "Show Indicator"}
           </DialogTitle>
         </DialogHeader>
 
@@ -779,11 +779,11 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
                         onChange={(e) =>
                           handleCouncilorCountInputChange(
                             Number(e.target.value),
-                            province.province
+                            province.province,
                           )
                         }
                         placeholder={`${stringToCapital(
-                          province.province
+                          province.province,
                         )} Councular Count ...`}
                         disabled={IsShowMode(mode)}
                       />
@@ -800,11 +800,11 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
                       onChange={(e) => {
                         handleProvinceTargetChange(
                           Number(e.target.value),
-                          province.province
+                          province.province,
                         );
                       }}
                       placeholder={`${stringToCapital(
-                        province.province
+                        province.province,
                       )} Target ...`}
                       disabled={IsShowMode(mode)}
                     />
@@ -875,7 +875,7 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
                         onChange={(e) =>
                           handleSubIndicatorCouncilorCountInputChange(
                             Number(e.target.value),
-                            province.province
+                            province.province,
                           )
                         }
                         disabled={IsShowMode(mode)}
@@ -934,7 +934,7 @@ export const IndicatorModel: React.FC<IndicatorModelInterface> = ({
                     IsCreateMode(mode)
                       ? IndicatorCreationMessage
                       : IndicatorEditionMessage,
-                    hundleSubmit
+                    hundleSubmit,
                   );
                 }}
               >

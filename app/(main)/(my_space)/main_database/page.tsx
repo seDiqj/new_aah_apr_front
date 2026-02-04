@@ -16,7 +16,6 @@ import MainDatabaseBeneficiaryUpdateForm from "@/components/global/MainDatabaseB
 import { withPermission } from "@/lib/withPermission";
 import {
   ChangeAprIncludedStatusButtonMessage,
-  ReferrBeneficiaryButtonMessage,
 } from "@/constants/ConfirmationModelsTexts";
 import { MainDatabaseBeneficiariesFilters } from "@/constants/FiltersList";
 import RefferalIndicatorSelector from "@/components/global/RefferalIndicatorSelector";

@@ -144,6 +144,7 @@ export const CdDatabaseBenefciaryFormSchema = z.object({
   jobTitle: z
     .string("Job title is required !")
     .min(1, "Job title is required !"),
+  code: z.string().min(1, "Beneficiary code should be at least one character !"),
   incentiveReceived: z.boolean("Incentive received status is required !"),
   incentiveAmount: z
     .string("Incentive amount is required !")
@@ -214,6 +215,7 @@ export const TrainingDatabaseBenefeciaryFormSchema = z.object({
       "Beneficiary phone number should be at least 10 digits (Afganistan format) !"
     ),
   email: z.email("Email feild is required !"),
+  code : z.string().min(1, "Beneficiary code should be at least one character !"),
   participantOrganization: z
     .string()
     .min(1, "participant organization is required !"),

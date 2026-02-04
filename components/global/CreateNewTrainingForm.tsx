@@ -38,10 +38,11 @@ import {
   IsNotShowMode,
   IsShowMode,
 } from "@/constants/Constants";
-import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
 import { TrainingFormSchema } from "@/schemas/FormsSchema";
 import { AxiosError, AxiosResponse } from "axios";
 import CreateNewChapterForm from "./CreateNewChapterForm";
+import { toDateOnly } from "./MainDatabaseBeneficiaryCreationForm";
 
 const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
   open,
@@ -75,11 +76,11 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
   const [chapter, setChapter] = useState<ChapterForm>(ChapterDefault());
 
   const [districts, setDistricts] = useState<{ id: string; name: string }[]>(
-    []
+    [],
   );
 
   const [provinces, setProvinces] = useState<{ id: string; name: string }[]>(
-    []
+    [],
   );
 
   const [projects, setProjects] = useState<
@@ -93,7 +94,7 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
   const handleChange = (
     e:
       | React.ChangeEvent<HTMLInputElement>
-      | { target: { name: string; value: string } }
+      | { target: { name: string; value: string } },
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -115,10 +116,10 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
       requestHandler()
         .delete(`training_db/training/chapter/${id}`)
         .then((response: AxiosResponse<any, any>) =>
-          reqForToastAndSetMessage(response.data.message)
+          reqForToastAndSetMessage(response.data.message, "success"),
         )
         .catch((error: AxiosError<any, any>) =>
-          reqForToastAndSetMessage(error.response?.data.message)
+          reqForToastAndSetMessage(error.response?.data.message, "error"),
         );
     }
     setChapters((prev) => prev.filter((_, i) => i !== index));
@@ -139,9 +140,9 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
       });
 
       setFormErrors(errors);
-      console.log(errors);
       reqForToastAndSetMessage(
-        "Please fix validation errors before submitting."
+        "Please fix validation errors before submitting.",
+        "warning",
       );
       return;
     }
@@ -157,17 +158,17 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
       if (IsEditMode(mode) && id) {
         res = await requestHandler().put(
           `/training_db/training/${id}`,
-          payload
+          payload,
         );
       } else if (IsCreateMode(mode)) {
         res = await requestHandler().post("/training_db/training", payload);
       } else return;
 
-      reqForToastAndSetMessage(res.data.message);
+      reqForToastAndSetMessage(res.data.message, "success");
       handleReload();
       onOpenChange(false);
     } catch (err: any) {
-      reqForToastAndSetMessage(err.response?.data?.message || "Error");
+      reqForToastAndSetMessage(err.response?.data?.message || "Error", "error");
     } finally {
       setIsLoading(false);
     }
@@ -175,10 +176,18 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
 
   const handleCheckboxChange = <T extends keyof TrainingForm>(
     field: T,
-    value: any
+    value: any,
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
+
+  const [registrationDateValidRange, setRegistrationDateValidRange] = useState<{
+    start: string;
+    end: string;
+  }>({
+    start: "2025-1-1",
+    end: "2025-2-1",
+  });
 
   useEffect(() => {
     if (IsEditOrShowMode(mode) && id) {
@@ -206,7 +215,8 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
         })
         .catch((error: any) => {
           reqForToastAndSetMessage(
-            error.response?.data?.message || "Error loading data"
+            error.response?.data?.message || "Error loading data",
+            "error",
           );
         })
         .finally(() => setLoading(false));
@@ -220,7 +230,7 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
         setProjects(Object.values(res.data.data));
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       );
   }, []);
 
@@ -229,7 +239,10 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
       .get("/global/districts")
       .then((res: any) => {
         setDistricts(Object.values(res.data.data));
-      });
+      })
+      .catch((error: AxiosError<any, any>) =>
+        reqForToastAndSetMessage(error.response?.data.message, "error"),
+      );
   }, []);
 
   useEffect(() => {
@@ -243,7 +256,19 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
       .get(`projects/indicators/training_database/${formData.project_id}`)
       .then((res: any) => setIndicators(res.data.data))
       .catch((err: any) =>
-        reqForToastAndSetMessage(err.response?.data?.message)
+        reqForToastAndSetMessage(err.response?.data?.message, "error"),
+      );
+
+    requestHandler()
+      .get(`/date/project_date_range/${formData.project_id}`)
+      .then((response: AxiosResponse<any, any>) => {
+        setRegistrationDateValidRange({
+          start: toDateOnly(response.data.data.start),
+          end: toDateOnly(response.data.data.end),
+        });
+      })
+      .catch((error: AxiosError<any, any>) =>
+        reqForToastAndSetMessage(error.response?.data.message, "error"),
       );
   }, [formData.project_id]);
 
@@ -380,7 +405,7 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
                   onCheckedChange={(val) =>
                     handleCheckboxChange(
                       "participantCatagory",
-                      val ? "acf-staff" : ""
+                      val ? "acf-staff" : "",
                     )
                   }
                   className={`border p-2 rounded ${
@@ -396,7 +421,7 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
                   onCheckedChange={(val) =>
                     handleCheckboxChange(
                       "participantCatagory",
-                      val ? "stakeholder" : ""
+                      val ? "stakeholder" : "",
                     )
                   }
                   className={`border p-2 rounded ${
@@ -452,7 +477,7 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
                   onCheckedChange={(val) =>
                     handleCheckboxChange(
                       "trainingModality",
-                      val ? "face-to-face" : ""
+                      val ? "face-to-face" : "",
                     )
                   }
                   className={`border p-2 rounded ${
@@ -468,7 +493,7 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
                   onCheckedChange={(val) =>
                     handleCheckboxChange(
                       "trainingModality",
-                      val ? "online" : ""
+                      val ? "online" : "",
                     )
                   }
                   className={`border p-2 rounded ${
@@ -488,11 +513,14 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
               name="startDate"
               type="date"
               value={formData.startDate}
+              disabled={!formData.project_id}
               onChange={handleChange}
               className={`border p-2 rounded ${
                 formErrors.startDate ? "!border-red-500" : ""
               }`}
               title={formErrors.startDate}
+              min={registrationDateValidRange.start}
+              max={registrationDateValidRange.end}
             />
           </div>
 
@@ -503,11 +531,14 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
               name="endDate"
               type="date"
               value={formData.endDate}
+              disabled={!formData.project_id}
               onChange={handleChange}
               className={`border p-2 rounded ${
                 formErrors.endDate ? "!border-red-500" : ""
               }`}
               title={formErrors.endDate}
+              min={registrationDateValidRange.start}
+              max={registrationDateValidRange.end}
             />
           </div>
 
@@ -551,8 +582,11 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
                     <Input
                       type="date"
                       name="startDate"
+                      disabled={!formData.startDate || !formData.endDate}
                       value={chapter.startDate}
                       onChange={handleChapterChange}
+                      min={formData.startDate}
+                      max={formData.endDate}
                     />
                   </div>
                   <div className="flex flex-col gap-2">
@@ -560,8 +594,11 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
                     <Input
                       type="date"
                       name="endDate"
+                      disabled={!formData.startDate || !formData.endDate}
                       value={chapter.endDate}
                       onChange={handleChapterChange}
+                      min={formData.startDate}
+                      max={formData.endDate}
                     />
                   </div>
                 </div>
@@ -639,7 +676,7 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
                     IsCreateMode(mode)
                       ? TrainingCreationMessage
                       : TrainingEditionMessage,
-                    () => handleSubmit(e)
+                    () => handleSubmit(e),
                   )
                 }
               >
@@ -648,8 +685,8 @@ const TrainingFormDialog: React.FC<TrainingFormInterface> = ({
                     ? "Updating ..."
                     : "Saving ..."
                   : IsEditMode(mode)
-                  ? "Update"
-                  : "Save"}
+                    ? "Update"
+                    : "Save"}
               </Button>
             ) : (
               <Button

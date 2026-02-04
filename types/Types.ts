@@ -110,6 +110,7 @@ export type TrainingBenefeciaryForm = {
   gender: string;
   age: number;
   phone: string;
+  code: string;
   email: string;
   participantOrganization: string;
   jobTitle: string;
@@ -168,6 +169,7 @@ export type CommunityDialogBeneficiaryForm = {
   phone: string;
   nationalId: string;
   jobTitle: string;
+  code: string;
   incentiveReceived: boolean;
   incentiveAmount: string;
   dateOfRegistration: string;
@@ -228,25 +230,21 @@ export type PsychoeducationForm = {
     ofMenIdp: string;
     ofMenRefugee: string;
     ofMenReturnee: string;
-    ofMenDisabilityType: string;
     // women
     ofWomenHostCommunity: string;
     ofWomenIdp: string;
     ofWomenRefugee: string;
     ofWomenReturnee: string;
-    ofWomenDisabilityType: string;
     // boy
     ofBoyHostCommunity: string;
     ofBoyIdp: string;
     ofBoyRefugee: string;
     ofBoyReturnee: string;
-    ofBoyDisabilityType: string;
     // girl
     ofGirlHostCommunity: string;
     ofGirlIdp: string;
     ofGirlRefugee: string;
     ofGirlReturnee: string;
-    ofGirlDisabilityType: string;
     remark: string;
   };
 };

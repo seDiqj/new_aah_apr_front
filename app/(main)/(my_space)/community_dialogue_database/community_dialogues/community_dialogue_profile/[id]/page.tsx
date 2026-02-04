@@ -81,10 +81,10 @@ const CommunityDialogueProfilePage = () => {
     requestHandler()
       .delete(`/community_dialogue_db/community_dialogue/group/${groupId}`)
       .then((response: AxiosResponse<any, any>) =>
-        reqForToastAndSetMessage(response.data.message)
+        reqForToastAndSetMessage(response.data.message, "success")
       )
       .catch((error: AxiosError<any, any>) =>
-        reqForToastAndSetMessage(error.response?.data.message)
+        reqForToastAndSetMessage(error.response?.data.message, "error")
       );
   };
 
@@ -95,7 +95,7 @@ const CommunityDialogueProfilePage = () => {
         setCommunityDialogue(response.data.data);
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error")
       );
   }, []);
 

@@ -13,35 +13,52 @@ import ProfileModal from "../global/UserForm";
 import { Folder, Clock, CheckCircle, XCircle } from "lucide-react";
 import { ParentInterface } from "@/interfaces/Interfaces";
 import RequestHandler from "@/axios/Axios";
+import {
+  defaultToastDuration,
+  errorToastDuration,
+  successToastDuration,
+  warningToastDuration,
+} from "@/config/ToastConfig";
 
 const Parent: React.FC<ParentInterface> = ({ children }) => {
   const axiosInstance: AxiosInstance = createAxiosInstance();
-  const requestHandler: () => RequestHandler = () =>
-    new RequestHandler();
+  const requestHandler: () => RequestHandler = () => new RequestHandler();
 
   const reqForToastAndSetMessage = (
     message: string,
+    type?: "error" | "success" | "warning",
     subMessage?: string,
     action?: {
       label: string;
       onClick: VoidFunction;
     },
-    type?: "error" | "success" | "warning"
-  ) =>
-    toast(message, {
-      description: subMessage,
-      action: action,
-      style: {
-        backgroundColor: type
-          ? type == "error"
-            ? "red"
-            : type == "success"
-            ? "green"
-            : "yellow"
-          : undefined,
-      },
-      duration: 6000,
-    });
+  ) => {
+    if (type === "error") {
+      toast.error(message, {
+        description: subMessage,
+        action: action,
+        duration: errorToastDuration,
+      });
+    } else if (type === "success") {
+      toast.success(message, {
+        description: subMessage,
+        action: action,
+        duration: successToastDuration,
+      });
+    } else if (type === "warning") {
+      toast.warning(message, {
+        description: subMessage,
+        action: action,
+        duration: warningToastDuration,
+      });
+    } else {
+      toast(message, {
+        description: subMessage,
+        action: action,
+        duration: defaultToastDuration,
+      });
+    }
+  };
 
   const [notifications, setNotifications] = useState([]);
 
@@ -53,6 +70,12 @@ const Parent: React.FC<ParentInterface> = ({ children }) => {
 
   const handleReload = () => {
     setReloadFlag((prev) => prev + 1);
+  };
+
+  const [reloadNotification, setReloadNotification] = useState<number>(0);
+
+  const handleReloadNotification = () => {
+    setReloadNotification((prev) => prev + 1);
   };
 
   const [aprReloadFlag, setAprReladFlag] = useState<number>(0);
@@ -71,7 +94,8 @@ const Parent: React.FC<ParentInterface> = ({ children }) => {
       })
       .catch((error) => {
         reqForToastAndSetMessage(
-          error.response?.data?.message || "Error fetching profile details"
+          error.response?.data?.message || "Error fetching profile details",
+          "error"
         );
       });
   }, []);
@@ -82,9 +106,9 @@ const Parent: React.FC<ParentInterface> = ({ children }) => {
       .get(`/notification/my_notifications/${myProfileDetails.id}`)
       .then((response: any) => setNotifications(response.data.data))
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       );
-  }, [myProfileDetails]);
+  }, [myProfileDetails, reloadNotification]);
 
   const [aprsState, setAprsState] = useState<{
     submitted: number;
@@ -150,16 +174,13 @@ const Parent: React.FC<ParentInterface> = ({ children }) => {
 
   const reqForConfirmationModelFunc = (
     details: string,
-    onContinue: () => void
+    onContinue: () => void,
   ) => {
     setDialogConfig({ details, onContinue });
     setReqForConfirmationModel(true);
   };
 
   useEffect(() => {
-    // if (!["permission:Apr.view/list"].some((per) => permissions.includes(per)))
-    //   return;
-    return;
     axiosInstance
       .get("/apr_management/get_system_aprs_status")
       .then((response: any) => {
@@ -173,16 +194,16 @@ const Parent: React.FC<ParentInterface> = ({ children }) => {
         });
       })
       .catch((error: any) => {
-        reqForToastAndSetMessage(error.response.data.message);
+        reqForToastAndSetMessage(error.response.data.message, "error");
       });
   }, [aprReloadFlag]);
 
   const changeBeneficairyAprIncludedStatus = (id: string) => {
     axiosInstance
       .post(`/global/beneficiary/change_apr_included/${id}`)
-      .then((response: any) => reqForToastAndSetMessage(response.data.message))
+      .then((response: any) => reqForToastAndSetMessage(response.data.message, "success"))
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       );
   };
 
@@ -203,7 +224,8 @@ const Parent: React.FC<ParentInterface> = ({ children }) => {
         setGloabalLoading,
         aprReloadFlag,
         handleAprReload,
-        requestHandler
+        requestHandler,
+        handleReloadNotification,
       }}
     >
       <div className="w-full h-full">{children}</div>

@@ -8,14 +8,17 @@ import TrainingSelectorDialog from "@/components/global/TrainingSelectorDialog";
 import { Button } from "@/components/ui/button";
 import { Navbar14 } from "@/components/ui/shadcn-io/navbar-14";
 import { trainingDatabaseBeneificiaryListColumn } from "@/definitions/DataTableColumnsDefinitions";
-import {
-  TrainingDatabaseBeneficiaryFiltersList,
-} from "@/constants/FiltersList";
-import { Plus } from "lucide-react";
+import { TrainingDatabaseBeneficiaryFiltersList } from "@/constants/FiltersList";
+import { Plus, ToggleRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useParentContext } from "@/contexts/ParentContext";
+import { ChangeAprIncludedStatusButtonMessage } from "@/constants/ConfirmationModelsTexts";
 
 const TrainingDatabasePage = () => {
+  const { reqForConfirmationModelFunc, changeBeneficairyAprIncludedStatus } =
+    useParentContext();
+
   const router = useRouter();
 
   const [reqForBeneficiaryCreationForm, setReqForBeneficiaryCreationForm] =
@@ -86,6 +89,26 @@ const TrainingDatabasePage = () => {
               title="Add Training"
             >
               <Plus></Plus>
+            </Button>
+          </div>
+        }
+        injectedElementForOneSelectedItem={
+          <div className="flex flex-row items-center justify-end">
+            <Button
+              variant={"outline"}
+              onClick={() =>
+                reqForConfirmationModelFunc(
+                  ChangeAprIncludedStatusButtonMessage,
+                  () => {
+                    changeBeneficairyAprIncludedStatus(
+                      idFeildForEditStateSetter,
+                    );
+                  },
+                )
+              }
+              title="Change Apr Included"
+            >
+              <ToggleRight></ToggleRight>
             </Button>
           </div>
         }

@@ -238,7 +238,7 @@ const ShowProjectPage = () => {
           <div className="flex flex-row items-center justify-start my-2">
             <BreadcrumbWithCustomSeparator></BreadcrumbWithCustomSeparator>
           </div>
-          <SubHeader pageTitle={"Create New Project"}></SubHeader>
+          <SubHeader pageTitle={"Project Show"}></SubHeader>
           <div className="flex flex-1 h-[440px] w-full flex-col gap-6">
             <Tabs
               defaultValue="project"

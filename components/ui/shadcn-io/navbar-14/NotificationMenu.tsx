@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import * as React from 'react';
-import { BellIcon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import * as React from "react";
+import { BellIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,8 +10,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
+} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
 
 interface Notification {
   id: string;
@@ -19,23 +19,27 @@ interface Notification {
   message: string;
   unread?: boolean;
   time: string;
-  type: "project" | "submittedDatabase" | "approvedDatabase" | "reviewdApr" | "approvedApr";
+  type:
+    | "project"
+    | "submittedDatabase"
+    | "approvedDatabase"
+    | "reviewdApr"
+    | "approvedApr";
   database_id?: string;
   project_id?: string;
   apr_id?: string;
 }
 
-
 export interface NotificationMenuProps {
   notifications?: Array<Notification>;
-  onNotificationClick?: (notification: Notification) => void
+  onNotificationClick?: (notification: Notification) => void;
 }
 
 export const NotificationMenu = React.forwardRef<
   HTMLButtonElement,
   NotificationMenuProps
 >(({ notifications, onNotificationClick }, ref) => {
-  const unreadCount = notifications?.filter(n => n.unread).length ?? 0;
+  const unreadCount = notifications?.filter((n) => n.unread).length ?? 0;
 
   return (
     <DropdownMenu>
@@ -49,8 +53,8 @@ export const NotificationMenu = React.forwardRef<
         >
           <BellIcon size={16} aria-hidden="true" />
           {unreadCount > 0 && (
-            <Badge 
-              variant="destructive" 
+            <Badge
+              variant="destructive"
               className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
             >
               {unreadCount}
@@ -100,6 +104,6 @@ export const NotificationMenu = React.forwardRef<
   );
 });
 
-NotificationMenu.displayName = 'NotificationMenu';
+NotificationMenu.displayName = "NotificationMenu";
 
 export default NotificationMenu;

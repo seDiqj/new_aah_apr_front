@@ -5,7 +5,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-
 /* ==========================
    Palette-based variables
    (Light mode defaults)
@@ -66,9 +65,10 @@
   --sidebar-accent-foreground: var(--accent-foreground);
 
   /* fonts */
-  --font-geist-sans: system-ui, -apple-system, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial;
-  --font-geist-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono",
+  --font-geist-sans:
+    system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  --font-geist-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono",
     "Helvetica Neue", monospace;
 }
 

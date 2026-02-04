@@ -26,7 +26,7 @@ import {
 } from "@/constants/SingleAndMultiSelectOptionsList";
 import { MainDatabaseBeneficiaryEditionMessage } from "@/constants/ConfirmationModelsTexts";
 import { MainDatabaseBeneficiaryUpdate } from "@/interfaces/Interfaces";
-import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
 import { AxiosError, AxiosResponse } from "axios";
 import { MainDatabaseBeneficiaryFormSchema } from "@/schemas/FormsSchema";
 import { toDateOnly } from "./MainDatabaseBeneficiaryCreationForm";
@@ -42,7 +42,7 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
   } = useParentContext();
 
   const [formData, setFormData] = useState<MainDatabaseBeneficiaryUpdateType>(
-    MainDatabaseBeneficiaryUpdateDefault()
+    MainDatabaseBeneficiaryUpdateDefault(),
   );
   const [program, setProgram] = useState<string>("");
   const [programs, setPrograms] = useState<{ id: string; name: string }[]>([]);
@@ -78,7 +78,8 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
         })
         .catch((error: any) => {
           reqForToastAndSetMessage(
-            error.response?.data?.message || "Error loading beneficiary"
+            error.response?.data?.message || "Error loading beneficiary",
+            "error"
           );
         })
         .finally(() => setIsLoading(false));
@@ -93,7 +94,7 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
           setPrograms(res.data.data.data);
         })
         .catch((err: AxiosError<any, any>) =>
-          reqForToastAndSetMessage(err.response?.data?.message)
+          reqForToastAndSetMessage(err.response?.data?.message, "error"),
         );
     }
   }, [open]);
@@ -122,7 +123,8 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
 
       setFormErrors(errors);
       reqForToastAndSetMessage(
-        "Please fix validation errors before submitting."
+        "Please fix validation errors before submitting.",
+        "warning"
       );
       return;
     }
@@ -137,13 +139,14 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
         program: program,
       })
       .then((response: any) => {
-        reqForToastAndSetMessage(response.data.message);
+        reqForToastAndSetMessage(response.data.message, "success");
         onOpenChange(false);
         handleReload();
       })
       .catch((error: any) => {
         reqForToastAndSetMessage(
-          error.response?.data?.message || "Update failed"
+          error.response?.data?.message || "Update failed",
+          "error"
         );
       })
       .finally(() => setIsLoading(false));
@@ -169,7 +172,7 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
         });
       })
       .catch((error: AxiosError<any, any>) =>
-        reqForToastAndSetMessage(error.response?.data.message)
+        reqForToastAndSetMessage(error.response?.data.message, "error"),
       );
   }, [formData.program]);
 
@@ -486,7 +489,7 @@ const MainDatabaseBeneficiaryUpdateForm: React.FC<
           onClick={(e) =>
             reqForConfirmationModelFunc(
               MainDatabaseBeneficiaryEditionMessage,
-              () => handleSubmit(e)
+              () => handleSubmit(e),
             )
           }
         >

@@ -1,6 +1,8 @@
 "use client";
 
 import * as React from "react";
+import { useEffect, useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,222 +18,228 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+
 import { useParentContext } from "@/contexts/ParentContext";
-import { SubmittNewDatabaseFormSchema } from "@/schemas/FormsSchema";
 import { SubmitNewDatabaseMessage } from "@/constants/ConfirmationModelsTexts";
-import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
 import StringHelper from "@/helpers/StringHelpers/StringHelper";
-
-const months = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
-
-const currentYear = new Date().getFullYear();
-const startYear = 2000;
-const years = Array.from(
-  { length: currentYear - startYear + 6 },
-  (_, i) => startYear + i
-);
+import { AxiosError, AxiosResponse } from "axios";
+import { toDateOnly } from "@/components/global/MainDatabaseBeneficiaryCreationForm";
+import SubmitNewDBSkeleton from "@/components/skeleton/DatabaseSubmition.skeleton";
 
 interface ComponentProps {
   open: boolean;
   onOpenChange: (value: boolean) => void;
+  mode: "create" | "edit";
+  id?: number;
 }
 
-const SubmitNewDB: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
+const SubmitNewDB: React.FC<ComponentProps> = ({
+  open,
+  onOpenChange,
+  mode,
+  id,
+}) => {
   const {
     reqForToastAndSetMessage,
-    axiosInstance,
+    requestHandler,
     handleReload,
     reqForConfirmationModelFunc,
   } = useParentContext();
 
-  const [fromMonth, setFromMonth] = React.useState<string | undefined>();
-  const [fromYear, setFromYear] = React.useState<number | undefined>();
-  const [toMonth, setToMonth] = React.useState<string | undefined>();
-  const [toYear, setToYear] = React.useState<number | undefined>();
-  const [loading, setLoading] = React.useState<boolean>(false);
+  const [initLoading, setInitLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const formatMonthYear = (m?: string, y?: number) =>
-    m && y ? `${m} / ${y}` : "";
+  /* ---------- Date Range ---------- */
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
 
+  /* ---------- Data ---------- */
   const [projects, setProjects] = useState<
-    {
-      id: string;
-      projectCode: string;
-    }[]
+    { id: string; projectCode: string }[]
   >([]);
+  const [databases, setDatabases] = useState<{ id: string; name: string }[]>(
+    [],
+  );
+  const [provinces, setProvinces] = useState<{ id: string; name: string }[]>(
+    [],
+  );
+  const [managers, setManagers] = useState<{ id: string; name: string }[]>([]);
 
+  /* ---------- Selected ---------- */
   const [selectedProject, setSelectedProject] = useState<{
     id: string;
     projectCode: string;
   } | null>(null);
-
-  const [databases, setDatabases] = useState<
-    {
-      id: string;
-      name: string;
-    }[]
-  >([]);
 
   const [selectedDatabase, setSelectedDatabase] = useState<{
     id: string;
     name: string;
   } | null>(null);
 
-  const [provinces, setProvinces] = useState<
-    {
-      id: string;
-      name: string;
-    }[]
-  >([]);
-
   const [selectedProvince, setSelectedProvince] = useState<{
     id: string;
     name: string;
   } | null>(null);
 
-  const [managers, setManagers] = useState<
-    {
-      id: string;
-      name: string;
-    }[]
-  >([]);
-
   const [selectedManager, setSelectedManager] = useState<{
     id: string | null;
     name: string | null;
+  }>({ id: null, name: null });
+
+  const [registrationDateValidRange, setRegistrationDateValidRange] = useState<{
+    start: string;
+    end: string;
   }>({
-    id: null,
-    name: null,
+    start: "",
+    end: "",
   });
 
-  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+  /* ---------- Effects ---------- */
+  useEffect(() => {
+    requestHandler()
+      .get("/projects/projects_for_submition")
+      .then((res: any) => setProjects(res.data.data))
+      .catch((err: any) =>
+        reqForToastAndSetMessage(err.response?.data?.message, "error"),
+      )
+      .finally(() => setInitLoading(false));
+  }, []);
 
   useEffect(() => {
-    if (projects.length == 0)
-      axiosInstance
-        .get("/projects/projects_for_submition")
-        .then((response: any) => {
-          setProjects(response.data.data);
-        })
-        .catch((error: any) => {
-          reqForToastAndSetMessage(error.response.data.message);
-        });
+    if (!selectedProject) return;
 
-    if (selectedProject)
-      axiosInstance
-        .get(`/projects/project_databases_&_provinces/${selectedProject.id}`)
-        .then((response: any) => {
-          setDatabases(response.data.data.databases);
-          setProvinces(response.data.data.provinces);
-        })
-        .catch((error: any) =>
-          reqForToastAndSetMessage(error.response.data.message)
-        );
+    requestHandler()
+      .get(`/projects/project_databases_&_provinces/${selectedProject.id}`)
+      .then((res: any) => {
+        setDatabases(res.data.data.databases);
+        setProvinces(res.data.data.provinces);
+      })
+      .catch((err: any) =>
+        reqForToastAndSetMessage(err.response?.data?.message, "error"),
+      );
+    requestHandler()
+      .get(`/date/project_date_range/${selectedProject.id}`)
+      .then((response: AxiosResponse<any, any>) => {
+        setRegistrationDateValidRange({
+          start: toDateOnly(response.data.data.start),
+          end: toDateOnly(response.data.data.end),
+        });
+      })
+      .catch((error: AxiosError<any, any>) =>
+        reqForToastAndSetMessage(error.response?.data.message, "error"),
+      );
   }, [selectedProject]);
 
   useEffect(() => {
-    axiosInstance
+    requestHandler()
       .get("/global/managers")
-      .then((response: any) => setManagers(response.data.data))
-      .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+      .then((res: any) => setManagers(res.data.data))
+      .catch((err: any) =>
+        reqForToastAndSetMessage(err.response?.data?.message, "error"),
       );
   }, []);
 
+  useEffect(() => {
+    if (mode === "edit") {
+      setInitLoading(true);
+      requestHandler()
+        .get(`/db_management/get_database_info_for_editing/${id}`)
+        .then((res: any) => {
+          setSelectedProject(res.data.data.project);
+          setSelectedDatabase(res.data.data.database);
+          setSelectedProvince(res.data.data.province);
+          setSelectedManager(res.data.data.manager);
+          setFromDate(res.data.data.fromDate);
+          setToDate(res.data.data.toDate);
+        })
+        .catch((err: any) =>
+          reqForToastAndSetMessage(err.response?.data?.message, "error"),
+        )
+        .finally(() => setInitLoading(false));
+    }
+  }, [mode]);
+
+  /* ---------- Submit ---------- */
   const handleSubmit = () => {
-    // const result = SubmittNewDatabaseFormSchema.safeParse({
-    //   selectedProject,
-    //   selectedDatabase,
-    //   selectedProvince,
-    //   fromMonth,
-    //   fromYear,
-    //   toMonth,
-    //   toYear
-    // });
+    if (!fromDate || !toDate) {
+      reqForToastAndSetMessage("Please select date range");
+      return;
+    }
 
-    // if (!result.success) {
-    // const errors: { [key: string]: string } = {};
-    // result.error.issues.forEach((issue) => {
-    //   const field = issue.path[0];
-    //   if (field) errors[field as string] = issue.message;
-    // });
+    if (fromDate > toDate) {
+      reqForToastAndSetMessage("From date cannot be after To date");
+      return;
+    }
 
-    // setFormErrors(errors);
-    //   reqForToastAndSetMessage("Please fix validation errors before submitting.");
-    //   return;
-    // }
-
-    // setFormErrors({});
     setLoading(true);
 
-    axiosInstance
-      .post("/db_management/submit_new_database", {
-        project_id: selectedProject?.id,
-        database_id: selectedDatabase?.id,
-        province_id: selectedProvince?.id,
-        manager_id: selectedManager?.id,
-        fromDate: `${fromYear}-${fromMonth}`,
-        toDate: `${toYear}-${toMonth}`,
-      })
-      .then((response: any) => {
-        reqForToastAndSetMessage(response.data.message);
-        onOpenChange(false);
-        handleReload();
-      })
-      .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
-      )
-      .finally(() => setLoading(false));
+    if (mode === "create") {
+      requestHandler()
+        .post("/db_management/submit_new_database", {
+          project_id: selectedProject?.id,
+          database_id: selectedDatabase?.id,
+          province_id: selectedProvince?.id,
+          manager_id: selectedManager?.id,
+          fromDate,
+          toDate,
+        })
+        .then((res: any) => {
+          reqForToastAndSetMessage(res.data.message, "success");
+          onOpenChange(false);
+          handleReload();
+        })
+        .catch((err: any) =>
+          reqForToastAndSetMessage(err.response?.data?.message, "error"),
+        )
+        .finally(() => setLoading(false));
+    } else if (mode === "edit") {
+      requestHandler()
+        .put(`/db_management/edit_submitted_database/${id}`, {
+          project_id: selectedProject?.id,
+          database_id: selectedDatabase?.id,
+          province_id: selectedProvince?.id,
+          manager_id: selectedManager?.id,
+          fromDate,
+          toDate,
+        })
+        .then((res: any) => {
+          reqForToastAndSetMessage(res.data.message, "success");
+          onOpenChange(false);
+          handleReload();
+        })
+        .catch((err: any) =>
+          reqForToastAndSetMessage(err.response?.data?.message, "error"),
+        )
+        .finally(() => setLoading(false));
+    }
   };
 
-  return (
+  return initLoading ? (
+    <SubmitNewDBSkeleton />
+  ) : (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-4xl border border-gray-300 dark:border-gray-600 rounded-lg p-8 ml-16">
+      <DialogContent className="sm:max-w-4xl rounded-lg p-8 ml-16">
         <DialogHeader>
           <DialogTitle className="text-left text-xl">
             Submit Database
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col gap-6 mt-4">
+        <div className="grid grid-cols-2 gap-6 mt-4">
           {/* Project */}
           <Select
-            onValueChange={(value: string) =>
-              setSelectedProject(
-                projects.find((project) => project.id == value) ?? {
-                  projectCode: "",
-                  id: "",
-                }
-              )
-            }
             value={selectedProject?.id ?? ""}
+            onValueChange={(id) =>
+              setSelectedProject(projects.find((p) => p.id === id) ?? null)
+            }
           >
-            <SelectTrigger className="h-14 w-full text-lg">
+            <SelectTrigger className="h-14">
               <SelectValue placeholder="Select Project" />
             </SelectTrigger>
             <SelectContent>
-              {projects.map((p, i) => (
-                <SelectItem key={i} value={p.id}>
+              {projects.map((p) => (
+                <SelectItem key={p.id} value={p.id}>
                   {p.projectCode}
                 </SelectItem>
               ))}
@@ -240,23 +248,18 @@ const SubmitNewDB: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
 
           {/* Database */}
           <Select
-            onValueChange={(value: string) =>
-              setSelectedDatabase(
-                databases.find((database) => database.id == value) ?? {
-                  id: "",
-                  name: "",
-                }
-              )
-            }
             value={selectedDatabase?.id ?? ""}
+            onValueChange={(id) =>
+              setSelectedDatabase(databases.find((d) => d.id === id) ?? null)
+            }
           >
-            <SelectTrigger className="h-14 w-full text-lg">
+            <SelectTrigger className="h-14">
               <SelectValue placeholder="Select Database" />
             </SelectTrigger>
             <SelectContent>
-              {databases.map((db, i) => (
-                <SelectItem key={i} value={db.id}>
-                  {StringHelper.normalize(db.name)}
+              {databases.map((d) => (
+                <SelectItem key={d.id} value={d.id}>
+                  {StringHelper.normalize(d.name)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -264,23 +267,17 @@ const SubmitNewDB: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
 
           {/* Province */}
           <Select
-            onValueChange={(value: string) =>
-              setSelectedProvince(
-                provinces.find((province) => province.id == value) ?? {
-                  id: "",
-
-                  name: "",
-                }
-              )
-            }
             value={selectedProvince?.id ?? ""}
+            onValueChange={(id) =>
+              setSelectedProvince(provinces.find((p) => p.id === id) ?? null)
+            }
           >
-            <SelectTrigger className="h-14 w-full text-lg">
+            <SelectTrigger className="h-14">
               <SelectValue placeholder="Select Province" />
             </SelectTrigger>
             <SelectContent>
-              {provinces.map((p, i) => (
-                <SelectItem key={i} value={p.id}>
+              {provinces.map((p) => (
+                <SelectItem key={p.id} value={p.id}>
                   {StringHelper.normalize(p.name)}
                 </SelectItem>
               ))}
@@ -289,149 +286,68 @@ const SubmitNewDB: React.FC<ComponentProps> = ({ open, onOpenChange }) => {
 
           {/* Manager */}
           <Select
-            onValueChange={(value: string) =>
+            value={selectedManager?.id ?? ""}
+            onValueChange={(id) =>
               setSelectedManager(
-                managers.find((manager) => manager.id == value) ?? {
-                  id: "",
-                  name: "",
-                }
+                managers.find((m) => m.id === id) ?? {
+                  id: null,
+                  name: null,
+                },
               )
             }
-            value={selectedManager?.id ?? ""}
           >
-            <SelectTrigger className="h-14 w-full text-lg">
+            <SelectTrigger className="h-14">
               <SelectValue placeholder="Select Manager" />
             </SelectTrigger>
             <SelectContent>
-              {managers.map((m, i) => (
-                <SelectItem key={i} value={m.id}>
+              {managers.map((m) => (
+                <SelectItem key={m.id} value={m.id}>
                   {StringHelper.normalize(m.name)}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
 
-          {/* ---------- Date Range Inputs ---------- */}
-          <div className="flex gap-2 w-full">
-            {/* From */}
-            <div className="flex flex-col w-1/2">
-              <label className=" font-medium mb-1">Date Range</label>
-              <div className="relative">
-                <Input
-                  readOnly
-                  placeholder="From"
-                  value={formatMonthYear(fromMonth, fromYear)}
-                  className="h-14 pr-12"
-                />
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button className="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 flex items-center justify-center">
-                      <CalendarIcon />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-3">
-                    <div className="flex gap-2">
-                      <Select value={fromMonth} onValueChange={setFromMonth}>
-                        <SelectTrigger className="w-36 h-10">
-                          <SelectValue placeholder="Month" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {months.map((m) => (
-                            <SelectItem key={m} value={m}>
-                              {m}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Select
-                        value={fromYear ? String(fromYear) : undefined}
-                        onValueChange={(y) => setFromYear(Number(y))}
-                      >
-                        <SelectTrigger className="w-28 h-10">
-                          <SelectValue placeholder="Year" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {years.map((y) => (
-                            <SelectItem key={y} value={String(y)}>
-                              {y}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </div>
-
-            {/* To */}
-            <div className="flex flex-col w-1/2">
-              <label className="text-gray-700 font-medium mb-1 invisible">
-                Date Range
-              </label>
-              <div className="relative">
-                <Input
-                  readOnly
-                  placeholder="To"
-                  value={formatMonthYear(toMonth, toYear)}
-                  className="h-14 pr-12"
-                />
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button className="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 flex items-center justify-center">
-                      <CalendarIcon />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-3">
-                    <div className="flex gap-2">
-                      <Select value={toMonth} onValueChange={setToMonth}>
-                        <SelectTrigger className="w-36 h-10">
-                          <SelectValue placeholder="Month" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {months.map((m) => (
-                            <SelectItem key={m} value={m}>
-                              {m}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Select
-                        value={toYear ? String(toYear) : undefined}
-                        onValueChange={(y) => setToYear(Number(y))}
-                      >
-                        <SelectTrigger className="w-28 h-10">
-                          <SelectValue placeholder="Year" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {years.map((y) => (
-                            <SelectItem key={y} value={String(y)}>
-                              {y}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </div>
+          {/* From Date */}
+          <div>
+            <label className="font-medium mb-1 block">From Date</label>
+            <Input
+              type="date"
+              className="h-14"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+              min={registrationDateValidRange.start}
+              max={registrationDateValidRange.end}
+            />
           </div>
 
-          {/* Submit button */}
-          <div className="flex flex-row items-center justify-end w-full px-2">
+          {/* To Date */}
+          <div>
+            <label className="font-medium mb-1 block">To Date</label>
+            <Input
+              type="date"
+              className="h-14"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+              min={registrationDateValidRange.start}
+              max={registrationDateValidRange.end}
+            />
+          </div>
+
+          {/* Submit */}
+          <div className="col-span-2 flex justify-end pt-4">
             <Button
               id={SUBMIT_BUTTON_PROVIDER_ID}
               disabled={loading}
               onClick={() =>
                 reqForConfirmationModelFunc(
                   SubmitNewDatabaseMessage,
-                  handleSubmit
+                  handleSubmit,
                 )
               }
-              className="mt-4 w-32"
+              className="w-32"
             >
-              {loading ? "Submitting ..." : "Submit"}
+              {loading ? "Submitting..." : "Submit"}
             </Button>
           </div>
         </div>

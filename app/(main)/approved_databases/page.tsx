@@ -16,6 +16,8 @@ import {
 } from "@/constants/ConfirmationModelsTexts";
 import { ApprovedDatabasesFiltersList } from "@/constants/FiltersList";
 import { AxiosError, AxiosResponse } from "axios";
+import BreadcrumbWithCustomSeparator from "@/components/global/BreadCrumb";
+import CommentDialog from "@/components/global/CommentBox";
 
 const SubmittedDatabasesPage = () => {
   const {
@@ -35,87 +37,100 @@ const SubmittedDatabasesPage = () => {
     setOpenSubmittedDatabaseSummaryModel,
   ] = useState<boolean>(false);
 
+  const [reqForCommentDialog, setReqForCommentDialog] =
+    useState<boolean>(false);
+
   const generateApr = () => {
     requestHandler()
       .post(`/apr_management/generate_apr/${idFeildForEditStateSetter}`)
       .then((response: any) => {
         {
-          reqForToastAndSetMessage(response.data.message);
+          reqForToastAndSetMessage(response.data.message, "success");
           handleAprReload();
           handleReload();
         }
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       );
   };
 
-  const rejectDatabase = () => {
+  const rejectDatabase = (comment: string) => {
     requestHandler()
       .post(`/db_management/change_db_status/${idFeildForEditStateSetter}`, {
         newStatus: "secondRejected",
+        comment: comment,
       })
       .then((response: AxiosResponse<any, any, any>) => {
-        reqForToastAndSetMessage(response.data.message);
+        reqForToastAndSetMessage(response.data.message, "success");
         handleAprReload();
         handleReload();
       })
       .catch((error: AxiosError<any, any>) =>
-        reqForToastAndSetMessage(error.response?.data.message)
+        reqForToastAndSetMessage(error.response?.data.message, "error"),
       );
   };
 
   return (
     <>
-      <Navbar14 />
-      <SubHeader pageTitle={"Approved Databases"}></SubHeader>
-      <Cards />
+      <div className="w-full h-full p-2">
+        <Navbar14 />
+        <div className="flex flex-row items-center justify-start my-2">
+          <BreadcrumbWithCustomSeparator></BreadcrumbWithCustomSeparator>
+        </div>
+        <SubHeader pageTitle={"Approved Databases"}></SubHeader>
+        <Cards />
 
-      <DataTableDemo
-        columns={submittedAndFirstApprovedDatabasesTableColumn}
-        indexUrl="/db_management/first_approved_databases"
-        deleteUrl="/db_management/deleted_first_approved_databases"
-        searchableColumn="name"
-        idFeildForShowStateSetter={setIdFeildForEditStateSetter}
-        idFeildForEditStateSetter={setIdFeildForEditStateSetter}
-        showModelOpenerStateSetter={setOpenSubmittedDatabaseSummaryModel}
-        injectedElementForOneSelectedItem={
-          <div className="flex flex-row items-center gap-1">
-            <Button
-              title="Generate Apr"
-              className="text-blue-600"
-              variant={"outline"}
-              onClick={() =>
-                reqForConfirmationModelFunc(GenerateAprMessage, generateApr)
-              }
-            >
-              <FileChartColumn />
-            </Button>
-            <Button
-              title="Reject"
-              className="text-red-500"
-              variant={"outline"}
-              onClick={() =>
-                reqForConfirmationModelFunc(
-                  RejectFirstApprovedDatabaseMessage,
-                  rejectDatabase
-                )
-              }
-            >
-              <XCircle />
-            </Button>
-          </div>
-        }
-        filtersList={ApprovedDatabasesFiltersList}
-      ></DataTableDemo>
+        <DataTableDemo
+          columns={submittedAndFirstApprovedDatabasesTableColumn}
+          indexUrl="/db_management/first_approved_databases"
+          deleteUrl="/db_management/delete_apr"
+          searchableColumn="name"
+          idFeildForShowStateSetter={setIdFeildForEditStateSetter}
+          idFeildForEditStateSetter={setIdFeildForEditStateSetter}
+          showModelOpenerStateSetter={setOpenSubmittedDatabaseSummaryModel}
+          injectedElementForOneSelectedItem={
+            <div className="flex flex-row items-center gap-1">
+              <Button
+                title="Generate Apr"
+                className="text-blue-600"
+                variant={"outline"}
+                onClick={() =>
+                  reqForConfirmationModelFunc(GenerateAprMessage, generateApr)
+                }
+              >
+                <FileChartColumn />
+              </Button>
+              <Button
+                title="Reject"
+                className="text-red-500"
+                variant={"outline"}
+                onClick={() => setReqForCommentDialog(true)}
+              >
+                <XCircle />
+              </Button>
+            </div>
+          }
+          filtersList={ApprovedDatabasesFiltersList}
+        ></DataTableDemo>
 
-      {OpenSubmittedDatabaseSummaryModel && (
-        <SubmitSummary
-          open={OpenSubmittedDatabaseSummaryModel}
-          onOpenChange={setOpenSubmittedDatabaseSummaryModel}
-          databaseId={idFeildForEditStateSetter as unknown as string}
-        />
-      )}
+        {OpenSubmittedDatabaseSummaryModel && (
+          <SubmitSummary
+            open={OpenSubmittedDatabaseSummaryModel}
+            onOpenChange={setOpenSubmittedDatabaseSummaryModel}
+            databaseId={idFeildForEditStateSetter as unknown as string}
+          />
+        )}
+
+        {reqForCommentDialog && (
+          <CommentDialog
+            open={reqForCommentDialog}
+            onOpenChange={setReqForCommentDialog}
+            onSubmit={rejectDatabase}
+            confirmationModelMessage={RejectFirstApprovedDatabaseMessage}
+          ></CommentDialog>
+        )}
+      </div>
     </>
   );
 };

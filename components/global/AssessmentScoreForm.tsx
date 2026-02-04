@@ -15,13 +15,15 @@ import { AssessmentScoreFormInterface } from "@/interfaces/Interfaces";
 import { Assessments } from "@/types/Types";
 import { IsCreateMode, IsEditMode, IsShowMode } from "@/constants/Constants";
 import { AxiosError, AxiosResponse } from "axios";
-import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
+import DatePicker from "react-datepicker";
 
 const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
   open,
   onOpenChange,
   mode,
-  projectId,
+  dateRange,
+  exceptMonth,
   assessmentId,
 }) => {
   const { id } = useParams<{ id: string }>();
@@ -35,8 +37,8 @@ const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
   const [formData, setFormData] = useState<Record<string, number>>(
     Array.from({ length: 15 }, (_, i) => i + 1).reduce(
       (acc, cur) => ({ ...acc, [cur]: 0 }),
-      {}
-    )
+      {},
+    ),
   );
 
   const [assessmentDate, setAssessmentData] = useState<string>("");
@@ -46,14 +48,20 @@ const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
 
   const handleFormChange = (e: any) => {
     const { name, value } = e.target;
+
+    if (value < 0 || value > 4) return;
+
     setFormData((prev) => ({ ...prev, [name]: Number(value) }));
   };
 
   const handleReset = () => {
-    const resetData = Object.keys(formData).reduce((acc, key) => {
-      acc[key] = 0;
-      return acc;
-    }, {} as Record<string, number>);
+    const resetData = Object.keys(formData).reduce(
+      (acc, key) => {
+        acc[key] = 0;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
     setFormData(resetData);
   };
 
@@ -66,19 +74,19 @@ const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
           scores: formData,
           date: assessmentDate,
         })
-      : requestHandler().put(`/enact_database/${id}`, {
+      : requestHandler().put(`/enact_database/assessment/${assessmentId}`, {
           scores: formData,
           date: assessmentDate,
         });
 
     request
       .then((res: any) => {
-        reqForToastAndSetMessage(res.data.message);
+        reqForToastAndSetMessage(res.data.message, "success");
         onOpenChange(false);
         handleReload();
       })
       .catch((err: any) =>
-        reqForToastAndSetMessage(err.response?.data?.message)
+        reqForToastAndSetMessage(err.response?.data?.message, "error"),
       )
       .finally(() => setIsLoading(false));
   };
@@ -87,7 +95,7 @@ const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
 
   const totalScore = useMemo(
     () => Object.values(formData).reduce((acc, val) => acc + val, 0),
-    [formData]
+    [formData],
   );
 
   const titleColors = ["#1E3A8A", "#059669", "#7C3AED", "#F97316"];
@@ -97,7 +105,7 @@ const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
       .get("/enact_database/assessments_list")
       .then((res: any) => setAssessmentsList(res.data.data))
       .catch((err: any) =>
-        reqForToastAndSetMessage(err.response?.data?.message || "Error")
+        reqForToastAndSetMessage(err.response?.data?.message || "Error", "error"),
       );
   }, []);
 
@@ -114,17 +122,22 @@ const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
                 ...acc,
                 [cur]: Number(response.data.data.questions?.[cur]?.score ?? 0),
               };
-            }, {})
+            }, {}),
           );
           setAssessmentData(response.data.data.date);
         })
         .catch((error: AxiosError<any>) => {
-          reqForToastAndSetMessage(error.response?.data?.message);
+          reqForToastAndSetMessage(error.response?.data?.message, "error");
         });
     }
   }, [mode, assessmentId]);
 
   let counter = 0;
+
+  const filterMonths = (date: Date) => {
+    const month = date.getMonth() + 1;
+    return month !== 2 && month !== 4;
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -142,21 +155,26 @@ const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
           {IsCreateMode(mode)
             ? "Create New Assessment"
             : IsEditMode(mode)
-            ? "Edit Assessment"
-            : "Assessment Details"}
+              ? "Edit Assessment"
+              : "Assessment Details"}
         </DialogTitle>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-8">
           <div className="flex flex-col gap-2 w-full">
             <Label className="font-semibold">Assessment Date</Label>
-            <Input
-              type="date"
-              
-              value={assessmentDate}
+
+            <DatePicker
+              selected={assessmentDate ? new Date(assessmentDate) : null}
+              onChange={(date: Date | null) =>
+                date && setAssessmentData(date.toISOString().split("T")[0])
+              }
+              filterDate={filterMonths}
+              minDate={new Date(dateRange.startDate)}
+              maxDate={new Date(dateRange.endDate)}
               disabled={readOnly}
               readOnly={readOnly}
-              onChange={(e) => setAssessmentData(e.target.value)}
-              className="border-gray-300 rounded-lg shadow-sm px-4 py-2 w-full md:w-64 min-w-full"
+              placeholderText="Select date"
+              className="border border-gray-300 rounded-lg shadow-sm px-4 py-2 w-full md:w-64 min-w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -190,12 +208,14 @@ const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
                         readOnly={readOnly}
                         disabled={readOnly}
                         onChange={handleFormChange}
+                        min={0}
+                        max={4}
                       />
                     </div>
                   ))}
                 </div>
               </div>
-            )
+            ),
           )}
 
           <div className="flex justify-between items-center p-4 rounded-xl shadow-inner">
@@ -213,7 +233,7 @@ const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
                 onClick={() =>
                   reqForConfirmationModelFunc(
                     EnactResetButtonMessage,
-                    handleReset
+                    handleReset,
                   )
                 }
               >
@@ -226,7 +246,7 @@ const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
                 className="px-8 py-3 bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg"
                 onClick={(e) =>
                   reqForConfirmationModelFunc(EnactSubmitButtonMessage, () =>
-                    handleSubmit(e)
+                    handleSubmit(e),
                   )
                 }
               >
@@ -235,8 +255,8 @@ const AssessmentForm: React.FC<AssessmentScoreFormInterface> = ({
                     ? "Saveing ..."
                     : "Updating ..."
                   : IsCreateMode(mode)
-                  ? "Save"
-                  : "Update"}
+                    ? "Save"
+                    : "Update"}
               </Button>
             </div>
           )}

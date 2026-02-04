@@ -77,7 +77,8 @@ const ProjectForm: React.FC<ProjectFormInterface> = ({ mode }) => {
 
       setFormErrors(errors);
       reqForToastAndSetMessage(
-        "Please fix validation errors before submitting."
+        "Please fix validation errors before submitting.",
+        "warning"
       );
       return;
     }
@@ -91,10 +92,10 @@ const ProjectForm: React.FC<ProjectFormInterface> = ({ mode }) => {
         .then((response: any) => {
           setProjectId(response.data.data.project.id);
           setOutcomes((prev) => [...prev, response.data.data.outcome]);
-          reqForToastAndSetMessage(response.data.message);
+          reqForToastAndSetMessage(response.data.message, "success");
         })
         .catch((error: any) => {
-          reqForToastAndSetMessage(error.response.data.message);
+          reqForToastAndSetMessage(error.response.data.message, "error");
         })
         .finally(() => setIsLoading(false));
       return;

@@ -43,7 +43,7 @@ import { DeleteButtonMessage } from "@/constants/ConfirmationModelsTexts";
 import {
   DELETE_BUTTON_PROVIDER_ID,
   SUBMIT_BUTTON_PROVIDER_ID,
-} from "@/constants/System";
+} from "@/config/System";
 import { AxiosError, AxiosResponse } from "axios";
 import { DataTableInterface } from "@/interfaces/Interfaces";
 import { useEffect } from "react";
@@ -76,7 +76,7 @@ const DataTableDemo: React.FC<DataTableInterface> = ({
   const [loading, setLoading] = React.useState(true);
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
+    [],
   );
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -90,6 +90,10 @@ const DataTableDemo: React.FC<DataTableInterface> = ({
   const [canNext, setCanNext] = React.useState<boolean>(false);
   const [canPrev, setCanPrev] = React.useState<boolean>(false);
 
+  let searchTimer: NodeJS.Timeout | null = null;
+
+  const TABLE_FILTER_KEY = `table_filters_${indexUrl}`;
+
   const handleFilterChange = (field: string, value: string) => {
     const newFilters = { ...filters, [field]: value };
     setFilters(newFilters);
@@ -97,6 +101,15 @@ const DataTableDemo: React.FC<DataTableInterface> = ({
 
   const applyFilters = () => {
     setPage(1);
+    // Save to localStorage
+    localStorage.setItem(TABLE_FILTER_KEY, JSON.stringify(filters));
+    handleFetch();
+  };
+
+  const clearFilters = () => {
+    setFilters({});
+    setPage(1);
+    localStorage.removeItem(TABLE_FILTER_KEY); // remove saved filters
     handleFetch();
   };
 
@@ -109,7 +122,7 @@ const DataTableDemo: React.FC<DataTableInterface> = ({
       })
       .catch((err: AxiosError<any, any>) => {
         reqForToastAndSetMessage(
-          err.response?.data?.message || "Failed to fetch data"
+          err.response?.data?.message || "Failed to fetch data",
         );
 
         if (err.response?.data.data) setData(err.response?.data.data);
@@ -128,7 +141,9 @@ const DataTableDemo: React.FC<DataTableInterface> = ({
         fetchTableData();
       })
       .catch((err: any) =>
-        reqForToastAndSetMessage(err.response?.data?.message || "Delete failed")
+        reqForToastAndSetMessage(
+          err.response?.data?.message || "Delete failed",
+        ),
       );
     setRowSelection({});
   };
@@ -156,6 +171,14 @@ const DataTableDemo: React.FC<DataTableInterface> = ({
     return `${indexUrl}?${params.toString()}`;
   };
 
+  useEffect(() => {
+    // Load saved filters from localStorage
+    const savedFilters = localStorage.getItem(TABLE_FILTER_KEY);
+    if (savedFilters) {
+      setFilters(JSON.parse(savedFilters));
+    }
+  }, []);
+
   const handleFetch = () => {
     setLoading(true);
     requestHandler()
@@ -177,12 +200,24 @@ const DataTableDemo: React.FC<DataTableInterface> = ({
       .catch((error: AxiosError<any, any>) => {
         if (error.response?.data.data) setData(error.response.data.data);
         reqForToastAndSetMessage(
-          error.response?.data.message || "Failed to fetch data"
+          error.response?.data.message || "Failed to fetch data",
+          "error"
         );
       })
       .finally(() => {
         setLoading(false);
       });
+  };
+
+  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchInput(e.target.value);
+    resetSearchTimer();
+  };
+
+  const resetSearchTimer = () => {
+    if (searchTimer) clearTimeout(searchTimer);
+
+    searchTimer = setTimeout(handleFetch, 3000);
   };
 
   const onNext = () => {
@@ -240,7 +275,7 @@ const DataTableDemo: React.FC<DataTableInterface> = ({
           <Input
             placeholder={`Search By ${searchableColumn}`}
             value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
+            onChange={handleSearchInputChange}
             className="max-w-sm"
             type="search"
           />
@@ -277,7 +312,7 @@ const DataTableDemo: React.FC<DataTableInterface> = ({
                 onClick={() => {
                   reqForConfirmationModelFunc(
                     DeleteButtonMessage,
-                    handleDelete
+                    handleDelete,
                   );
                 }}
                 variant="outline"
@@ -316,19 +351,21 @@ const DataTableDemo: React.FC<DataTableInterface> = ({
                           id={filter}
                           name={filter}
                           className="col-span-2 h-8"
+                          value={filters[filter] || ""}
                           onChange={(e) =>
                             handleFilterChange(e.target.name, e.target.value)
                           }
                         />
                       </div>
                     ))}
-                    <div className="grid grid-cols-3 items-center gap-4">
+                    <div className="grid grid-cols-2 items-center gap-4">
                       <Button
                         id={SUBMIT_BUTTON_PROVIDER_ID}
                         onClick={applyFilters}
                       >
                         Apply
                       </Button>
+                      <Button onClick={clearFilters}>Clear</Button>
                     </div>
                   </div>
                 </div>
@@ -386,7 +423,7 @@ const DataTableDemo: React.FC<DataTableInterface> = ({
                       ? null
                       : flexRender(
                           header.column.columnDef.header,
-                          header.getContext()
+                          header.getContext(),
                         )}
                   </TableHead>
                 ))}
@@ -437,7 +474,7 @@ const DataTableDemo: React.FC<DataTableInterface> = ({
                         <TableCell key={cell.id}>
                           {flexRender(
                             cell.column.columnDef.cell,
-                            cell.getContext()
+                            cell.getContext(),
                           )}
                         </TableCell>
                       );

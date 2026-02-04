@@ -1,14 +1,26 @@
+/**
+ * 
+ * This file is a general lexer class for Shourcutify package version (0.0.1)
+ * 
+ * Written by Mohammad Mosa Barekzay (baregzay123@gmail.com) 12/20/2025
+ * 
+ * @copyright 2025 - 2027   Sadat-Upgrade corporation.
+ * 
+ */
+
+
+
 class Lexer {
   /**
-   * This propery will be used to check if the current character should be include to final array or not.
+   * This property will be used to check if the current character should be include to final array or not.
    *
    * the value of this property will increase according to lenght of characters that should be passed.
    *
-   * For example if the character is (a) there is posibilities that its the a key or alt key so
+   * For example if the character is (a) there is some posibilities that its the a-key or alt-key so
    * it will check for it and if the two comming characters is (l) and t it will increase the value
    * of this property to 2 and returns the alt.
    * by this tric the main function that performs the toknization which is getStringPrimeryCharsList will
-   * know that the two comming characters belongs to (alt) key and insteat of them the function will returns
+   * know that the two comming characters belongs to the alt-key and instead of them the function will returns
    * null.
    */
 
@@ -20,7 +32,7 @@ class Lexer {
     const manipulatedArray: any[] = strArray.map(
       (char: string, index: number) => {
         /**
-         * If the shouldBePass property is greather then or equal to 1 return null.
+         * If the shouldBePass property is greather then or equal to 1 then decrease the value of it and return null.
          */
 
         if (this.shouldBePass >= 1) {

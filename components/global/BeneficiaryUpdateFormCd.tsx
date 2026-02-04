@@ -24,7 +24,7 @@ import {
   incentiveReceivedOptions,
   MaritalStatusOptions,
 } from "@/constants/SingleAndMultiSelectOptionsList";
-import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
 
 const BeneficiaryUpdateCD: React.FC<
   CdDatabaseBeneficiaryUpdateFormInterface
@@ -37,7 +37,7 @@ const BeneficiaryUpdateCD: React.FC<
   } = useParentContext();
 
   const [formData, setFormData] = useState<CommunityDialogBeneficiaryForm>(
-    CommunityDialogueBeneficiaryDefault()
+    CommunityDialogueBeneficiaryDefault(),
   );
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
@@ -64,7 +64,8 @@ const BeneficiaryUpdateCD: React.FC<
 
       setFormErrors(errors);
       reqForToastAndSetMessage(
-        "Please fix validation errors before submitting."
+        "Please fix validation errors before submitting.",
+        "warning"
       );
       return;
     }
@@ -76,15 +77,17 @@ const BeneficiaryUpdateCD: React.FC<
       .put(`/community_dialogue_db/beneficiary/${beneficiaryId}`, formData)
       .then((response: any) => {
         reqForToastAndSetMessage(
-          response.data.message || "Updated successfully"
+          response.data.message || "Updated successfully",
+          "success"
         );
         onOpenChange(false);
         handleReload();
       })
       .catch((error: any) =>
         reqForToastAndSetMessage(
-          error.response?.data?.message || "Update failed"
-        )
+          error.response?.data?.message || "Update failed",
+          "error"
+        ),
       )
       .finally(() => setIsLoading(false));
   };
@@ -98,7 +101,8 @@ const BeneficiaryUpdateCD: React.FC<
         })
         .catch((error: any) => {
           reqForToastAndSetMessage(
-            error.response?.data?.message || "Failed to load beneficiary data"
+            error.response?.data?.message || "Failed to load beneficiary data",
+            "error"
           );
         });
     }
@@ -301,7 +305,7 @@ const BeneficiaryUpdateCD: React.FC<
           onClick={() =>
             reqForConfirmationModelFunc(
               CdDatabaseBenefciaryEditionMessage,
-              () => handleUpdate()
+              () => handleUpdate(),
             )
           }
         >

@@ -12,9 +12,8 @@ import { useEffect, useState } from "react";
 import { useParentContext } from "@/contexts/ParentContext";
 import { TrainingSelectorInterface } from "@/interfaces/Interfaces";
 import { TrainingSelectorMessage } from "@/constants/ConfirmationModelsTexts";
-import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
 import { Label } from "../ui/label";
-import { MultiSelect } from "../multi-select";
 
 const ProgramAndIndicatorSelector: React.FC<TrainingSelectorInterface> = ({
   open,
@@ -39,7 +38,7 @@ const ProgramAndIndicatorSelector: React.FC<TrainingSelectorInterface> = ({
 
   const handleSubmit = () => {
     if (!selectedProgram) {
-      reqForToastAndSetMessage("Please select a valid program at first !");
+      reqForToastAndSetMessage("Please select a valid program at first !", "warning");
       return;
     }
 
@@ -48,15 +47,15 @@ const ProgramAndIndicatorSelector: React.FC<TrainingSelectorInterface> = ({
     requestHandler()
       .post("/main_db/beneficiary/add_to_kit_list/", {
         program: selectedProgram,
-        indicator: selectedIndicator, 
-        ids: ids,
+        indicator: selectedIndicator,
+        ids: Object.keys(ids),
       })
       .then((response: any) => {
-        reqForToastAndSetMessage(response.data.message);
+        reqForToastAndSetMessage(response.data.message, "success");
         onOpenChange(false);
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       )
       .finally(() => setIsLoading(false));
   };
@@ -68,7 +67,7 @@ const ProgramAndIndicatorSelector: React.FC<TrainingSelectorInterface> = ({
         setPrograms(response.data.data.data);
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       );
   }, [open]);
 
@@ -80,7 +79,7 @@ const ProgramAndIndicatorSelector: React.FC<TrainingSelectorInterface> = ({
         setIndicators(response.data.data);
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       );
   }, [selectedProgram]);
 
@@ -128,7 +127,7 @@ const ProgramAndIndicatorSelector: React.FC<TrainingSelectorInterface> = ({
           disabled={isLoading}
           onClick={() =>
             reqForConfirmationModelFunc(TrainingSelectorMessage, () =>
-              handleSubmit()
+              handleSubmit(),
             )
           }
           className="w-full mt-6"

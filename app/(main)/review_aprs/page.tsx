@@ -16,6 +16,8 @@ import {
   ReviewAprMessage,
 } from "@/constants/ConfirmationModelsTexts";
 import { ReviewAprFiltersList } from "@/constants/FiltersList";
+import BreadcrumbWithCustomSeparator from "@/components/global/BreadCrumb";
+import CommentDialog from "@/components/global/CommentBox";
 
 const ReviewAprPage = () => {
   const {
@@ -32,6 +34,9 @@ const ReviewAprPage = () => {
     number | null
   >(null);
 
+  const [reqForCommentDialog, setReqForCommentDialog] =
+    useState<boolean>(false);
+
   const [
     OpenSubmittedDatabaseSummaryModel,
     setOpenSubmittedDatabaseSummaryModel,
@@ -45,89 +50,104 @@ const ReviewAprPage = () => {
     axiosInstance
       .post(`/apr_management/mark_apr_as_reviewed/${idFeildForEditStateSetter}`)
       .then((response: any) => {
-        reqForToastAndSetMessage(response.data.message);
+        reqForToastAndSetMessage(response.data.message, "success");
         handleAprReload();
         handleReload();
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       );
   };
 
-  const rejectApr = () => {
+  const rejectApr = (comment: string) => {
     axiosInstance
       .post(
-        `/apr_management/reject_in_review_stage/${idFeildForEditStateSetter}`
+        `/apr_management/reject_in_review_stage/${idFeildForEditStateSetter}`,
+        {
+          comment: comment,
+        },
       )
       .then((response: any) => {
-        reqForToastAndSetMessage(response.data.message);
+        reqForToastAndSetMessage(response.data.message, "success");
         handleAprReload();
         handleReload();
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       );
   };
 
   return (
     <>
-      <Navbar14 />
-      <SubHeader pageTitle={"Review Apr's"}></SubHeader>
-      <Cards />
+      <div className="w-full h-full p-2">
+        <Navbar14 />
+        <div className="flex flex-row items-center justify-start my-2">
+          <BreadcrumbWithCustomSeparator></BreadcrumbWithCustomSeparator>
+        </div>
+        <SubHeader pageTitle={"Review Apr's"}></SubHeader>
+        <Cards />
 
-      <DataTableDemo
-        columns={submittedAndFirstApprovedDatabasesTableColumn}
-        indexUrl="/apr_management/generated_aprs"
-        deleteUrl="/db_management/deleted_first_approved_databases"
-        searchableColumn="name"
-        idFeildForShowStateSetter={setIdFeildForEditStateSetter}
-        idFeildForEditStateSetter={setIdFeildForEditStateSetter}
-        showModelOpenerStateSetter={setOpenSubmittedDatabaseSummaryModel}
-        injectedElementForOneSelectedItem={
-          <div className="flex flex-row items-center gap-1">
-            <Button
-              title="Review Apr"
-              className="text-blue-600"
-              variant={"outline"}
-              onClick={previewApr}
-            >
-              <Eye />
-            </Button>
-            <Button
-              title="Mark as reviewed"
-              className="text-blue-600"
-              variant={"outline"}
-              onClick={() =>
-                reqForConfirmationModelFunc(ReviewAprMessage, markAprAsReviewed)
-              }
-            >
-              <ClipboardCheck />
-            </Button>
-            <Button
-              title="Reject"
-              className="text-red-500"
-              variant={"outline"}
-              onClick={() =>
-                reqForConfirmationModelFunc(
-                  RejectSecondApprovedDatabaseMessage,
-                  rejectApr
-                )
-              }
-            >
-              <XCircle />
-            </Button>
-          </div>
-        }
-        filtersList={ReviewAprFiltersList}
-      ></DataTableDemo>
+        <DataTableDemo
+          columns={submittedAndFirstApprovedDatabasesTableColumn}
+          indexUrl="/apr_management/generated_aprs"
+          deleteUrl="/db_management/delete_apr"
+          searchableColumn="name"
+          idFeildForShowStateSetter={setIdFeildForEditStateSetter}
+          idFeildForEditStateSetter={setIdFeildForEditStateSetter}
+          showModelOpenerStateSetter={setOpenSubmittedDatabaseSummaryModel}
+          injectedElementForOneSelectedItem={
+            <div className="flex flex-row items-center gap-1">
+              <Button
+                title="Review Apr"
+                className="text-blue-600"
+                variant={"outline"}
+                onClick={previewApr}
+              >
+                <Eye />
+              </Button>
+              <Button
+                title="Mark as reviewed"
+                className="text-blue-600"
+                variant={"outline"}
+                onClick={() =>
+                  reqForConfirmationModelFunc(
+                    ReviewAprMessage,
+                    markAprAsReviewed,
+                  )
+                }
+              >
+                <ClipboardCheck />
+              </Button>
+              <Button
+                title="Reject"
+                className="text-red-500"
+                variant={"outline"}
+                onClick={() => setReqForCommentDialog(true)}
+              >
+                <XCircle />
+              </Button>
+            </div>
+          }
+          filtersList={ReviewAprFiltersList}
+        ></DataTableDemo>
 
-      {OpenSubmittedDatabaseSummaryModel && (
-        <SubmitSummary
-          open={OpenSubmittedDatabaseSummaryModel}
-          onOpenChange={setOpenSubmittedDatabaseSummaryModel}
-          databaseId={idFeildForEditStateSetter as unknown as string}
-        />
-      )}
+        {OpenSubmittedDatabaseSummaryModel && (
+          <SubmitSummary
+            open={OpenSubmittedDatabaseSummaryModel}
+            onOpenChange={setOpenSubmittedDatabaseSummaryModel}
+            databaseId={idFeildForEditStateSetter as unknown as string}
+          />
+        )}
+
+        {reqForCommentDialog && (
+          <CommentDialog
+            open={reqForCommentDialog}
+            onOpenChange={setReqForCommentDialog}
+            onSubmit={rejectApr}
+            confirmationModelMessage={RejectSecondApprovedDatabaseMessage}
+          />
+        )}
+      </div>
     </>
   );
 };

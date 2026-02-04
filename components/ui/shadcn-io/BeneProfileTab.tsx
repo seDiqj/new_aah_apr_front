@@ -48,23 +48,35 @@ export default function BeneProfileTabs() {
         setBneficiaryInfo(response.data.data);
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error")
       );
   }, []);
 
   const [selectedRows, setSelectedRows] = useState<any>();
 
-  const togglePresence = () => {
+  const togglePresences = () => {
     requestHandler()
       .post(`/community_dialogue_db/beneficiaries/toggle_presence/${id}`, {
         selectedRows: Object.keys(selectedRows),
       })
       .then((response: any) => {
-        reqForToastAndSetMessage(response.data.message);
+        reqForToastAndSetMessage(response.data.message, "success");
         handleReload();
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error")
+      );
+  };
+
+  const togglePresence = (sessionId: number) => {
+    if (!sessionId) return;
+    requestHandler()
+      .post(`/community_dialogue_db/beneficiary/toggle_presence/${id}/${sessionId}`)
+      .then((response: any) => {
+        reqForToastAndSetMessage(response.data.message, "success");
+      })
+      .catch((error: any) =>
+        reqForToastAndSetMessage(error.response.data.message, "error")
       );
   };
 
@@ -122,7 +134,7 @@ export default function BeneProfileTabs() {
             </CardHeader>
             <CardContent>
               <DataTableDemo
-                columns={beneficiarySessionsTableColumn}
+                columns={beneficiarySessionsTableColumn(togglePresence)}
                 indexUrl={`/community_dialogue_db/beneficiary/sessions/${id}`}
                 searchableColumn="Topic"
                 selectedRowsIdsStateSetter={setSelectedRows}
@@ -132,7 +144,7 @@ export default function BeneProfileTabs() {
                       onClick={() =>
                         reqForConfirmationModelFunc(
                           BeneficiarySessionPresenceTogglerButtonMessage,
-                          togglePresence
+                          togglePresences
                         )
                       }
                       variant={"outline"}

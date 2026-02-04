@@ -28,6 +28,8 @@ import {
   IsNotShowMode,
   IsShowMode,
 } from "@/constants/Constants";
+import { AxiosError, AxiosResponse } from "axios";
+import { toDateOnly } from "@/components/global/MainDatabaseBeneficiaryCreationForm";
 
 const inputClass = "border h-8 w-full text-base px-2 rounded-md";
 const labelClass = "block text-sm font-medium mb-1";
@@ -37,7 +39,7 @@ const CommunityDialogueFormComponent: React.FC<
 > = ({ open, onOpenChange, mode, dialogueId }) => {
   const {
     reqForToastAndSetMessage,
-    axiosInstance,
+    requestHandler,
     handleReload,
     reqForConfirmationModelFunc,
   } = useParentContext();
@@ -94,7 +96,8 @@ const CommunityDialogueFormComponent: React.FC<
 
       setFormErrors(errors);
       reqForToastAndSetMessage(
-        "Please fix validation errors before submitting."
+        "Please fix validation errors before submitting.",
+        "warning"
       );
       return;
     }
@@ -102,7 +105,7 @@ const CommunityDialogueFormComponent: React.FC<
     setFormErrors({});
 
     if (IsCreateMode(mode)) {
-      axiosInstance
+      requestHandler()
         .post("/community_dialogue_db/community_dialogue", {
           programInformation: formData,
           sessions,
@@ -110,15 +113,15 @@ const CommunityDialogueFormComponent: React.FC<
           remark,
         })
         .then((response: any) => {
-          reqForToastAndSetMessage(response.data.message);
+          reqForToastAndSetMessage(response.data.message, "success");
           onOpenChange(false);
           handleReload();
         })
         .catch((error: any) =>
-          reqForToastAndSetMessage(error.response?.data?.message)
+          reqForToastAndSetMessage(error.response?.data?.message, "error")
         );
     } else if (IsEditMode(mode) && dialogueId) {
-      axiosInstance
+      requestHandler()
         .put(`/community_dialogue_db/community_dialogue/${dialogueId}`, {
           programInformation: formData,
           sessions,
@@ -126,17 +129,17 @@ const CommunityDialogueFormComponent: React.FC<
           remark,
         })
         .then((response: any) => {
-          reqForToastAndSetMessage(response.data.message);
+          reqForToastAndSetMessage(response.data.message, "success");
           handleReload();
         })
         .catch((error: any) =>
-          reqForToastAndSetMessage(error.response?.data?.message)
+          reqForToastAndSetMessage(error.response?.data?.message, "error")
         );
     }
   };
 
   const addGroup = () => setGroups([...groups, { id: null, name: "" }]);
-  
+
   const addSession = () =>
     setSessions([
       ...sessions,
@@ -144,17 +147,25 @@ const CommunityDialogueFormComponent: React.FC<
     ]);
 
   useEffect(() => {
-    axiosInstance
+    requestHandler()
       .get("/projects/p/cd_database")
       .then((res: any) => setProjects(Object.values(res.data.data)))
       .catch((err: any) =>
-        reqForToastAndSetMessage(err.response?.data?.message)
+        reqForToastAndSetMessage(err.response?.data?.message, "error")
       );
   }, []);
 
+  const [registrationDateValidRange, setRegistrationDateValidRange] = useState<{
+    start: string;
+    end: string;
+  }>({
+    start: "",
+    end: "",
+  });
+
   useEffect(() => {
     if (IsEditOrShowMode(mode) && dialogueId) {
-      axiosInstance
+      requestHandler()
         .get(`/community_dialogue_db/community_dialogue_for_edit/${dialogueId}`)
         .then((res: any) => {
           const data = res.data.data;
@@ -169,7 +180,8 @@ const CommunityDialogueFormComponent: React.FC<
         })
         .catch((err: any) =>
           reqForToastAndSetMessage(
-            err.response?.data?.message || "Failed to load data"
+            err.response?.data?.message || "Failed to load data",
+            "error"
           )
         );
     }
@@ -179,25 +191,37 @@ const CommunityDialogueFormComponent: React.FC<
     if (!formData.project_id) return;
     const projectId = formData.project_id;
 
-    axiosInstance
+    requestHandler()
       .get(`projects/indicators/cd_database/${projectId}`)
       .then((res: any) => setIndicators(res.data.data))
       .catch((err: any) =>
-        reqForToastAndSetMessage(err.response?.data?.message)
+        reqForToastAndSetMessage(err.response?.data?.message, "error")
       );
 
-    axiosInstance
+    requestHandler()
       .get(`projects/provinces/${projectId}`)
       .then((res: any) => setProvinces(Object.values(res.data.data)))
       .catch((err: any) =>
-        reqForToastAndSetMessage(err.response?.data?.message)
+        reqForToastAndSetMessage(err.response?.data?.message, "error")
       );
 
-    axiosInstance
+    requestHandler()
       .get("/global/districts")
       .then((res: any) => setDistricts(Object.values(res.data.data)))
       .catch((err: any) =>
-        reqForToastAndSetMessage(err.response?.data?.message)
+        reqForToastAndSetMessage(err.response?.data?.message, "error")
+      );
+
+    requestHandler()
+      .get(`/date/project_date_range/${formData.project_id}`)
+      .then((response: AxiosResponse<any, any>) => {
+        setRegistrationDateValidRange({
+          start: toDateOnly(response.data.data.start),
+          end: toDateOnly(response.data.data.end),
+        });
+      })
+      .catch((error: AxiosError<any, any>) =>
+        reqForToastAndSetMessage(error.response?.data.message, "error")
       );
   }, [formData.project_id]);
 
@@ -377,6 +401,27 @@ const CommunityDialogueFormComponent: React.FC<
             />
           </div>
 
+          {/* Groups */}
+          {groups.map((group, index) => (
+            <div key={index} className="mt-3">
+              <Label className={labelClass}>Group Name {index + 1}</Label>
+              <Input
+                placeholder={`Group Name ${index + 1}`}
+                className={inputClass}
+                value={group.name}
+                onChange={(e) => {
+                  const newGroups = [...groups];
+                  newGroups[index] = {
+                    ...newGroups[index],
+                    name: e.target.value,
+                  };
+                  setGroups(newGroups);
+                }}
+                disabled={isReadOnly}
+              />
+            </div>
+          ))}
+
           {/* Add Group Button */}
           {IsNotShowMode(mode) && (
             <div className="flex items-end">
@@ -390,27 +435,6 @@ const CommunityDialogueFormComponent: React.FC<
             </div>
           )}
         </div>
-
-        {/* Groups */}
-        {groups.map((group, index) => (
-          <div key={index} className="mt-3">
-            <Label className={labelClass}>Group Name {index + 1}</Label>
-            <Input
-              placeholder={`Group Name ${index + 1}`}
-              className={inputClass}
-              value={group.name}
-              onChange={(e) => {
-                const newGroups = [...groups];
-                newGroups[index] = {
-                  ...newGroups[index],
-                  name: e.target.value,
-                };
-                setGroups(newGroups);
-              }}
-              disabled={isReadOnly}
-            />
-          </div>
-        ))}
 
         {/* Community Dialogues */}
         <div className="font-bold text-base text-center px-6 py-2 rounded-xl mt-4 mb-4 shadow-sm max-w-fit mx-auto">
@@ -450,7 +474,9 @@ const CommunityDialogueFormComponent: React.FC<
                   )
                 }
                 className={inputClass}
-                disabled={isReadOnly}
+                disabled={isReadOnly || !formData.project_id}
+                min={registrationDateValidRange.start}
+                max={registrationDateValidRange.end}
               />
             </div>
           </div>

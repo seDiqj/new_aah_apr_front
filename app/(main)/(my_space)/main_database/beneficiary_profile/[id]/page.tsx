@@ -98,7 +98,7 @@ const BeneficiaryProfilePage: React.FC<
       [name]: value,
     }));
   };
-  
+
   const handleSubmitEvaluationForm = (e: any) => {
     e.preventDefault();
 
@@ -118,12 +118,12 @@ const BeneficiaryProfilePage: React.FC<
           evaluation: evaluationForm,
         })
         .then((response: any) => {
-          reqForToastAndSetMessage(response.data.message);
+          reqForToastAndSetMessage(response.data.message, "success");
         })
         .catch((error: any) =>
-          reqForToastAndSetMessage(error.response.data.message)
+          reqForToastAndSetMessage(error.response.data.message, "error"),
         );
-    else reqForToastAndSetMessage("Please fill all the fields !");
+    else reqForToastAndSetMessage("Please fill all the fields !", "warning");
   };
 
   const handleDeleteMealtool = (index: number, id: number | null) => {
@@ -136,11 +136,11 @@ const BeneficiaryProfilePage: React.FC<
     requestHandler()
       .delete(`/main_db/beneficiary/mealtool/${id}`)
       .then((response: any) => {
-        reqForToastAndSetMessage(response.data.message);
+        reqForToastAndSetMessage(response.data.message, "success");
         setMealTools(mealTools.filter((_: any, i: number) => i !== index));
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       )
       .finally(() => setDeleteLoading(false));
   };
@@ -153,7 +153,7 @@ const BeneficiaryProfilePage: React.FC<
         if (response.data.status) setBeneficiaryInfo(response.data.data);
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       );
 
     // Fitching Program Info.
@@ -163,7 +163,7 @@ const BeneficiaryProfilePage: React.FC<
         if (response.data.status) setProgramInfo(response.data.data);
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       );
   }, []);
 
@@ -174,7 +174,7 @@ const BeneficiaryProfilePage: React.FC<
         setMealTools((prev) => [...prev, response.data.data]);
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       );
   }, []);
 
@@ -185,7 +185,7 @@ const BeneficiaryProfilePage: React.FC<
         setEvaluationForm(response.data.data);
       })
       .catch((error: any) => {
-        reqForToastAndSetMessage(error.response.data.message);
+        reqForToastAndSetMessage(error.response.data.message, "error");
       });
   }, []);
 
@@ -215,7 +215,8 @@ const BeneficiaryProfilePage: React.FC<
       })
       .catch((error: any) => {
         reqForToastAndSetMessage(
-          error.response?.data?.message || "Error fetching indicators"
+          error.response?.data?.message || "Error fetching indicators",
+          "error",
         );
       })
       .finally(() => setLoading(false));
@@ -254,16 +255,16 @@ const BeneficiaryProfilePage: React.FC<
                     (s: any, ind: IndicatorState) =>
                       s +
                       ind.sessions.filter(
-                        (session: any) => session.group == null
+                        (session: any) => session.group == null,
                       ).length,
-                    0
+                    0,
                   )} \nNumber of group sessions: ${indicators.reduce(
                     (s: any, ind: IndicatorState) =>
                       s +
                       ind.sessions.filter(
-                        (session: any) => session.group != null
+                        (session: any) => session.group != null,
                       ).length,
-                    0
+                    0,
                   )}`,
                 },
                 {
@@ -303,7 +304,7 @@ const BeneficiaryProfilePage: React.FC<
                                 {value?.toString() || "-"}
                               </span>
                             </div>
-                          )
+                          ),
                         )}
                       </div>
                     ) : (
@@ -339,7 +340,7 @@ const BeneficiaryProfilePage: React.FC<
                                 {value?.toString() || "-"}
                               </span>
                             </div>
-                          ))
+                          )),
                         )}
                       </div>
                     ) : (
@@ -450,7 +451,7 @@ const BeneficiaryProfilePage: React.FC<
                                     MealToolDeleteButtonMessage,
                                     () => {
                                       handleDeleteMealtool(index, tool.id);
-                                    }
+                                    },
                                   )
                                 }
                               >
@@ -518,17 +519,17 @@ const BeneficiaryProfilePage: React.FC<
                             <Checkbox
                               id={item}
                               defaultChecked={evaluationForm.clientSessionEvaluation.includes(
-                                item
+                                item,
                               )}
                               onCheckedChange={(value: boolean) => {
                                 evaluationForm.clientSessionEvaluation.includes(
-                                  item
+                                  item,
                                 )
                                   ? setEvaluationForm((prev) => ({
                                       ...prev,
                                       clientSessionEvaluation:
                                         prev.clientSessionEvaluation.filter(
-                                          (ev) => ev != item
+                                          (ev) => ev != item,
                                         ),
                                     }))
                                   : setEvaluationForm((prev) => ({
@@ -652,7 +653,7 @@ const BeneficiaryProfilePage: React.FC<
                             <Checkbox
                               id={item}
                               defaultChecked={evaluationForm.dischargeReason.includes(
-                                item
+                                item,
                               )}
                               onCheckedChange={(value: boolean) => {
                                 evaluationForm.dischargeReason.includes(item)
@@ -660,7 +661,7 @@ const BeneficiaryProfilePage: React.FC<
                                       ...prev,
                                       dischargeReason:
                                         prev.dischargeReason.filter(
-                                          (ev) => ev != item
+                                          (ev) => ev != item,
                                         ),
                                     }))
                                   : setEvaluationForm((prev) => ({
@@ -698,7 +699,7 @@ const BeneficiaryProfilePage: React.FC<
                         BeneficiaryEvaluationSubmitButtonMessage,
                         () => {
                           handleSubmitEvaluationForm(e);
-                        }
+                        },
                       )
                     }
                   >

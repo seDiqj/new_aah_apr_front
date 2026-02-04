@@ -27,8 +27,7 @@ import {
   ReferredForProtectionOptions,
 } from "@/constants/SingleAndMultiSelectOptionsList";
 import { MainDatabaseBeneficiaryCreation } from "@/interfaces/Interfaces";
-import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
-import { IsANullOrUndefinedValue } from "@/constants/Constants";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
 import { AxiosError, AxiosResponse } from "axios";
 
 const MainDatabaseBeneficiaryForm: React.FC<
@@ -42,7 +41,7 @@ const MainDatabaseBeneficiaryForm: React.FC<
   } = useParentContext();
 
   const [formData, setFormData] = useState<MainDatabaseBeneficiary>(
-    MainDbBeneficiaryDefault()
+    MainDbBeneficiaryDefault(),
   );
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
@@ -76,7 +75,8 @@ const MainDatabaseBeneficiaryForm: React.FC<
 
       setFormErrors(errors);
       reqForToastAndSetMessage(
-        "Please fix validation errors before submitting."
+        "Please fix validation errors before submitting.",
+        "warning"
       );
       return;
     }
@@ -87,12 +87,12 @@ const MainDatabaseBeneficiaryForm: React.FC<
     requestHandler()
       .post("/main_db/beneficiary", formData)
       .then((response: any) => {
-        reqForToastAndSetMessage(response.data.message);
+        reqForToastAndSetMessage(response.data.message, "success");
         onOpenChange(false);
         handleReload();
       })
       .catch((error: any) => {
-        reqForToastAndSetMessage(error.response.data.message);
+        reqForToastAndSetMessage(error.response.data.message, "error");
       })
       .finally(() => setIsLoading(false));
   };
@@ -119,7 +119,7 @@ const MainDatabaseBeneficiaryForm: React.FC<
         setPrograms(response.data.data.data);
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       );
   }, [open]);
 
@@ -135,7 +135,7 @@ const MainDatabaseBeneficiaryForm: React.FC<
         });
       })
       .catch((error: AxiosError<any, any>) =>
-        reqForToastAndSetMessage(error.response?.data.message)
+        reqForToastAndSetMessage(error.response?.data.message, "error"),
       );
   }, [formData.program]);
 
@@ -486,7 +486,7 @@ const MainDatabaseBeneficiaryForm: React.FC<
           onClick={(e) =>
             reqForConfirmationModelFunc(
               MainDatabaseBeneficiaryCreationMessage,
-              () => handleSubmit(e)
+              () => handleSubmit(e),
             )
           }
           className="w-full mt-6"
@@ -500,7 +500,7 @@ const MainDatabaseBeneficiaryForm: React.FC<
 
 export default withPermission(
   MainDatabaseBeneficiaryForm,
-  "Maindatabase.create"
+  "Maindatabase.create",
 );
 
 export function toDateOnly(dateTime: string) {

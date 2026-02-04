@@ -16,7 +16,7 @@ import {
 } from "@/types/Types";
 import { CommunityDialogueSelectorSubmitMessage } from "@/constants/ConfirmationModelsTexts";
 import { CommunityDialogueSelectorInterface } from "@/interfaces/Interfaces";
-import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -50,7 +50,7 @@ const CommunityDialogueSelector: React.FC<
 
   const handleSubmit = () => {
     if (!selectedCommunityDialoguesGroup.length) {
-      reqForToastAndSetMessage("Please select a group !");
+      reqForToastAndSetMessage("Please select a group !", "warning");
       return;
     }
 
@@ -63,10 +63,10 @@ const CommunityDialogueSelector: React.FC<
       })
       .then((response: any) => {
         onOpenChange(false);
-        reqForToastAndSetMessage(response.data.message);
+        reqForToastAndSetMessage(response.data.message, "success");
       })
       .catch((error: any) => {
-        reqForToastAndSetMessage(error.response.data.message);
+        reqForToastAndSetMessage(error.response.data.message, "error");
       })
       .finally(() => setIsLoading(false));
   };
@@ -76,7 +76,7 @@ const CommunityDialogueSelector: React.FC<
       const exists = prev.some(
         (cd) =>
           cd.communityDialogueId === communityDialogue.id &&
-          cd.group.name === group.name
+          cd.group.name === group.name,
       );
 
       return exists
@@ -85,7 +85,7 @@ const CommunityDialogueSelector: React.FC<
               !(
                 cd.communityDialogueId === communityDialogue.id &&
                 cd.group.name === group.name
-              )
+              ),
           )
         : [
             ...prev,
@@ -108,7 +108,7 @@ const CommunityDialogueSelector: React.FC<
           setCommunityDialogues(response.data.data);
         })
         .catch((error: any) =>
-          reqForToastAndSetMessage(error.response.data.message)
+          reqForToastAndSetMessage(error.response.data.message, "error"),
         );
     }
   }, [open]);
@@ -165,7 +165,7 @@ const CommunityDialogueSelector: React.FC<
                           checked={selectedCommunityDialoguesGroup.some(
                             (cd) =>
                               cd.communityDialogueId === communityDialogue.id &&
-                              cd.group.name === group.name
+                              cd.group.name === group.name,
                           )}
                           onCheckedChange={() =>
                             onCheckedChange(communityDialogue, group)
@@ -190,7 +190,7 @@ const CommunityDialogueSelector: React.FC<
           onClick={() =>
             reqForConfirmationModelFunc(
               CommunityDialogueSelectorSubmitMessage,
-              () => handleSubmit()
+              () => handleSubmit(),
             )
           }
           className="w-full rounded-xl mt-6"

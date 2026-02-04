@@ -62,7 +62,7 @@ const KitDbBeneficiaryProfilePage: React.FC<
         if (response.data.status) setBeneficiaryInfo(benefciaryDetails);
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error")
       );
 
     // Fitching Program Info.
@@ -72,7 +72,7 @@ const KitDbBeneficiaryProfilePage: React.FC<
         if (response.data.status) setProgramInfo(response.data.data);
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error")
       );
   }, []);
 

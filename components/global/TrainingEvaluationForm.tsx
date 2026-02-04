@@ -20,7 +20,7 @@ import { Evaluation } from "@/types/Types";
 import { TrainingEvaluationInterface } from "@/interfaces/Interfaces";
 import { EvaluationOptions } from "@/constants/SingleAndMultiSelectOptionsList";
 import { TrainingEvaluationSubmitMessage } from "@/constants/ConfirmationModelsTexts";
-import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
 
 const TrainingEvaluationForm: React.FC<TrainingEvaluationInterface> = ({
   previosTrainingEvaluations,
@@ -44,8 +44,8 @@ const TrainingEvaluationForm: React.FC<TrainingEvaluationInterface> = ({
   const handleSelect = (index: number, value: string) => {
     setEvaluations((prev) =>
       prev.map((evalItem, i) =>
-        i === index ? { ...evalItem, selected: value } : evalItem
-      )
+        i === index ? { ...evalItem, selected: value } : evalItem,
+      ),
     );
   };
 
@@ -67,12 +67,12 @@ const TrainingEvaluationForm: React.FC<TrainingEvaluationInterface> = ({
       understanding: 0,
       relevance: 0,
       applicability: 0,
-    }
+    },
   );
 
   const totalSelections = Object.values(summary).reduce(
     (sum, val) => sum + val,
-    0
+    0,
   );
 
   const informativePercentage =
@@ -91,7 +91,7 @@ const TrainingEvaluationForm: React.FC<TrainingEvaluationInterface> = ({
       })
       .then((response: any) => reqForToastAndSetMessage(response.data.message))
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message),
       )
       .finally(() => setIsLoading(false));
   };
@@ -212,7 +212,7 @@ const TrainingEvaluationForm: React.FC<TrainingEvaluationInterface> = ({
             onClick={() =>
               reqForConfirmationModelFunc(
                 TrainingEvaluationSubmitMessage,
-                handleSubmit
+                handleSubmit,
               )
             }
           >

@@ -72,7 +72,7 @@ const BeneProfileTabs = () => {
         setReferralInfo(referral);
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error")
       );
   }, []);
 

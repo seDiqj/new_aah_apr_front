@@ -34,7 +34,7 @@ import {
 } from "@/constants/ConfirmationModelsTexts";
 import { IsCreateMode, IsEditMode } from "@/constants/Constants";
 import { AxiosError, AxiosResponse } from "axios";
-import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
 
 type Permission = {
   id: number;
@@ -66,7 +66,7 @@ const RoleForm: React.FC<RoleInterface> = ({
   const [name, setName] = useState<string>("");
   const [status, setStatus] = useState<string>("active");
   const [permissions, setPermissions] = useState<PermissionsGrouped | null>(
-    null
+    null,
   );
   const [rolePermissions, setRolePermissions] = useState<number[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -81,7 +81,10 @@ const RoleForm: React.FC<RoleInterface> = ({
         setPermissions(response.data.data);
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response?.data?.message || "Error")
+        reqForToastAndSetMessage(
+          error.response?.data?.message || "Error",
+          "error",
+        ),
       )
       .finally(() => setLoading(false));
   }, [mode, idFeildForEditStateSetter]);
@@ -106,11 +109,11 @@ const RoleForm: React.FC<RoleInterface> = ({
           setStatus(roleData.status);
 
           const rolePermIds = roleData.permissions.map((p: any) =>
-            typeof p === "number" ? p : p.id
+            typeof p === "number" ? p : p.id,
           );
           setRolePermissions(rolePermIds);
         }
-      }
+      },
     );
   }, [mode, idFeildForEditStateSetter]);
 
@@ -128,7 +131,8 @@ const RoleForm: React.FC<RoleInterface> = ({
 
       setFormErrors(errors);
       reqForToastAndSetMessage(
-        "Please fix validation errors before submitting."
+        "Please fix validation errors before submitting.",
+        "warning",
       );
       return;
     }
@@ -142,22 +146,21 @@ const RoleForm: React.FC<RoleInterface> = ({
     const method = IsCreateMode(mode) ? "post" : "put";
 
     requestHandler()
-      .request({
-        url,
-        method,
-        data: {
-          name,
-          status,
-          permissions: rolePermissions,
-        },
+      .request(url, method, {
+        name,
+        status,
+        permissions: rolePermissions,
       })
       .then((response: AxiosResponse<any, any, any>) => {
         openStateSetter(false);
-        reqForToastAndSetMessage(response.data.message);
+        reqForToastAndSetMessage(response.data.message, "success");
         handleReload();
       })
       .catch((error: AxiosError<any, any>) =>
-        reqForToastAndSetMessage(error.response?.data?.message || "Error")
+        reqForToastAndSetMessage(
+          error.response?.data?.message || "Error",
+          "error",
+        ),
       )
       .finally(() => setIsLoading(false));
   };
@@ -171,8 +174,8 @@ const RoleForm: React.FC<RoleInterface> = ({
               {IsCreateMode(mode)
                 ? "Create Role"
                 : IsEditMode(mode)
-                ? "Edit Role"
-                : "Role"}
+                  ? "Edit Role"
+                  : "Role"}
             </DialogTitle>
           </DialogHeader>
 
@@ -259,20 +262,20 @@ const RoleForm: React.FC<RoleInterface> = ({
                 <div className="w-full border rounded-lg p-4 space-y-6">
                   {Object.entries(permissions).map(([group, perms]) => {
                     const allSelected = perms.every((p: Permission) =>
-                      rolePermissions.includes(p.id)
+                      rolePermissions.includes(p.id),
                     );
 
                     const toggleGroup = () => {
                       if (allSelected) {
                         setRolePermissions((prev) =>
                           prev.filter(
-                            (id) => !perms.some((p: Permission) => p.id === id)
-                          )
+                            (id) => !perms.some((p: Permission) => p.id === id),
+                          ),
                         );
                       } else {
                         const newIds = perms.map((p: Permission) => p.id);
                         setRolePermissions((prev) =>
-                          Array.from(new Set([...prev, ...newIds]))
+                          Array.from(new Set([...prev, ...newIds])),
                         );
                       }
                     };
@@ -308,7 +311,7 @@ const RoleForm: React.FC<RoleInterface> = ({
                                     ]);
                                   } else {
                                     setRolePermissions((prev) =>
-                                      prev.filter((permId) => permId !== p.id)
+                                      prev.filter((permId) => permId !== p.id),
                                     );
                                   }
                                 }}
@@ -338,10 +341,10 @@ const RoleForm: React.FC<RoleInterface> = ({
               id={SUBMIT_BUTTON_PROVIDER_ID}
               disabled={isLoading}
               type="button"
-              onClick={() => 
+              onClick={() =>
                 reqForConfirmationModelFunc(
                   IsCreateMode(mode) ? RoleCreationMessage : RoleEditionMessage,
-                  onSubmit
+                  onSubmit,
                 )
               }
             >
@@ -350,8 +353,8 @@ const RoleForm: React.FC<RoleInterface> = ({
                   ? "Creating ..."
                   : "Updating ..."
                 : IsCreateMode(mode)
-                ? "Create"
-                : "Update"}
+                  ? "Create"
+                  : "Update"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -365,6 +368,6 @@ export default withPermission(
   IsCreateMode(mode as "create" | "edit" | "show")
     ? "Create Role"
     : IsEditMode(mode as "create" | "edit" | "show")
-    ? "Edit Role"
-    : "View Role"
+      ? "Edit Role"
+      : "View Role",
 );

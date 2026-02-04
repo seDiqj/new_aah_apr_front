@@ -15,8 +15,14 @@ import BeneficiaryUpdateCD from "@/components/global/BeneficiaryUpdateFormCd";
 import { withPermission } from "@/lib/withPermission";
 import { Can } from "@/components/Can";
 import { CommunityDialogueBeneficiariesFiltersList } from "@/constants/FiltersList";
+import { useParentContext } from "@/contexts/ParentContext";
+import { ChangeAprIncludedStatusButtonMessage } from "@/constants/ConfirmationModelsTexts";
+import { ToggleRight } from "lucide-react";
 
 const CommunityDialogDatabasePage = () => {
+  const { reqForConfirmationModelFunc, changeBeneficairyAprIncludedStatus } =
+    useParentContext();
+
   const router = useRouter();
 
   let [idFeildForEditStateSetter, setIdFeildForEditStateSetter] = useState<
@@ -68,7 +74,7 @@ const CommunityDialogDatabasePage = () => {
                 <Button
                   onClick={() =>
                     setReqForBeneficiaryCreationForm(
-                      !reqForBeneficiaryCreationForm
+                      !reqForBeneficiaryCreationForm,
                     )
                   }
                 >
@@ -93,13 +99,33 @@ const CommunityDialogDatabasePage = () => {
               <Button
                 onClick={() =>
                   setReqForCommunityDialogueSelector(
-                    !reqForCommunityDialogueSelector
+                    !reqForCommunityDialogueSelector,
                   )
                 }
                 title="Add Community Dialogue"
                 variant={"outline"}
               >
                 <Plus></Plus>
+              </Button>
+            </div>
+          }
+          injectedElementForOneSelectedItem={
+            <div className="flex flex-row items-center justify-end">
+              <Button
+                variant={"outline"}
+                onClick={() =>
+                  reqForConfirmationModelFunc(
+                    ChangeAprIncludedStatusButtonMessage,
+                    () => {
+                      changeBeneficairyAprIncludedStatus(
+                        idFeildForEditStateSetter,
+                      );
+                    },
+                  )
+                }
+                title="Change Apr Included"
+              >
+                <ToggleRight></ToggleRight>
               </Button>
             </div>
           }

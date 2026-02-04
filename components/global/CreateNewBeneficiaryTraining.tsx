@@ -20,7 +20,7 @@ import { TrainingBeneficiaryCreationMessage } from "@/constants/ConfirmationMode
 import { TrainingBeneficiaryFormInterface } from "@/interfaces/Interfaces";
 import { GenderOptions } from "@/constants/SingleAndMultiSelectOptionsList";
 import { IsEditMode, IsNotANullOrUndefinedValue } from "@/constants/Constants";
-import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
 
 const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormInterface> = ({
   open,
@@ -39,7 +39,7 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormInterface> = ({
   const [loading, setLoading] = useState<boolean>(false);
 
   const [formData, setFormData] = useState<TrainingBenefeciaryForm>(
-    TrainingBeneficiaryDefault()
+    TrainingBeneficiaryDefault(),
   );
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
@@ -53,7 +53,7 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormInterface> = ({
           setFormData(response.data.data);
         })
         .catch(() => {
-          reqForToastAndSetMessage("Failed to load beneficiary data!");
+          reqForToastAndSetMessage("Failed to load beneficiary data!", "error");
         })
         .finally(() => setLoading(false));
     }
@@ -82,7 +82,8 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormInterface> = ({
 
       setFormErrors(errors);
       reqForToastAndSetMessage(
-        "Please fix validation errors before submitting."
+        "Please fix validation errors before submitting.",
+        "warning"
       );
       return;
     }
@@ -102,12 +103,13 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormInterface> = ({
           ? await requestHandler().put(url, formData)
           : await requestHandler().post(url, formData);
 
-      reqForToastAndSetMessage(response.data.message);
+      reqForToastAndSetMessage(response.data.message, "success");
       handleReload();
       onOpenChange(false);
     } catch (error: any) {
       reqForToastAndSetMessage(
-        error.response?.data?.message || "Something went wrong!"
+        error.response?.data?.message || "Something went wrong!",
+        "error"
       );
     } finally {
       setLoading(false);
@@ -212,6 +214,22 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormInterface> = ({
                 />
               </div>
 
+              {/* Code */}
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="code">Beneficiary Code</Label>
+                <Input
+                  id="code"
+                  name="code"
+                  placeholder="Code ..."
+                  value={formData.code}
+                  onChange={handleFormChange}
+                  className={`border p-2 rounded ${
+                    formErrors.code ? "!border-red-500" : ""
+                  }`}
+                  title={formErrors.code}
+                />
+              </div>
+
               {/* Email */}
               <div className="flex flex-col gap-2">
                 <Label htmlFor="email">Email</Label>
@@ -289,15 +307,15 @@ const TrainingBeneficiaryForm: React.FC<TrainingBeneficiaryFormInterface> = ({
             onClick={(e) =>
               reqForConfirmationModelFunc(
                 TrainingBeneficiaryCreationMessage,
-                () => handleSubmit(e)
+                () => handleSubmit(e),
               )
             }
           >
             {loading
               ? "Please wait..."
               : IsEditMode(mode)
-              ? "Update Beneficiary"
-              : "Create Beneficiary"}
+                ? "Update Beneficiary"
+                : "Create Beneficiary"}
           </Button>
         </form>
       </DialogContent>

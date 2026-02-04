@@ -11,7 +11,7 @@ export const MainDatabaseBeneficiariesFilters: string[] = [
   "householdStatus",
   "baselineDate",
   "endlineDate",
-  "code"
+  "code",
 ];
 
 export const MainDatabaseProgramsFilters: string[] = [
@@ -36,7 +36,7 @@ export const KitDatabaseBeneficiaryFiltersList: string[] = [
   "age",
   "maritalStatus",
   "householdStatus",
-  "code"
+  "code",
 ];
 
 export const KitDatabaseProgramsFiltersList: string[] = [
@@ -68,13 +68,13 @@ export const TrainingDatabaseBeneficiaryFiltersList: string[] = [
   "province",
   "age",
   "gender",
-  "code"
+  "code",
 ];
 
 export const TrainingBeneficiariesFiltersList: string[] = [
   "age",
   "gender",
-  "code"
+  "code",
 ];
 
 export const TrainingFiltersList: string[] = [
@@ -89,7 +89,7 @@ export const ReferralsFiltersList: string[] = [
   "age",
   "gender",
   "dateOfRegistration",
-  "code"
+  "code",
 ];
 
 export const CommunityDialogueBeneficiariesFiltersList: string[] = [
@@ -99,7 +99,7 @@ export const CommunityDialogueBeneficiariesFiltersList: string[] = [
   "age",
   "gender",
   "dateOfRegistration",
-  "code"
+  "code",
 ];
 
 export const CommunityDialoguesFiltersList: string[] = [
@@ -158,4 +158,14 @@ export const ReviewAprFiltersList: string[] = [
   "database",
   "fromDate",
   "toDate",
+];
+
+export const ProjectFiltersList: string[] = [
+  "projectCode",
+  "projectManager",
+  "provinces",
+  "thematicSector",
+  "startDate",
+  "endDate",
+  "status",
 ];

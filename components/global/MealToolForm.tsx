@@ -27,7 +27,7 @@ import {
 } from "@/constants/SingleAndMultiSelectOptionsList";
 import { MealToolInterface } from "@/interfaces/Interfaces";
 import { IsCreateMode, IsEditMode, IsShowMode } from "@/constants/Constants";
-import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
 import { AxiosError, AxiosResponse } from "axios";
 import StringHelper from "@/helpers/StringHelpers/StringHelper";
 import { MealToolFormSchema } from "@/schemas/FormsSchema";
@@ -53,7 +53,7 @@ const MealToolForm: React.FC<MealToolInterface> = ({
   const [endlineSelection, setEndlineSelection] = useState<string>("");
 
   const [mealTool, setMealTool] = useState<MealToolFormType>(
-    MealToolDefault(id as unknown as string)
+    MealToolDefault(id as unknown as string),
   );
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
@@ -73,7 +73,8 @@ const MealToolForm: React.FC<MealToolInterface> = ({
 
       setFormErrors(errors);
       reqForToastAndSetMessage(
-        "Please fix validation errors before submitting."
+        "Please fix validation errors before submitting.",
+        "warning"
       );
       return;
     }
@@ -85,8 +86,8 @@ const MealToolForm: React.FC<MealToolInterface> = ({
       requestHandler()
         .post(`/main_db/beneficiary/mealtools/${id}`, { mealtool: mealTool })
         .then((response: any) => {
-          reqForToastAndSetMessage(response.data.message);
-          mealToolsStateSetter((prev: any) => [ 
+          reqForToastAndSetMessage(response.data.message, "success");
+          mealToolsStateSetter((prev: any) => [
             ...prev,
             { id: response.data.data.id, ...mealTool },
           ]);
@@ -94,7 +95,7 @@ const MealToolForm: React.FC<MealToolInterface> = ({
           onOpenChange(false);
         })
         .catch((error: any) =>
-          reqForToastAndSetMessage(error.response.data.message)
+          reqForToastAndSetMessage(error.response.data.message, "error"),
         )
         .finally(() => setLoading(false));
 
@@ -104,7 +105,7 @@ const MealToolForm: React.FC<MealToolInterface> = ({
       requestHandler()
         .put(`/main_db/beneficiary/mealtool/${mealTool.id}`, mealTool)
         .then((response: any) => {
-          reqForToastAndSetMessage(response.data.message);
+          reqForToastAndSetMessage(response.data.message, "success");
           mealToolsStateSetter((prev: any) =>
             prev.map((mt: any) =>
               mt.id == mealtoolId
@@ -113,13 +114,13 @@ const MealToolForm: React.FC<MealToolInterface> = ({
                     baseline: baselineSelection,
                     endline: endlineSelection,
                   }
-                : mt
-            )
+                : mt,
+            ),
           );
           onOpenChange(false);
         })
         .catch((error: any) =>
-          reqForToastAndSetMessage(error.response.data.message)
+          reqForToastAndSetMessage(error.response.data.message, "error"),
         )
         .finally(() => setLoading(false));
     }
@@ -136,7 +137,7 @@ const MealToolForm: React.FC<MealToolInterface> = ({
           setEndlineSelection(response.data.data.endline);
         })
         .catch((error: AxiosError<any, any>) =>
-          reqForToastAndSetMessage(error.response?.data.message)
+          reqForToastAndSetMessage(error.response?.data.message, "error"),
         )
         .finally(() => setLoading(false));
     }
@@ -386,7 +387,7 @@ const MealToolForm: React.FC<MealToolInterface> = ({
                       endline: endlineSelection,
                     });
                   }
-                }
+                },
               );
             }}
           >

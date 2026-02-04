@@ -23,7 +23,7 @@ import {
 } from "@/constants/Constants";
 import { AxiosError } from "axios";
 import { KitDatabaseProgramFormInterface } from "@/interfaces/Interfaces";
-import { SUBMIT_BUTTON_PROVIDER_ID } from "@/constants/System";
+import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
 
 const ProgramKitForm: React.FC<KitDatabaseProgramFormInterface> = ({
   open,
@@ -41,7 +41,7 @@ const ProgramKitForm: React.FC<KitDatabaseProgramFormInterface> = ({
   } = useParentContext();
 
   const [formData, setFormData] = useState<KitDatabaseProgram>(
-    KitDatabaseProgramDefault()
+    KitDatabaseProgramDefault(),
   );
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
@@ -55,7 +55,7 @@ const ProgramKitForm: React.FC<KitDatabaseProgramFormInterface> = ({
           setFormData(response.data.data);
         })
         .catch((error: any) => {
-          reqForToastAndSetMessage(error.response.data.message);
+          reqForToastAndSetMessage(error.response.data.message, "error");
         });
     }
   }, [mode, programId, open]);
@@ -86,7 +86,8 @@ const ProgramKitForm: React.FC<KitDatabaseProgramFormInterface> = ({
 
       setFormErrors(errors);
       reqForToastAndSetMessage(
-        "Please fix validation errors before submitting."
+        "Please fix validation errors before submitting.",
+        "warning"
       );
       return;
     }
@@ -99,7 +100,7 @@ const ProgramKitForm: React.FC<KitDatabaseProgramFormInterface> = ({
       requestHandler()
         .post("/global/program/kit_database", formData)
         .then((response: any) => {
-          reqForToastAndSetMessage(response.data.message);
+          reqForToastAndSetMessage(response.data.message, "success");
           if (createdProgramStateSetter)
             createdProgramStateSetter({
               target: {
@@ -120,19 +121,19 @@ const ProgramKitForm: React.FC<KitDatabaseProgramFormInterface> = ({
           handleReload();
         })
         .catch((error: any) =>
-          reqForToastAndSetMessage(error.response.data.message)
+          reqForToastAndSetMessage(error.response.data.message, "error"),
         )
         .finally(() => setIsLoading(false));
     } else if (IsEditMode(mode) && programId) {
       requestHandler()
         .put(`/global/program/${programId}`, formData)
         .then((response: any) => {
-          reqForToastAndSetMessage(response.data.message);
+          reqForToastAndSetMessage(response.data.message, "success");
           onOpenChange(false);
           handleReload();
         })
         .catch((error: any) =>
-          reqForToastAndSetMessage(error.response.data.message)
+          reqForToastAndSetMessage(error.response.data.message, "error"),
         )
         .finally(() => setIsLoading(false));
     }
@@ -154,7 +155,7 @@ const ProgramKitForm: React.FC<KitDatabaseProgramFormInterface> = ({
         setProjects(Object.values(res.data.data));
       })
       .catch((error: any) =>
-        reqForToastAndSetMessage(error.response.data.message)
+        reqForToastAndSetMessage(error.response.data.message, "error"),
       );
   }, []);
 
@@ -164,7 +165,7 @@ const ProgramKitForm: React.FC<KitDatabaseProgramFormInterface> = ({
       .get(`/global/project/provinces/${formData.project_id}`)
       .then((res: any) => setProvinces(Object.values(res.data.data)))
       .catch((error: AxiosError<any, any>) =>
-        reqForToastAndSetMessage(error.response?.data.message)
+        reqForToastAndSetMessage(error.response?.data.message, "error"),
       );
   }, [formData.project_id]);
 
@@ -331,7 +332,7 @@ const ProgramKitForm: React.FC<KitDatabaseProgramFormInterface> = ({
                   IsCreateMode(mode)
                     ? KitDatabaseProgramCreationMessage
                     : KitDatabaseProgramEditionMessage,
-                  () => handleSubmit(e)
+                  () => handleSubmit(e),
                 )
               }
             >
@@ -340,8 +341,8 @@ const ProgramKitForm: React.FC<KitDatabaseProgramFormInterface> = ({
                   ? "Saving ..."
                   : "Updating ..."
                 : IsCreateMode(mode)
-                ? "Save"
-                : "Update"}
+                  ? "Save"
+                  : "Update"}
             </Button>
           </div>
         )}
