@@ -30,6 +30,7 @@ import { SUBMIT_BUTTON_PROVIDER_ID } from "@/config/System";
 import { AxiosError, AxiosResponse } from "axios";
 import { KitDatabaseBeneficiaryFormSchema } from "@/schemas/FormsSchema";
 import { toDateOnly } from "./MainDatabaseBeneficiaryCreationForm";
+import CreateNewProgramKit from "./CreateNewProgramKit";
 
 const KitDatabaseBeneficiaryUpdateForm: React.FC<
   KitDatabaseBenficiaryUpdateForm
@@ -90,7 +91,10 @@ const KitDatabaseBeneficiaryUpdateForm: React.FC<
       });
 
       setFormErrors(errors);
-      reqForToastAndSetMessage("Please fix validation errors before updating.", "warning");
+      reqForToastAndSetMessage(
+        "Please fix validation errors before updating.",
+        "warning",
+      );
       return;
     }
 
@@ -108,7 +112,7 @@ const KitDatabaseBeneficiaryUpdateForm: React.FC<
       .catch((error: any) => {
         reqForToastAndSetMessage(
           error.response?.data?.message || "Update failed",
-          "error"
+          "error",
         );
       })
       .finally(() => setIsLoading(false));
@@ -144,7 +148,7 @@ const KitDatabaseBeneficiaryUpdateForm: React.FC<
         .catch((error: any) => {
           reqForToastAndSetMessage(
             error.response?.data?.message || "Error loading beneficiary",
-            "error"
+            "error",
           );
         });
     }
@@ -482,6 +486,17 @@ const KitDatabaseBeneficiaryUpdateForm: React.FC<
         >
           {isLoading ? "Updating ..." : "Update"}
         </Button>
+
+        {/* Program create form */}
+        {reqForCreateNewProgram && (
+          <CreateNewProgramKit
+            open={reqForCreateNewProgram}
+            onOpenChange={setReqForCreateNewProgram}
+            mode="create"
+            createdProgramStateSetter={handleFormChange}
+            programsListStateSetter={setPrograms}
+          ></CreateNewProgramKit>
+        )}
       </DialogContent>
     </Dialog>
   );

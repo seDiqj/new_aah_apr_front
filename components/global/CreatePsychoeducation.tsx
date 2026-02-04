@@ -127,7 +127,7 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
 
       reqForToastAndSetMessage(
         "Please fix validation errors before submitting.",
-        "warning"
+        "warning",
       );
       return;
     }
@@ -534,28 +534,28 @@ const CreatePsychoeducation: React.FC<PsychoeducationFormInterface> = ({
 
         {/* Demographics with real Inputs */}
         <DemographicLine
-          title="Of Men"
+          title="# Of Men"
           prefix="ofMen"
           formData={formData}
           formChangeHandler={handleFormChange}
           readonly={readOnly}
         />
         <DemographicLine
-          title="Of Women"
+          title="# Of Women"
           prefix="ofWomen"
           formData={formData}
           formChangeHandler={handleFormChange}
           readonly={readOnly}
         />
         <DemographicLine
-          title="Of Boys"
+          title="# Of Boys"
           prefix="ofBoy"
           formData={formData}
           formChangeHandler={handleFormChange}
           readonly={readOnly}
         />
         <DemographicLine
-          title="Of Girls"
+          title="# Of Girls"
           prefix="ofGirl"
           formData={formData}
           formChangeHandler={handleFormChange}

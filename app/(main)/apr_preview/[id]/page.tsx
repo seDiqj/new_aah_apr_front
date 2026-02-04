@@ -535,13 +535,13 @@ export default function MonitoringTablePage() {
               <TableCell className="text-xs border-r border-slate-400 pl-6">
                 {d.name}
               </TableCell>
-              <TableCell className="text-right text-xs border-r border-slate-400">
+              <TableCell className="text-center text-xs border-r border-slate-400">
                 {d.target}
               </TableCell>
-              <TableCell className="text-right text-xs border-r border-slate-400">
+              <TableCell className="text-center text-xs border-r border-slate-400">
                 {d.months?.reduce((a, b) => a + b, 0) || 0}
               </TableCell>
-              <TableCell className="text-right text-xs border-r border-slate-400">
+              <TableCell className="text-center text-xs border-r border-slate-400">
                 {d.target
                   ? (
                       ((d.months?.reduce((a, b) => a + b, 0) || 0) / d.target) *

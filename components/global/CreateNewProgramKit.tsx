@@ -87,7 +87,7 @@ const ProgramKitForm: React.FC<KitDatabaseProgramFormInterface> = ({
       setFormErrors(errors);
       reqForToastAndSetMessage(
         "Please fix validation errors before submitting.",
-        "warning"
+        "warning",
       );
       return;
     }
@@ -114,11 +114,11 @@ const ProgramKitForm: React.FC<KitDatabaseProgramFormInterface> = ({
               ...prev,
               {
                 id: response.data.data.id,
-                focalPoint: formData.focalPoint,
+                name: formData.name,
               },
             ]);
           onOpenChange(false);
-          handleReload();
+          if (!programsListStateSetter) handleReload();
         })
         .catch((error: any) =>
           reqForToastAndSetMessage(error.response.data.message, "error"),
